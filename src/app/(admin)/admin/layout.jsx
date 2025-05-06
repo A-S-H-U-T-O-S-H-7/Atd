@@ -7,7 +7,7 @@ export default function Layout({ children }) {
       <div>
         <Sidebar/> 
         <Header/>
-        <div className=" ml-[65px] md:ml-[95px]">
+        <div className=" ml-[62px] md:ml-[95px]">
         {children}
         </div>
       </div>
