@@ -3,7 +3,9 @@ import AboutUs from "@/components/Web/AboutUs"
 function page() {
   return (
     <div>
-      <AboutUs/>
+             As informed in the message only design is finished !! so you dont need to explore these things
+
+      {/* <AboutUs/> */}
     </div>
   )
 }
