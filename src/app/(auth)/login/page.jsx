@@ -20,7 +20,7 @@ export default function LoginForm() {
 
     setTimeout(() => {
       setLoading(false);
-      router.push("/admin/dashboard");
+      router.push("/crm/dashboard");
     }, 1500);
   };
 

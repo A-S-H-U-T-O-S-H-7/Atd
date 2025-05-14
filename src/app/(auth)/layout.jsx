@@ -1,10 +1,11 @@
-export default function Layout({ children }) {
-    return (
-        
-      <div>
-        {children}
-      </div>
-      
-    );
-  }
-  
+import React from 'react'
+
+function layout({children}) {
+  return (
+    <div>
+      {children}
+    </div>
+  )
+}
+
+export default layout

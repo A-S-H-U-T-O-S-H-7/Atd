@@ -7,8 +7,8 @@ import { FiLogOut } from 'react-icons/fi';
 import { FaHome } from 'react-icons/fa';
 
 const menuList = [
-  { name: 'Dashboard', link: '/admin/dashboard', icon: <FaHome /> },
-  { name: 'Product', link: '/admin/product', icon: <FaHome /> },
+  { name: 'Dashboard', link: '/crm/dashboard', icon: <FaHome /> },
+  { name: 'Product', link: '/crm/product', icon: <FaHome /> },
 
 ];
 
