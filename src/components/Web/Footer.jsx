@@ -16,16 +16,16 @@ function Footer() {
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
                 <Link href={"/"}>
-                <div className=" p-2 rounded-lg">
-                  <Image
-                    src="/logo.png"
-                    alt="ATD Money Logo"
-                    width={240}
-                    height={240}
-                    className="object-contain w-18 md:w-17"
-                    priority
-                  />
-                </div>
+                  <div className=" p-2 rounded-lg">
+                    <Image
+                      src="/logo.png"
+                      alt="ATD Money Logo"
+                      width={240}
+                      height={240}
+                      className="object-contain w-18 md:w-17"
+                      priority
+                    />
+                  </div>
                 </Link>
                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-300">
                   ATD Money
@@ -84,6 +84,15 @@ function Footer() {
                     Blogs
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/reviews"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    Reviews
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -105,7 +114,7 @@ function Footer() {
                   </div>
                 </Link>
                 <Link
-                  href="/download/play-store"
+                  href="https://atdmoney.com/app-release.apk"
                   className="flex items-center bg-slate-800 gap-3 text-white hover:bg-slate-700 border border-slate-700 hover:border-teal-400 transition-all duration-300 w-full px-4 py-2.5 rounded-lg"
                 >
                   <IoLogoGooglePlaystore className="text-xl text-teal-400" />
@@ -117,32 +126,49 @@ function Footer() {
               </div>
 
               <div className="mt-6">
-                <p className="text-sm font-medium mb-3 text-gray-300">
-                  Follow Us
-                </p>
-                <div className="flex gap-4">
-                  {[
-                    "facebook",
-                    "instagram",
-                    "youtube",
-                    "pinterest",
-                    "Linkedin",
-                    "x"
-                  ].map(social =>
-                    <a
-                      key={social}
-                      href={`/social/${social}`}
-                      className="bg-slate-800 p-2 rounded-full hover:bg-slate-700 transition-colors duration-300 group"
-                    >
-                      <Image
-                        src={`/${social}.svg`}
-                        alt={`${social} icon`}
-                        width={30}
-                        height={30}
-                        className="object-contain filter group-hover:brightness-125"
-                      />
-                    </a>
-                  )}
+                
+                <div className="mt-6">
+                  <p className="text-sm font-medium mb-3 text-gray-300">
+                    Follow Us
+                  </p>
+                  <div className="flex gap-4">
+                    {[
+                      {
+                        name: "facebook",
+                        url: "https://www.facebook.com/profile.php?id=100088690347026"
+                      },
+                      {
+                        name: "instagram",
+                        url: "https://www.instagram.com/atdmoneyindia/"
+                      },
+                      { name: "youtube", url: "https://www.youtube.com/channel/UCclz8GoGt6S4vCHsDTCTLlQ" },
+                      {
+                        name: "pinterest",
+                        url: "https://in.pinterest.com/atdmoney/"
+                      },
+                      {
+                        name: "linkedin",
+                        url: "https://linkedin.com/company/MoneyAtd"
+                      },
+                      { name: "x", url: "https://x.com/MoneyAtd" }
+                    ].map(({ name, url }) =>
+                      <a
+                        key={name}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-slate-800 p-2 rounded-full hover:bg-slate-700 transition-colors duration-300 group"
+                      >
+                        <Image
+                          src={`/${name}.svg`}
+                          alt={`${name} icon`}
+                          width={30}
+                          height={30}
+                          className="object-contain filter group-hover:brightness-125"
+                        />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -207,7 +233,7 @@ function Footer() {
               Privacy Policy
             </Link>
             <Link
-              href="/returnpolicy"
+              href="/refundpolicy"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Refund Policy
@@ -233,7 +259,14 @@ function Footer() {
               rights reserved
             </p>
             <p className="text-gray-500">
-              Designed by <span className="text-teal-400">ALL TIME DATA</span>
+              Designed by
+              <a
+                className="cursor-pointer "
+                target="_blank"
+                href="https://alltimedata.com/"
+              >
+                <span className="text-teal-400"> ALL TIME DATA</span>
+              </a>
             </p>
           </div>
         </div>

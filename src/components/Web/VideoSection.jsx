@@ -7,25 +7,25 @@ const videos = [
     title: "Introduction to ATD Money",
     videoUrl: "https://youtu.be/VrMq8Rmt0T8?si=a4HGQ5l6k_ux07Nm",
     thumbnail: "/Aboutthumbnail.png",
-    youtubeId: "6SEvHhA2yDQ"
+    youtubeId: "VrMq8Rmt0T8"
   },
   {
     title: "Refer & Earn Reward Points",
-    videoUrl: "https://youtu.be/ENKNM-sfvB0?si=zfG_E26e8Y2pXY_c",
+    videoUrl: "https://youtu.be/6SEvHhA2yDQ?si=yEKpRD91TM8ioek-",
     thumbnail: "/refer&earn.png",
-    youtubeId: "dQw4w9WgXcQ" 
+    youtubeId: "6SEvHhA2yDQ" 
   },
   {
     title: "How to Register with ATD Money",
-    videoUrl: "https://youtu.be/6SEvHhA2yDQ?si=SPiJty-bJp1tKgUp",
+    videoUrl: "https://youtu.be/ENKNM-sfvB0?si=WO38nh5KMcAOYfBY",
     thumbnail: "/registration.png",
-    youtubeId: "ZZ5LpwO-An4" 
+    youtubeId: "ENKNM-sfvB0" 
   },
   {
     title: "Central KYC Records Registry",
-    videoUrl: "https://yourdomain.com/videos/quick-approval",
+    videoUrl: "https://youtu.be/rdi7G1hY4-w?si=v7_1FirnZvJP0I4f",
     thumbnail: "/kyc.png",
-    youtubeId: "jNQXAC9IVRw" 
+    youtubeId: "rdi7G1hY4-w" 
   }
 ];
 
