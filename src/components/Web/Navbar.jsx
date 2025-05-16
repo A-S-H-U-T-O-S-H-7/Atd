@@ -207,10 +207,10 @@ function Navbar() {
                     >
                       <div className="flex flex-col items-center gap-3">
                         <Image
-                          src="/next.svg"
+                          src="/logo.png"
                           alt="app logo"
-                          width={80}
-                          height={80}
+                          width={380}
+                          height={380}
                           className="w-32 mb-2"
                         />
                         <Link
@@ -293,18 +293,19 @@ function Navbar() {
               <div className="flex flex-col p-6 h-full">
                 <div className="flex justify-between items-center mb-8 mt-2">
                   <Image
-                    src="/next.svg"
+                    src="/logo.png"
                     alt="logo"
                     width={80}
                     height={80}
-                    className="w-24"
+                    className="w-20"
                   />
+                  <span className="font-bold text-[17px] text-teal-700">ATD MONEY</span>
                   <button 
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
                     aria-label="Close menu"
                   >
-                    <RxCross1 className="text-2xl text-gray-700" />
+                    <RxCross1 className="text-xl text-gray-700" />
                   </button>
                 </div>
                 
@@ -355,6 +356,13 @@ function Navbar() {
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
                               Reviews
+                            </Link>
+                            <Link
+                              href="/faqs"
+                              className="text-gray-600 hover:text-teal-600 transition-colors duration-300 py-1"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              FAQs
                             </Link>
                           </div>
                         </motion.div>

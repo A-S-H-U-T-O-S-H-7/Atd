@@ -28,7 +28,7 @@ function Footer() {
                   </div>
                 </Link>
                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-300">
-                  ATD Money
+                  ATD MONEY
                 </h1>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
