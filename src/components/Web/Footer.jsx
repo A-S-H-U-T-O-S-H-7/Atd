@@ -125,52 +125,56 @@ function Footer() {
                 </Link>
               </div>
 
-              
-                
-                <div className="mt-6">
-                  <p className="text-sm font-medium mb-3 text-gray-300">
-                    Follow Us
-                  </p>
-                  <div className="flex gap-4">
-                    {[
-                      {
-                        name: "facebook",
-                        url: "https://www.facebook.com/profile.php?id=100088690347026"
-                      },
-                      {
-                        name: "instagram",
-                        url: "https://www.instagram.com/atdmoneyindia/"
-                      },
-                      { name: "youtube", url: "https://www.youtube.com/channel/UCclz8GoGt6S4vCHsDTCTLlQ" },
-                      {
-                        name: "pinterest",
-                        url: "https://in.pinterest.com/atdmoney/"
-                      },
-                      {
-                        name: "linkedin",
-                        url: "https://www.linkedin.com/company/atdmoney2/?viewAsMember=true"
-                      },
-                      { name: "x", url: "https://x.com/MoneyAtd" }
-                    ].map(({ name, url }) =>
-                      <a
-                        key={name}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-slate-800 p-2 rounded-full hover:bg-slate-700 transition-colors duration-300 group"
-                      >
-                        <Image
-                          src={`/${name}.svg`}
-                          alt={`${name} icon`}
-                          width={30}
-                          height={30}
-                          className="object-contain filter group-hover:brightness-125"
-                        />
-                      </a>
-                    )}
-                  </div>
+              <div className="mt-6">
+                <p className="text-sm font-medium mb-3 text-gray-300">
+                  Follow Us
+                </p>
+                <div className="flex gap-4">
+                  {[
+                    {
+                      name: "facebook",
+                      url:
+                        "https://www.facebook.com/profile.php?id=100088690347026"
+                    },
+                    {
+                      name: "instagram",
+                      url: "https://www.instagram.com/atdmoneyindia/"
+                    },
+                    {
+                      name: "youtube",
+                      url:
+                        "https://www.youtube.com/channel/UCclz8GoGt6S4vCHsDTCTLlQ"
+                    },
+                    {
+                      name: "pinterest",
+                      url: "https://in.pinterest.com/atdmoney/"
+                    },
+                    {
+                      name: "linkedin",
+                      url:
+                        "https://www.linkedin.com/company/atdmoney2/?viewAsMember=true"
+                    },
+                    { name: "x", url: "https://x.com/MoneyAtd" }
+                  ].map(({ name, url }) =>
+                    <a
+                      key={name}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center bg-gray-300 p-2 rounded-full hover:bg-slate-700 transition-colors duration-300 group"
+                      style={{ width: "46px", height: "46px" }}
+                    >
+                      <Image
+                        src={`/${name}.svg`}
+                        alt={`${name} icon`}
+                        width={30}
+                        height={30}
+                        className="object-contain filter group-hover:brightness-125"
+                      />
+                    </a>
+                  )}
                 </div>
-              
+              </div>
             </div>
 
             {/* Quick contact */}
