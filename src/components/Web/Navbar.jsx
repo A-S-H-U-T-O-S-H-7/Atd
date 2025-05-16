@@ -164,17 +164,19 @@ function Navbar() {
 
                         <Link 
                           href="/faqs" 
-                          className="flex  gap-2 items-center text-gray-800 "
+                          className="flex  gap-2 items-center text-gray-800 hover:bg-teal-100 px-2 py-1 rounded-md  transition-colors duration-300"
                         >
-                        <div className="flex gap-3 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
-                        <img src="/faq.png" alt="faq" className="w-5 h-5" />
+                        <div className="flex gap-1 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
+                        <img src="/faq.png" alt="review" className="w-5 h-5" />
                         
-                          <span className="font-medium">Faqs</span>
+                          <span className="font-medium">FAQs</span>
                           
                         
                         <FaArrowRightLong className="ml-2" />
                         </div>
                         </Link>
+
+                        
                       </div>
                     </motion.div>
                   )}
