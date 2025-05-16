@@ -132,42 +132,49 @@ function Navbar() {
                       variants={dropdownVariants}
                       className="absolute top-12 right-0 bg-white rounded-lg shadow-lg p-4 min-w-48 border border-teal-100"
                     >
+                      
                       <div className="flex flex-col text-sm gap-1">
-                      <div className="flex gap-1 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
-                      <img src="/blog.png" alt="blog" className="w-5 h-5" />
-                        <Link 
+                      <Link 
                           href="/blogs" 
                           className="flex gap-2 items-center text-gray-800 hover:bg-teal-100  px-2 py-1 rounded-md transition-colors duration-300"
                         >
+                      <div className="flex gap-1 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
+                      <img src="/blog.png" alt="blog" className="w-5 h-5" />
+                        
                           <span className="font-medium">Blogs</span>
                           
-                        </Link>
+                        
                         <FaArrowRightLong className="ml-2" />
                         </div>
+                        </Link>
 
-                        <div className="flex gap-1 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
-                        <img src="/review.png" alt="review" className="w-5 h-5" />
                         <Link 
                           href="/reviews" 
                           className="flex  gap-2 items-center text-gray-800 hover:bg-teal-100 px-2 py-1 rounded-md  transition-colors duration-300"
                         >
+                        <div className="flex gap-1 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
+                        <img src="/review.png" alt="review" className="w-5 h-5" />
+                        
                           <span className="font-medium">Reviews</span>
                           
-                        </Link>
+                        
                         <FaArrowRightLong className="ml-2" />
                         </div>
+                        </Link>
 
-                        <div className="flex gap-3 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
-                        <img src="/faq.png" alt="faq" className="w-5 h-5" />
                         <Link 
                           href="/faqs" 
                           className="flex  gap-2 items-center text-gray-800 "
                         >
+                        <div className="flex gap-3 items-center transition-colors duration-300 px-2 py-2 rounded-md  hover:bg-teal-100 ">
+                        <img src="/faq.png" alt="faq" className="w-5 h-5" />
+                        
                           <span className="font-medium">Faqs</span>
                           
-                        </Link>
+                        
                         <FaArrowRightLong className="ml-2" />
                         </div>
+                        </Link>
                       </div>
                     </motion.div>
                   )}
