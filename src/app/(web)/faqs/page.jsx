@@ -1,10 +1,10 @@
-import RefundPolicy from '@/components/Web/RefundPolicy'
+import FAQs from '@/components/Web/Faqs'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      <RefundPolicy/>
+      <FAQs/>
     </div>
   )
 }

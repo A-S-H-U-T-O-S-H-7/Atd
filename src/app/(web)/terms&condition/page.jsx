@@ -1,10 +1,10 @@
-import RefundPolicy from '@/components/Web/RefundPolicy'
+import TermsOfUse from '@/components/Web/Terms&Condition'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      <RefundPolicy/>
+      <TermsOfUse/>
     </div>
   )
 }

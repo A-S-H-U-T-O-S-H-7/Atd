@@ -105,7 +105,7 @@ function Blog() {
 
       {/* Explore More Button */}
       <div className="flex justify-center mt-8 md:mt-12">
-        <Link href="/blog" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-6 py-3 rounded-lg transition duration-300">
+        <Link href="/blogs" className="bg-teal-600 hover:bg-teal-700 text-white font-medium px-6 py-3 rounded-lg transition duration-300">
           Explore More 
         </Link>
       </div>

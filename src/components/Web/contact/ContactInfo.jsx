@@ -6,8 +6,7 @@ import {
   FaFacebook,
   FaInstagram,
   FaLinkedin,
-  FaWhatsapp,
-  FaInfoCircle,
+   FaInfoCircle,
   FaPinterest
   } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -29,43 +28,38 @@ export default function ContactInfo() {
       Icon: FaFacebook,
       color: "text-blue-600 hover:text-blue-700",
       bgColor: "hover:bg-blue-50",
-      link: "#facebook"
+      link: "https://www.facebook.com/profile.php?id=100088690347026"
     },
     {
       Icon: FaXTwitter,
       color: "text-gray-700 hover:text-gray-900",
       bgColor: "hover:bg-gray-100",
-      link: "#twitter"
+      link: "https://x.com/MoneyAtd"
     },
     {
       Icon: FaInstagram,
       color: "text-pink-600 hover:text-pink-700",
       bgColor: "hover:bg-pink-50",
-      link: "#instagram"
+      link: "https://www.instagram.com/atdmoneyindia/"
     },
     {
       Icon: FaLinkedin,
       color: "text-blue-700 hover:text-blue-800",
       bgColor: "hover:bg-blue-50",
-      link: "#linkedin"
+      link: "https://www.linkedin.com/company/atdmoney2/?viewAsMember=true"
     },
-    {
-      Icon: FaWhatsapp,
-      color: "text-green-600 hover:text-green-700",
-      bgColor: "hover:bg-green-50",
-      link: "#whatsapp"
-    },
+   
     {
         Icon: IoLogoYoutube,
         color: "text-red-600 hover:text-red-700",
         bgColor: "hover:bg-red-50",
-        link: "#youtube"
+        link: "https://www.youtube.com/channel/UCclz8GoGt6S4vCHsDTCTLlQ"
       },
       {
         Icon: FaPinterest,
         color: "text-red-600 hover:text-red-700",
         bgColor: "hover:bg-red-50",
-        link: "#pinterest"
+        link: "https://in.pinterest.com/atdmoney/"
       }
   ];
 
@@ -176,7 +170,7 @@ export default function ContactInfo() {
             {socialLinks.map(({ Icon, color, bgColor, link }, index) =>
               <a
                 key={index}
-                href={link}
+                href={link} target="_blank"
                 className={`p-3 rounded-full ${color} ${bgColor} border border-gray-100 transition transform hover:scale-110 hover:shadow-sm`}
               >
                 <Icon />

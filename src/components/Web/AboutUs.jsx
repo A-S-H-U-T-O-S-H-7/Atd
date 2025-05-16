@@ -15,9 +15,9 @@ import {
 
 const AboutUs = () => {
   return (
-    <div className="bg-white text-gray-800">
+    <div className="bg-white pt-5 text-gray-800">
       {/* Banner Image Section */}
-      <div className="relative w-full h-64 bg-gradient-to-r from-teal-500 to-teal-300 mb-12">
+      <div className="relative mx-4 rounded-xl md:mx-10 h-72 bg-gradient-to-r from-teal-500 to-teal-300  mb-12">
         <img
           src="/heroimage7.png"
           alt="ATD Money Banner"
@@ -77,7 +77,8 @@ const AboutUs = () => {
               </li>
               <li>
                 <strong>RBI License:</strong> B-12-00315 (<a
-                  href="#"
+                target="_blank"
+                  href="https://sachet.rbi.org.in/"
                   className="text-blue-500 underline"
                 >
                   Verify

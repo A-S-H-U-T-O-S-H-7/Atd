@@ -148,7 +148,7 @@ function Footer() {
                       },
                       {
                         name: "linkedin",
-                        url: "https://linkedin.com/company/MoneyAtd"
+                        url: "https://www.linkedin.com/company/atdmoney2/?viewAsMember=true"
                       },
                       { name: "x", url: "https://x.com/MoneyAtd" }
                     ].map(({ name, url }) =>
@@ -239,16 +239,16 @@ function Footer() {
               Refund Policy
             </Link>
             <Link
-              href="/termsofuse"
+              href="/terms&condition"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Terms Of Use
             </Link>
             <Link
-              href="/declaration"
+              href="/disclaimer"
               className="hover:text-teal-300 transition-colors duration-300"
             >
-              Declaration
+              Disclaimer
             </Link>
           </div>
 

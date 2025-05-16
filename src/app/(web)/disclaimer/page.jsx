@@ -1,9 +1,9 @@
-import AboutUs from "@/components/Web/AboutUs"
+import Disclaimer from '@/components/Web/Disclaimer'
 
 function page() {
   return (
     <div>
-      <AboutUs/>
+      <Disclaimer/>
     </div>
   )
 }

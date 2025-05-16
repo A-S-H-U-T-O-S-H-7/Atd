@@ -4,9 +4,7 @@ import React from 'react'
 function page() {
   return (
     <div>
-               As informed in the message only design is finished !! so you dont need to explore these things
-
-      {/* <PrivacyPolicy/> */}
+      <PrivacyPolicy/>
     </div>
   )
 }
