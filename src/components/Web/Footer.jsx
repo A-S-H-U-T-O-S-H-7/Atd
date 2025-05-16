@@ -125,7 +125,7 @@ function Footer() {
                 </Link>
               </div>
 
-              <div className="mt-6">
+              
                 
                 <div className="mt-6">
                   <p className="text-sm font-medium mb-3 text-gray-300">
@@ -170,7 +170,7 @@ function Footer() {
                     )}
                   </div>
                 </div>
-              </div>
+              
             </div>
 
             {/* Quick contact */}
