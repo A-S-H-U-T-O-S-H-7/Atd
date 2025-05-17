@@ -18,7 +18,7 @@ function Footer() {
                 <Link href={"/"}>
                   <div className=" p-2 rounded-lg">
                     <Image
-                      src="/logo.png"
+                      src="/atdlogo.png"
                       alt="ATD Money Logo"
                       width={240}
                       height={240}

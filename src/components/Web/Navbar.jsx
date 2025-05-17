@@ -88,7 +88,7 @@ function Navbar() {
   <Link href="/">
           <div className="flex items-center">
             <Image
-              src="/logo.png"
+              src="/atdlogo.png"
               alt="logo"
               width={280}
               height={280}
@@ -207,7 +207,7 @@ function Navbar() {
                     >
                       <div className="flex flex-col items-center gap-3">
                         <Image
-                          src="/logo.png"
+                          src="/atdlogo.png"
                           alt="app logo"
                           width={380}
                           height={380}
@@ -293,7 +293,7 @@ function Navbar() {
               <div className="flex flex-col p-6 h-full">
                 <div className="flex justify-between items-center mb-8 mt-2">
                   <Image
-                    src="/logo.png"
+                    src="/atdlogo.png"
                     alt="logo"
                     width={80}
                     height={80}
