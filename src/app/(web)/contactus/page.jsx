@@ -30,10 +30,10 @@ const ContactUs = () => {
     <div className=" bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center px-4 md:px-10 py-8 md:py-9">
          <div className="mb-6 relative z-10">
         <Image 
-          src="/contactusbanner.jpg" 
+          src="/contactus.jpg" 
           alt="Contact Us Banner" 
-          width={500} 
-          height={200} 
+          width={5500} 
+          height={5200} 
           className="w-500 h-80 rounded-lg"
           priority
         />

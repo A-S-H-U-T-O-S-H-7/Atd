@@ -162,7 +162,7 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <div className="  py-10 px-4 md:px-10">
         <header className="mb-12 text-center">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center">
@@ -195,26 +195,15 @@ export default function PrivacyPolicy() {
           <div className="divide-y divide-gray-200">
             {sections.map((section, index) =>
               <div key={index} className="accordion-item">
-                <button
-                  onClick={() => toggleSection(index)}
-                  className="w-full px-4 py-5 md:px-8 flex justify-between items-center hover:bg-gray-50 transition-colors"
-                >
-                  <h3 className="text-lg text-left sm:text-xl font-medium text-gray-900">
+                
+                  <h3 className="text-lg ml-5 mt-5 text-left sm:text-xl font-medium text-gray-900">
                     {section.title}
                   </h3>
-                  <FaAngleDown
-                    className={`w-6 h-6 text-teal-600 transform transition-transform duration-200 ${activeSection ===
-                    index
-                      ? "rotate-180"
-                      : ""}`}
-                  />
-                </button>
-
-                {activeSection === index &&
+                  
                   <div
                     className="px-6 py-5 sm:px-8 bg-gray-50 text-gray-700 prose prose-indigo max-w-none"
                     dangerouslySetInnerHTML={{ __html: section.content }}
-                  />}
+                  />
               </div>
             )}
           </div>
