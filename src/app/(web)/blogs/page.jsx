@@ -112,12 +112,6 @@ export default function BlogPage() {
         Blogs
       </h1>
 
-      {/* <div className="mx-4 md:mx-10 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">ATD Money Blog</h1>
-          <p className="text-xl text-white/90 max-w-3xl mx-auto">Insights, tips, and guidance to help you make smarter financial decisions</p>
-        </div>
-      </div> */}
 
       <div className="px-4 lg:px-10 py-16">
         {error &&
