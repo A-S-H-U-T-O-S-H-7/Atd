@@ -27,7 +27,7 @@ function Navbar() {
 
 
   const navigationLinks = [
-    { name: "Loans", href: "/loans" },
+    { name: "Loans", href: "/signup" },
     { name: "About us", href: "/aboutus" },
     { name: "Contact us", href: "/contactus" },
   ];
