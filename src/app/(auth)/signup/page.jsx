@@ -1,10 +1,16 @@
-import Signup from '@/components/Web/login/Signup'
-import React from 'react'
+import LoanDetails from "@/components/Web/steps/LoanDetails"
+import UserRegistration from "@/components/Web/UserRegistration"
+import { UserContextProvider } from "@/lib/UserRegistrationContext"
 
 function page() {
   return (
     <div>
-      <Signup/>
+      <UserContextProvider>
+        
+       
+            <UserRegistration/>
+            
+      </UserContextProvider>
     </div>
   )
 }

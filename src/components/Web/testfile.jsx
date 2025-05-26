@@ -9,4 +9,30 @@ const extractYoutubeId = (url) => {
   src={`https://www.youtube.com/embed/${currentVideo.youtubeId || extractYoutubeId(currentVideo.videoUrl)}`}
 
 
+  // try {
+          //     setLoanData({ ...values });
+          //     setLoader(true);
+          //     setErrorMessage("");
+              
+          //     const response = await fetch(`${ENV.API_URL}/finance-loan-details`, {
+          //         method: "POST",
+          //         headers: {
+          //             "Content-Type": "application/json",
+          //             "Accept": "application/json"
+          //         },
+          //         body: JSON.stringify(values),
+          //     });
   
+          //     const result = await response.json();
+  
+          //     if (response.ok) {
+          //         setLoader(false);
+          //         setStep(step + 1);
+          //     } else {
+          //         setErrorMessage(result?.message);
+          //         setLoader(false);
+          //     }
+          // } catch (error) {
+          //     setErrorMessage("Error submitting data: " + error.message);
+          //     setLoader(false);
+          // }

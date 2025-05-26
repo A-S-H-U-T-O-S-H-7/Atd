@@ -30,6 +30,7 @@ function Navbar() {
     { name: "Loans", href: "/signup" },
     { name: "About us", href: "/aboutus" },
     { name: "Contact us", href: "/contactus" },
+    
   ];
 
   const dropdownVariants = {
