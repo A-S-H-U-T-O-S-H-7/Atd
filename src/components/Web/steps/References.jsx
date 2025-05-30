@@ -5,8 +5,11 @@ import { BeatLoader } from 'react-spinners';
 import { ReferencesSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
 import { Users, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 function References() {
+    const router = useRouter();
+
     const {
         referenceData,
         setReferenceData,
@@ -15,8 +18,30 @@ function References() {
         loader,
         setLoader,
         errorMessage,
-        setErrorMessage
+        setErrorMessage,
+        phoneData,
     } = useUser();
+
+    // Transform form data to match API format
+    const transformToApiFormat = (formData) => {
+        const apiData = {
+            step: 11,
+            provider: 1,
+            userid: phoneData.userid,
+        };
+
+        // Transform references array to individual fields
+        if (Array.isArray(formData.references)) {
+            formData.references.forEach((reference, index) => {
+                const refNumber = index + 1;
+                apiData[`refname_${refNumber}`] = reference.name || "";
+                apiData[`refphone_${refNumber}`] = parseInt(reference.phone) || "";
+                apiData[`refemail_${refNumber}`] = reference.email || "";
+            });
+        }
+
+        return apiData;
+    };
 
     const handleReferences = async (values) => {
         try {
@@ -24,33 +49,37 @@ function References() {
             setLoader(true);
             setErrorMessage("");
             
-            // Uncomment when API is ready
-            // const response = await fetch(`${ENV.API_URL}/finance-references`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //         "Accept": "application/json"
-            //     },
-            //     body: JSON.stringify(values),
-            // });
-
-            // const result = await response.json();
-
-            // if (response.ok) {
-            //     setLoader(false);
-            //     setStep(step + 1);
-            // } else {
-            //     setErrorMessage(typeof result?.message === 'string' ? result.message : "An error occurred");
-            //     setLoader(false);
-            // }
+            // Transform data to API format
+            const apiPayload = transformToApiFormat(values);
             
-            // Temporary - remove when API is implemented
-            setTimeout(() => {
+            console.log('API Payload:', apiPayload);
+    
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(apiPayload),
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
                 setLoader(false);
-                setStep(step + 1);
-            }, 1000);
+                router.push('/userProfile');
+            } else {
+                setErrorMessage(
+                    result?.message || 
+                    result?.error || 
+                    `API Error: ${response.status} ${response.statusText}`
+                );
+                setLoader(false);
+            }
+            
         } catch (error) {
-            setErrorMessage("Error submitting data: " + (error?.message || "Unknown error"));
+            console.error('API Error:', error);
+            setErrorMessage("Network error: " + (error?.message || "Unable to connect to server"));
             setLoader(false);
         }
     }
@@ -136,6 +165,15 @@ function References() {
                                 {errorMessage && (
                                     <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-4">
                                         <p className='text-red-600 text-center font-medium'>{errorMessage}</p>
+                                    </div>
+                                )}
+
+                                {/* Debug info - remove in production */}
+                                {process.env.NODE_ENV === 'development' && (
+                                    <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-xl p-4">
+                                        <p className="text-blue-700 text-sm">
+                                            Debug: User ID: {phoneData.userid || 'Not set'}, Provider: 1
+                                        </p>
                                     </div>
                                 )}
 
@@ -268,11 +306,6 @@ function References() {
                                             </div>
                                         )}
                                     </FieldArray>
-
-                                    {/* Display validation errors for the entire references array */}
-                                        {/* <ErrorMessage name="references">
-                                            {msg => <div className="text-red-500 text-sm text-center mt-4">{String(msg)}</div>}
-                                        </ErrorMessage> */}
                                 </div>
 
                                 {/* Important Note */}

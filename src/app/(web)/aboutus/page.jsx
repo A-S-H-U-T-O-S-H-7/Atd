@@ -14,7 +14,7 @@ function page() {
     <div>
       <AboutUs/>
       <UserContextProvider>
-      <References/>
+      <PersonalDetails/>
       </UserContextProvider>
 
     </div>

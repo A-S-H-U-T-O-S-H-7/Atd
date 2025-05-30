@@ -164,7 +164,7 @@ function OtpVerificationForm({
                                 )}
                             </div>
 
-                            {/* Submit Button */}
+                            {/* Submit  Button */}
                             <button
                                 disabled={loader || !isValid || values.phoneOtp.length !== 6} 
                                 type='submit' 

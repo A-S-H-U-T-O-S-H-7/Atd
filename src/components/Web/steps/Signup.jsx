@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@/lib/UserRegistrationContext';
 import MobileInputForm from './MobileInputForm';
 import OtpVerificationForm from './MobileOtpVerification';
+import References from './References';
+import ServiceDetails from './ServiceDetails';
+import DocumentUpload from './DocumnetUpload';
+import PersonalDetails from './PersonalDetails';
+
 
 function MobileVerification() {
     const {
@@ -64,78 +69,80 @@ function MobileVerification() {
     }, [countdown, otpSent]);
 
     const handleSendOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/send-mobile-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({ mobile: values.phoneNumber }),
-        //     });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/send`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ mobile: values.phoneNumber, provider: 1 }),
+            });
 
-        //     const result = await response.json();
+            const result = await response.json();
+            console.log(result)
 
-        //     if (response.ok) {
-        //         setPhoneData({ ...phoneData, phoneNumber: values.phoneNumber });
-        //         setOtpSent(true);
-        //         setCountdown(60); // 60 seconds countdown
-        //         setCanResend(false);
-        //         setLoader(false);
-        //     } else {
-        //         setErrorMessage(result?.message || "Failed to send OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error sending OTP: " + error.message);
-        //     setLoader(false);
-        // }
-        setPhoneData({ ...phoneData, phoneNumber: values.phoneNumber });
+            if (response.ok) {
+                setPhoneData({ ...phoneData, phoneNumber: values.phoneNumber });
                 setOtpSent(true);
-                setCountdown(60); // 60 seconds countdown
+                setCountdown(60); 
                 setCanResend(false);
                 setLoader(false);
+            } else {
+                setErrorMessage(result?.message || "Failed to send OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error sending OTP: " + error.message);
+            setLoader(false);
+        }
+       
     };
 
     const handleVerifyOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/verify-mobile-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({
-        //             mobile: phoneData.phoneNumber,
-        //             otp: values.phoneOtp
-        //         }),
-        //     });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    mobile: phoneData.phoneNumber,
+                    otp: values.phoneOtp,
+                    provider:1, 
 
-        //     const result = await response.json();
+                }),
+            });
 
-        //     if (response.ok) {
-        //         setPhoneData({ 
-        //             ...phoneData, 
-        //             isPhoneVerified: true, 
-        //             phoneOtp: values.phoneOtp 
-        //         });
-        //         setLoader(false);
-        //         setStep(step + 1);
-        //     } else {
-        //         setErrorMessage(result?.message || "Invalid OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error verifying OTP: " + error.message);
-        //     setLoader(false);
-        // }
+            const result = await response.json();
+            console.log(result)
+
+            if (response.ok) {
+                setPhoneData({ 
+                    ...phoneData, 
+                    isPhoneVerified: true, 
+                    phoneOtp: values.phoneOtp ,
+                    userid: result.userid
+                });
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                setErrorMessage(result?.message || "Invalid OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error verifying OTP: " + error.message);
+            setLoader(false);
+        }
         setStep(step + 1);
+        
     };
 
     const handleResendOTP = async () => {
@@ -145,13 +152,13 @@ function MobileVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${ENV.API_URL}/resend-mobile-otp`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/resend`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ mobile: phoneData.phoneNumber }),
+                body: JSON.stringify({ mobile: phoneData.phoneNumber, provider: 1 }),
             });
 
             const result = await response.json();
@@ -176,6 +183,7 @@ function MobileVerification() {
     };
 
     return (
+        
         <div className="bg-gradient-to-r from-[#cef8f8] to-[#e1fefe] px-20 min-h-screen flex items-center justify-center">
             <div className=" py-8 flex flex-col lg:flex-row gap-15 items-center justify-between">
                 {/* Left Section: Text and Image */}
@@ -233,7 +241,9 @@ function MobileVerification() {
                     />
                 )}
             </div>
+           
         </div>
+        
     );
 }
 

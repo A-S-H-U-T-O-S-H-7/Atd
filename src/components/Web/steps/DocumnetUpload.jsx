@@ -1,11 +1,10 @@
 "use client";
-import React, { useState } from 'react'
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React, { useState, useEffect } from 'react'
+import { Formik, Form, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { DocumentUploadSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
-import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X } from 'lucide-react';
-import References from './References';
+import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle } from 'lucide-react';
 
 function DocumentUpload() {
     const {
@@ -13,16 +12,191 @@ function DocumentUpload() {
         setDocumentData,
         step,
         setStep,
+        phoneData,
         loader,
         setLoader,
         errorMessage,
         setErrorMessage
     } = useUser();
 
-    const [uploadingFiles, setUploadingFiles] = useState({});
-    const [uploadedFiles, setUploadedFiles] = useState({});
+    const [uploadStatus, setUploadStatus] = useState({});
+    const [uploadingFiles, setUploadingFiles] = useState(new Set());
+    // NEW: Track uploaded files with their hash/name and field mapping
+    const [uploadedFiles, setUploadedFiles] = useState(new Map());
 
-    // File size formatter
+    // Document configuration mapping
+    const documentConfig = {
+        photo: { label: 'Passport Photo', accept: 'image/*', maxSize: 1, apiValue: 'selfie' },
+        aadharFront: { label: 'Aadhar Card (Front)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'idproof' },
+        aadharBack: { label: 'Aadhar Card (Back)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'addressproof' },
+        panCard: { label: 'PAN Card', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'pancard' },
+        salarySlip1: { label: 'Latest Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'firstsalaryslip' },
+        salarySlip2: { label: '2nd Month Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'secondsalaryslip' },
+        salarySlip3: { label: '3rd Month Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'thirdsalaryslip' },
+        bankStatement: { label: '6 Month Bank Statement', accept: '.pdf', maxSize: 5, apiValue: 'statement' }
+    };
+
+    // NEW: Generate file hash for duplicate detection
+    const generateFileHash = async (file) => {
+        // Simple approach: use file name, size, and lastModified as identifier
+        const identifier = `${file.name}_${file.size}_${file.lastModified}`;
+        return identifier;
+    };
+
+    // NEW: Check if file is already uploaded in another field
+    const checkForDuplicateFile = async (file, currentFieldName) => {
+        const fileHash = await generateFileHash(file);
+        
+        // Check if this file hash exists in uploaded files
+        if (uploadedFiles.has(fileHash)) {
+            const existingField = uploadedFiles.get(fileHash);
+            if (existingField !== currentFieldName) {
+                return {
+                    isDuplicate: true,
+                    existingField: existingField,
+                    existingFieldLabel: documentConfig[existingField]?.label
+                };
+            }
+        }
+        
+        return { isDuplicate: false };
+    };
+
+    // NEW: Add file to uploaded files tracking
+    const addToUploadedFiles = async (file, fieldName) => {
+        const fileHash = await generateFileHash(file);
+        setUploadedFiles(prev => new Map(prev.set(fileHash, fieldName)));
+    };
+
+    // NEW: Remove file from uploaded files tracking
+    const removeFromUploadedFiles = async (file) => {
+        if (file) {
+            const fileHash = await generateFileHash(file);
+            setUploadedFiles(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(fileHash);
+                return newMap;
+            });
+        }
+    };
+
+    // Generate unique filename
+    const generateUniqueFilename = (originalName, fieldName) => {
+        const timestamp = Date.now();
+        const extension = originalName.split('.').pop();
+        return `${fieldName}_${phoneData?.userid || 'user'}_${timestamp}.${extension}`;
+    };
+
+    // Upload file to API
+    const uploadFileToAPI = async (file, fieldName) => {
+        const config = documentConfig[fieldName];
+        const uniqueFilename = generateUniqueFilename(file.name, fieldName);
+        
+        setUploadingFiles(prev => new Set([...prev, fieldName]));
+        
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    step: 10,
+                    provider: 1,
+                    userid: phoneData?.userid,
+                    upload: config.apiValue,
+                    filename: uniqueFilename
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setUploadStatus(prev => ({
+                    ...prev,
+                    [fieldName]: { status: 'success', filename: uniqueFilename }
+                }));
+                // NEW: Add to uploaded files tracking
+                await addToUploadedFiles(file, fieldName);
+                return { success: true, filename: uniqueFilename };
+            } else {
+                setUploadStatus(prev => ({
+                    ...prev,
+                    [fieldName]: { status: 'error', error: result.message || 'Upload failed' }
+                }));
+                return { success: false, error: result.message || 'Upload failed' };
+            }
+        } catch (error) {
+            setUploadStatus(prev => ({
+                ...prev,
+                [fieldName]: { status: 'error', error: error.message }
+            }));
+            return { success: false, error: error.message };
+        } finally {
+            setUploadingFiles(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(fieldName);
+                return newSet;
+            });
+        }
+    };
+
+    // MODIFIED: Handle file selection with duplicate check
+    const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
+        if (!file) return;
+
+        const config = documentConfig[fieldName];
+        
+        // NEW: Check for duplicate file
+        const duplicateCheck = await checkForDuplicateFile(file, fieldName);
+        if (duplicateCheck.isDuplicate) {
+            setErrorMessage(
+                `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file for ${config.label}.`
+            );
+            setTimeout(() => setErrorMessage(''), 5000);
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = config.accept === 'image/*' 
+            ? ['image/jpeg', 'image/jpg', 'image/png']
+            : config.accept === '.pdf'
+            ? ['application/pdf']
+            : ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+
+        if (!allowedTypes.includes(file.type)) {
+            setErrorMessage(`Invalid file type for ${config.label}. Please select a valid file.`);
+            setTimeout(() => setErrorMessage(''), 3000);
+            return;
+        }
+
+        // Validate file size
+        const maxSizeBytes = config.maxSize * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            setErrorMessage(`File size exceeds ${config.maxSize}MB for ${config.label}`);
+            setTimeout(() => setErrorMessage(''), 3000);
+            return;
+        }
+
+        // NEW: If replacing a file, remove the old one from tracking
+        if (currentFile) {
+            await removeFromUploadedFiles(currentFile);
+        }
+
+        // Set file in form and upload
+        setFieldValue(fieldName, file);
+        const uploadResult = await uploadFileToAPI(file, fieldName);
+        
+        if (!uploadResult.success) {
+            setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
+            setTimeout(() => setErrorMessage(''), 5000);
+            // NEW: If upload failed, don't keep it in tracking
+            await removeFromUploadedFiles(file);
+        }
+    };
+
+    // Format file size
     const formatFileSize = (bytes) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -31,108 +205,18 @@ function DocumentUpload() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    // Upload file to database immediately
-    const uploadFileToDb = async (file, fieldName) => {
-        setUploadingFiles(prev => ({ ...prev, [fieldName]: true }));
-        
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('fieldName', fieldName);
-            
-            const response = await fetch(`${ENV.API_URL}/upload-document`, {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json"
-                },
-                body: formData,
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                setUploadedFiles(prev => ({ 
-                    ...prev, 
-                    [fieldName]: { 
-                        file, 
-                        uploadedUrl: result.url || result.filePath,
-                        status: 'success' 
-                    } 
-                }));
-                return true;
-            } else {
-                setUploadedFiles(prev => ({ 
-                    ...prev, 
-                    [fieldName]: { file, status: 'error', error: result.message } 
-                }));
-                return false;
-            }
-        } catch (error) {
-            setUploadedFiles(prev => ({ 
-                ...prev, 
-                [fieldName]: { file, status: 'error', error: error.message } 
-            }));
-            return false;
-        } finally {
-            setUploadingFiles(prev => ({ ...prev, [fieldName]: false }));
-        }
-    };
-
-    // Handle file selection and immediate upload
-    const handleFileChange = async (file, fieldName, setFieldValue) => {
-        if (file) {
-            const validation = validateFile(file, getDocumentConfig(fieldName));
-            if (validation.isValid) {
-                setFieldValue(fieldName, file);
-                await uploadFileToDb(file, fieldName);
-            } else {
-                setErrorMessage(validation.error);
-                setTimeout(() => setErrorMessage(''), 3000);
-            }
-        }
-    };
-
-    // Validate file type and size
-    const validateFile = (file, config) => {
-        if (!file) return { isValid: false, error: "File is required" };
-        
-        if (!config.allowedTypes.includes(file.type)) {
-            return { isValid: false, error: `Invalid file type for ${config.label}` };
-        }
-        
-        if (file.size > config.maxSize) {
-            return { isValid: false, error: `File size exceeds ${formatFileSize(config.maxSize)} for ${config.label}` };
-        }
-        
-        return { isValid: true, error: null };
-    };
-
-    // Get document configuration by field name
-    const getDocumentConfig = (fieldName) => {
-        const configs = {
-            aadharFront: { allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'], maxSize: 2 * 1024 * 1024, label: 'Aadhar Front' },
-            aadharBack: { allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'], maxSize: 2 * 1024 * 1024, label: 'Aadhar Back' },
-            panCard: { allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'], maxSize: 2 * 1024 * 1024, label: 'PAN Card' },
-            photo: { allowedTypes: ['image/jpeg', 'image/jpg', 'image/png'], maxSize: 1 * 1024 * 1024, label: 'Photo' },
-            salarySlip1: { allowedTypes: ['application/pdf'], maxSize: 2 * 1024 * 1024, label: 'Salary Slip 1' },
-            salarySlip2: { allowedTypes: ['application/pdf'], maxSize: 2 * 1024 * 1024, label: 'Salary Slip 2' },
-            salarySlip3: { allowedTypes: ['application/pdf'], maxSize: 2 * 1024 * 1024, label: 'Salary Slip 3' },
-            bankStatement: { allowedTypes: ['application/pdf'], maxSize: 5 * 1024 * 1024, label: 'Bank Statement' }
-        };
-        return configs[fieldName] || {};
-    };
-
     // Handle form submission
-    const handleDocumentUpload = async (values) => {
+    const handleSubmit = async (values) => {
         setLoader(true);
         setErrorMessage("");
         
         // Check if all files are uploaded successfully
-        const allFilesUploaded = Object.keys(values).every(key => 
-            uploadedFiles[key] && uploadedFiles[key].status === 'success'
+        const requiredFields = Object.keys(documentConfig);
+        const allUploaded = requiredFields.every(field => 
+            values[field] && uploadStatus[field]?.status === 'success'
         );
         
-        if (!allFilesUploaded) {
+        if (!allUploaded) {
             setErrorMessage("Please ensure all documents are uploaded successfully before proceeding.");
             setLoader(false);
             return;
@@ -143,129 +227,125 @@ function DocumentUpload() {
         setStep(step + 1);
     };
 
-    // Document configuration
-    const documentSections = [
-        {
-            title: "Identity Documents",
-            fields: [
-                { name: 'aadharFront', label: 'Aadhar Card (Front)', accept: 'image/*,.pdf' },
-                { name: 'aadharBack', label: 'Aadhar Card (Back)', accept: 'image/*,.pdf' },
-                { name: 'panCard', label: 'PAN Card', accept: 'image/*,.pdf' },
-                { name: 'photo', label: 'Passport Photo', accept: 'image/*' }
-            ]
-        },
-        {
-            title: "Financial Documents",
-            fields: [
-                { name: 'salarySlip1', label: 'Latest Salary Slip', accept: '.pdf' },
-                { name: 'salarySlip2', label: '2nd Month Salary Slip', accept: '.pdf' },
-                { name: 'salarySlip3', label: '3rd Month Salary Slip', accept: '.pdf' },
-                { name: 'bankStatement', label: '6 Month Bank Statement', accept: '.pdf' }
-            ]
-        }
-    ];
-
-    // File upload field component
-    const FileUploadField = ({ field, setFieldValue, values }) => {
-        const currentFile = values[field.name];
-        const isUploading = uploadingFiles[field.name];
-        const uploadedFile = uploadedFiles[field.name];
-        const hasFile = currentFile || uploadedFile;
+    // File upload component
+    const FileUploadField = ({ fieldName, setFieldValue, values }) => {
+        const config = documentConfig[fieldName];
+        const file = values[fieldName];
+        const status = uploadStatus[fieldName];
+        const isUploading = uploadingFiles.has(fieldName);
 
         return (
-            <div className="space-y-2">
+            <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
-                    {field.label}<span className="text-red-500 ml-1">*</span>
+                    {config.label}
+                    <span className="text-red-500 ml-1">*</span>
                 </label>
                 
-                <div className="w-full">
-                    {!hasFile ? (
-                        <div className="relative">
+                {!file ? (
+                    <div className="relative">
+                        <input
+                            type="file"
+                            id={fieldName}
+                            accept={config.accept}
+                            onChange={(e) => {
+                                const selectedFile = e.target.files[0];
+                                if (selectedFile) {
+                                    handleFileChange(selectedFile, fieldName, setFieldValue);
+                                }
+                            }}
+                            className="hidden"
+                        />
+                        <label
+                            htmlFor={fieldName}
+                            className="flex flex-col items-center justify-center w-full h-32 bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-xl transition-all duration-200 hover:border-teal-400 hover:bg-teal-50/30 cursor-pointer group"
+                        >
+                            <Upload className="w-8 h-8 text-gray-400 group-hover:text-teal-500 mb-2" />
+                            <span className="text-sm text-gray-600 group-hover:text-teal-600 font-medium">
+                                Choose {config.label}
+                            </span>
+                            <span className="text-xs text-gray-500 mt-1">
+                                Max {config.maxSize}MB
+                            </span>
+                        </label>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                            {isUploading ? (
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                    <BeatLoader color="#14b8a6" size={4} />
+                                </div>
+                            ) : status?.status === 'success' ? (
+                                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                            ) : status?.status === 'error' ? (
+                                <X className="w-5 h-5 text-red-500 flex-shrink-0" />
+                            ) : (
+                                <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                            )}
+                            
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 truncate">
+                                    {file.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    {formatFileSize(file.size)}
+                                    {status?.status === 'success' && (
+                                        <span className="text-green-600 ml-2">✓ Uploaded</span>
+                                    )}
+                                    {status?.status === 'error' && (
+                                        <span className="text-red-600 ml-2">✗ Failed</span>
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
                             <input
                                 type="file"
-                                id={field.name}
-                                accept={field.accept}
+                                id={`${fieldName}_replace`}
+                                accept={config.accept}
                                 onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        handleFileChange(file, field.name, setFieldValue);
+                                    const selectedFile = e.target.files[0];
+                                    if (selectedFile) {
+                                        // MODIFIED: Pass current file for replacement tracking
+                                        handleFileChange(selectedFile, fieldName, setFieldValue, file);
                                     }
                                 }}
                                 className="hidden"
                             />
                             <label
-                                htmlFor={field.name}
-                                className="flex items-center justify-center w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-xl transition-all duration-200 hover:border-teal-400 hover:bg-teal-50/30 cursor-pointer group"
+                                htmlFor={`${fieldName}_replace`}
+                                className="px-3 py-1 text-xs bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 cursor-pointer transition-colors"
                             >
-                                <Upload className="w-5 h-5 text-gray-400 group-hover:text-teal-500 mr-2" />
-                                <span className="text-sm text-gray-600 group-hover:text-teal-600">
-                                    Choose file
-                                </span>
+                                Replace
                             </label>
                         </div>
-                    ) : (
-                        <div className="flex items-center justify-between w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
-                            <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                {isUploading ? (
-                                    <div className="w-5 h-5 flex items-center justify-center">
-                                        <BeatLoader color="#14b8a6" size={4} />
-                                    </div>
-                                ) : uploadedFile?.status === 'success' ? (
-                                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                ) : uploadedFile?.status === 'error' ? (
-                                    <X className="w-5 h-5 text-red-500 flex-shrink-0" />
-                                ) : (
-                                    <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                                )}
-                                
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-800 truncate">
-                                        {currentFile?.name || uploadedFile?.file?.name}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        {formatFileSize(currentFile?.size || uploadedFile?.file?.size || 0)}
-                                        {uploadedFile?.status === 'success' && (
-                                            <span className="text-green-600 ml-2">✓ Uploaded</span>
-                                        )}
-                                        {uploadedFile?.status === 'error' && (
-                                            <span className="text-red-600 ml-2">✗ Upload failed</span>
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="file"
-                                    id={`${field.name}_replace`}
-                                    accept={field.accept}
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            handleFileChange(file, field.name, setFieldValue);
-                                        }
-                                    }}
-                                    className="hidden"
-                                />
-                                <label
-                                    htmlFor={`${field.name}_replace`}
-                                    className="px-3 py-1 text-xs bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 cursor-pointer transition-colors"
-                                >
-                                    Replace
-                                </label>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
                 
-                <ErrorMessage name={field.name} component="p" className="text-red-500 text-sm" />
+                <ErrorMessage name={fieldName} component="p" className="text-red-500 text-sm" />
                 
-                {uploadedFile?.status === 'error' && (
-                    <p className="text-red-500 text-xs">{uploadedFile.error}</p>
+                {status?.status === 'error' && (
+                    <p className="text-red-500 text-xs flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {status.error}
+                    </p>
                 )}
             </div>
         );
     };
+
+    // Document sections
+    const documentSections = [
+        {
+            title: "Identity Documents",
+            fields: ['photo', 'aadharFront', 'aadharBack', 'panCard']
+        },
+        {
+            title: "Financial Documents",
+            fields: ['salarySlip1', 'salarySlip2', 'salarySlip3', 'bankStatement']
+        }
+    ];
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 p-4 md:p-6'>
@@ -286,22 +366,25 @@ function DocumentUpload() {
                 <Formik
                     initialValues={documentData}
                     validationSchema={DocumentUploadSchema}
-                    onSubmit={(values) => { handleDocumentUpload(values); }}
+                    onSubmit={handleSubmit}
                     enableReinitialize
                 >
-                    {({ isValid, touched, setFieldValue, values }) => (
-                        <Form className="space-y-8">
+                    {({ isValid, setFieldValue, values }) => (
+                        <Form className="space-y-6">
                             {errorMessage && (
-                                <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-4">
-                                    <p className='text-red-600 text-center font-medium'>{errorMessage}</p>
+                                <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl p-4">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                                        <p className='text-red-600 font-medium'>{errorMessage}</p>
+                                    </div>
                                 </div>
                             )}
                             
-                            {documentSections.map((section, sectionIndex) => (
-                                <div key={sectionIndex} className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6 md:p-8">
+                            {documentSections.map((section, index) => (
+                                <div key={index} className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl shadow-lg p-6">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                            {sectionIndex === 0 ? (
+                                            {index === 0 ? (
                                                 <FileText className="w-4 h-4 text-white" />
                                             ) : (
                                                 <Upload className="w-4 h-4 text-white" />
@@ -311,10 +394,10 @@ function DocumentUpload() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {section.fields.map((field) => (
+                                        {section.fields.map((fieldName) => (
                                             <FileUploadField
-                                                key={field.name}
-                                                field={field}
+                                                key={fieldName}
+                                                fieldName={fieldName}
                                                 setFieldValue={setFieldValue}
                                                 values={values}
                                             />
@@ -323,32 +406,33 @@ function DocumentUpload() {
                                 </div>
                             ))}
 
-                            {/* Important Guidelines */}
-                            <div className="bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-2xl p-6">
+                            {/* Guidelines */}
+                            <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-xl p-6">
                                 <div className="flex items-start gap-3">
-                                    <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <span className="text-amber-600 text-sm font-bold">!</span>
+                                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span className="text-blue-600 text-sm font-bold">i</span>
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-semibold text-amber-800 mb-2">
+                                        <h3 className="text-sm font-semibold text-blue-800 mb-2">
                                             Important Guidelines
                                         </h3>
-                                        <ul className="text-sm text-amber-700 space-y-1">
-                                            <li>• Documents should be clear and readable with good lighting</li>
+                                        <ul className="text-sm text-blue-700 space-y-1">
+                                            <li>• Documents should be clear and readable</li>
                                             <li>• Salary slips must be from the last 3 consecutive months</li>
-                                            <li>• Bank statement should cover the last 6 months period</li>
-                                            <li>• All documents will be uploaded automatically upon selection</li>
+                                            <li>• Bank statement should cover the last 6 months</li>
+                                            <li>• Files are uploaded automatically when selected</li>
+                                            <li>• Each document must be unique - same file cannot be used for multiple fields</li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Navigation Buttons */}
+                            {/* Navigation */}
                             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
                                 <button 
                                     type="button"
                                     onClick={() => setStep(step - 1)}
-                                    className="inline-flex cursor-pointer items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:bg-gray-200 hover:border-gray-300 transition-all duration-200 order-2 sm:order-1"
+                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors duration-200"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                     Previous
@@ -357,13 +441,13 @@ function DocumentUpload() {
                                 <button 
                                     disabled={loader || !isValid} 
                                     type='submit' 
-                                    className="inline-flex items-center cursor-pointer justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loader ? (
-                                        <BeatLoader color="#fff" size={8} />
+                                        <BeatLoader color="#fff" size={6} />
                                     ) : (
                                         <>
-                                           Next
+                                            Next
                                             <ChevronRight className="w-4 h-4" />
                                         </>
                                     )}
@@ -373,9 +457,8 @@ function DocumentUpload() {
                     )}
                 </Formik>
             </div>
-            <References/>
         </div>
-    )
+    );
 }
 
 export default DocumentUpload;

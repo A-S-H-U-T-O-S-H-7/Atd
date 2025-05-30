@@ -8,6 +8,7 @@ function AadharVerification() {
     const {
         aadharData,
         setAadharData,
+        phoneData,
         step,
         setStep,
         loader,
@@ -32,78 +33,98 @@ function AadharVerification() {
     }, [countdown, otpSent]);
 
     const handleSendOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/send-aadhar-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({ aadharNumber: values.aadharNumber }),
-        //     });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ aadharno: values.aadharNumber,
+                    provider:1,
+                    userid:phoneData.userid,
+                    step:3}),
+            });
 
-        //     const result = await response.json();
+            const result = await response.json();
 
-        //     if (response.ok) {
-        //         setAadharData({ ...aadharData, aadharNumber: values.aadharNumber });
-        //         setOtpSent(true);
-        //         setCountdown(60); 
-        //         setCanResend(false);
-        //         setLoader(false);
-        //     } else {
-        //         setErrorMessage(result?.message || "Failed to send OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error sending OTP: " + error.message);
-        //     setLoader(false);
-        // }
-        setAadharData({ ...aadharData, aadharNumber: values.aadharNumber });
+            if (response.ok) {
+                setAadharData({ ...aadharData, aadharNumber: values.aadharNumber });
                 setOtpSent(true);
                 setCountdown(60); 
                 setCanResend(false);
                 setLoader(false);
+            } else {
+                setErrorMessage(result?.message || "Failed to send OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error sending OTP: " + error.message);
+            setLoader(false);
+        }
+    
+        
     };
 
     const handleVerifyOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/verify-aadhar-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({
-        //             aadharNumber: aadharData.aadharNumber,
-        //             otp: values.aadharOtp
-        //         }),
-        //     });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                    method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                   provider:1,
+                   userid:phoneData.userid,
+                   step:4,
+                   aadharno_otp: values.aadharOtp
+                }),
+            });
 
-        //     const result = await response.json();
+            const result = await response.json();
 
-        //     if (response.ok) {
-        //         setAadharData({ 
-        //             ...aadharData, 
-        //             isAadharVerified: true, 
-        //             aadharOtp: values.aadharOtp 
-        //         });
-        //         setLoader(false);
-        //         setStep(step + 1);
-        //     } else {
-        //         setErrorMessage(result?.message || "Invalid OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error verifying OTP: " + error.message);
-        //     setLoader(false);
-        // }
-        setStep(step + 1);
+            if (response.ok) {
+                setAadharData({ 
+                    ...aadharData, 
+                    isAadharVerified: true, 
+                    aadharOtp: values.aadharOtp,
+
+                    fullName: result.data.full_name,
+                    dob: result.data.dob,
+                    gender: result.data.gender,
+                    careOf: result.data.care_of,
+                     address: {
+                        country: result.data.address.country,
+                        state: result.data.address.state,
+                        dist: result.data.address.dist,
+                        subdist: result.data.address.subdist,
+                        vtc: result.data.address.vtc,
+                        po: result.data.address.po,
+                        loc: result.data.address.loc,
+                        street: result.data.address.street,
+                        house: result.data.address.house,
+                        landmark: result.data.address.landmark
+                    },
+                    zip: result.data.zip
+                });
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                setErrorMessage(result?.message || "Invalid OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error verifying OTP: " + error.message);
+            setLoader(false);
+        }        
+        
     };
 
     const handleResendOTP = async () => {
@@ -113,13 +134,17 @@ function AadharVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${ENV.API_URL}/resend-aadhar-otp`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ aadharNumber: aadharData.aadharNumber }),
+                body: JSON.stringify({ aadharNumber: aadharData.aadharNumber,
+                    provider:1,
+                    userid:phoneData.userid,
+                    step:3
+                 }),
             });
 
             const result = await response.json();

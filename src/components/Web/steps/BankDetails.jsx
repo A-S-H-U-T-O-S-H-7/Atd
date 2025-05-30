@@ -12,6 +12,7 @@ function BankDetails() {
         setBankData,
         step,
         setStep,
+        phoneData,
         loader,
         setLoader,
         errorMessage,
@@ -57,36 +58,46 @@ function BankDetails() {
         }
     };
 
-    // Handle form submission
     const handleBankDetails = async (values) => {
-        // try {
-        //     setBankData({ ...values });
-        //     setLoader(true);
-        //     setErrorMessage("");
+        console.log("Form values received:", values);
+    console.log("Account Type value:", values.accountType);
+        try {
+            setBankData({ ...values });
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/finance-bank-details`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify(values),
-        //     });
-
-        //     const result = await response.json();
-
-        //     if (response.ok) {
-        //         setLoader(false);
-        //         setStep(step + 1);
-        //     } else {
-        //         setErrorMessage(result?.message || "Something went wrong.");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error submitting data: " + error.message);
-        //     setLoader(false);
-        // }
-        setStep(step + 1);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    step: 9,
+                    provider: 1,
+                    userid: phoneData?.userid, 
+                    ifsccode: values.ifscCode,
+                    bankname: values.bankName,
+                    bankbranch: values.bankBranch,
+                    accountno: parseInt(values.accountNumber), 
+                    accounttype: values.accountType,
+                }),
+            });
+    
+            const result = await response.json();
+            console.log(result)
+    
+            if (response.ok) {
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                setErrorMessage(result?.message || "Something went wrong.");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error submitting data: " + error.message);
+            setLoader(false);
+        }
     };
 
     // Format account number display
@@ -201,8 +212,8 @@ function BankDetails() {
                                             className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
                                         >
                                             <option value="" disabled>Select Account Type</option>
-                                            <option value="Savings">Savings Account</option>
-                                            <option value="Current">Current Account</option>
+                                            <option value="SAVING">Savings Account</option>
+                                            <option value="CURRENT">Current Account</option>
                                             
                                         </Field>
                                         <ErrorMessage name="accountType" component="p" className="text-red-500 text-sm" />
@@ -223,7 +234,7 @@ function BankDetails() {
                                     {/* Account Number */}
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            Account Number<span className="text-red-500 ml-1">*</span>
+                                            Account Number<span className="text-red-600 ml-1">*</span>
                                         </label>
                                         <div className="relative">
                                             <Field

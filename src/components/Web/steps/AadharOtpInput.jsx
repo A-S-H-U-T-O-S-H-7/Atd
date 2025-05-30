@@ -186,7 +186,7 @@ function AadharOTPInput({
                                         type="button"
                                         onClick={handleResendClick}
                                         disabled={loader}
-                                        className="inline-flex items-center py-2 gap-2 text-teal-600 hover:text-teal-700 font-medium transition-colors duration-200 disabled:opacity-50"
+                                        className="inline-flex cursor-pointer items-center py-2 gap-2 text-teal-600 hover:text-teal-700 font-medium transition-colors duration-200 disabled:opacity-50"
                                     >
                                         <RefreshCw className="w-4 h-4" />
                                         Resend Code

@@ -1,5 +1,5 @@
 "use client";
-import React from 'react'
+import React, { useMemo, useEffect } from 'react'
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { KycDetailsSchema } from '../validations/UserRegistrationValidations';
@@ -12,41 +12,118 @@ function KYCDetails() {
         setKycData,
         step,
         setStep,
+        phoneData,
+        personalData, 
         loader,
         setLoader,
         errorMessage,
         setErrorMessage
     } = useUser();
 
+    // Function to generate CRN number
+    const generateCrnNumber = (firstName, dob, panNumber, phoneNumber) => {
+        if (!firstName || !dob || !panNumber || !phoneNumber) return '';
+        
+        const firstLetter = firstName.charAt(0).toUpperCase();
+        const dobDate = new Date(dob);
+        const day = dobDate.getDate().toString().padStart(2, '0');
+        const panFirst2 = panNumber.substring(0, 2).toUpperCase();
+        const phoneLast3 = phoneNumber.slice(-3);
+        
+        return `${firstLetter}${day}${panFirst2}${phoneLast3}`;
+    };
+
+    // Function to generate Account ID
+    const generateAccountId = (crnNumber) => {
+        if (!crnNumber) return '';
+        
+        const currentDate = new Date();
+        const currentMonth = currentDate.toLocaleString('en-US', { month: 'long' }).toUpperCase();
+        const currentYear = currentDate.getFullYear();
+        
+        return `ATDFSL${crnNumber}${currentMonth}${currentYear}`;
+    };
+
+    // Memoized CRN and Account ID generation to prevent constant recalculation
+    const generatedCrn = useMemo(() => 
+        generateCrnNumber(
+            personalData?.firstName,
+            personalData?.dob,
+            kycData.panNumber, // Use kycData instead of form values
+            phoneData?.phoneNumber
+        ), 
+        [personalData?.firstName, personalData?.dob, kycData.panNumber, phoneData?.phoneNumber]
+    );
+
+    const generatedAccountId = useMemo(() => 
+        generateAccountId(generatedCrn), 
+        [generatedCrn]
+    );
+
+    // Auto-update context when CRN or Account ID changes
+    useEffect(() => {
+        if (generatedCrn && generatedAccountId) {
+            setKycData(prev => ({
+                ...prev,
+                crnNumber: generatedCrn,
+                accountId: generatedAccountId
+            }));
+        }
+    }, [generatedCrn, generatedAccountId, setKycData]);
+
     const handleKycDetails = async (values) => {
-        // try {
-        //     setKycData({ ...values });
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/finance-kyc-details`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify(values),
-        //     });
+            // Generate fresh CRN and Account ID for submission
+            const submissionCrn = generateCrnNumber(
+                personalData?.firstName,
+                personalData?.dob,
+                values.panNumber,
+                phoneData?.phoneNumber
+            );
 
-        //     const result = await response.json();
+            const submissionAccountId = generateAccountId(submissionCrn);
 
-        //     if (response.ok) {
-        //         setLoader(false);
-        //         setStep(step + 1);
-        //     } else {
-        //         setErrorMessage(result?.message);
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error submitting data: " + error.message);
-        //     setLoader(false);
-        // }
-        setStep(step + 1);
+            // Update context with final values
+            setKycData({ 
+                ...values,
+                crnNumber: submissionCrn,      
+                accountId: submissionAccountId 
+            });
+            
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    step: 6,
+                    userid: phoneData.userid, 
+                    provider: 1,
+                    panno: values.panNumber,
+                    crnno: submissionCrn,
+                    accountId: submissionAccountId
+                }),
+            });
+
+            const result = await response.json();
+            console.log('API Response:', result);
+
+            if (response.ok) {
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                setErrorMessage(result?.message || 'An error occurred during submission');
+                setLoader(false);
+            }
+        } catch (error) {
+            console.error('Submission Error:', error);
+            setErrorMessage("Error submitting data: " + error.message);
+            setLoader(false);
+        }
     }
 
     const formatPanInput = (value) => {
@@ -54,9 +131,13 @@ function KYCDetails() {
         return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     };
 
-    const formatCrnInput = (value) => {
-        // Remove any special characters and convert to uppercase
-        return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    // Handle form value changes to update context
+    const handleFormChange = (fieldName, value, setFieldValue) => {
+        setFieldValue(fieldName, value);
+        setKycData(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
     };
 
     return (
@@ -78,8 +159,8 @@ function KYCDetails() {
                 <Formik
                     initialValues={kycData}
                     validationSchema={KycDetailsSchema}
-                    onSubmit={(values) => { handleKycDetails(values); }}
-                    enableReinitialize
+                    onSubmit={handleKycDetails}
+                    enableReinitialize={true}
                 >
                     {({ isValid, touched, setFieldValue, values }) => (
                         <Form className="space-y-8">
@@ -114,9 +195,9 @@ function KYCDetails() {
                                                     className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300 uppercase"
                                                     onChange={(e) => {
                                                         const formattedValue = formatPanInput(e.target.value);
-                                                        form.setFieldValue(field.name, formattedValue);
+                                                        handleFormChange(field.name, formattedValue, form.setFieldValue);
                                                     }}
-                                                    value={field.value}
+                                                    value={field.value || ''}
                                                 />
                                             )}
                                         </Field>
@@ -126,37 +207,40 @@ function KYCDetails() {
                                         </p>
                                     </div>
 
-                                    {/* CRN Number */}
+                                    {/* CRN Number (Auto-generated) */}
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">
-                                            CRN Number<span className="text-red-500 ml-1">*</span>
+                                            CRN Number (Auto-generated)
                                         </label>
-                                        <Field name="crnNumber">
-                                            {({ field, form }) => (
-                                                <input
-                                                    {...field}
-                                                    type="text"
-                                                    maxLength="20"
-                                                    placeholder="Enter CRN number"
-                                                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300 uppercase"
-                                                    onChange={(e) => {
-                                                        const formattedValue = formatCrnInput(e.target.value);
-                                                        form.setFieldValue(field.name, formattedValue);
-                                                    }}
-                                                    value={field.value}
-                                                />
-                                            )}
-                                        </Field>
-                                        <ErrorMessage name="crnNumber" component="p" className="text-red-500 text-sm" />
-                                        <p className="text-xs text-gray-500">
-                                            Customer Reference Number (5-20 characters)
-                                        </p>
+                                        <input
+                                            type="text"
+                                            value={generatedCrn || ''}
+                                            disabled
+                                            className="w-full px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-xl text-gray-600 cursor-not-allowed"
+                                            placeholder="Will be generated automatically"
+                                        />
+                                    </div>
+
+                                    {/* Account ID (Auto-generated) */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Account ID (Auto-generated)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={generatedAccountId || ''}
+                                            disabled
+                                            className="w-full px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-xl text-gray-600 cursor-not-allowed"
+                                            placeholder="Will be generated automatically"
+                                        />
                                     </div>
                                 </div>
+
+                               
                             </div>
 
                             {/* Navigation Buttons */}
-                            <div className="flex flex-col  sm:flex-row justify-between gap-4 pt-4">
+                            <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
                                 <button 
                                     type="button"
                                     onClick={() => setStep(step - 1)}
@@ -167,7 +251,7 @@ function KYCDetails() {
                                 </button>
                                 
                                 <button 
-                                    disabled={loader} 
+                                    disabled={loader || !values.panNumber || !generatedCrn} 
                                     type='submit' 
                                     className="inline-flex items-center cursor-pointer justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                                 >

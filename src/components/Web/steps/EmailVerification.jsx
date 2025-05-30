@@ -12,6 +12,7 @@ function EmailVerification() {
     const {
         emailData,
         setEmailData,
+        phoneData,
         step,
         setStep,
         loader,
@@ -36,78 +37,86 @@ function EmailVerification() {
     }, [countdown, otpSent]);
 
     const handleSendOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/send-email-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({ email: values.email }),
-        //     });
-
-        //     const result = await response.json();
-
-        //     if (response.ok) {
-        //         setEmailData({ ...emailData, email: values.email });
-        //         setOtpSent(true);
-        //         setCountdown(60); // 60 seconds countdown
-        //         setCanResend(false);
-        //         setLoader(false);
-        //     } else {
-        //         setErrorMessage(result?.message || "Failed to send OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error sending OTP: " + error.message);
-        //     setLoader(false);
-        // }
-        setEmailData({ ...emailData, email: values.email });
-        setOtpSent(true);
-        setCountdown(60); 
-        setCanResend(false);
-        setLoader(false);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    step: 2,
+                    provider: 1,
+                    userid: phoneData.userid,
+                    email: values.email,
+                    verification_type: "manual",
+                    need: "send"
+                }),
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+                setEmailData({ ...emailData, email: values.email });
+                setOtpSent(true);
+                setCountdown(60); // 60 seconds countdown
+                setCanResend(false);
+                setLoader(false);
+            } else {
+                setErrorMessage(result?.message || "Failed to send OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error sending OTP: " + error.message);
+            setLoader(false);
+        }
+       
     };
 
     const handleVerifyOTP = async (values) => {
-        // try {
-        //     setLoader(true);
-        //     setErrorMessage("");
+        try {
+            setLoader(true);
+            setErrorMessage("");
             
-        //     const response = await fetch(`${ENV.API_URL}/verify-email-otp`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "Accept": "application/json"
-        //         },
-        //         body: JSON.stringify({
-        //             email: emailData.email,
-        //             otp: values.emailOtp
-        //         }),
-        //     });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    email: emailData.email,
+                    otp: values.emailOtp,
+                    step:2,
+                     provider:1,
+                     userid:phoneData.userid,
+                     verification_type:"manual",
+                     need:"verify",
+                }),
+            });
 
-        //     const result = await response.json();
+            const result = await response.json();
 
-        //     if (response.ok) {
-        //         setEmailData({ 
-        //             ...emailData, 
-        //             isEmailVerified: true, 
-        //             emailOtp: values.emailOtp 
-        //         });
-        //         setLoader(false);
-        //         setStep(step + 1);
-        //     } else {
-        //         setErrorMessage(result?.message || "Invalid OTP");
-        //         setLoader(false);
-        //     }
-        // } catch (error) {
-        //     setErrorMessage("Error verifying OTP: " + error.message);
-        //     setLoader(false);
-        // }
-        setStep(step + 1);
+            if (response.ok) {
+                setEmailData({ 
+                    ...emailData, 
+                    isEmailVerified: true, 
+                    emailOtp: values.emailOtp 
+                });
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                setErrorMessage(result?.message || "Invalid OTP");
+                setLoader(false);
+            }
+        } catch (error) {
+            setErrorMessage("Error verifying OTP: " + error.message);
+            setLoader(false);
+        }
+        
     };
 
     const handleResendOTP = async () => {
@@ -117,13 +126,20 @@ function EmailVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${ENV.API_URL}/resend-email-otp`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ email: emailData.email }),
+                body: JSON.stringify({ email: emailData.email,
+                    provider:1,
+                    userid:phoneData.userid,
+                    step:2,
+                    verification_type:"manual",
+                     need:"send"
+
+                 }),
             });
 
             const result = await response.json();
@@ -144,51 +160,95 @@ function EmailVerification() {
 
     const handleGoogleVerify = async () => {
         try {
-            console.log('Google sign-in started...'); // Debug log
             setLoader(true);
             setErrorMessage("");
             
-            // Create Google provider instance locally
             const googleProvider = new GoogleAuthProvider();
+            googleProvider.addScope('email');
+            googleProvider.addScope('profile');
             googleProvider.setCustomParameters({
                 prompt: 'select_account'
             });
             
-            console.log('About to call signInWithPopup...'); // Debug log
             const result = await signInWithPopup(auth, googleProvider);
-            console.log('Google sign-in result:', result); // Debug log
-            
             const user = result.user;
-            console.log('User data:', user); // Debug log
             
-            // Store user data in context
-            setEmailData({ 
-                ...emailData, 
-                email: user.email,
-                isEmailVerified: true,
-                googleUser: {
-                    uid: user.uid,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    emailVerified: user.emailVerified
-                }
+            if (!user) {
+                throw new Error('No user data received from Google');
+            }
+            
+            const userEmail = user.email || (user.providerData && user.providerData[0]?.email);
+            
+            if (!userEmail) {
+                throw new Error('No email found in Google account');
+            }
+            
+            if (!phoneData || !phoneData.userid) {
+                throw new Error('Phone data or userid is missing');
+            }
+            
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    step: 2,
+                    provider: 1,
+                    userid: phoneData.userid,
+                    email: userEmail,
+                    verification_type: "direct"
+                })
             });
             
-            setLoader(false);
-            console.log('Moving to next step...'); // Debug log
-            // Move to next step since Google auth is complete
-            setStep(step + 1);
+            const apiData = await response.json();
+            
+            if (response.ok && apiData.success === true) {
+                const updatedEmailData = { 
+                    ...emailData, 
+                    email: userEmail,
+                    isEmailVerified: user.emailVerified || true, 
+                    googleUid: user.uid 
+                };
+                
+                setEmailData(updatedEmailData);
+                setLoader(false);
+                setStep(step + 1);
+            } else {
+                throw new Error(apiData.message || 'Failed to store email in database');
+            }
             
         } catch (error) {
-            console.error('Google sign-in error:', error);
-            console.error('Error code:', error.code);
-            console.error('Error message:', error.message);
-            setErrorMessage(error.message || "Failed to sign in with Google");
+            let userMessage = '';
+            
+            if (error.code) {
+                // Firebase Auth errors
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        userMessage = 'Sign-in was cancelled. Please try again.';
+                        break;
+                    case 'auth/popup-blocked':
+                        userMessage = 'Popup was blocked. Please allow popups and try again.';
+                        break;
+                    case 'auth/network-request-failed':
+                        userMessage = 'Network error. Please check your connection and try again.';
+                        break;
+                    default:
+                        userMessage = `Authentication failed: ${error.message}`;
+                }
+            } else {
+                userMessage = `Failed to complete registration: ${error.message}`;
+            }
+            
+            setErrorMessage(userMessage);
             setLoader(false);
         }
     };
 
+
     
+
     const handleChangeEmail = () => {
         setOtpSent(false);
         setErrorMessage("");

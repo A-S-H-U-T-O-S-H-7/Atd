@@ -53,6 +53,37 @@ function LoanDetails() {
     };
 
     const handleLoanDetails = async (values) => {
+        try {
+              setLoanData({ ...values });
+              setLoader(true);
+              setErrorMessage("");
+              
+              const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json"
+                  },
+                  body: JSON.stringify({ step:7,
+                    userid:phoneData.userid,
+                    provider:1,
+                    amount:values.amount,
+                    tenure:values.tenure,}),
+              });
+  
+              const result = await response.json();
+  
+              if (response.ok) {
+                  setLoader(false);
+                  setStep(step + 1);
+              } else {
+                  setErrorMessage(result?.message);
+                  setLoader(false);
+              }
+          } catch (error) {
+              setErrorMessage("Error submitting data: " + error.message);
+              setLoader(false);
+          }
         if (!isEligible) {
             setErrorMessage("You are not eligible for this loan. Only salaried employees can proceed.");
             return;
@@ -175,36 +206,7 @@ function LoanDetails() {
                                             <ErrorMessage name="isSalaried" component="p" className="text-red-500 text-sm" />
                                         </div>
 
-                                        {/* Location Details */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                                    <MapPin className="w-4 h-4" />
-                                                    State<span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <Field
-                                                    name="state"
-                                                    type="text"
-                                                    placeholder="Enter your state"
-                                                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
-                                                />
-                                                <ErrorMessage name="state" component="p" className="text-red-500 text-sm" />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                                    <MapPin className="w-4 h-4" />
-                                                    City<span className="text-red-500 ml-1">*</span>
-                                                </label>
-                                                <Field
-                                                    name="city"
-                                                    type="text"
-                                                    placeholder="Enter your city"
-                                                    className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
-                                                />
-                                                <ErrorMessage name="city" component="p" className="text-red-500 text-sm" />
-                                            </div>
-                                        </div>
+                                
                                     </div>
 
                                     {/* Loan Information Section */}

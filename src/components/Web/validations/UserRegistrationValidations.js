@@ -66,23 +66,16 @@ const PersonalDetailsSchema = Yup.object().shape({
     .oneOf(["Male", "Female", "Other"], "Please select a valid gender")
     .required("Gender is required"),
   
-  mobile: Yup.string()
-    .matches(/^\d{10}$/, "Must be exactly 10 digits")
-    .required("Mobile number is required"),
-  
-  email: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format"
-    )
-    .required("Email is required"),
-  
   alternativeEmail: Yup.string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       "Invalid email format"
     )
-    .notOneOf([Yup.ref('email')], "Alternative email must be different from primary email")
+    .test('unique-alt-email', 'Alternative email cannot be same as your registered email', function(value) {
+      if (!value) return true;
+      const { userEmail } = this.options.context || {};
+      return value !== userEmail;
+    })
     .nullable(),
   
   dob: Yup.date()
@@ -140,8 +133,7 @@ const PersonalDetailsSchema = Yup.object().shape({
   }),
   
   fatherName: Yup.string()
-    .matches(/^[a-zA-Z\s]+$/, "Father's Name must only contain letters and spaces")
-    .min(2, "Father's Name must be at least 2 characters")
+  .matches(/^([SDW]\/O\s+)?[a-zA-Z\s]+$/, "Father's Name must only contain letters, spaces, and valid prefixes (S/O, D/O, W/O)")    .min(5, "Father's Name must be at least 5 characters")
     .max(50, "Father's Name cannot exceed 50 characters")
     .required("Father's Name is required"),
   
@@ -154,18 +146,27 @@ const PersonalDetailsSchema = Yup.object().shape({
     
     mobileNumber: Yup.string()
       .matches(/^\d{10}$/, "Must be exactly 10 digits")
+      .test('unique-mobile', 'Reference mobile number cannot be same as your registered mobile number', function(value) {
+        const { phoneNumber } = this.options.context || {};
+        return value !== phoneNumber;
+      })
       .required("Family reference mobile number is required"),
+      
     
     email: Yup.string()
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         "Invalid email format"
       )
+      .test('unique-email', 'Reference email cannot be same as your registered email', function(value) {
+        const { userEmail } = this.options.context || {};
+        return value !== userEmail;
+      })
       .required("Family reference email is required"),
     
     relation: Yup.string()
-      .min(2, "Relation must be at least 2 characters")
-      .max(30, "Relation cannot exceed 30 characters")
+      .min(3, "Relation must be at least 2 characters")
+      .max(30, "FRelation cannot exceed 30 characters")
       .required("Relation is required"),
     
     address: Yup.string()
@@ -189,15 +190,10 @@ const KycDetailsSchema = Yup.object().shape({
 
 // Updated Step 6: Loan Details Validation Schema
 const LoanDetailsSchema = Yup.object().shape({
-  // Fix: Change to string validation since radio buttons send string values
   isSalaried: Yup.string()
     .required("Please specify if you are salaried"),
   
-  state: Yup.string()
-    .matches(/^[a-zA-Z\s]+$/, "State must only contain letters and spaces")
-    .required("State is required"),
   
-  // Fix: Change to string validation and add transform to handle formatted numbers
   amount: Yup.string()
     .required("Loan amount is required")
     .test('min-amount', 'Minimum loan amount is ₹3,000', function(value) {
@@ -209,19 +205,12 @@ const LoanDetailsSchema = Yup.object().shape({
       return numValue <= 50000;
     }),
   
-  city: Yup.string()
-    .matches(/^[a-zA-Z\s]+$/, "City must only contain letters and spaces")
-    .required("City is required"),
-  
   // Fix: Change to string validation since select sends string values
   tenure: Yup.string()
     .required("Loan tenure is required")
     .oneOf(['90', '120', '150', '180'], 'Please select a valid tenure'),
   
    
-  // // Add terms acceptance validation
-  // termsAccepted: Yup.boolean()
-  //   .oneOf([true], 'You must accept the terms and conditions')
 });
 
 
@@ -302,15 +291,14 @@ const ServiceDetailsSchema = Yup.object().shape({
     .max(1000000, "Existing EMI cannot exceed ₹10,00,000")
     .required("Existing EMI is required (enter 0 if none)"),
   
-  workingSince: Yup.object().shape({
-    from: Yup.date()
-      .max(new Date(), "From date cannot be in the future")
-      .required("Working from date is required"),
-    to: Yup.date()
-      .min(Yup.ref('from'), "To date must be after from date")
-      .max(new Date(), "To date cannot be in the future")
-      .nullable(),
-  }),
+    workingSince: Yup.object().shape({
+      month: Yup.string()
+        .required("Month is required"),
+      year: Yup.number()
+        .min(1970, "Year must be after 1970")
+        .max(new Date().getFullYear(), "Year cannot be in the future")
+        .required("Year is required"),
+    }),
 });
 
 // Step 8: Bank Details Validation Schema
@@ -338,7 +326,7 @@ const BankDetailsSchema = Yup.object().shape({
     .required("Confirm account number is required"),
   
   accountType: Yup.string()
-    .oneOf(["Savings", "Current", "Salary"], "Please select a valid account type")
+    .oneOf(["SAVING", "CURRENT",], "Please select a valid account type")
     .required("Account Type is required"),
   
   

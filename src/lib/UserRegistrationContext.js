@@ -10,6 +10,7 @@ export const UserContextProvider = ({children}) => {
     phoneOtp: "",
     isPhoneVerified: false,
     agreeToTerms: false ,
+    userid: null,
   });
 
   // Step 2: Email and Verification Data
@@ -24,6 +25,25 @@ export const UserContextProvider = ({children}) => {
     aadharNumber: "",
     aadharOtp: "",
     isAadharVerified: false,
+
+    fullName: "",
+    dob: "",
+    gender: "",
+    careOf: "",
+    
+    address: {
+        country: "",
+        state: "",
+        dist: "",
+        subdist: "",
+        vtc: "",
+        po: "",
+        loc: "",
+        street: "",
+        house: "",
+        landmark: ""
+    },
+    zip: ""
   });
 
   // Step 4: Personal Details
@@ -31,8 +51,6 @@ export const UserContextProvider = ({children}) => {
     firstName: "",
     lastName: "",
     gender: "",
-    mobile: "",
-    email: "", 
     alternativeEmail: "",
     dob: "",
     currentAddress: {
@@ -62,12 +80,13 @@ export const UserContextProvider = ({children}) => {
   const [kycData, setKycData] = useState({
     panNumber: "",
     crnNumber: "",
+    accountId: "", 
   });
   
 
   // Step 6: Loan Details
     const [loanData, setLoanData] = useState({
-      isSalaried: "", // Change from null to empty string
+      isSalaried: "",
       state: "",
       amount: "",
       city: "",
@@ -91,9 +110,9 @@ export const UserContextProvider = ({children}) => {
     designation: "",
     existingEmi: "",
     workingSince: {
-      from: "",
-      to: "",
-    },
+      month: "",
+      year: ""
+    }
   });
 
   // Step 8: Bank Details
@@ -116,8 +135,16 @@ export const UserContextProvider = ({children}) => {
     salarySlip1: null, 
     salarySlip2: null, 
     salarySlip3: null, 
-    bankStatement: null, 
+    bankStatement: null,
+    
   });
+
+  const [uploadStatus, setUploadStatus] = useState({
+    documentData,
+    setDocumentData,
+   
+  });
+
 
   // Step 10: References Data
   const [referenceData, setReferenceData] = useState({
@@ -154,25 +181,42 @@ export const UserContextProvider = ({children}) => {
       phoneNumber: "",
       phoneOtp: "",
       isPhoneVerified: false,
-      agreeToTerms: false 
+      agreeToTerms: false ,
+      userid: null,
     });
     setEmailData({
       email: "",
       emailOtp: "",
       isEmailVerified: false,
-      googleUser: null
+            // googleUser: null
     });
     setAadharData({
       aadharNumber: "",
       aadharOtp: "",
       isAadharVerified: false,
+      fullName: "",
+    dob: "",
+    gender: "",
+    careOf: "",
+    
+    address: {
+        country: "",
+        state: "",
+        dist: "",
+        subdist: "",
+        vtc: "",
+        po: "",
+        loc: "",
+        street: "",
+        house: "",
+        landmark: ""
+    },
+    zip: ""
     });
     setPersonalData({
       firstName: "",
       lastName: "",
       gender: "",
-      mobile: "",
-      email: "",
       alternativeEmail: "",
       dob: "",
       currentAddress: {
@@ -198,12 +242,12 @@ export const UserContextProvider = ({children}) => {
       },
     });
     setLoanData({
-      isSalaried: null,
+      isSalaried: "",
       state: "",
       amount: "",
       city: "",
       tenure: "",
-      interestRate: "",
+      
     });
    
     setKycData({
@@ -235,7 +279,7 @@ export const UserContextProvider = ({children}) => {
       accountNumber: "",
       confirmAccountNumber: "",
       accountType: "",
-      familyIncome: "",
+      
     });
     setDocumentData({
       aadharFront: null,

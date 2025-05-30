@@ -24,7 +24,7 @@ const UserRegistration = () => {
       {step === 6 && <LoanDetails />}
       {step === 7 && <ServiceDetails />}
       {step === 8 && <BankDetails />}
-      {step === 9 && <DocumentUpload />}
+      {step === 9 && <DocumentUpload /> }
       {step === 10 && <References />}
 
     </div>
