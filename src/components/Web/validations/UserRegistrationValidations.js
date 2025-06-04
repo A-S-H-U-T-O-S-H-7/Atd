@@ -208,7 +208,7 @@ const LoanDetailsSchema = Yup.object().shape({
   // Fix: Change to string validation since select sends string values
   tenure: Yup.string()
     .required("Loan tenure is required")
-    .oneOf(['90', '120', '150', '180'], 'Please select a valid tenure'),
+    .oneOf(['90', '120', '150', '180','210','240','365'], 'Please select a valid tenure'),
   
    
 });

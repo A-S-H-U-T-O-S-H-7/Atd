@@ -1,38 +1,46 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@/lib/UserRegistrationContext';
-import MobileInputForm from './MobileInputForm';
-import OtpVerificationForm from './MobileOtpVerification';
+import MobileLoginInput from './MobileInput';
+import LoginOtpVerification from './OtpVerification';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/AuthContext';
 
-function MobileVerification() {
-    const {
-        phoneData,
-        setPhoneData,
-        step,
-        setStep,
-        loader,
-        setLoader,
-        errorMessage,
-        setErrorMessage
-    } = useUser();
-
+function MobileLogin() {
+    const [phoneData, setPhoneData] = useState({
+        phoneNumber: '',
+        isPhoneVerified: false,
+        phoneOtp: ''
+    });
+    
+    const [loader, setLoader] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(true);
 
+    const router = useRouter();
+    const { login, isAuthenticated } = useAuth();
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (isAuthenticated()) {
+            router.push('/userProfile');
+        }
+    }, [isAuthenticated, router]);
+
     // Animated content data for left section
     const contentData = [
         {
-            title: "Experience the unity of ease and convenience!",
-            subtitle: "Enjoy 100% digital application process."
+            title: "Welcome back to your financial freedom!",
+            subtitle: "Access your account in seconds with secure login."
         },
         {
-            title: "Transform your financial journey today!",
-            subtitle: "Access seamless solutions at your fingertips."
+            title: "Your trusted financial companion!",
+            subtitle: "Manage your loans and payments seamlessly."
         },
         {
-            title: "Unlock premium benefits instantly!",
-            subtitle: "Join thousands of satisfied customers worldwide."
+            title: "Quick access to your dashboard!",
+            subtitle: "Continue your financial journey with ease."
         }
     ];
 
@@ -68,33 +76,36 @@ function MobileVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/send`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/login/otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ mobile: values.phoneNumber, provider: 1 }),
+                body: JSON.stringify({ 
+                    provider: 1,
+                    mobile: parseInt(values.phoneNumber)
+                }),
             });
 
             const result = await response.json();
-            console.log(result)
+            console.log('Send OTP Result:', result);
 
-            if (response.ok &&  result.success) {
+            if (result.success) {
                 setPhoneData({ ...phoneData, phoneNumber: values.phoneNumber });
                 setOtpSent(true);
                 setCountdown(60); 
                 setCanResend(false);
                 setLoader(false);
             } else {
-                setErrorMessage(result?.errors?.mobile?.[0] || result?.message || "Failed to send OTP");
+                setErrorMessage(result?.message || "Failed to send OTP");
                 setLoader(false);
             }
         } catch (error) {
-            setErrorMessage("Error sending OTP: " + error.message);
+            console.error('Send OTP Error:', error);
+            setErrorMessage("Network error. Please try again.");
             setLoader(false);
         }
-       
     };
 
     const handleVerifyOTP = async (values) => {
@@ -102,41 +113,59 @@ function MobileVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/verify`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/login/verify`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
-                    mobile: phoneData.phoneNumber,
-                    otp: values.phoneOtp,
-                    provider:1, 
-
+                    provider: 1,
+                    mobile: parseInt(phoneData.phoneNumber),
+                    otp: values.phoneOtp
                 }),
             });
 
             const result = await response.json();
-            console.log(result)
+            console.log('Verify OTP Result:', result);
 
-            if (response.ok && result.success) {
-                setPhoneData({ 
-                    ...phoneData, 
-                    isPhoneVerified: true, 
-                    phoneOtp: values.phoneOtp ,
-                    userid: result.userid
-                });
-                setLoader(false);
-                setStep(step + 1);
+            if (result.success) {
+                // Extract user data and token from response
+                const userData = result.user || result.data || result;
+                const token = result.token || result.access_token;
+
+                if (token && userData) {
+                    // Use AuthContext login function
+                    const loginSuccess = await login(userData, token);
+                    
+                    if (loginSuccess) {
+                        setPhoneData({ 
+                            ...phoneData, 
+                            isPhoneVerified: true, 
+                            phoneOtp: values.phoneOtp 
+                        });
+                        
+                        setLoader(false);
+                        
+                        // Redirect to profile
+                        router.push('/userProfile');
+                    } else {
+                        setErrorMessage("Login failed. Please try again.");
+                        setLoader(false);
+                    }
+                } else {
+                    setErrorMessage("Invalid response from server. Please try again.");
+                    setLoader(false);
+                }
             } else {
                 setErrorMessage(result?.message || "Invalid OTP");
                 setLoader(false);
             }
         } catch (error) {
-            setErrorMessage("Error verifying OTP: " + error.message);
+            console.error('Verify OTP Error:', error);
+            setErrorMessage("Network error. Please try again.");
             setLoader(false);
         }
-       
     };
 
     const handleResendOTP = async () => {
@@ -146,18 +175,21 @@ function MobileVerification() {
             setLoader(true);
             setErrorMessage("");
             
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/resend`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/login/otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ mobile: phoneData.phoneNumber, provider: 1 }),
+                body: JSON.stringify({ 
+                    provider: 1,
+                    mobile: parseInt(phoneData.phoneNumber)
+                }),
             });
 
             const result = await response.json();
 
-            if (response.ok) {
+            if (result.success) {
                 setCountdown(60);
                 setCanResend(false);
                 setLoader(false);
@@ -166,7 +198,8 @@ function MobileVerification() {
                 setLoader(false);
             }
         } catch (error) {
-            setErrorMessage("Error resending OTP: " + error.message);
+            console.error('Resend OTP Error:', error);
+            setErrorMessage("Network error. Please try again.");
             setLoader(false);
         }
     };
@@ -174,12 +207,12 @@ function MobileVerification() {
     const handleChangeNumber = () => {
         setOtpSent(false);
         setErrorMessage("");
+        setPhoneData({ ...phoneData, phoneNumber: '' });
     };
 
     return (
-        
-        <div className="bg-gradient-to-r from-[#cef8f8] to-[#e1fefe] px-20 min-h-screen flex items-center justify-center">
-            <div className=" py-8 flex flex-col lg:flex-row gap-15 items-center justify-between">
+        <div className="bg-gradient-to-r from-[#e0f2fe] to-[#f3e5f5] px-4 md:px-20 min-h-screen flex items-center justify-center">
+            <div className="py-8 flex flex-col lg:flex-row gap-15 items-center justify-between w-full max-w-7xl">
                 {/* Left Section: Text and Image */}
                 <div className="w-full order-2 lg:order-1 px-4">
                     <div className="flex flex-col lg:flex-row items-center justify-between">
@@ -188,7 +221,7 @@ function MobileVerification() {
                             <div className="h-80 w-full max-w-md flex items-center justify-center">
                                 <img
                                     src="/loginimage2.png"
-                                    alt="Hero illustration"
+                                    alt="Login illustration"
                                     className="max-h-80 lg:max-h-130 w-auto object-contain"
                                 />
                             </div>
@@ -201,10 +234,10 @@ function MobileVerification() {
                                         ? "opacity-100 translate-y-0"
                                         : "opacity-0 translate-y-4"}`}
                                 >
-                                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-purple-900 mb-3">
+                                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-indigo-900 mb-3">
                                         {contentData[currentIndex].title}
                                     </h2>
-                                    <p className="text-lg md:text-xl text-purple-700">
+                                    <p className="text-lg md:text-xl text-indigo-700">
                                         {contentData[currentIndex].subtitle}
                                     </p>
                                 </div>
@@ -215,15 +248,14 @@ function MobileVerification() {
 
                 {/* Right Section: Form */}
                 {!otpSent ? (
-                    <MobileInputForm
+                    <MobileLoginInput
                         phoneData={phoneData}
                         onSendOTP={handleSendOTP}
                         loader={loader}
                         errorMessage={errorMessage}
-                       
                     />
                 ) : (
-                    <OtpVerificationForm
+                    <LoginOtpVerification
                         phoneNumber={phoneData.phoneNumber}
                         onVerifyOTP={handleVerifyOTP}
                         onResendOTP={handleResendOTP}
@@ -235,10 +267,8 @@ function MobileVerification() {
                     />
                 )}
             </div>
-           
         </div>
-        
     );
 }
 
-export default MobileVerification;
+export default MobileLogin;

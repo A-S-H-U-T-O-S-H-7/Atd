@@ -1967,3 +1967,677 @@ console.log('Error response:', errorText);
 }
 
 export default PersonalDetails;
+
+"use client"
+import { useAuth } from '@/lib/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { 
+  User, Mail, Phone, Calendar, MapPin, FileText, Users, Shield, 
+  Camera, Star, Award, Verified, Edit3, Bell, Settings, ChevronDown,
+  History, LogOut, Download, CreditCard, PlusCircle, Smartphone,
+  ExternalLink, Hash
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+
+import ReviewSection from '@/components/Web/profile/ReviewSection';
+import AppDownloadSection from '@/components/Web/profile/AppDownloadSection';
+import ProtectedRoute from '@/components/Web/profile/ProtectRoute';
+import UserFooter from '@/components/Web/profile/UserFooter';
+import VerificationComponent from '@/components/Web/profile/VerificationComponent';
+
+// Token refresh utility function
+const refreshAccessToken = async () => {
+  try {
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      throw new Error('No token available');
+    }
+
+    const response = await fetch('https://api.atdmoney.in/api/user/refresh', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Token refresh failed');
+    }
+
+    const data = await response.json();
+    
+    // Store new token
+    localStorage.setItem('token', data.access_token);
+    console.log('Token refreshed successfully');
+    
+    return data.access_token;
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    // Clear invalid token and redirect to login
+    localStorage.removeItem('token');
+    window.location.href = '/userlogin';
+    throw error;
+  }
+};
+
+export default function Profile() {
+  const router = useRouter();
+  const { user, loading, fetchUserData } = useAuth();
+  const [imageError, setImageError] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [registrationStep, setRegistrationStep] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
+
+
+  // Token refresh handler
+  const handleTokenRefresh = useCallback(async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      const newToken = await refreshAccessToken();
+      
+      // Optionally refetch user data with new token
+      if (fetchUserData) {
+        await fetchUserData();
+      }
+      
+      return newToken;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      // User will be redirected to login by refreshAccessToken function
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchUserData, isRefreshing]);
+
+  // Enhanced API call wrapper with automatic retry on 401
+  const apiCallWithRefresh = useCallback(async (apiCall) => {
+    try {
+      return await apiCall();
+    } catch (error) {
+      // If we get 401 (unauthorized), try refreshing token once
+      if (error.response?.status === 401 || error.status === 401) {
+        console.log('Token expired, attempting refresh...');
+        try {
+          await handleTokenRefresh();
+          // Retry the original API call with new token
+          return await apiCall();
+        } catch (refreshError) {
+          console.error('Token refresh failed, redirecting to login');
+          throw refreshError;
+        }
+      }
+      throw error;
+    }
+  }, [handleTokenRefresh]);
+
+  // Initial token check and setup automatic refresh
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/signup');
+      return;
+    }
+
+    // Set up interval to refresh token every 18 minutes (before 20-minute expiry)
+    const refreshInterval = setInterval(() => {
+      handleTokenRefresh();
+    }, 18 * 60 * 1000); // 18 minutes in milliseconds
+
+    // Initial refresh if token is close to expiry
+    const lastRefresh = localStorage.getItem('lastTokenRefresh');
+    const now = Date.now();
+    
+    if (!lastRefresh || (now - parseInt(lastRefresh)) > 15 * 60 * 1000) {
+      handleTokenRefresh().then(() => {
+        localStorage.setItem('lastTokenRefresh', now.toString());
+      });
+    }
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [router, handleTokenRefresh]);
+
+  // Enhanced user data fetch with token refresh
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token && !loading && !user) {
+      console.log('User data missing, retrying...');
+      
+      apiCallWithRefresh(async () => {
+        return await fetchUserData();
+      }).catch(error => {
+        console.error('Failed to fetch user data:', error);
+      });
+    }
+  }, [user, loading, fetchUserData, apiCallWithRefresh]);
+
+  // Registration step fetch with error handling
+  useEffect(() => {
+    const fetchRegistrationStep = async () => {
+      try {
+        await apiCallWithRefresh(async () => {
+          // Your registration step API call here
+          setRegistrationStep(11);
+          return Promise.resolve();
+        });
+      } catch (error) {
+        console.error('Error fetching registration step:', error);
+      }
+    };
+    
+    if (user) {
+      fetchRegistrationStep();
+    }
+  }, [user, apiCallWithRefresh]);
+
+  // Add token refresh on user activity (optional - for better UX)
+  useEffect(() => {
+    const handleUserActivity = () => {
+      const token = localStorage.getItem('token');
+      if (token && !isRefreshing) {
+        const lastRefresh = localStorage.getItem('lastTokenRefresh');
+        const now = Date.now();
+        
+        // Refresh if last refresh was more than 15 minutes ago
+        if (!lastRefresh || (now - parseInt(lastRefresh)) > 15 * 60 * 1000) {
+          handleTokenRefresh().then(() => {
+            localStorage.setItem('lastTokenRefresh', now.toString());
+          });
+        }
+      }
+    };
+
+    // Listen for user activities
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, handleUserActivity, { passive: true });
+    });
+
+    // Cleanup event listeners
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserActivity);
+      });
+    };
+  }, [handleTokenRefresh, isRefreshing]);
+
+// Confetti effect for successful registration
+useEffect(() => {
+  const showCongratulations = localStorage.getItem('showCongratulations');
+  if (showCongratulations === 'true' && user) {
+      // Remove the flag immediately
+      localStorage.removeItem('showCongratulations');
+      
+      // Show modal and trigger confetti after a short delay
+      setTimeout(() => {
+          setShowCongratulationsModal(true);
+          
+          // Confetti burst
+          confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+          });
+          
+          // Multiple bursts for better effect
+          setTimeout(() => {
+              confetti({
+                  particleCount: 50,
+                  angle: 60,
+                  spread: 55,
+                  origin: { x: 0, y: 0.6 }
+              });
+          }, 250);
+          
+          setTimeout(() => {
+              confetti({
+                  particleCount: 50,
+                  angle: 120,
+                  spread: 55,
+                  origin: { x: 1, y: 0.6 }
+              });
+          }, 400);
+          
+      }, 500);
+  }
+}, [user]);
+
+  const calculateProgress = () => {
+    return Math.round((user.step / 11) * 100);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('lastTokenRefresh');
+    router.push('/userlogin');
+  };
+
+  const handleClientHistory = () => {
+    router.push('/client-history');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex justify-center items-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">
+            {isRefreshing ? 'Refreshing session...' : 'Loading your profile...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex justify-center items-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg border-2 border-dashed border-slate-200">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-red-400" />
+          </div>
+          <p className="text-slate-700 mb-6">No profile data found</p>
+          <button 
+            onClick={() => {
+              apiCallWithRefresh(async () => {
+                return await fetchUserData();
+              });
+            }}
+            className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors duration-200"
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Retry Loading'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <ProtectedRoute>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+      {/* Background Illustration */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <svg width="100%" height="100%" viewBox="0 0 1200 800" className="w-full h-full">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          <circle cx="200" cy="150" r="80" fill="currentColor" opacity="0.3"/>
+          <circle cx="1000" cy="200" r="120" fill="currentColor" opacity="0.2"/>
+          <circle cx="300" cy="600" r="60" fill="currentColor" opacity="0.4"/>
+          <circle cx="900" cy="650" r="90" fill="currentColor" opacity="0.3"/>
+          <polygon points="500,100 550,180 450,180" fill="currentColor" opacity="0.2"/>
+          <polygon points="700,500 780,580 620,580" fill="currentColor" opacity="0.3"/>
+        </svg>
+      </div>
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/50 shadow-lg">
+        {/* Enhanced Abstract Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Animated Background Orbs */}
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-cyan-300/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-400/15 to-pink-300/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-80 h-80 bg-gradient-to-r from-teal-400/10 to-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          </div>
+
+          {/* Primary Wave Layer */}
+          <svg
+            className="absolute top-0 left-0 w-full h-full opacity-15"
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="primaryWave" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="20%" stopColor="#06b6d4" />
+                <stop offset="40%" stopColor="#10b981" />
+                <stop offset="60%" stopColor="#8b5cf6" />
+                <stop offset="80%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#f59e0b" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge> 
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <path
+              fill="url(#primaryWave)"
+              filter="url(#glow)"
+              d="M0,30 C200,80 400,10 600,50 C800,90 1000,20 1200,60 L1200,0 L0,0 Z"
+            />
+          </svg>
+
+          {/* Secondary Wave Layer */}
+          <svg
+            className="absolute top-0 left-0 w-full h-full opacity-10"
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="secondaryWave" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#06b6d4" />
+                <stop offset="30%" stopColor="#3b82f6" />
+                <stop offset="70%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#ec4899" />
+              </linearGradient>
+            </defs>
+            <path
+              fill="url(#secondaryWave)"
+              d="M0,60 C300,20 500,80 800,40 C1000,10 1100,70 1200,30 L1200,0 L0,0 Z"
+            />
+          </svg>
+
+          {/* Floating Geometric Elements */}
+          <div className="absolute top-4 right-4 hidden lg:block">
+            <div className="relative">
+              <div className="w-16 h-16 border-2 border-blue-400/30 rounded-full animate-spin" style={{ animationDuration: '8s' }}></div>
+              <div className="absolute top-2 left-2 w-12 h-12 border-2 border-cyan-400/40 rounded-full animate-spin" style={{ animationDuration: '12s', animationDirection: 'reverse' }}></div>
+              <div className="absolute top-4 left-4 w-8 h-8 bg-gradient-to-r from-purple-400/50 to-pink-400/50 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Simplified Left Side Decorative Elements */}
+          <div className="absolute top-8 left-4 hidden md:block">
+            <div className="space-y-2">
+              <div className="w-3 h-3 bg-blue-400/40 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-cyan-400/30 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="w-4 h-4 bg-teal-400/35 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+            </div>
+          </div>
+
+          {/* Corner Accents */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-400/20 via-pink-300/15 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 w-28 h-28 bg-gradient-to-tr from-teal-400/20 via-blue-300/15 to-transparent rounded-full blur-2xl"></div>
+        </div>
+
+        <div className="relative px-4 md:px-8 lg:px-12 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3 md:space-x-4">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <img 
+                src="/atdlogo.png" 
+                alt="ATD Finance Logo" 
+                className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 object-contain"
+              />
+            </div>
+            
+            {/* Brand Text */}
+            <div className="flex flex-col">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-400 drop-shadow-sm">
+                ATD MONEY
+              </h1>
+              <p className="text-sm text-slate-600/80 hidden sm:block font-medium">
+                Welcome back, {user.fname}
+                {isRefreshing && <span className="ml-2 text-blue-500">(Refreshing...)</span>}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3 md:space-x-4">
+            {/* Profile Dropdown */}
+            <div 
+              className="relative group"
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
+            >
+              <button className="flex items-center space-x-2 md:space-x-3 bg-gradient-to-r from-slate-100 to-slate-50 hover:from-slate-200 hover:to-slate-100 rounded-xl px-3 md:px-4 py-2 transition-all duration-300 hover:shadow-md border border-slate-200/50">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 via-purple-500 to-teal-400 rounded-full flex items-center justify-center shadow-md">
+                  <span className="text-white font-semibold text-sm">{user.fname?.[0]}</span>
+                </div>
+                <span className="text-slate-700 font-medium hidden sm:block">{user.fname}</span>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-all duration-300 ${showProfileMenu ? 'rotate-180 text-blue-500' : ''}`} />
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div className={`absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-xl border border-slate-200/50 py-2 transition-all duration-300 ${
+                showProfileMenu 
+                  ? 'opacity-100 translate-y-0 pointer-events-auto' 
+                  : 'opacity-0 -translate-y-2 pointer-events-none'
+              }`}>
+                <button 
+                  onClick={handleClientHistory}
+                  className="w-full px-4 py-3 text-left hover:bg-blue-50/50 flex items-center space-x-3 transition-all duration-200 group/item"
+                >
+                  <History className="w-4 h-4 text-slate-500 group-hover/item:text-blue-500 transition-colors" />
+                  <span className="text-slate-700 group-hover/item:text-blue-600 font-medium">Client History</span>
+                </button>
+                <div className="h-px bg-slate-200/50 mx-2 my-1"></div>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full px-4 py-3 text-left hover:bg-red-50/50 flex items-center space-x-3 transition-all duration-200 text-red-600 group/item"
+                >
+                  <LogOut className="w-4 h-4 group-hover/item:text-red-700 transition-colors" />
+                  <span className="group-hover/item:text-red-700 font-medium">Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content - Fixed spacing to account for fixed header */}
+      <div className="pt-28 px-4 md:px-8 lg:px-12 py-6 relative z-10">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Profile Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg border border-dashed border-purple-300 p-6 text-center">
+              <div className="relative inline-block mb-6">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-100 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                  {user.selfie && !imageError ? (
+                    <img 
+                      src={`/${user.selfie}`} 
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-blue-400" />
+                  )}
+                </div>
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full border-2 border-white flex items-center justify-center transition-colors">
+                  <Camera className="w-4 h-4 text-white" />
+                </button>
+              </div>
+              
+              <h2 className="text-xl font-bold text-slate-800 mb-1">{user.fname} {user.lname}</h2>
+              <p className="text-slate-500 mb-4">ID: {user.accountId}</p>
+              
+              {/* Contact Information */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-6 border border-blue-200">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center space-x-2 text-sm">
+                    <Phone className="w-4 h-4 text-blue-500" />
+                    <span className="font-medium text-slate-700">{user.phone || 'Not provided'}</span>
+                    {user.phone_verified === 1 && <Verified className="w-4 h-4 text-green-500" />}
+                  </div>
+                  <div className="flex items-center justify-center space-x-2 text-sm">
+                    <Mail className="w-4 h-4 text-purple-500" />
+                    <span className="font-medium text-slate-700">{user.email || 'Not provided'}</span>
+                    {user.email_verified === 1 && <Verified className="w-4 h-4 text-green-500" />}
+                  </div>
+                </div>
+              </div>
+
+              {/* Registration Progress */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200 mb-6">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <Star className="w-5 h-5 text-blue-500" />
+                  <span className="font-semibold text-slate-700">Registration Progress</span>
+                </div>
+                <div className="text-2xl font-bold text-blue-600 mb-2">{calculateProgress()}%</div>
+                <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500" 
+                    style={{ width: `${calculateProgress()}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {calculateProgress() < 100 && (
+                <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl mb-6">
+                  <Edit3 className="w-4 h-4" />
+                  <span>Complete Profile</span>
+                </button>
+              )}
+
+              {/* Action Buttons - Fixed positioning */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ease-out hover:from-emerald-600 hover:to-teal-700 border border-emerald-400/20">
+                  Pay Now
+                </button> 
+                
+                <button className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 ease-out hover:from-blue-600 hover:to-purple-700 border border-blue-400/20">
+                  Apply For New Loan
+                </button> 
+              </div>
+            </div>
+
+           
+            <VerificationComponent/>
+          </div>
+
+          {/* Right Column - Information Cards */}
+          <div className="lg:col-span-2">
+            <div className="space-y-6">
+              {/* Information Cards Row */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {/* Personal Information */}
+                <div className="bg-white rounded-2xl shadow-md border border-dashed border-blue-300 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-slate-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-800">Personal Information</h3>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <InfoItem label="Full Name" value={`${user.fname} ${user.lname}`} icon={User} />
+                      <InfoItem label="Date of Birth" value={user.dob} icon={Calendar} />
+                      <InfoItem label="Gender" value={user.gender} icon={User} />
+                      <InfoItem label="Father's Name" value={user.fathername} icon={User} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Details */}
+                <div className="bg-white rounded-2xl shadow-md border border-dashed border-green-300 overflow-hidden">
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-b border-slate-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-800">Account Details</h3>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <InfoItem label="CRN Number" value={user.crnno || 'Not provided'} icon={Hash} />
+                      <InfoItem label="Account Number" value={user.accountId || 'Not provided'} icon={CreditCard} />
+                      <InfoItem label="Aadhar Number" value={user.aadhar_no || 'Not provided'} icon={CreditCard} />
+                      <InfoItem label="PAN Number" value={user.pan_no || 'Not provided'} icon={FileText} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ReviewSection/>
+
+              <AppDownloadSection/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <UserFooter/>
+    </div>
+    {/* Congratulations Modal */}
+{showCongratulationsModal && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    {/* Backdrop */}
+    <div 
+      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      onClick={() => setShowCongratulationsModal(false)}
+    ></div>
+    
+    {/* Modal */}
+    <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 transform animate-bounce">
+      {/* Close Button */}
+      <button
+        onClick={() => setShowCongratulationsModal(false)}
+        className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors duration-200 z-10"
+      >
+        <span className="text-gray-500 text-xl leading-none">&times;</span>
+      </button>
+      
+      {/* Modal Content */}
+      <div className="p-8 text-center">
+        {/* Celebration Icon */}
+        <div className="mb-6">
+          <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-4xl">🎉</span>
+          </div>
+          <div className="flex justify-center space-x-2">
+            <span className="text-2xl animate-bounce" style={{ animationDelay: '0s' }}>🎊</span>
+            <span className="text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>✨</span>
+            <span className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>🎈</span>
+          </div>
+        </div>
+        
+        {/* Congratulations Text */}
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          Congratulations!
+        </h2>
+        <p className="text-xl text-gray-700 font-semibold mb-4">
+          {user.fname} 🎊
+        </p>
+        <p className="text-gray-600 mb-6 leading-relaxed">
+          Your registration has been completed successfully! 
+          Welcome to ATD Money family.
+        </p>
+        
+        {/* Success Badge */}
+        <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200 mb-6">
+          <span className="text-green-500">✅</span>
+          <span className="font-medium">Registration Complete</span>
+        </div>
+        
+        {/* Close Button */}
+        <button
+          onClick={() => setShowCongratulationsModal(false)}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+        >
+          Get Started! 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+    </ProtectedRoute>
+  );
+}
+
+const InfoItem = ({ label, value, icon: Icon }) => (
+  <div className="flex items-start space-x-4 p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-100 hover:shadow-md transition-all duration-200">
+    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-200 shadow-sm">
+      <Icon className="w-5 h-5 text-slate-500" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold text-slate-600 mb-1">{label}</p>
+      <p className="text-slate-800 font-medium break-words">{value || 'Not provided'}</p>
+    </div>
+  </div>
+);

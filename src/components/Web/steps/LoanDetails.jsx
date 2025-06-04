@@ -14,6 +14,7 @@ function LoanDetails() {
         setStep,
         loader,
         setLoader,
+        phoneData,
         errorMessage,
         setErrorMessage
     } = useUser();
@@ -54,45 +55,46 @@ function LoanDetails() {
 
     const handleLoanDetails = async (values) => {
         try {
-              setLoanData({ ...values });
-              setLoader(true);
-              setErrorMessage("");
-              
-              const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
-                  method: "POST",
-                  headers: {
-                      "Content-Type": "application/json",
-                      "Accept": "application/json"
-                  },
-                  body: JSON.stringify({ step:7,
-                    userid:phoneData.userid,
-                    provider:1,
-                    amount:values.amount,
-                    tenure:values.tenure,}),
-              });
-  
-              const result = await response.json();
-  
-              if (response.ok) {
-                  setLoader(false);
-                  setStep(step + 1);
-              } else {
-                  setErrorMessage(result?.message);
-                  setLoader(false);
-              }
-          } catch (error) {
-              setErrorMessage("Error submitting data: " + error.message);
-              setLoader(false);
-          }
-        if (!isEligible) {
-            setErrorMessage("You are not eligible for this loan. Only salaried employees can proceed.");
-            return;
+            if (!isEligible) {
+                setErrorMessage("You are not eligible for this loan. Only salaried employees can proceed.");
+                return;
+            }
+    
+            setErrorMessage("");
+            setLoader(true);
+    
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    step: 7,
+                    userid: phoneData?.userid, 
+                    provider: 1,
+                    amount: values.amount,
+                    tenure: values.tenure,
+                }),
+            });
+    
+            const result = await response.json();
+            console.log(result);
+    
+            if (response.ok) {
+                setLoanData({ ...values });
+                setStep(step + 1);
+                setLoader(false);
+            } else {
+                setErrorMessage(result?.message || "Failed to save loan details");
+                setLoader(false);
+            }
+        } catch (error) {
+            console.error("Error submitting loan details:", error);
+            setErrorMessage("Error submitting data: " + error.message);
+            setLoader(false);
         }
-        
-        setLoanData(values);
-        setErrorMessage(""); 
-        setStep(step + 1);
-    }
+    };
 
     const formatAmount = (value) => {
         const numericValue = value.replace(/[^0-9]/g, '');
@@ -111,6 +113,7 @@ function LoanDetails() {
         { value: '180', label: '180 Days' },
         { value: '210', label: '210 Days' },
         { value: '240', label: '240 Days' },
+        { value: '365', label: '365 Days' },
     ];
 
     return (

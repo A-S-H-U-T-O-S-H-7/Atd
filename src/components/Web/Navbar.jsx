@@ -243,7 +243,7 @@ function Navbar() {
                 </Link>
               </li>
               <li>
-              <Link href="/login">
+              <Link href="/userlogin">
                 <button className="px-8 py-2 bg-teal-500 font-bold text-white rounded-md">
                   Admin
                 </button>

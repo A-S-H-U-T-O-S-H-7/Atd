@@ -140,14 +140,16 @@ function AadharVerification() {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ aadharNumber: aadharData.aadharNumber,
+                body: JSON.stringify({ aadharno: aadharData.aadharNumber,
                     provider:1,
                     userid:phoneData.userid,
                     step:3
                  }),
             });
+            console.log(aadharData.aadharNumber)
 
             const result = await response.json();
+            console.log(result)
 
             if (response.ok) {
                 setCountdown(60);
