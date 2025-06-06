@@ -10,7 +10,7 @@ function AppDownloadSection() {
                 <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-blue-400/20 rounded-full blur-2xl animate-pulse"></div>
 
                 {/* Heading */}
-                <h2 className="text-white text-2xl sm:text-3xl font-bold text-center z-10">
+                <h2 className="text-white text-2xl md:text-3xl font-bold text-center ">
                   Download the ATD Money App
                 </h2>
                 <p className="text-gray-300 text-center max-w-xl z-10">

@@ -7,14 +7,15 @@ export default function ProfileCard({ user }) {
   const calculateProgress = () => {
     return Math.round((user.step / 11) * 100);
   };
-
+  
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-dashed border-purple-300 p-6 text-center">
       <div className="relative inline-block mb-6">
         <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-100 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+        
           {user.selfie && !imageError ? (
             <img 
-              src={`/${user.selfie}`} 
+              src={`documents/${user.selfie}`} 
               alt="Profile"
               className="w-full h-full object-cover"
               onError={() => setImageError(true)}
@@ -22,6 +23,7 @@ export default function ProfileCard({ user }) {
           ) : (
             <User className="w-12 h-12 text-blue-400" />
           )}
+          
         </div>
         <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full border-2 border-white flex items-center justify-center transition-colors">
           <Camera className="w-4 h-4 text-white" />

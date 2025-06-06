@@ -178,11 +178,11 @@ function MobileVerification() {
 
     return (
         
-        <div className="bg-gradient-to-r from-[#cef8f8] to-[#e1fefe] px-20 min-h-screen flex items-center justify-center">
+        <div className="bg-gradient-to-r from-[#cef8f8] to-[#e1fefe] px-50 md:px-5 min-h-screen flex items-center justify-center">
             <div className=" py-8 flex flex-col lg:flex-row gap-15 items-center justify-between">
                 {/* Left Section: Text and Image */}
                 <div className="w-full order-2 lg:order-1 px-4">
-                    <div className="flex flex-col lg:flex-row items-center justify-between">
+                    <div className="flex flex-col lg:flex-row items-center gap-10 justify-between">
                         {/* Image - Fixed dimensions */}
                         <div className="w-full flex justify-center lg:justify-end">
                             <div className="h-80 w-full max-w-md flex items-center justify-center">
@@ -201,10 +201,10 @@ function MobileVerification() {
                                         ? "opacity-100 translate-y-0"
                                         : "opacity-0 translate-y-4"}`}
                                 >
-                                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-purple-900 mb-3">
+                                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center md:text-left  text-purple-900 mb-3">
                                         {contentData[currentIndex].title}
                                     </h2>
-                                    <p className="text-lg md:text-xl text-purple-700">
+                                    <p className="text-lg md:text-xl text-center md:text-left  text-purple-700">
                                         {contentData[currentIndex].subtitle}
                                     </p>
                                 </div>

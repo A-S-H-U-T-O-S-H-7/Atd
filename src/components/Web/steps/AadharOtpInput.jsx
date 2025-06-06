@@ -161,7 +161,7 @@ function AadharOTPInput({
                                                         onChange={(e) => handleOtpChange(index, e.target.value, form)}
                                                         onKeyDown={(e) => handleOtpKeyDown(e, index)}
                                                         onPaste={(e) => handleOtpPaste(e, index, form)}
-                                                        className="w-12 h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
+                                                        className=" w-10 h-12  md:w-12 md:h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
                                                     />
                                                 ))}
                                             </>

@@ -5,7 +5,7 @@ import FormField from './FormField';
 
 const OrganizationSection = () => {
   return (
-    <SectionCard icon={Building2} title="Organization Information">
+    <SectionCard icon={Building2} className="text-sm" title="Organization Information">
       <div className="space-y-6">
         <FormField
           name="organizationName"

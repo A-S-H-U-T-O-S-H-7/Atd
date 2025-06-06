@@ -149,7 +149,7 @@ export default function Profile() {
       {showProfileLoading && (
       <ProfileLoadingOverlay onComplete={handleProfileLoadingComplete} />
     )}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50  via-blue-50 to-indigo-50 relative overflow-hidden">
         <BackgroundElements />
         
         <Header 
@@ -158,8 +158,8 @@ export default function Profile() {
           onClientHistory={handleClientHistory}
         />
 
-        <div className="pt-28 px-4 md:px-8 lg:px-12 py-6 relative z-10">
-          <div className="grid lg:grid-cols-3 gap-6">
+        <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <ProfileCard user={user} />
               <VerificationComponent />

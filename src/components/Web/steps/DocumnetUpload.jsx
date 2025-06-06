@@ -26,7 +26,7 @@ function DocumentUpload() {
 
     // Document configuration mapping
     const documentConfig = {
-        photo: { label: 'Passport Photo', accept: 'image/*', maxSize: 1, apiValue: 'selfie' },
+        photo: { label: 'Selfie', accept: 'image/*', maxSize: 1, apiValue: 'selfie' },
         aadharFront: { label: 'Aadhar Card (Front)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'idproof' },
         aadharBack: { label: 'Aadhar Card (Back)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'addressproof' },
         panCard: { label: 'PAN Card', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'pancard' },
@@ -38,12 +38,10 @@ function DocumentUpload() {
 
     // NEW: Generate file hash for duplicate detection
     const generateFileHash = async (file) => {
-        // Simple approach: use file name, size, and lastModified as identifier
         const identifier = `${file.name}_${file.size}_${file.lastModified}`;
         return identifier;
     };
 
-    // NEW: Check if file is already uploaded in another field
     const checkForDuplicateFile = async (file, currentFieldName) => {
         const fileHash = await generateFileHash(file);
         
@@ -88,67 +86,70 @@ function DocumentUpload() {
     };
 
     // Upload file to API
-    const uploadFileToAPI = async (file, fieldName) => {
-        const config = documentConfig[fieldName];
-        const uniqueFilename = generateUniqueFilename(file.name, fieldName);
-        
-        setUploadingFiles(prev => new Set([...prev, fieldName]));
-        
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    step: 10,
-                    provider: 1,
-                    userid: phoneData?.userid,
-                    upload: config.apiValue,
-                    filename: uniqueFilename
-                }),
-            });
+const uploadFileToAPI = async (file, fieldName) => {
+    const config = documentConfig[fieldName];
+    const uniqueFilename = generateUniqueFilename(file.name, fieldName);
+    
+    setUploadingFiles(prev => new Set([...prev, fieldName]));
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);  
+        formData.append('step', '10');
+        formData.append('provider', '1');
+        formData.append('userid', phoneData?.userid);
+        formData.append('upload', config.apiValue);
+        formData.append('filename', uniqueFilename);
 
-            const result = await response.json();
+        const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            },
+            body: formData  
+        });
 
-            if (response.ok) {
-                setUploadStatus(prev => ({
-                    ...prev,
-                    [fieldName]: { status: 'success', filename: uniqueFilename }
-                }));
-                // NEW: Add to uploaded files tracking
-                await addToUploadedFiles(file, fieldName);
-                return { success: true, filename: uniqueFilename };
-            } else {
-                setUploadStatus(prev => ({
-                    ...prev,
-                    [fieldName]: { status: 'error', error: result.message || 'Upload failed' }
-                }));
-                return { success: false, error: result.message || 'Upload failed' };
-            }
-        } catch (error) {
+        const result = await response.json();
+        console.log(result)
+
+        if (response.ok) {
             setUploadStatus(prev => ({
                 ...prev,
-                [fieldName]: { status: 'error', error: error.message }
+                [fieldName]: { 
+                    status: 'success', 
+                    filename: uniqueFilename,
+                    fileUrl: result.fileUrl || result.data?.fileUrl  
+                }
             }));
-            return { success: false, error: error.message };
-        } finally {
-            setUploadingFiles(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(fieldName);
-                return newSet;
-            });
+            await addToUploadedFiles(file, fieldName);
+            return { success: true, filename: uniqueFilename };
+        } else {
+            setUploadStatus(prev => ({
+                ...prev,
+                [fieldName]: { status: 'error', error: result.message || 'Upload failed' }
+            }));
+            return { success: false, error: result.message || 'Upload failed' };
         }
-    };
+    } catch (error) {
+        setUploadStatus(prev => ({
+            ...prev,
+            [fieldName]: { status: 'error', error: error.message }
+        }));
+        return { success: false, error: error.message };
+    } finally {
+        setUploadingFiles(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(fieldName);
+            return newSet;
+        });
+    }
+};
 
-    // MODIFIED: Handle file selection with duplicate check
     const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
         if (!file) return;
 
         const config = documentConfig[fieldName];
         
-        // NEW: Check for duplicate file
         const duplicateCheck = await checkForDuplicateFile(file, fieldName);
         if (duplicateCheck.isDuplicate) {
             setErrorMessage(
@@ -179,24 +180,20 @@ function DocumentUpload() {
             return;
         }
 
-        // NEW: If replacing a file, remove the old one from tracking
         if (currentFile) {
             await removeFromUploadedFiles(currentFile);
         }
 
-        // Set file in form and upload
         setFieldValue(fieldName, file);
         const uploadResult = await uploadFileToAPI(file, fieldName);
         
         if (!uploadResult.success) {
             setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
             setTimeout(() => setErrorMessage(''), 5000);
-            // NEW: If upload failed, don't keep it in tracking
             await removeFromUploadedFiles(file);
         }
     };
 
-    // Format file size
     const formatFileSize = (bytes) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -432,7 +429,7 @@ function DocumentUpload() {
                                 <button 
                                     type="button"
                                     onClick={() => setStep(step - 1)}
-                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors order-2 sm:order-1 duration-200"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                     Previous
@@ -441,7 +438,7 @@ function DocumentUpload() {
                                 <button 
                                     disabled={loader || !isValid} 
                                     type='submit' 
-                                    className="inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 order-1 sm:order-2 disabled:cursor-not-allowed"
                                 >
                                     {loader ? (
                                         <BeatLoader color="#fff" size={6} />

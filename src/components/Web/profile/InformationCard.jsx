@@ -14,10 +14,10 @@ const InfoItem = ({ label, value, icon: Icon }) => (
 
 export default function InformationCards({ user }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-10 md:mt-0 md:gap-6">
       {/* Personal Information */}
-      <div className="bg-white rounded-2xl shadow-md border border-dashed border-blue-300 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-slate-200">
+      <div className="bg-white rounded-2xl shadow-md border-2 border-dashed border-blue-400 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-100 to-blue-200 px-6 py-4 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
               <User className="w-6 h-6 text-white" />
@@ -36,8 +36,8 @@ export default function InformationCards({ user }) {
       </div>
 
       {/* Account Details */}
-      <div className="bg-white rounded-2xl shadow-md border border-dashed border-green-300 overflow-hidden">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 px-6 py-4 border-b border-slate-200">
+      <div className="bg-white rounded-2xl shadow-md border-2 border-dashed border-green-300 overflow-hidden">
+        <div className="bg-gradient-to-r from-green-100 to-green-200 px-6 py-4 border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
               <FileText className="w-6 h-6 text-white" />

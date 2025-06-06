@@ -122,6 +122,8 @@ function LoginOtpVerification({
                                         key={i}
                                         ref={(el) => (inputRefs.current[i] = el)}
                                         type="text"
+                                        inputMode="numeric"        
+                                        pattern="[0-9]*" 
                                         maxLength="1"
                                         value={digit}
                                         onChange={(e) => handleChange(i, e.target.value, setFieldValue)}

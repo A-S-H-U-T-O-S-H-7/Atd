@@ -98,7 +98,7 @@ function MobileLogin() {
                 setCanResend(false);
                 setLoader(false);
             } else {
-                setErrorMessage(result?.message || "Failed to send OTP");
+                setErrorMessage(result?.errors?.mobile  || "Failed to send OTP");
                 setLoader(false);
             }
         } catch (error) {

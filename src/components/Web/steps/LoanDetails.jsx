@@ -275,7 +275,7 @@ function LoanDetails() {
                                         <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-4 mb-6">
                                             <div className="flex items-center gap-2">
                                                 <Percent className="w-5 h-5 text-teal-600" />
-                                                <span className="text-sm font-medium text-gray-700">
+                                                <span className="text-xs md:text-sm font-medium text-gray-700">
                                                     Fixed Interest Rate: {FIXED_ROI}% per day
                                                 </span>
                                             </div>
@@ -283,7 +283,7 @@ function LoanDetails() {
 
                                         {/* Updated Loan Summary Display - Only showing Amount, Days, Interest, and Repay Amount */}
                                         {totalRepayAmount > 0 && values.amount && values.tenure && (
-                                            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-6 border border-teal-200">
+                                            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-2 md:p-4 border border-teal-200">
                                                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                                     <Calculator className="w-5 h-5" />
                                                     Loan Summary

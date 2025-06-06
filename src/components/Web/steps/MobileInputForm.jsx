@@ -136,7 +136,7 @@ function MobileInputForm({ phoneData, onSendOTP, loader, errorMessage }) {
                                 {loader ? (<BeatLoader color="#fff" size={8} />) : ("Get Started")}
                             </button>
 
-                           
+                           <div className='py-4'>Already have an account ? <Link className='text-indigo-600 cursor-pointer font-medium hover:text-indigo-700 transition-colors hover:underline' href="/userlogin">Login here</Link> </div>
                         </div>
                     </Form>
                 )}

@@ -93,7 +93,7 @@ function Navbar() {
               alt="logo"
               width={280}
               height={280}
-              className="w-18 md:w-19 hover:scale-105 transition-transform duration-300"
+              className="w-12 md:w-19 hover:scale-105 transition-transform duration-300"
             />
           </div>
           </Link>
@@ -245,7 +245,7 @@ function Navbar() {
               <li>
               <Link href="/userlogin">
                 <button className="px-8 py-2 bg-teal-500 font-bold text-white rounded-md">
-                  Admin
+                  Login
                 </button>
               </Link>
               </li>
@@ -298,7 +298,7 @@ function Navbar() {
                     alt="logo"
                     width={80}
                     height={80}
-                    className="w-20"
+                    className="w-14"
                   />
                   <span className="font-bold text-[17px] text-teal-700">ATD MONEY</span>
                   <button 
@@ -424,6 +424,11 @@ function Navbar() {
                   >
                     Sign Up
                   </Link>
+                  <Link href="/userlogin">
+                <button className="px-8 mt-3 w-full py-3 bg-white font-semibold text-teal-600 border border-teal-600 transition-colors duration-300 shadow-md rounded-md">
+                  Login
+                </button>
+              </Link>
                 </div>
               </div>
             </motion.div>

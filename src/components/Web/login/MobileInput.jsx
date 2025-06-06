@@ -123,7 +123,7 @@ function MobileLoginInput({ phoneData, onSendOTP, loader, errorMessage }) {
                                 <p className="text-gray-500 text-sm text-center">
                                     Don't have an account?{' '}
                                     <Link href="/signup" className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline transition-colors">
-                                        Sign up here
+                                        Signup here
                                     </Link>
                                 </p>
                             </div>
