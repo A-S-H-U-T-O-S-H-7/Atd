@@ -51,7 +51,7 @@ function LoginOtpVerification({
     const handlePaste = (e, index, setFieldValue) => {
         e.preventDefault();
         const pastedData = e.clipboardData.getData('text');
-        if (!/^\d+$/.test(pastedData)) return;
+        // if (!/^\d+$/.test(pastedData)) return;
         
         const otpDigits = pastedData.slice(0, 6 - index).split('');
         const newOtp = [...otp];
