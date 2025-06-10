@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import LoginForm from './LoginForm';
