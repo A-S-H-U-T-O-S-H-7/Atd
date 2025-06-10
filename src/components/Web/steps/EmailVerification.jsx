@@ -118,7 +118,7 @@ function EmailVerification() {
             setErrorMessage("Error verifying OTP: " + error.message);
             setLoader(false);
         }
-        
+        setStep(step + 1);
     };
 
     const handleResendOTP = async () => {
