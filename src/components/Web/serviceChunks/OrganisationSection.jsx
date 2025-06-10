@@ -36,7 +36,7 @@ const OrganizationSection = () => {
           <FormField
             name="website"
             label="Website"
-            placeholder="Enter organization website (optional)"
+            placeholder="Enter organization website"
             helpText="e.g.: https://www.example.com"
           />
         </div>

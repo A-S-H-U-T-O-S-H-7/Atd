@@ -27,7 +27,7 @@ function Navbar() {
 
 
   const navigationLinks = [
-    { name: "Loans", href: "/signup" },
+    { name: "Loans", href: "/user_signup" },
     { name: "About us", href: "/aboutus" },
     { name: "Contact us", href: "/contactus" },
     
@@ -236,7 +236,7 @@ function Navbar() {
 
               <li>
                 <Link 
-                  href="/signup" 
+                  href="/user_signup" 
                   className="px-5 py-2 font-semibold border-2 rounded-md border-teal-500 text-teal-500 hover:bg-teal-500 hover:text-white transition-all duration-300 flex items-center justify-center"
                 >
                   Sign Up
@@ -418,7 +418,7 @@ function Navbar() {
                 
                 <div className="mt-auto mb-6 pt-6">
                   <Link
-                    href="/signup"
+                    href="/user_signup"
                     className="w-full py-3 flex justify-center font-semibold text-white bg-teal-500 rounded-md hover:bg-teal-600 transition-colors duration-300 shadow-md"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

@@ -11,22 +11,28 @@ import { useUser } from "@/lib/UserRegistrationContext";
 import MobileVerification from "./steps/Signup";
 import EmailVerification from "./steps/EmailVerification";
 import AadharVerification from "./steps/AadharVerification";
+import ReferralCode from "./steps/ReferalCode";
 
 const UserRegistration = () => {
   const { step } = useUser(); 
+  
+if (step === null) {
+  return <div>Loading...</div>; 
+}
   return (
     <div>
       {step === 1 && <MobileVerification/>}
       {step === 2 && <EmailVerification/>}
       {step === 3 && <AadharVerification/>}
-      {step === 4 && <PersonalDetails />}
-      {step === 5 && <KYCDetails />}
-      {step === 6 && <LoanDetails />}
-      {step === 7 && <ServiceDetails />}
-      {step === 8 && <BankDetails />}
-      {step === 9 && <DocumentUpload /> }
-      {step === 10 && <References />}
-
+      {step === 4 && <ReferralCode/>}
+      {step === 5 && <PersonalDetails />}
+      {step === 6 && <KYCDetails />}
+      {step === 7 && <LoanDetails />}
+      {step === 8 && <ServiceDetails />}
+      {step === 9 && <BankDetails />}
+      {step === 10 && <DocumentUpload /> }
+      {step === 11 && <References />}
+      
     </div>
   );
 };

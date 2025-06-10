@@ -145,9 +145,7 @@ function MobileLogin() {
                             phoneOtp: values.phoneOtp 
                         });
                         
-                        setLoader(false);
                         
-                        // Redirect to profile
                         router.push('/userProfile');
                     } else {
                         setErrorMessage("Login failed. Please try again.");

@@ -1,23 +1,24 @@
-"use client"
-import { createContext,useState,useContext } from "react"
+"use client";
+import { createContext, useState, useContext, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+
 const UserContext = createContext();
 
-export const UserContextProvider = ({children}) => {
-
+export const UserContextProvider = ({ children }) => {
   // Step 1: Phone Number and Verification Data
   const [phoneData, setPhoneData] = useState({
     phoneNumber: "",
     phoneOtp: "",
     isPhoneVerified: false,
-    agreeToTerms: false ,
-    userid: null,
+    agreeToTerms: false,
+    userid: null
   });
 
   // Step 2: Email and Verification Data
   const [emailData, setEmailData] = useState({
     email: "",
     emailOtp: "",
-    isEmailVerified: false,
+    isEmailVerified: false
   });
 
   // Step 3: Aadhar Verification Data
@@ -30,23 +31,31 @@ export const UserContextProvider = ({children}) => {
     dob: "",
     gender: "",
     careOf: "",
-    
+
     address: {
-        country: "",
-        state: "",
-        dist: "",
-        subdist: "",
-        vtc: "",
-        po: "",
-        loc: "",
-        street: "",
-        house: "",
-        landmark: ""
+      country: "",
+      state: "",
+      dist: "",
+      subdist: "",
+      vtc: "",
+      po: "",
+      loc: "",
+      street: "",
+      house: "",
+      landmark: ""
     },
     zip: ""
   });
 
-  // Step 4: Personal Details
+  // Step 4: referral details
+  const [referralData, setReferralData] = useState({
+    referralCode: "",
+    referrerId: null,
+    referrerName: "",
+    isVerified: false
+  });
+
+  // Step 5: Personal Details
   const [personalData, setPersonalData] = useState({
     firstName: "",
     lastName: "",
@@ -58,13 +67,15 @@ export const UserContextProvider = ({children}) => {
       city: "",
       state: "",
       pincode: "",
+      addressType: ""
     },
     permanentAddress: {
       street: "",
       city: "",
       state: "",
       pincode: "",
-      isSameAsCurrent: false,
+      addressType: "",
+      isSameAsCurrent: false
     },
     fatherName: "",
     familyReference: {
@@ -72,29 +83,27 @@ export const UserContextProvider = ({children}) => {
       mobileNumber: "",
       email: "",
       relation: "",
-      address: "",
-    },
+      address: ""
+    }
   });
 
-  // Step 5: KYC Details Data 
+  // Step 6: KYC Details Data
   const [kycData, setKycData] = useState({
     panNumber: "",
     crnNumber: "",
-    accountId: "", 
-  });
-  
-
-  // Step 6: Loan Details
-    const [loanData, setLoanData] = useState({
-      isSalaried: "",
-      state: "",
-      amount: "",
-      city: "",
-      tenure: "", 
-      
+    accountId: ""
   });
 
-  // Step 7: Service/Employment Details
+  // Step 7: Loan Details
+  const [loanData, setLoanData] = useState({
+    isSalaried: "",
+
+    amount: "",
+
+    tenure: ""
+  });
+
+  // Step 8: Service/Employment Details
   const [serviceData, setServiceData] = useState({
     organizationName: "",
     organizationAddress: "",
@@ -115,58 +124,92 @@ export const UserContextProvider = ({children}) => {
     }
   });
 
-  // Step 8: Bank Details
+  // Step 9: Bank Details
   const [bankData, setBankData] = useState({
     ifscCode: "",
     bankName: "",
     bankBranch: "",
     accountNumber: "",
     confirmAccountNumber: "",
-    accountType: "",
-    
+    accountType: ""
   });
 
-  // Step 9: Document Upload Data
+  // Step 10: Document Upload Data
   const [documentData, setDocumentData] = useState({
     aadharFront: null,
     aadharBack: null,
     panCard: null,
-    photo: null,
-    salarySlip1: null, 
-    salarySlip2: null, 
-    salarySlip3: null, 
-    bankStatement: null,
-    
+    selfie: null,
+    salarySlip1: null,
+    salarySlip2: null,
+    salarySlip3: null,
+    bankStatement: null
   });
 
+  // Upload Status Tracking
   const [uploadStatus, setUploadStatus] = useState({
-    documentData,
-    setDocumentData,
-   
+    aadharFront: { uploading: false, uploaded: false, error: null },
+    aadharBack: { uploading: false, uploaded: false, error: null },
+    panCard: { uploading: false, uploaded: false, error: null },
+    photo: { uploading: false, uploaded: false, error: null },
+    salarySlip1: { uploading: false, uploaded: false, error: null },
+    salarySlip2: { uploading: false, uploaded: false, error: null },
+    salarySlip3: { uploading: false, uploaded: false, error: null },
+    bankStatement: { uploading: false, uploaded: false, error: null }
   });
 
-
-  // Step 10: References Data
+  // Step 11: References Data
   const [referenceData, setReferenceData] = useState({
     references: [
       { name: "", phone: "", email: "" },
       { name: "", phone: "", email: "" },
       { name: "", phone: "", email: "" },
       { name: "", phone: "", email: "" },
-      { name: "", phone: "", email: "" },
-    ],
+      { name: "", phone: "", email: "" }
+    ]
   });
 
   // Application State Management
   const [userId, setUserId] = useState("");
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(null);
   const [loader, setLoader] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Helper function to copy current address to permanent
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user && user.step) {
+       
+      setStep(user.step + 1);
+      setUserId(user.id || user._id);
+  
+      setPhoneData((prev) => ({
+        ...prev,
+        phoneNumber: user.phone || prev.phoneNumber,
+        isPhoneVerified: user.phoneVerified || true, 
+        userid: user.id,
+      }));
+
+      
+      if (user.step >= 5) {
+        setPersonalData(prev => ({
+          ...prev,
+          firstName: user.fname || prev.firstName,
+          lastName: user.lname || prev.lastName,
+          dob: user.dob || prev.dob,
+          gender: user.gender || prev.gender,
+          fatherName: user.fathername || prev.fatherName,
+          
+        }));
+      }
+    } else {
+      setStep(1);
+    }
+  }, [user]);
+
   const copyCurrentToPermanent = () => {
-    setPersonalData(prev => ({
+    setPersonalData((prev) => ({
       ...prev,
       permanentAddress: {
         ...prev.currentAddress,
@@ -181,25 +224,23 @@ export const UserContextProvider = ({children}) => {
       phoneNumber: "",
       phoneOtp: "",
       isPhoneVerified: false,
-      agreeToTerms: false ,
-      userid: null,
+      agreeToTerms: false,
+      userid: null
     });
     setEmailData({
       email: "",
       emailOtp: "",
-      isEmailVerified: false,
-            // googleUser: null
+      isEmailVerified: false
     });
     setAadharData({
       aadharNumber: "",
       aadharOtp: "",
       isAadharVerified: false,
       fullName: "",
-    dob: "",
-    gender: "",
-    careOf: "",
-    
-    address: {
+      dob: "",
+      gender: "",
+      careOf: "",
+      address: {
         country: "",
         state: "",
         dist: "",
@@ -210,8 +251,14 @@ export const UserContextProvider = ({children}) => {
         street: "",
         house: "",
         landmark: ""
-    },
-    zip: ""
+      },
+      zip: ""
+    });
+    setReferralData({
+      referralCode: "",
+      referrerId: null,
+      referrerName: "",
+      isVerified: false
     });
     setPersonalData({
       firstName: "",
@@ -223,14 +270,14 @@ export const UserContextProvider = ({children}) => {
         street: "",
         city: "",
         state: "",
-        pincode: "",
+        pincode: ""
       },
       permanentAddress: {
         street: "",
         city: "",
         state: "",
         pincode: "",
-        isSameAsCurrent: false,
+        isSameAsCurrent: false
       },
       fatherName: "",
       familyReference: {
@@ -238,21 +285,20 @@ export const UserContextProvider = ({children}) => {
         mobileNumber: "",
         email: "",
         relation: "",
-        address: "",
-      },
+        address: ""
+      }
     });
     setLoanData({
       isSalaried: "",
-      state: "",
+
       amount: "",
-      city: "",
-      tenure: "",
-      
+
+      tenure: ""
     });
-   
     setKycData({
       panNumber: "",
       crnNumber: "",
+      accountId: ""
     });
     setServiceData({
       organizationName: "",
@@ -265,12 +311,13 @@ export const UserContextProvider = ({children}) => {
       monthlySalary: "",
       officialEmail: "",
       netMonthlySalary: "",
+      familyIncome: "",
       designation: "",
       existingEmi: "",
       workingSince: {
-        from: "",
-        to: "",
-      },
+        month: "",
+        year: ""
+      }
     });
     setBankData({
       ifscCode: "",
@@ -278,18 +325,27 @@ export const UserContextProvider = ({children}) => {
       bankBranch: "",
       accountNumber: "",
       confirmAccountNumber: "",
-      accountType: "",
-      
+      accountType: ""
     });
     setDocumentData({
       aadharFront: null,
       aadharBack: null,
       panCard: null,
-      photo: null,
+      selfie: null,
       salarySlip1: null,
       salarySlip2: null,
       salarySlip3: null,
-      bankStatement: null,
+      bankStatement: null
+    });
+    setUploadStatus({
+      aadharFront: { uploading: false, uploaded: false, error: null },
+      aadharBack: { uploading: false, uploaded: false, error: null },
+      panCard: { uploading: false, uploaded: false, error: null },
+      selfie: { uploading: false, uploaded: false, error: null },
+      salarySlip1: { uploading: false, uploaded: false, error: null },
+      salarySlip2: { uploading: false, uploaded: false, error: null },
+      salarySlip3: { uploading: false, uploaded: false, error: null },
+      bankStatement: { uploading: false, uploaded: false, error: null }
     });
     setReferenceData({
       references: [
@@ -297,8 +353,8 @@ export const UserContextProvider = ({children}) => {
         { name: "", phone: "", email: "" },
         { name: "", phone: "", email: "" },
         { name: "", phone: "", email: "" },
-        { name: "", phone: "", email: "" },
-      ],
+        { name: "", phone: "", email: "" }
+      ]
     });
     setStep(1);
     setUserId("");
@@ -309,18 +365,19 @@ export const UserContextProvider = ({children}) => {
   return (
     <UserContext.Provider
       value={{
-        // Data States
         phoneData,
         setPhoneData,
         emailData,
         setEmailData,
         aadharData,
         setAadharData,
+        referralData,
+        setReferralData,
         personalData,
         setPersonalData,
         loanData,
         setLoanData,
-         kycData,
+        kycData,
         setKycData,
         serviceData,
         setServiceData,
@@ -328,9 +385,11 @@ export const UserContextProvider = ({children}) => {
         setBankData,
         documentData,
         setDocumentData,
+        uploadStatus,
+        setUploadStatus,
         referenceData,
         setReferenceData,
-        
+
         // Application States
         userId,
         setUserId,
@@ -342,10 +401,10 @@ export const UserContextProvider = ({children}) => {
         setErrorMessage,
         successMessage,
         setSuccessMessage,
-        
+
         // Helper Functions
         copyCurrentToPermanent,
-        resetAllData,
+        resetAllData
       }}
     >
       {children}
@@ -356,9 +415,7 @@ export const UserContextProvider = ({children}) => {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error(
-      "useUser must be used within a UserRegistrationProvider"
-    );
+    throw new Error("useUser must be used within a UserContextProvider");
   }
   return context;
 };

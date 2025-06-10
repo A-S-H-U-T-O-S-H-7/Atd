@@ -58,11 +58,12 @@ function EmailVerification() {
             });
     
             const result = await response.json();
+            console.log(result)
     
             if (response.ok) {
                 setEmailData({ ...emailData, email: values.email });
                 setOtpSent(true);
-                setCountdown(60); // 60 seconds countdown
+                setCountdown(60); 
                 setCanResend(false);
                 setLoader(false);
             } else {
@@ -99,6 +100,7 @@ function EmailVerification() {
             });
 
             const result = await response.json();
+            console.log(result)
 
             if (response.ok) {
                 setEmailData({ 
@@ -143,6 +145,8 @@ function EmailVerification() {
             });
 
             const result = await response.json();
+            console.log(result)
+
 
             if (response.ok) {
                 setCountdown(60);
@@ -203,6 +207,8 @@ function EmailVerification() {
             });
             
             const apiData = await response.json();
+            console.log(apiData)
+
             
             if (response.ok && apiData.success === true) {
                 const updatedEmailData = { 

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Formik, Form } from "formik";
 import { BeatLoader } from 'react-spinners';
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PersonalDetailsSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
 
@@ -35,7 +35,8 @@ function PersonalDetails() {
     return values.currentAddress.street && 
            values.currentAddress.city && 
            values.currentAddress.state && 
-           values.currentAddress.pincode;
+           values.currentAddress.pincode &&
+           values.currentAddress.addressType
   };
 
   const getFullAddressFromAadhar = () => {
@@ -71,6 +72,7 @@ function PersonalDetails() {
       setFieldValue('permanentAddress.city', values.currentAddress.city);
       setFieldValue('permanentAddress.state', values.currentAddress.state);
       setFieldValue('permanentAddress.pincode', values.currentAddress.pincode);
+      setFieldValue('permanentAddress.addressType', values.currentAddress.addressType);
       setFieldValue('permanentAddress.isSameAsCurrent', true);
     } else {
       setFieldValue('permanentAddress.isSameAsCurrent', false);
@@ -86,7 +88,7 @@ function PersonalDetails() {
       const apiData = {
         step: 5,
         userid: phoneData.userid, 
-        provider: 1, 
+        provider: phoneData.userid , 
         fname: values.firstName,
         lname: values.lastName,
         gender: values.gender,
@@ -99,6 +101,12 @@ function PersonalDetails() {
         curr_city: values.currentAddress.city,
         curr_pincode: parseInt(values.currentAddress.pincode),
         per_houseno: "555",
+        
+        curr_address_code: parseInt(values.currentAddress.addressType),
+        per_address_code: values.permanentAddress.isSameAsCurrent ? 
+        parseInt(values.currentAddress.addressType) : 
+        parseInt(values.permanentAddress.addressType),
+
         per_address: values.permanentAddress.isSameAsCurrent ? values.currentAddress.street : values.permanentAddress.street,
         per_state: values.permanentAddress.isSameAsCurrent ? values.currentAddress.state : values.permanentAddress.state,
         per_city: values.permanentAddress.isSameAsCurrent ? values.currentAddress.city : values.permanentAddress.city,
@@ -117,8 +125,9 @@ function PersonalDetails() {
           "Accept": "application/json"
         },
         body: JSON.stringify(apiData),
+        
       });
-
+      console.log(apiData)
       const result = await response.json();
       console.log(result)
 
@@ -147,7 +156,9 @@ function PersonalDetails() {
       street: personalData.currentAddress?.street || getFullAddressFromAadhar() || '',
       city: personalData.currentAddress?.city || aadharData?.address?.subdist || '',
       state: personalData.currentAddress?.state || aadharData?.address?.state || '',
-      pincode: personalData.currentAddress?.pincode || aadharData?.zip || ''
+      pincode: personalData.currentAddress?.pincode || aadharData?.zip || '',
+      addressType: personalData.currentAddress?.addressType || ''
+
     }
   });
 
@@ -191,7 +202,15 @@ function PersonalDetails() {
               <FamilyReferenceSection />
               
               {/* Navigation Button */}
-              <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
+              <button 
+                                    type="button"
+                                    onClick={() => setStep(step - 1)}
+                                    className="inline-flex cursor-pointer items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:bg-gray-200 hover:border-gray-300 transition-all duration-200 order-2 sm:order-1"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    Previous
+                                </button>
                 <button 
                   disabled={loader} 
                   type='submit' 
@@ -203,7 +222,7 @@ function PersonalDetails() {
                     <>
                       Next
                       <ChevronRight className="w-4 h-4" />
-                    </>
+                    </> 
                   )}
                 </button>
               </div>

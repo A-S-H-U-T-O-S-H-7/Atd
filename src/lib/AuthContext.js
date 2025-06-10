@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async () => {
-    console.log('🔄 fetchUserData started');
     setLoading(true);
     
     let token;
@@ -18,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     try {
       token = localStorage.getItem('token');
       justRegistered = localStorage.getItem('justRegistered') === 'true';
-      console.log('📋 Local storage check:', { token: !!token, justRegistered });
 
       
       // Check if we have temporary user data from registration
@@ -26,7 +24,6 @@ export const AuthProvider = ({ children }) => {
       if (tempUserDataStr) {
         try {
           tempUserData = JSON.parse(tempUserDataStr);
-          console.log('📦 tempUserData found:', tempUserData);
 
         } catch (error) {
           console.warn('Could not parse temp user data:', error);
@@ -40,7 +37,6 @@ export const AuthProvider = ({ children }) => {
 
     // If we have temp user data from registration, use it immediately
     if (tempUserData && justRegistered) {
-      console.log('✅ Using temporary user data from registration');
       setUser(tempUserData);
       setLoading(false); 
       localStorage.setItem('showCongratulations', 'true');
@@ -55,13 +51,11 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (!token) {
-      console.log('❌ No token found');
 
       setUser(null);
       setLoading(false);
       return;
     }
-    console.log('🌐 Making API call...');
 
     // Remove unnecessary delay for fresh registrations
     // if (justRegistered) {

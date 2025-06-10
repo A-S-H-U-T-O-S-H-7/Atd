@@ -27,6 +27,12 @@ export default function Profile() {
   const [congratulationsTriggered, setCongratulationsTriggered] = useState(false);
   const [showProfileLoading, setShowProfileLoading] = useState(false);
 
+  // Add redirect logic for incomplete registration
+useEffect(() => {
+  if (user && user.step < 11) {
+    router.push('/user_signup');
+  }
+}, [user, router]);
 
 
   useEffect(() => {

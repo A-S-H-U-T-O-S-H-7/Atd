@@ -1,32 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ref, getDownloadURL } from "firebase/storage";
+import { storage } from '@/lib/firebase';
 import { User, Camera, Phone, Mail, Star, Edit3, Verified } from 'lucide-react';
 
 export default function ProfileCard({ user }) {
   const [imageError, setImageError] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const [loadingImage, setLoadingImage] = useState(false);
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (user.selfie && !imageError) {
+        setLoadingImage(true);
+        try {
+          const fileRef = ref(storage, `photo/${user.selfie}`); 
+          const url = await getDownloadURL(fileRef);
+          setProfileImageUrl(url);
+        } catch (error) {
+          console.error("Failed to get profile image URL:", error);
+          setImageError(true);
+        } finally {
+          setLoadingImage(false);
+        }
+      }
+    };
+
+    fetchProfileImage();
+  }, [user.selfie, imageError]);
 
   const calculateProgress = () => {
     return Math.round((user.step / 11) * 100);
   };
   
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-dashed border-purple-300 p-6 text-center">
+    <div className="bg-white rounded-2xl shadow-lg border border-dashed border-purple-300 py-6 px-4 md:p-6 text-center">
       <div className="relative inline-block mb-6">
+
         <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-100 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-        
-          {user.selfie && !imageError ? (
-            <img 
-              src={`documents/${user.selfie}`} 
-              alt="Profile"
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <User className="w-12 h-12 text-blue-400" />
-          )}
-          
-        </div>
-        <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded-full border-2 border-white flex items-center justify-center transition-colors">
-          <Camera className="w-4 h-4 text-white" />
+      {loadingImage ? (
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+      ) : profileImageUrl && !imageError ? (
+        <img 
+          src={profileImageUrl} 
+          alt="Profile"
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <User className="w-12 h-12 text-blue-400" />
+      )}
+    </div>
+
+        <button className="absolute bottom-1 -right-1 w-6 h-6 bg-green-500 hover:bg-green-600 rounded-full border-2 border-white flex items-center justify-center transition-colors">
         </button>
       </div>
       
@@ -34,7 +59,7 @@ export default function ProfileCard({ user }) {
       <p className="text-slate-500 mb-4">ID: {user.accountId}</p>
       
       {/* Contact Information */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-6 border border-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl px-2 py-4 md:p-4 mb-6 border border-blue-200">
         <div className="space-y-3">
           <div className="flex items-center justify-center space-x-2 text-sm">
             <Phone className="w-4 h-4 text-blue-500" />

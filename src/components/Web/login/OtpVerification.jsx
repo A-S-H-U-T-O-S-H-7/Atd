@@ -4,7 +4,7 @@ import { Formik, Form, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { PhoneOtpSchema } from '../validations/UserRegistrationValidations';
 import { RiEdit2Fill } from 'react-icons/ri';
-import { Clock, RefreshCw, Shield } from 'lucide-react';
+import { Clock, RefreshCw } from 'lucide-react';
 
 function LoginOtpVerification({ 
     phoneNumber, 

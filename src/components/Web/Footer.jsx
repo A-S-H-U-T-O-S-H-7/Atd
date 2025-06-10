@@ -216,9 +216,14 @@ function Footer() {
                     info@atdmoney.com
                   </span>
                 </a>
-                <Link href="/signup">
+                <Link href="/user_signup">
                 <div className="px-4 text-black w-30 font-semibold rounded-md py-2 border bg-teal-500">
                   Apply Now
+                </div>
+                </Link>
+                <Link href="/admin_login">
+                <div className="px-4 text-black border-red-500 text-center mt-4 w-30 font-semibold rounded-md py-2 border-2 bg-purple-500">
+                  Admin
                 </div>
                 </Link>
               </div>

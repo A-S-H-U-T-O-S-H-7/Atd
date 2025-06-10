@@ -6,6 +6,11 @@ import { DocumentUploadSchema } from '../validations/UserRegistrationValidations
 import { useUser } from '@/lib/UserRegistrationContext';
 import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle } from 'lucide-react';
 
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from '@/lib/firebase';
+
+
+
 function DocumentUpload() {
     const {
         documentData,
@@ -21,31 +26,95 @@ function DocumentUpload() {
 
     const [uploadStatus, setUploadStatus] = useState({});
     const [uploadingFiles, setUploadingFiles] = useState(new Set());
-    // NEW: Track uploaded files with their hash/name and field mapping
     const [uploadedFiles, setUploadedFiles] = useState(new Map());
+    const [allFilesUploaded, setAllFilesUploaded] = useState(false);
 
-    // Document configuration mapping
+    // Document configuration with Firebase bucket mapping
     const documentConfig = {
-        photo: { label: 'Selfie', accept: 'image/*', maxSize: 1, apiValue: 'selfie' },
-        aadharFront: { label: 'Aadhar Card (Front)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'idproof' },
-        aadharBack: { label: 'Aadhar Card (Back)', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'addressproof' },
-        panCard: { label: 'PAN Card', accept: 'image/*,.pdf', maxSize: 2, apiValue: 'pancard' },
-        salarySlip1: { label: 'Latest Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'firstsalaryslip' },
-        salarySlip2: { label: '2nd Month Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'secondsalaryslip' },
-        salarySlip3: { label: '3rd Month Salary Slip', accept: '.pdf', maxSize: 2, apiValue: 'thirdsalaryslip' },
-        bankStatement: { label: '6 Month Bank Statement', accept: '.pdf', maxSize: 5, apiValue: 'statement' }
+        photo: { 
+            label: 'Selfie', 
+            accept: 'image/jpeg,image/jpg,image/png', 
+            maxSize: 1, 
+            apiValue: 'selfie',
+            bucket: 'photo'
+        },
+        aadharFront: { 
+            label: 'Aadhar Card (Front)', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'idproof',
+            bucket: 'idproof'
+        },
+        aadharBack: { 
+            label: 'Aadhar Card (Back)', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'addressproof',
+            bucket: 'address'
+        },
+        panCard: { 
+            label: 'PAN Card', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'pancard',
+            bucket: 'pan'
+        },
+        salarySlip1: { 
+            label: 'Latest Salary Slip', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'firstsalaryslip',
+            bucket: 'first_salaryslip'
+        },
+        salarySlip2: { 
+            label: '2nd Month Salary Slip', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'secondsalaryslip',
+            bucket: 'second_salaryslip'
+        },
+        salarySlip3: { 
+            label: '3rd Month Salary Slip', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 2, 
+            apiValue: 'thirdsalaryslip',
+            bucket: 'third_salaryslip'
+        },
+        bankStatement: { 
+            label: '6 Month Bank Statement', 
+            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+            maxSize: 5, 
+            apiValue: 'statement',
+            bucket: 'bank-statement'
+        }
     };
 
-    // NEW: Generate file hash for duplicate detection
-    const generateFileHash = async (file) => {
-        const identifier = `${file.name}_${file.size}_${file.lastModified}`;
-        return identifier;
+    // Check if all required files are uploaded successfully
+    useEffect(() => {
+        const requiredFields = Object.keys(documentConfig);
+        const allUploaded = requiredFields.every(field => 
+            uploadStatus[field]?.status === 'success'
+        );
+        setAllFilesUploaded(allUploaded);
+    }, [uploadStatus]);
+
+    // Generate file hash for duplicate detection
+    const generateFileHash = (file) => {
+        return `${file.name}_${file.size}_${file.lastModified}`;
     };
 
-    const checkForDuplicateFile = async (file, currentFieldName) => {
-        const fileHash = await generateFileHash(file);
+    // Generate random filename for Firebase
+    const generateRandomFileName = (originalName) => {
+        const ext = originalName.split('.').pop(); 
+        const randomString = Math.random().toString(36).substring(2, 15);
+        const timestamp = Date.now();
+        return `${timestamp}-${randomString}.${ext}`;
+    };
+
+    // Check for duplicate files
+    const checkForDuplicateFile = (file, currentFieldName) => {
+        const fileHash = generateFileHash(file);
         
-        // Check if this file hash exists in uploaded files
         if (uploadedFiles.has(fileHash)) {
             const existingField = uploadedFiles.get(fileHash);
             if (existingField !== currentFieldName) {
@@ -60,16 +129,146 @@ function DocumentUpload() {
         return { isDuplicate: false };
     };
 
-    // NEW: Add file to uploaded files tracking
-    const addToUploadedFiles = async (file, fieldName) => {
-        const fileHash = await generateFileHash(file);
-        setUploadedFiles(prev => new Map(prev.set(fileHash, fieldName)));
+    // Validate file type and size
+    const validateFile = (file, config) => {
+        const allowedTypes = config.accept.split(',');
+        
+        if (!allowedTypes.includes(file.type)) {
+            return { valid: false, error: `Invalid file type for ${config.label}. Please select a valid file.` };
+        }
+
+        const maxSizeBytes = config.maxSize * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            return { valid: false, error: `File size exceeds ${config.maxSize}MB for ${config.label}` };
+        }
+
+        return { valid: true };
     };
 
-    // NEW: Remove file from uploaded files tracking
-    const removeFromUploadedFiles = async (file) => {
-        if (file) {
-            const fileHash = await generateFileHash(file);
+    // Upload file to Firebase Storage and then to API
+    const uploadFileToAPI = async (file, fieldName) => {
+        const config = documentConfig[fieldName];
+        const randomFileName = generateRandomFileName(file.name);
+        
+        setUploadingFiles(prev => new Set([...prev, fieldName]));
+        setUploadStatus(prev => ({
+            ...prev,
+            [fieldName]: { status: 'uploading' }
+        }));
+        
+        try {
+            // Step 1: Upload to Firebase Storage
+            const storageRef = ref(storage, `${config.bucket}/${randomFileName}`);
+            const uploadResult = await uploadBytes(storageRef, file);
+            console.log("✅ File uploaded to Firebase:", randomFileName);
+
+            // Get download URL (optional)
+            const downloadURL = await getDownloadURL(uploadResult.ref);
+            
+            // Step 2: Save filename to your API
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    step: 10,
+                    provider: 1,
+                    userid: phoneData?.userid,
+                    upload: config.apiValue,
+                    filename: randomFileName
+                }),
+            });
+
+            const result = await response.json();
+            console.log('API response:', result);
+
+            if (response.ok && result.success) {
+                setUploadStatus(prev => ({
+                    ...prev,
+                    [fieldName]: { 
+                        status: 'success', 
+                        filename: randomFileName,
+                        downloadURL: downloadURL
+                    }
+                }));
+                
+                // Add to uploaded files tracking
+                const fileHash = generateFileHash(file);
+                setUploadedFiles(prev => new Map(prev.set(fileHash, fieldName)));
+                
+                return { success: true, filename: randomFileName };
+            } else {
+                const errorMsg = result.message || result.error || 'API call failed';
+                setUploadStatus(prev => ({
+                    ...prev,
+                    [fieldName]: { status: 'error', error: errorMsg }
+                }));
+                return { success: false, error: errorMsg };
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            const errorMsg = error.message || 'Upload failed';
+            setUploadStatus(prev => ({
+                ...prev,
+                [fieldName]: { status: 'error', error: errorMsg }
+            }));
+            return { success: false, error: errorMsg };
+        } finally {
+            setUploadingFiles(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(fieldName);
+                return newSet;
+            });
+        }
+    };
+
+    // Handle file change
+    const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
+        if (!file) return;
+
+        const config = documentConfig[fieldName];
+        
+        // Validate file
+        const validation = validateFile(file, config);
+        if (!validation.valid) {
+            setErrorMessage(validation.error);
+            setTimeout(() => setErrorMessage(''), 3000);
+            return;
+        }
+
+        // Check for duplicates
+        const duplicateCheck = checkForDuplicateFile(file, fieldName);
+        if (duplicateCheck.isDuplicate) {
+            setErrorMessage(
+                `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file.`
+            );
+            setTimeout(() => setErrorMessage(''), 5000);
+            return;
+        }
+
+        // Remove old file from tracking if replacing
+        if (currentFile) {
+            const oldFileHash = generateFileHash(currentFile);
+            setUploadedFiles(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(oldFileHash);
+                return newMap;
+            });
+        }
+
+        // Set the file in form
+        setFieldValue(fieldName, file);
+        
+        // Upload to Firebase and API
+        const uploadResult = await uploadFileToAPI(file, fieldName);
+        
+        if (!uploadResult.success) {
+            setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
+            setTimeout(() => setErrorMessage(''), 5000);
+            
+            // Remove from tracking on failure
+            const fileHash = generateFileHash(file);
             setUploadedFiles(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(fileHash);
@@ -78,122 +277,7 @@ function DocumentUpload() {
         }
     };
 
-    // Generate unique filename
-    const generateUniqueFilename = (originalName, fieldName) => {
-        const timestamp = Date.now();
-        const extension = originalName.split('.').pop();
-        return `${fieldName}_${phoneData?.userid || 'user'}_${timestamp}.${extension}`;
-    };
-
-    // Upload file to API
-const uploadFileToAPI = async (file, fieldName) => {
-    const config = documentConfig[fieldName];
-    const uniqueFilename = generateUniqueFilename(file.name, fieldName);
-    
-    setUploadingFiles(prev => new Set([...prev, fieldName]));
-    
-    try {
-        const formData = new FormData();
-        formData.append('file', file);  
-        formData.append('step', '10');
-        formData.append('provider', '1');
-        formData.append('userid', phoneData?.userid);
-        formData.append('upload', config.apiValue);
-        formData.append('filename', uniqueFilename);
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
-            method: "POST",
-            headers: {
-                "Accept": "application/json"
-            },
-            body: formData  
-        });
-
-        const result = await response.json();
-        console.log(result)
-
-        if (response.ok) {
-            setUploadStatus(prev => ({
-                ...prev,
-                [fieldName]: { 
-                    status: 'success', 
-                    filename: uniqueFilename,
-                    fileUrl: result.fileUrl || result.data?.fileUrl  
-                }
-            }));
-            await addToUploadedFiles(file, fieldName);
-            return { success: true, filename: uniqueFilename };
-        } else {
-            setUploadStatus(prev => ({
-                ...prev,
-                [fieldName]: { status: 'error', error: result.message || 'Upload failed' }
-            }));
-            return { success: false, error: result.message || 'Upload failed' };
-        }
-    } catch (error) {
-        setUploadStatus(prev => ({
-            ...prev,
-            [fieldName]: { status: 'error', error: error.message }
-        }));
-        return { success: false, error: error.message };
-    } finally {
-        setUploadingFiles(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(fieldName);
-            return newSet;
-        });
-    }
-};
-
-    const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
-        if (!file) return;
-
-        const config = documentConfig[fieldName];
-        
-        const duplicateCheck = await checkForDuplicateFile(file, fieldName);
-        if (duplicateCheck.isDuplicate) {
-            setErrorMessage(
-                `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file for ${config.label}.`
-            );
-            setTimeout(() => setErrorMessage(''), 5000);
-            return;
-        }
-
-        // Validate file type
-        const allowedTypes = config.accept === 'image/*' 
-            ? ['image/jpeg', 'image/jpg', 'image/png']
-            : config.accept === '.pdf'
-            ? ['application/pdf']
-            : ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-
-        if (!allowedTypes.includes(file.type)) {
-            setErrorMessage(`Invalid file type for ${config.label}. Please select a valid file.`);
-            setTimeout(() => setErrorMessage(''), 3000);
-            return;
-        }
-
-        // Validate file size
-        const maxSizeBytes = config.maxSize * 1024 * 1024;
-        if (file.size > maxSizeBytes) {
-            setErrorMessage(`File size exceeds ${config.maxSize}MB for ${config.label}`);
-            setTimeout(() => setErrorMessage(''), 3000);
-            return;
-        }
-
-        if (currentFile) {
-            await removeFromUploadedFiles(currentFile);
-        }
-
-        setFieldValue(fieldName, file);
-        const uploadResult = await uploadFileToAPI(file, fieldName);
-        
-        if (!uploadResult.success) {
-            setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
-            setTimeout(() => setErrorMessage(''), 5000);
-            await removeFromUploadedFiles(file);
-        }
-    };
-
+    // Format file size
     const formatFileSize = (bytes) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -207,13 +291,8 @@ const uploadFileToAPI = async (file, fieldName) => {
         setLoader(true);
         setErrorMessage("");
         
-        // Check if all files are uploaded successfully
-        const requiredFields = Object.keys(documentConfig);
-        const allUploaded = requiredFields.every(field => 
-            values[field] && uploadStatus[field]?.status === 'success'
-        );
-        
-        if (!allUploaded) {
+        // Double check if all files are uploaded successfully
+        if (!allFilesUploaded) {
             setErrorMessage("Please ensure all documents are uploaded successfully before proceeding.");
             setLoader(false);
             return;
@@ -261,14 +340,14 @@ const uploadFileToAPI = async (file, fieldName) => {
                                 Choose {config.label}
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
-                                Max {config.maxSize}MB
+                                Max {config.maxSize}MB • Images & PDF
                             </span>
                         </label>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
-                            {isUploading ? (
+                            {isUploading || status?.status === 'uploading' ? (
                                 <div className="w-5 h-5 flex items-center justify-center">
                                     <BeatLoader color="#14b8a6" size={4} />
                                 </div>
@@ -286,6 +365,9 @@ const uploadFileToAPI = async (file, fieldName) => {
                                 </p>
                                 <p className="text-xs text-gray-500">
                                     {formatFileSize(file.size)}
+                                    {status?.status === 'uploading' && (
+                                        <span className="text-blue-600 ml-2">⏳ Uploading...</span>
+                                    )}
                                     {status?.status === 'success' && (
                                         <span className="text-green-600 ml-2">✓ Uploaded</span>
                                     )}
@@ -304,7 +386,6 @@ const uploadFileToAPI = async (file, fieldName) => {
                                 onChange={(e) => {
                                     const selectedFile = e.target.files[0];
                                     if (selectedFile) {
-                                        // MODIFIED: Pass current file for replacement tracking
                                         handleFileChange(selectedFile, fieldName, setFieldValue, file);
                                     }
                                 }}
@@ -366,7 +447,7 @@ const uploadFileToAPI = async (file, fieldName) => {
                     onSubmit={handleSubmit}
                     enableReinitialize
                 >
-                    {({ isValid, setFieldValue, values }) => (
+                    {({ setFieldValue, values }) => (
                         <Form className="space-y-6">
                             {errorMessage && (
                                 <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl p-4">
@@ -376,6 +457,24 @@ const uploadFileToAPI = async (file, fieldName) => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Upload Progress Indicator */}
+                            <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl shadow-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-700">Upload Progress</span>
+                                    <span className="text-sm text-gray-600">
+                                        {Object.values(uploadStatus).filter(status => status?.status === 'success').length} / {Object.keys(documentConfig).length} completed
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className="bg-gradient-to-r from-teal-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
+                                        style={{ 
+                                            width: `${(Object.values(uploadStatus).filter(status => status?.status === 'success').length / Object.keys(documentConfig).length) * 100}%` 
+                                        }}
+                                    ></div>
+                                </div>
+                            </div>
                             
                             {documentSections.map((section, index) => (
                                 <div key={index} className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl shadow-lg p-6">
@@ -415,6 +514,7 @@ const uploadFileToAPI = async (file, fieldName) => {
                                         </h3>
                                         <ul className="text-sm text-blue-700 space-y-1">
                                             <li>• Documents should be clear and readable</li>
+                                            <li>• Accept both images (JPG, PNG) and PDF files</li>
                                             <li>• Salary slips must be from the last 3 consecutive months</li>
                                             <li>• Bank statement should cover the last 6 months</li>
                                             <li>• Files are uploaded automatically when selected</li>
@@ -436,7 +536,7 @@ const uploadFileToAPI = async (file, fieldName) => {
                                 </button>
                                 
                                 <button 
-                                    disabled={loader || !isValid} 
+                                    disabled={loader || !allFilesUploaded} 
                                     type='submit' 
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 order-1 sm:order-2 disabled:cursor-not-allowed"
                                 >

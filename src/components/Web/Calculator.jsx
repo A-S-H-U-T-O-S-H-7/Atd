@@ -204,7 +204,7 @@ export default function Calculator() {
           </div>
 
           {/* CTA Button */}
-          <Link href="/signup">
+          <Link href="/user_signup">
           <button className="w-full bg-teal-600 hover:bg-teal-700 transition-all text-white font-medium py-3 px-4 rounded-lg mt-6 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50">
             Apply Now
           </button>

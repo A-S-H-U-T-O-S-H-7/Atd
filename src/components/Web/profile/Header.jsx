@@ -50,7 +50,7 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
               ATD MONEY
             </h1>
             <p className="text-sm text-slate-600/80 hidden sm:block font-medium">
-              Welcome back, {user.fname}
+              Welcome, {user.fname}
               {isRefreshing && <span className="ml-2 text-blue-500">(Refreshing...)</span>}
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
                 className="w-full px-4 py-3 text-left hover:bg-blue-50/50 flex items-center space-x-3 transition-all duration-200 group/item"
               >
                 <History className="w-4 h-4 text-slate-500 group-hover/item:text-blue-500 transition-colors" />
-                <span className="text-slate-700 group-hover/item:text-blue-600 font-medium">Client History</span>
+                <span className="text-slate-700 group-hover/item:text-blue-600 font-medium">Loan History</span>
               </button>
               <div className="h-px bg-slate-200/50 mx-2 my-1"></div>
               <button 

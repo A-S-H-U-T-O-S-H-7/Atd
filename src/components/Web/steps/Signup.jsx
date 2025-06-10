@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '@/lib/UserRegistrationContext';
 import MobileInputForm from './MobileInputForm';
 import OtpVerificationForm from './MobileOtpVerification';
+import PersonalDetails from './PersonalDetails';
 
 function MobileVerification() {
     const {

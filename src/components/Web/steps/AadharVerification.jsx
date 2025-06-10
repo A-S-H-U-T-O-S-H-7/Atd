@@ -50,6 +50,7 @@ function AadharVerification() {
             });
 
             const result = await response.json();
+            console.log(result)
 
             if (response.ok) {
                 setAadharData({ ...aadharData, aadharNumber: values.aadharNumber });
@@ -89,6 +90,7 @@ function AadharVerification() {
             });
 
             const result = await response.json();
+            console.log(result)
 
             if (response.ok) {
                 setAadharData({ 

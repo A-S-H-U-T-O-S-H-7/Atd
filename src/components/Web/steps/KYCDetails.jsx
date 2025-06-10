@@ -49,7 +49,7 @@ function KYCDetails() {
         generateCrnNumber(
             personalData?.firstName,
             personalData?.dob,
-            kycData.panNumber, // Use kycData instead of form values
+            kycData.panNumber, 
             phoneData?.phoneNumber
         ), 
         [personalData?.firstName, personalData?.dob, kycData.panNumber, phoneData?.phoneNumber]
@@ -139,6 +139,8 @@ function KYCDetails() {
             [fieldName]: value
         }));
     };
+
+
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 p-4 md:p-6'>
