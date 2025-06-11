@@ -72,7 +72,7 @@ export default function Sidebar() {
           }`}
           onClick={() => setIsMobileOpen(false)}
         >
-          <img src="/flame1.png" alt="Logo" className="w-10 h-10" />
+          <img src="/atdlogo.png" alt="Logo" className="w-10 h-10" />
           {(isExpanded || isMobileOpen) && (
             <span className="ml-3 text-lg font-bold">ATD</span>
           )}

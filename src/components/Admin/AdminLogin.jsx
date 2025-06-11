@@ -1,21 +1,30 @@
 "use client"
-import React, { useState } from 'react';
-import { User, Lock, RefreshCw, Sun, Moon } from 'lucide-react';
-import { useAdminAuth } from '../../lib/AdminAuthContext';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react'
+import { User, Lock, RefreshCw, Sun, Moon } from 'lucide-react'
+import { useAdminAuth } from '@/lib/AdminAuthContext'
+import { useRouter } from 'next/navigation'
 
 const AdminLogin = () => {
-  const { login, isDark, toggleTheme } = useAdminAuth();
-  const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { login, isDark, toggleTheme } = useAdminAuth()
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleInputChange = (e) => {
+    setFormData(prev => ({
+      ...prev,  
+      [e.target.name]: e.target.value
+    }))
+  }
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     try {
       const response = await fetch('https://api.atdmoney.in/api/crm/login', {
@@ -26,35 +35,34 @@ const AdminLogin = () => {
         },
         body: JSON.stringify({
           provider: 1,
-          username,
-          password
+          username: formData.username,
+          password: formData.password
         })
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       
       if (data.success) {
-        const loginSuccess = await login(data.admin, data.token);
+        const loginSuccess = await login(data.admin, data.token)
         if (loginSuccess) {
-          router.push('/crm/dashboard');
+          router.push('/crm/dashboard')
         } else {
-          setError('Failed to save login credentials');
+          setError('Failed to save login credentials')
         }
       } else {
-        setError(data.message || 'Login failed');
+        setError(data.message || 'Login failed')
       }
     } catch (error) {
-      setError('Network error occurred');
+      setError('Network error occurred')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 py-12 transition-colors duration-300 ${
       isDark ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
     }`}>
-      {/* Theme Toggle Button */}
       <button
         onClick={toggleTheme}
         className={`fixed top-6 right-6 p-3 rounded-full transition-colors duration-200 ${
@@ -104,9 +112,10 @@ const AdminLogin = () => {
               }`} />
               <input
                 type="text"
+                name="username"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={formData.username}
+                onChange={handleInputChange}
                 placeholder="Enter your username"
                 className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
                   isDark 
@@ -129,9 +138,10 @@ const AdminLogin = () => {
               }`} />
               <input
                 type="password"
+                name="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleInputChange}
                 placeholder="Enter your password"
                 className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
                   isDark 
@@ -159,7 +169,7 @@ const AdminLogin = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminLogin;
+export default AdminLogin

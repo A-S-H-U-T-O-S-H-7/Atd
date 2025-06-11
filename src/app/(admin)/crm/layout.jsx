@@ -1,6 +1,6 @@
 "use client"
-import { AdminAuthProvider } from "@/lib/AdminAuthContext";
-import AdminLayout from "@/components/Admin/AdminLayout";
+import { AdminAuthProvider } from "@/lib/AdminAuthContext"
+import AdminLayout from "@/components/Admin/AdminLayout"
 
 export default function CRMLayout({ children }) {
   return (
@@ -9,5 +9,5 @@ export default function CRMLayout({ children }) {
         {children}
       </AdminLayout>
     </AdminAuthProvider>
-  );
+  )
 }

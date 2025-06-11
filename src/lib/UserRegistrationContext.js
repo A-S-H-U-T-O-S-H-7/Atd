@@ -26,12 +26,10 @@ export const UserContextProvider = ({ children }) => {
     aadharNumber: "",
     aadharOtp: "",
     isAadharVerified: false,
-
     fullName: "",
     dob: "",
     gender: "",
     careOf: "",
-
     address: {
       country: "",
       state: "",
@@ -97,9 +95,7 @@ export const UserContextProvider = ({ children }) => {
   // Step 7: Loan Details
   const [loanData, setLoanData] = useState({
     isSalaried: "",
-
     amount: "",
-
     tenure: ""
   });
 
@@ -176,11 +172,20 @@ export const UserContextProvider = ({ children }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { user } = useAuth();
+  // Fix: Add proper error handling for useAuth
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.error("Error accessing AuthContext:", error);
+    authContext = null;
+  }
+
+  // Safely destructure user with fallback
+  const user = authContext?.user || null;
 
   useEffect(() => {
     if (user && user.step) {
-       
       setStep(user.step + 1);
       setUserId(user.id || user._id);
   
@@ -191,7 +196,6 @@ export const UserContextProvider = ({ children }) => {
         userid: user.id,
       }));
 
-      
       if (user.step >= 5) {
         setPersonalData(prev => ({
           ...prev,
@@ -200,7 +204,6 @@ export const UserContextProvider = ({ children }) => {
           dob: user.dob || prev.dob,
           gender: user.gender || prev.gender,
           fatherName: user.fathername || prev.fatherName,
-          
         }));
       }
     } else {
@@ -270,13 +273,15 @@ export const UserContextProvider = ({ children }) => {
         street: "",
         city: "",
         state: "",
-        pincode: ""
+        pincode: "",
+        addressType: ""
       },
       permanentAddress: {
         street: "",
         city: "",
         state: "",
         pincode: "",
+        addressType: "",
         isSameAsCurrent: false
       },
       fatherName: "",
@@ -290,9 +295,7 @@ export const UserContextProvider = ({ children }) => {
     });
     setLoanData({
       isSalaried: "",
-
       amount: "",
-
       tenure: ""
     });
     setKycData({

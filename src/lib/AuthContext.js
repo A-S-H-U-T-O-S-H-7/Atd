@@ -1,7 +1,16 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = createContext();
+// Create context with default values
+const AuthContext = createContext({
+  user: null,
+  loading: true,
+  fetchUserData: () => {},
+  login: () => {},
+  logout: () => {},
+  completeRegistration: () => {},
+  isAuthenticated: () => false
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,13 +27,11 @@ export const AuthProvider = ({ children }) => {
       token = localStorage.getItem('token');
       justRegistered = localStorage.getItem('justRegistered') === 'true';
 
-      
       // Check if we have temporary user data from registration
       const tempUserDataStr = localStorage.getItem('tempUserData');
       if (tempUserDataStr) {
         try {
           tempUserData = JSON.parse(tempUserDataStr);
-
         } catch (error) {
           console.warn('Could not parse temp user data:', error);
         }
@@ -51,7 +58,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (!token) {
-
       setUser(null);
       setLoading(false);
       return;
@@ -170,36 +176,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
- // Logout function
-const logout = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    
-    if (token) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/logout`, {
-          method: 'POST', 
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      } catch (apiError) {
-        console.warn("Logout API call failed:", apiError);
+  // Logout function
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (token) {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/logout`, {
+            method: 'POST', 
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } catch (apiError) {
+          console.warn("Logout API call failed:", apiError);
+        }
       }
-    }
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("showCongratulations");
-    localStorage.removeItem("justRegistered");
-    localStorage.removeItem("tempUserData");
-  } catch (error) {
-    console.warn("Could not remove items from localStorage:", error);
-  }
-  
-  setUser(null);
-  setLoading(false);
-};
+      localStorage.removeItem("token");
+      localStorage.removeItem("showCongratulations");
+      localStorage.removeItem("justRegistered");
+      localStorage.removeItem("tempUserData");
+    } catch (error) {
+      console.warn("Could not remove items from localStorage:", error);
+    }
+    
+    setUser(null);
+    setLoading(false);
+  };
 
   // Check if user is authenticated
   const isAuthenticated = () => {
@@ -228,4 +234,11 @@ const logout = async () => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Fixed useAuth hook with proper error handling
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

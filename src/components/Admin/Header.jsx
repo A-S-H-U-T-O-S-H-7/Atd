@@ -39,15 +39,15 @@ const AdminHeader = () => {
         ? 'bg-gray-800 border-gray-700' 
         : 'bg-white border-gray-200'
     }`}>
-      {/* Left side - adjust for sidebar */}
-      <div className="flex items-center ml-16 md:ml-20 lg:ml-64">
+      {/* Left side - FIXED: Better responsive margins */}
+      <div className="flex items-center ml-12 lg:ml-64">
         <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Dashboard
         </h1>
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-2 md:gap-4">
+      {/* Right side - FIXED: Better mobile spacing */}
+      <div className="flex items-center gap-1 md:gap-4">
         <button
           onClick={toggleTheme}
           className={`p-2 rounded-lg transition-colors duration-200 ${
@@ -57,7 +57,7 @@ const AdminHeader = () => {
           }`}
           title="Toggle theme"
         >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDark ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
         </button>
 
         <button
@@ -70,7 +70,7 @@ const AdminHeader = () => {
           } disabled:opacity-50`}
           title="Refresh token"
         >
-          <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
 
         <div className="relative dropdown-container">
@@ -122,7 +122,9 @@ const AdminHeader = () => {
             }`}>
               <div className="py-2">
                 {/* Show user info on mobile in dropdown */}
-                <div className="px-4 py-2 border-b md:hidden">
+                <div className={`px-4 py-2 border-b md:hidden ${
+                  isDark ? 'border-gray-700' : 'border-gray-200'
+                }`}>
                   <p className={`text-sm font-semibold ${
                     isDark ? 'text-white' : 'text-gray-800'
                   }`}>

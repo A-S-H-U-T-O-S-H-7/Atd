@@ -1,13 +1,16 @@
-import { AuthProvider } from "@/lib/AuthContext"
+import { AuthProvider } from "@/lib/AuthContext";
+import { UserContextProvider } from "@/lib/UserRegistrationContext";
 
-function layout({children}) {
+function layout({ children }) {
   return (
     <div>
       <AuthProvider>
-      {children}
+        <UserContextProvider>
+          {children}
+        </UserContextProvider>
       </AuthProvider>
     </div>
-  )
+  );
 }
 
-export default layout
+export default layout;
