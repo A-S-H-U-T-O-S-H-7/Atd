@@ -74,13 +74,18 @@ export const AdminAuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      setUser(null)
-      setToken(null)
-      
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('adminToken')
-        localStorage.removeItem('adminUser')
-      }
+      forceLogout()
+    }
+  }
+
+  // Force logout without API call (used by interceptor)
+  const forceLogout = () => {
+    setUser(null)
+    setToken(null)
+    
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('adminToken')
+      localStorage.removeItem('adminUser')
     }
   }
 
@@ -93,34 +98,11 @@ export const AdminAuthProvider = ({ children }) => {
     }
   }
 
-  const refreshToken = async () => {
-    try {
-      if (!token) return false
-      
-      const response = await fetch('https://api.atdmoney.in/api/crm/refresh', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        setToken(data.token)
-        
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('adminToken', data.token)
-        }
-        
-        return true
-      }
-      
-      return false
-    } catch (error) {
-      console.error('Token refresh error:', error)
-      return false
+  // Update token (used by interceptor after successful refresh)
+  const updateToken = (newToken) => {
+    setToken(newToken)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('adminToken', newToken)
     }
   }
 
@@ -131,8 +113,9 @@ export const AdminAuthProvider = ({ children }) => {
     isDark,
     login,
     logout,
+    forceLogout,
     toggleTheme,
-    refreshToken,
+    updateToken,
     isAuthenticated: !!user && !!token
   }
 

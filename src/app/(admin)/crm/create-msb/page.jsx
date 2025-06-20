@@ -1,9 +1,10 @@
+import CreateMSBAccountAccount from '@/components/Admin/msb/MsbPage'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      products
+      <CreateMSBAccountAccount/>
     </div>
   )
 }

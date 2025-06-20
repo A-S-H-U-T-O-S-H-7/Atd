@@ -1,18 +1,14 @@
-import Navbar from "@/components/Web/Navbar" 
-import Footer from "@/components/Web/Footer"
+import Navbar from "@/components/Web/Navbar";
+import Footer from "@/components/Web/Footer";
 
-
-function layout({children}) {
+function layout({ children }) {
   return (
     <div>
-
-    <Navbar/>
-    
+      <Navbar />
       {children}
-    <Footer/>
-    
+      <Footer />
     </div>
-  )
+  );
 }
 
-export default layout
+export default layout;

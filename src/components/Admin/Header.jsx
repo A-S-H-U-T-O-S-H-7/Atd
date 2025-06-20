@@ -1,25 +1,15 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, LogOut, Sun, Moon, RefreshCw, User } from 'lucide-react';
+import { ChevronDown, LogOut, Sun, Moon, User } from 'lucide-react';
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 
 const AdminHeader = () => {
-  const { user, isDark, toggleTheme, logout, refreshToken } = useAdminAuth();
+  const { user, isDark, toggleTheme, logout } = useAdminAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     setDropdownOpen(false);
-  };
-
-  const handleRefreshToken = async () => {
-    setRefreshing(true);
-    try {
-      await refreshToken();
-    } finally {
-      setRefreshing(false);
-    }
   };
 
   useEffect(() => {
@@ -34,70 +24,57 @@ const AdminHeader = () => {
   }, []);
 
   return (
-    <header className={`fixed top-0 right-0 left-0 z-40 flex items-center justify-between px-4 md:px-6 py-4 border-b transition-colors duration-300 ${
+    <header className={`fixed top-0 right-0 left-0 z-40 px-3 sm:px-4 md:px-6 py-3 sm:py-4 transition-all duration-300 ${
       isDark 
-        ? 'bg-gray-800 border-gray-700' 
-        : 'bg-white border-gray-200'
+        ? 'bg-gray-900 border-b border-gray-700 shadow-xl' 
+        : 'bg-[#ECFEFF] border-b border-emerald-400 shadow-lg backdrop-blur-md'
     }`}>
-      {/* Left side - FIXED: Better responsive margins */}
-      <div className="flex items-center ml-12 lg:ml-64">
-        <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Dashboard
-        </h1>
-      </div>
+      <div className="flex items-center justify-end">
+        {/* Action buttons */}
+        <div className="flex items-center gap-1 sm:gap-2 mr-2 sm:mr-4">
+          <button
+            onClick={toggleTheme}
+            className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all duration-200 ${
+              isDark 
+                ? 'bg-gray-800/80 hover:bg-gray-700 text-emerald-400 border border-gray-700' 
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200'
+            }`}
+            title="Toggle theme"
+          >
+            {isDark ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+          </button>
+        </div>
 
-      {/* Right side - FIXED: Better mobile spacing */}
-      <div className="flex items-center gap-1 md:gap-4">
-        <button
-          onClick={toggleTheme}
-          className={`p-2 rounded-lg transition-colors duration-200 ${
-            isDark 
-              ? 'hover:bg-gray-700 text-gray-300' 
-              : 'hover:bg-gray-100 text-gray-600'
-          }`}
-          title="Toggle theme"
-        >
-          {isDark ? <Sun className="w-4 h-4 md:w-5 md:h-5" /> : <Moon className="w-4 h-4 md:w-5 md:h-5" />}
-        </button>
-
-        <button
-          onClick={handleRefreshToken}
-          disabled={refreshing}
-          className={`p-2 rounded-lg transition-colors duration-200 ${
-            isDark 
-              ? 'hover:bg-gray-700 text-gray-300' 
-              : 'hover:bg-gray-100 text-gray-600'
-          } disabled:opacity-50`}
-          title="Refresh token"
-        >
-          <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${refreshing ? 'animate-spin' : ''}`} />
-        </button>
-
+        {/* User dropdown - Enhanced mobile responsive */}
         <div className="relative dropdown-container">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className={`flex items-center gap-2 md:gap-3 p-2 rounded-lg transition-colors duration-200 ${
+            className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all duration-200 ${
               isDark 
-                ? 'hover:bg-gray-700' 
-                : 'hover:bg-gray-100'
+                ? 'bg-gray-800/80 hover:bg-gray-700 border border-gray-700' 
+                : 'bg-gradient-to-r from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200'
             }`}
           >
-            {/* User info - hide on mobile */}
-            <div className="text-right hidden md:block">
-              <p className={`text-sm font-semibold ${
+            {/* User info - Enhanced mobile responsiveness */}
+            <div className="text-right min-w-0 flex-shrink hidden sm:block">
+              <p className={`text-xs sm:text-sm font-semibold truncate max-w-[80px] sm:max-w-[120px] md:max-w-[150px] lg:max-w-[200px] ${
                 isDark ? 'text-white' : 'text-gray-800'
               }`}>
                 {user?.name || 'Admin'}
               </p>
-              <p className={`text-xs ${
+              <p className={`text-xs truncate max-w-[80px] sm:max-w-[120px] md:max-w-[150px] lg:max-w-[200px] ${
                 isDark ? 'text-gray-400' : 'text-gray-600'
               }`}>
                 {user?.email}
               </p>
             </div>
             
-            {/* Avatar */}
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold">
+            {/* Avatar - Smaller on mobile */}
+            <div className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+              isDark 
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg' 
+                : 'bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-md'
+            }`}>
               {user?.selfie ? (
                 <img 
                   src={user.selfie} 
@@ -105,48 +82,69 @@ const AdminHeader = () => {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <User className="w-4 h-4 md:w-5 md:h-5" />
+                <User className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               )}
             </div>
             
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+            <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 flex-shrink-0 ${
               dropdownOpen ? 'rotate-180' : ''
             } ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
           </button>
 
+          {/* Dropdown menu - Enhanced mobile positioning */}
           {dropdownOpen && (
-            <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-50 ${
+            <div className={`absolute right-0 mt-2 w-48 sm:w-56 rounded-xl shadow-xl border z-50 ${
               isDark 
-                ? 'bg-gray-800 border-gray-700' 
-                : 'bg-white border-gray-200'
-            }`}>
+                ? 'bg-gray-800/95 border-gray-700' 
+                : 'bg-white/95 border-emerald-200'
+            } backdrop-blur-md`}>
               <div className="py-2">
-                {/* Show user info on mobile in dropdown */}
-                <div className={`px-4 py-2 border-b md:hidden ${
-                  isDark ? 'border-gray-700' : 'border-gray-200'
+                {/* User info section - Enhanced mobile display */}
+                <div className={`px-3 sm:px-4 py-2 sm:py-3 border-b ${
+                  isDark ? 'border-gray-700' : 'border-emerald-100'
                 }`}>
-                  <p className={`text-sm font-semibold ${
-                    isDark ? 'text-white' : 'text-gray-800'
-                  }`}>
-                    {user?.name || 'Admin'}
-                  </p>
-                  <p className={`text-xs ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    {user?.email}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                      isDark 
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' 
+                        : 'bg-gradient-to-r from-emerald-600 to-emerald-700'
+                    }`}>
+                      {user?.selfie ? (
+                        <img 
+                          src={user.selfie} 
+                          alt="Profile" 
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-semibold truncate ${
+                        isDark ? 'text-white' : 'text-gray-800'
+                      }`}>
+                        {user?.name || 'Admin'}
+                      </p>
+                      <p className={`text-xs truncate mt-0.5 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 
+                {/* Logout button - Enhanced styling */}
                 <button
                   onClick={handleLogout}
-                  className={`w-full px-4 py-2 text-left flex items-center gap-2 transition-colors duration-200 ${
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left flex items-center gap-3 transition-all duration-200 rounded-b-xl font-medium ${
                     isDark 
-                      ? 'hover:bg-gray-700 text-red-400' 
-                      : 'hover:bg-gray-100 text-red-600'
+                      ? 'hover:bg-red-900/30 text-red-400 hover:text-red-300' 
+                      : 'hover:bg-red-50 text-red-600 hover:text-red-700'
                   }`}
                 >
-                  <LogOut className="w-4 h-4" />
-                  Logout
+                  <LogOut className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">Logout</span>
                 </button>
               </div>
             </div>

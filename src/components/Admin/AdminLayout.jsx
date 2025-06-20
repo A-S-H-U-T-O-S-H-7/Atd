@@ -4,6 +4,7 @@ import { useAdminAuth } from '@/lib/AdminAuthContext'
 import AdminLogin from './AdminLogin'
 import AdminHeader from './Header'
 import Sidebar from './Sidebar'
+import Footer from './Footer'
 
 const AdminLayout = ({ children }) => {
   const { isAuthenticated, loading, isDark } = useAdminAuth()
@@ -24,11 +25,12 @@ const AdminLayout = ({ children }) => {
     <div className={`min-h-screen ${isDark ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
       <AdminHeader />
       <Sidebar />
-      <main className="ml-16 lg:ml-64 pt-16 min-h-screen">
+      <main className=" ml:0 md:ml-20 pt-20 min-h-screen">
         <div className="p-4">
           {children}
         </div>
       </main>
+      <Footer/>
     </div>
   )
 }
