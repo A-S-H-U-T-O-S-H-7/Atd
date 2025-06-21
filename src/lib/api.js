@@ -119,22 +119,17 @@ api.interceptors.response.use(
 // =============================================================================
 
 export const blogAPI = {
-  // Get all posts with pagination and optional search/filter
   getPosts: (params = {}) => {
-    // params can include: page, search, status
     return api.get("/crm/posts", { params });
   },
 
-  // Get single post by ID
   getPost: (id) => api.get(`/crm/posts/${id}`),
 
-  // Create new post with file upload
   createPost: (formData) =>
     api.post("/crm/posts", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     }),
 
-  // Update existing post - Using POST with _method override as per API docs
   updatePost: (id, formData) => {
     formData.append("_method", "PUT");
     return api.post(`/crm/posts/${id}`, formData, {

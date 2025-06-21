@@ -29,6 +29,7 @@
     "react-spinners": "^0.17.0",
     "suneditor": "^2.47.5",
     "suneditor-react": "^3.6.1",
+    "sweetalert2": "^11.22.0",
     "swiper": "^11.2.6",
     "yup": "^1.6.1"
   },

@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, Calendar, Edit, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
-import Pagination from "../Pagination";
 import { useRouter } from "next/navigation";
 import { blogAPI, formatBlogForUI } from "@/lib/api";
+import BlogTable from "./BlogTable";
+import Swal from "sweetalert2";
 
 const BlogPage = () => {
   const { isDark } = useAdminAuth();
@@ -17,104 +18,120 @@ const BlogPage = () => {
   const [totalItems, setTotalItems] = useState(0);
 
   const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState(null);
 
   // Debounced search function
   const [searchTimeout, setSearchTimeout] = useState(null);
 
-  const fetchBlogs = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const params = {
-        page: currentPage,
-      };
-      
-      if (searchTerm.trim()) {
-        params.title = searchTerm.trim();
-      }
-      
-      params.status = statusFilter === "all" ? "" : (statusFilter === "published" ? "2" : "1");
+  const fetchBlogs = useCallback(
+    async (isInitialLoad = false) => {
+      try {
+        if (isInitialLoad) {
+          setInitialLoading(true);
+        } else {
+          setIsUpdating(true);
+        }
 
+        setError(null);
 
-      const response = await blogAPI.getPosts(params);
-      
-      // Handle the correct API response structure
-      if (response.data.success) {
-        const formattedBlogs = response.data.data.map(formatBlogForUI);
-        setBlogs(formattedBlogs);
-        
-        // Use the correct pagination structure from API
-        const pagination = response.data.pagination;
-        setTotalPages(pagination.total_pages || 1);
-        setTotalItems(pagination.total || 0);
-      } else {
-        throw new Error('API returned success: false');
+        const params = {
+          page: currentPage
+        };
+
+        // Add search parameter if exists
+        if (searchTerm.trim()) {
+          params.title = searchTerm.trim();
+
+        }
+
+        // Add status filter if not 'all'
+        if (statusFilter !== "all") {
+          params.status = statusFilter === "published" ? "2" : "1";
+        }
+
+        console.log("Fetching blogs with params:", params); // Debug log
+
+        const response = await blogAPI.getPosts(params);
+
+        // Handle the correct API response structure
+        if (response.data.success) {
+          const formattedBlogs = response.data.data.map(formatBlogForUI);
+          setBlogs(formattedBlogs);
+
+          // Use the correct pagination structure from API
+          const pagination = response.data.pagination;
+          setTotalPages(pagination.total_pages || 1);
+          setTotalItems(pagination.total || 0);
+        } else {
+          throw new Error("API returned success: false");
+        }
+      } catch (err) {
+        console.error("Fetch blogs error:", err);
+        setError("Failed to fetch blogs");
+      } finally {
+        setInitialLoading(false);
+        setIsUpdating(false);
       }
-    } catch (err) {
-      console.error('Fetch blogs error:', err);
-      setError('Failed to fetch blogs');
-      setBlogs([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, searchTerm, statusFilter]);
+    },
+    [currentPage, searchTerm, statusFilter]
+  );
+
+  // Initial load effect
+  useEffect(() => {
+    fetchBlogs(true);
+  }, []);
 
   // Debounced effect for search
-  useEffect(() => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      fetchBlogs();
-    }, 500); // 500ms debounce
-    
-    setSearchTimeout(timeout);
-    
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
+  useEffect(
+    () => {
+      if (initialLoading) return;
+
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
       }
-    };
-  }, [searchTerm]);
+
+      const timeout = setTimeout(() => {
+        // Reset to page 1 when searching
+        if (currentPage !== 1) {
+          setCurrentPage(1);
+        } else {
+          fetchBlogs(false);
+        }
+      }, 500);
+
+      setSearchTimeout(timeout);
+
+      return () => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+      };
+    },
+    [searchTerm]
+  );
 
   // Effect for page change and status filter (immediate)
-  useEffect(() => {
-    fetchBlogs();
-  }, [currentPage, statusFilter]);
+  useEffect(
+    () => {
+      if (initialLoading) return;
+      fetchBlogs(false);
+    },
+    [currentPage, statusFilter]
+  );
 
   // Reset to page 1 when search or filter changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
-  }, [searchTerm, statusFilter]);
+  useEffect(
+    () => {
+      if (searchTerm && currentPage !== 1 && !initialLoading) {
+        setCurrentPage(1);
+      }
+    },
+    [searchTerm, statusFilter]
+  );
 
   const itemsPerPage = 10;
-
-  const getStatusColor = status => {
-    switch (status.toLowerCase()) {
-      case "published":
-        return isDark
-          ? "bg-green-900/50 text-green-300 border-green-700"
-          : "bg-green-100 text-green-800 border-green-200";
-      case "draft":
-        return isDark
-          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
-          : "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "archived":
-        return isDark
-          ? "bg-gray-700 text-gray-300 border-gray-600"
-          : "bg-gray-100 text-gray-800 border-gray-200";
-      default:
-        return isDark
-          ? "bg-gray-700 text-gray-300 border-gray-600"
-          : "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
 
   const handleCreateBlog = () => {
     router.push("blogs/manage-blog");
@@ -124,39 +141,68 @@ const BlogPage = () => {
     router.push(`blogs/manage-blog?id=${blogId}`);
   };
 
-  const handleDeleteBlog = async (blogId) => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
+  const handleDeleteBlog = async (blogId, blogTitle) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `You are about to delete "${blogTitle}". This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#ffffff" : "#000000",
+      customClass: {
+        popup: isDark ? "dark-swal rounded-xl border-2 border-emerald-500" : "rounded-xl border-2 border-emerald-500"
+      }
+    });
+
+    if (result.isConfirmed) {
       try {
+        setIsUpdating(true);
         await blogAPI.deletePost(blogId);
-        fetchBlogs(); // Refresh the list
+
+        await Swal.fire({
+          title: "Deleted!",
+          text: "Blog has been deleted successfully.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#ffffff" : "#000000"
+        });
+
+        fetchBlogs(false);
       } catch (error) {
-        console.error('Delete error:', error);
-        alert('Failed to delete blog');
+        console.error("Delete error:", error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Failed to delete blog. Please try again.",
+          icon: "error",
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#ffffff" : "#000000"
+        });
+      } finally {
+        setIsUpdating(false);
       }
     }
   };
 
-  const formatDate = dateString => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
-
-  const handleSearchChange = (value) => {
+  const handleSearchChange = value => {
     setSearchTerm(value);
   };
 
-  const handleStatusFilterChange = (e) => {
+  const handleStatusFilterChange = e => {
     setStatusFilter(e.target.value);
   };
 
-  const handlePageChange = (page) => {
+  const handlePageChange = page => {
     setCurrentPage(page);
+  };
+
+  const handleRetry = () => {
+    fetchBlogs(true);
   };
 
   return (
@@ -206,7 +252,7 @@ const BlogPage = () => {
               <SearchBar
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
-                placeholder="Search blogs by title or content..."
+                placeholder="Search blogs by title "
               />
             </div>
 
@@ -224,240 +270,51 @@ const BlogPage = () => {
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className={`text-center py-8 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+        {/* Initial Loading State */}
+        {initialLoading &&
+          <div
+            className={`text-center py-8 ${isDark
+              ? "text-gray-300"
+              : "text-gray-600"}`}
+          >
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4" />
             Loading blogs...
-          </div>
-        )}
+          </div>}
 
         {/* Error State */}
-        {error && (
-          <div className={`text-center py-8 ${isDark ? "text-red-400" : "text-red-600"}`}>
-            <p>{error}</p>
-            <button 
-              onClick={fetchBlogs}
+        {error &&
+          !initialLoading &&
+          <div
+            className={`text-center py-8 ${isDark
+              ? "text-red-400"
+              : "text-red-600"}`}
+          >
+            <p>
+              {error}
+            </p>
+            <button
+              onClick={handleRetry}
               className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
             >
               Try Again
             </button>
-          </div>
-        )}
+          </div>}
 
-        {/* Table Container */}
-        {!loading && !error && (
-          <div
-            className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${isDark
-              ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-              : "bg-white border-emerald-300 shadow-emerald-500/10"}`}
-          >
-            {blogs.length === 0 ? (
-              <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                <p className="text-lg">No blogs found</p>
-                <p className="text-sm mt-2">Try adjusting your search or filter criteria</p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-max" style={{ minWidth: "1200px" }}>
-                    <thead
-                      className={`border-b-2 ${isDark
-                        ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-                        : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}
-                    >
-                      <tr>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "60px" }}
-                        >
-                          SN
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "120px" }}
-                        >
-                          Image
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "400px" }}
-                        >
-                          Title
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "120px" }}
-                        >
-                          Status
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "180px" }}
-                        >
-                          Publication Date
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "100px" }}
-                        >
-                          Views
-                        </th>
-                        <th
-                          className={`px-6 py-5 text-left text-sm font-bold ${isDark
-                            ? "text-gray-100"
-                            : "text-gray-700"}`}
-                          style={{ minWidth: "200px" }}
-                        >
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      className={`divide-y-2 ${isDark
-                        ? "divide-emerald-800/30"
-                        : "divide-emerald-200"}`}
-                    >
-                      {blogs.map((blog, index) => (
-                        <tr
-                          key={blog.id}
-                          className={`transition-all duration-200 ${isDark
-                            ? "hover:bg-gradient-to-r hover:from-gray-700/50 hover:to-emerald-900/20"
-                            : "hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/50"}`}
-                        >
-                          <td className="px-6 py-5">
-                            <span
-                              className={`text-sm font-bold ${isDark
-                                ? "text-white"
-                                : "text-gray-900"}`}
-                            >
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div
-                              className={`relative ${isDark
-                                ? "ring-2 ring-emerald-500/50"
-                                : "ring-2 ring-emerald-400"} rounded-lg p-0.5`}
-                            >
-                              <img
-                                src={blog.featured}
-                                alt={blog.title}
-                                className="w-18 h-16 rounded-lg object-cover"
-                                onError={(e) => {
-                                  e.target.src = "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=250&fit=crop";
-                                }}
-                              />
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div className="min-w-0 flex-1">
-                              <div
-                                className={`text-sm font-semibold mb-2 ${isDark
-                                  ? "text-white"
-                                  : "text-gray-900"}`}
-                              >
-                                {blog.title}
-                              </div>
-                              <p
-                                className={`text-xs leading-relaxed ${isDark
-                                  ? "text-gray-300"
-                                  : "text-gray-600"}`}
-                              >
-                                {blog.excerpt}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <span
-                              className={`px-4 py-2 text-xs font-bold rounded-md capitalize border-2 ${getStatusColor(
-                                blog.status
-                              )}`}
-                            >
-                              {blog.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div
-                              className={`flex items-center space-x-2 text-sm font-medium ${isDark
-                                ? "text-gray-300"
-                                : "text-gray-600"}`}
-                            >
-                              <div
-                                className={`p-1.5 rounded-lg ${isDark
-                                  ? "bg-emerald-900/50"
-                                  : "bg-emerald-100"}`}
-                              >
-                                <Calendar
-                                  className={`w-3.5 h-3.5 ${isDark
-                                    ? "text-emerald-400"
-                                    : "text-emerald-600"}`}
-                                />
-                              </div>
-                              <span>
-                                {formatDate(blog.publicationDate)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <span
-                              className={`text-sm font-bold ${isDark
-                                ? "text-white"
-                                : "text-gray-900"}`}
-                            >
-                              {blog.views || 0}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handleEditBlog(blog.id)}
-                                className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${isDark
-                                  ? "bg-blue-900/50 hover:bg-blue-800/50 text-blue-400 border border-blue-600/50"
-                                  : "bg-blue-100 hover:bg-blue-200 text-blue-600 border border-blue-300"}`}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteBlog(blog.id)}
-                                className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${isDark
-                                  ? "bg-red-900/50 hover:bg-red-800/50 text-red-400 border border-red-600/50"
-                                  : "bg-red-100 hover:bg-red-200 text-red-600 border border-red-300"}`}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  totalItems={totalItems}
-                  itemsPerPage={itemsPerPage}
-                />
-              </>
-            )}
-          </div>
-        )}
+        {/* Blog Table */}
+        {!initialLoading &&
+          <BlogTable
+            blogs={blogs}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            isUpdating={isUpdating}
+            isDark={isDark}
+            error={error}
+            onEdit={handleEditBlog}
+            onDelete={handleDeleteBlog}
+            onPageChange={handlePageChange}
+          />}
       </div>
     </div>
   );

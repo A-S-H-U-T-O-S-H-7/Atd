@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { ArrowLeft, Send, Bell } from 'lucide-react';
 import FormFields from './FormFields';
-import RichTextEditor from './RichTextEditor';
+import RichTextEditor from '../RichTextEditor';
 
 const NotificationPage = () => {
   const { isDark } = useAdminAuth();
@@ -129,7 +129,10 @@ const NotificationPage = () => {
               />
 
               {/* Rich Text Editor */}
-              <RichTextEditor value={comment} onChange={setComment} />
+              <RichTextEditor value={comment} onChange={setComment}
+              label="Notification Message"
+              placeholder="Write your notification..."
+              minHeight="150px" />
 
               {/* Submit Button */}
               <div className="flex justify-end pt-6">
