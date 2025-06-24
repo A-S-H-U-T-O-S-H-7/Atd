@@ -27,7 +27,7 @@ const AdminHeader = () => {
     <header className={`fixed top-0 right-0 left-0 z-40 px-3 sm:px-4 md:px-6 py-3 sm:py-4 transition-all duration-300 ${
       isDark 
         ? 'bg-gray-900 border-b border-gray-700 shadow-xl' 
-        : 'bg-[#ECFEFF] border-b border-emerald-400 shadow-lg backdrop-blur-md'
+        : 'bg-[#ECFEFF] border-b border-emerald-400 shadow-sm backdrop-blur-md'
     }`}>
       <div className="flex items-center justify-end">
         {/* Action buttons */}
@@ -37,7 +37,7 @@ const AdminHeader = () => {
             className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-all duration-200 ${
               isDark 
                 ? 'bg-gray-800/80 hover:bg-gray-700 text-emerald-400 border border-gray-700' 
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200'
+                : 'bg-emerald-100 hover:bg-emerald-100 text-emerald-600 border border-emerald-200'
             }`}
             title="Toggle theme"
           >

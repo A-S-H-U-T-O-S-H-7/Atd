@@ -2,19 +2,45 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FiMenu, FiX, FiChevronDown, FiChevronRight } from 'react-icons/fi';
-import { FaHome, FaSms } from 'react-icons/fa';
+import { FiMenu, FiX,  FiChevronRight } from 'react-icons/fi';
+import { FaHome, FaSms , FaMoneyCheckAlt, FaChartLine} from 'react-icons/fa';
 import { MdReviews, MdReportProblem } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
 import { RiAccountPinBoxFill } from "react-icons/ri";
-import { IoMdNotifications } from "react-icons/io";
+import { IoMdNotifications, IoMdCash } from "react-icons/io";
+import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
+import { Scale, BanknoteArrowUp, ChartNoAxesCombined } from "lucide-react";
+import { BsBank2 } from "react-icons/bs";
+import { GiExpense } from "react-icons/gi";
+
+
+
 
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 
 const menuList = [
   { name: 'Dashboard', link: '/crm/dashboard', icon: <FaHome /> },
+  {
+    name: 'Cash/Cheque Deposit',
+    icon: <FaMoneyCheckAlt />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'Cheque Management', link: '/crm/cheque-management', icon: <BanknoteArrowUp size={16} />},
+      { name: 'Cash Management', link: '/crm/cash-management', icon: <IoMdCash /> },
+    ]
+  },
+  {
+    name: 'Profit/Loss Deposit',
+    icon: <IoBarChart />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense />      },
+      { name: 'Track Profit/Loss', link: '/crm/tarscmkn', icon: <ChartNoAxesCombined size={16} /> },
+    ]
+  },
+  { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
   { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
   { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
   { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
@@ -30,6 +56,11 @@ const menuList = [
   { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
   { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
   { name: 'References', link: '/crm/references', icon: <VscReferences /> },
+  { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
+  
+
+
+
 ];
 
 export default function Sidebar() {
@@ -98,11 +129,11 @@ export default function Sidebar() {
         className={`fixed top-0 left-0 h-full shadow-xl z-50 transition-all duration-300 ease-in-out ${
           isDark 
             ? 'bg-gray-900/95 text-white border-r border-gray-700' 
-            : 'bg-white/95 text-gray-900 border-r border-emerald-200'
+            : 'bg-white/98 text-gray-900 border-r border-emerald-200'
         } backdrop-blur-md ${
           isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
         } lg:translate-x-0 ${
-          isExpanded ? 'lg:w-64' : 'lg:w-20'
+          isExpanded ? 'lg:w-74' : 'lg:w-20'
         } flex flex-col overflow-hidden`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
@@ -149,7 +180,7 @@ export default function Sidebar() {
                 {item.isDropdown ? (
                   <button
                     onClick={() => toggleDropdown(item.name)}
-                    className={`group flex items-center justify-between w-full gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
+                    className={`group cursor-pointer flex items-center justify-between w-full gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
                       isParentActive(item.subItems)
                         ? isDark
                           ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg'

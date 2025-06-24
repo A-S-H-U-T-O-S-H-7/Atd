@@ -113,7 +113,7 @@ function UserFooter() {
                       url: "https://in.pinterest.com/atdmoney/"
                     },
                     {
-                      name: "linkedin",
+                      name: "Linkedin",
                       url:
                         "https://www.linkedin.com/company/atdmoney2/?viewAsMember=true"
                     },

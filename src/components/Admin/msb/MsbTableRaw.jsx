@@ -1,4 +1,4 @@
-import { Calendar, Phone, Mail, User, MapPin, Clock, Building } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 
 
 const AccountTableRow = ({ account, index, startIndex, isDark, onCreateAccount }) => {

@@ -1,10 +1,10 @@
-import ComplaintPage from '@/components/Admin/complaints/ComplaintPage'
+import LegalPage from '@/components/Admin/legal/LegalPage'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      <ComplaintPage/>
+     <LegalPage/>
     </div>
   )
 }

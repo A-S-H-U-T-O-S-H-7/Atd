@@ -209,7 +209,7 @@ const BlogPage = () => {
     <div
       className={`min-h-screen transition-colors duration-300 ${isDark
         ? "bg-gray-900"
-        : "bg-emerald-50/30"}`}
+        : "bg-gary-50"}`}
     >
       <div className="p-0 md:p-4">
         {/* Header */}

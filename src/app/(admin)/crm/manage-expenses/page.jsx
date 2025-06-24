@@ -1,10 +1,10 @@
-import ComplaintPage from '@/components/Admin/complaints/ComplaintPage'
+import ManageExpensesPage from '@/components/Admin/expenses/ManageExpenses'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      <ComplaintPage/>
+      <ManageExpensesPage/>
     </div>
   )
 }

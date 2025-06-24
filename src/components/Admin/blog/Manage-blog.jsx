@@ -160,7 +160,7 @@ const ManageBlogPage = () => {
   return (
     <div
       className={`min-h-screen transition-colors duration-300 ${
-        isDark ? "bg-gray-900" : "bg-emerald-50/30"
+        isDark ? "bg-gray-900" : "bg-gray-200"
       }`}
     >
       <div className="p-0 md:p-4">

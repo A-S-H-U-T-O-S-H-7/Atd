@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 function HeroSection() {
   return <div className=" px-4 md:px-10 flex flex-col md:flex-row justify-between items-center bg-gradient-to-b from-teal-50 to-[#f5e3df] py-5 md:py-10">
@@ -28,11 +29,12 @@ function HeroSection() {
         </div>
 
 
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-          <input type="text" placeholder="Enter your mobile number" className="p-4 rounded-md border border-gray-300 w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-teal-500" />
-          <button className="bg-teal-500 text-white font-medium py-4 px-8 rounded-md hover:bg-teal-600 transition-colors duration-300">
-            Get your loan now
+        <div className="flex flex-col md:flex-row  gap-4 w-full md:w-auto">
+          <Link href ="/user_signup" >
+          <button className="bg-teal-500 border cursor-pointer shadow-lg shadow-teal-400 animate-bounce text-white font-medium py-4 px-8 rounded-md hover:bg-teal-600 transition-colors duration-300">
+            Get Your Loan Now
           </button>
+          </Link>
         </div>
       </section>
 
