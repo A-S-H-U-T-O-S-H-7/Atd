@@ -3,25 +3,32 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FiMenu, FiX,  FiChevronRight } from 'react-icons/fi';
-import { FaHome, FaSms , FaMoneyCheckAlt, FaChartLine} from 'react-icons/fa';
-import { MdReviews, MdReportProblem } from "react-icons/md";
+import { FaHome, FaSms ,FaFileExport, FaMoneyCheckAlt,FaBook} from 'react-icons/fa';
+import { MdReviews, MdReportProblem,MdOutlineAccessTimeFilled } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
 import { RiAccountPinBoxFill } from "react-icons/ri";
 import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
-import { Scale, BanknoteArrowUp, ChartNoAxesCombined } from "lucide-react";
+import { Scale, BanknoteArrowUp, ChartNoAxesCombined, ReceiptIndianRupee , BadgeCheck} from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { GiExpense } from "react-icons/gi";
-
-
-
+import { TbMessageCircleFilled } from "react-icons/tb";
+import { FaHourglassEnd } from "react-icons/fa6";
 
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 
 const menuList = [
   { name: 'Dashboard', link: '/crm/dashboard', icon: <FaHome /> },
+  { name: 'All Enquiries', link: '/crm/all-enquiries', icon: <TbMessageCircleFilled />  },
+  { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled />  },
+  { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd />  },
+  { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook />  },
+  { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport />},
+  { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },
+  { name: 'Cibil Report', link: '/crm/cibil-report', icon: <BadgeCheck /> },
+
   {
     name: 'Cash/Cheque Deposit',
     icon: <FaMoneyCheckAlt />    ,
@@ -37,7 +44,7 @@ const menuList = [
     isDropdown: true,
     subItems: [
       { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense />      },
-      { name: 'Track Profit/Loss', link: '/crm/tarscmkn', icon: <ChartNoAxesCombined size={16} /> },
+      { name: 'Track Profit/Loss', link: '/crm/profit-loss', icon: <ChartNoAxesCombined size={16} /> },
     ]
   },
   { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
@@ -58,9 +65,6 @@ const menuList = [
   { name: 'References', link: '/crm/references', icon: <VscReferences /> },
   { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
   
-
-
-
 ];
 
 export default function Sidebar() {

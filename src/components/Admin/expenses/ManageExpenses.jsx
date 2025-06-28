@@ -5,6 +5,7 @@ import { useAdminAuth } from "@/lib/AdminAuthContext";
 import ExpensesTable from "./ExpensesTable";
 import { useRouter } from "next/navigation";
 
+
 const ManageExpensesPage = () => {
   const { isDark } = useAdminAuth();
   const router = useRouter();
