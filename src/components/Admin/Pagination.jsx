@@ -61,7 +61,9 @@ const Pagination = ({
           className={`px-3 py-2 cursor-pointer rounded-lg text-sm font-medium transition-colors ${
             currentPage === 1
               ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              : isDark 
+              ? 'hover:bg-gray-700' 
+              : 'hover:bg-gray-200'
           } ${
             isDark 
               ? 'text-gray-300 border-gray-600' 
@@ -96,7 +98,9 @@ const Pagination = ({
           className={`px-3 py-2 cursor-pointer rounded-lg text-sm font-medium transition-colors ${
             currentPage === totalPages
               ? 'cursor-not-allowed opacity-50'
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              : isDark 
+              ? 'hover:bg-gray-700' 
+              : 'hover:bg-gray-200'
           } ${
             isDark 
               ? 'text-gray-300 border-gray-600' 

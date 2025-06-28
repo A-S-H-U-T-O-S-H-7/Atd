@@ -12,7 +12,7 @@ function Blog() {
     const fetchBlogPosts = async () => {
       try {
         const BASE_URL = process.env.NEXT_PUBLIC_ATD_API;
-        const response = await fetch(`${BASE_URL}/api/blogs?limit=3`);
+        const response = await fetch(`${BASE_URL}/api/blogs?limit=3&status=2`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch blog posts');
@@ -29,7 +29,6 @@ function Blog() {
         } else if (data && data.blogs && Array.isArray(data.blogs)) {
           setBlogPosts(data.blogs);
         } else if (data && typeof data === 'object') {
-          // Last resort: try to convert object to array
           const dataArray = Object.values(data).filter(item => 
             item && typeof item === 'object' && item.title && item.featured_image
           );
@@ -45,8 +44,8 @@ function Blog() {
       } catch (error) {
         console.error('Error fetching blog posts:', error);
         setError(error.message);
-        // No fallback posts - just display the error
         setBlogPosts([]);
+        
       } finally {
         setIsLoading(false);
       }

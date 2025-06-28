@@ -16,6 +16,7 @@ const BlogPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [filterChanged, setFilterChanged] = useState(false);
 
   const [blogs, setBlogs] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -28,48 +29,93 @@ const BlogPage = () => {
   const fetchBlogs = useCallback(
     async (isInitialLoad = false) => {
       try {
+        // Set loading states
         if (isInitialLoad) {
           setInitialLoading(true);
         } else {
           setIsUpdating(true);
         }
 
+        // Clear any previous errors
         setError(null);
 
         const params = {
-          page: currentPage
+          page: currentPage,
+          per_page: 10
         };
 
-        // Add search parameter if exists
-        if (searchTerm.trim()) {
+        // Add search parameter if exists and is not empty
+        if (searchTerm && searchTerm.trim()) {
           params.title = searchTerm.trim();
-
         }
 
         // Add status filter if not 'all'
-        if (statusFilter !== "all") {
+        if (statusFilter && statusFilter !== "all") {
           params.status = statusFilter === "published" ? "2" : "1";
         }
 
-        console.log("Fetching blogs with params:", params); // Debug log
+        console.log("Fetching blogs with params:", params);
 
+        // Make API call
         const response = await blogAPI.getPosts(params);
 
-        // Handle the correct API response structure
+        console.log("API Response:", response.data);
+
+        // Validate response structure
+        if (!response || !response.data) {
+          throw new Error("Invalid response structure");
+        }
+
         if (response.data.success) {
-          const formattedBlogs = response.data.data.map(formatBlogForUI);
+          // Handle successful response
+          const blogData = response.data.data || [];
+          const formattedBlogs = blogData.map(formatBlogForUI);
+
           setBlogs(formattedBlogs);
 
-          // Use the correct pagination structure from API
-          const pagination = response.data.pagination;
+          // Handle pagination data
+          const pagination = response.data.pagination || {};
           setTotalPages(pagination.total_pages || 1);
           setTotalItems(pagination.total || 0);
+
+          console.log("Blogs loaded:", formattedBlogs.length);
+          console.log("Total pages:", pagination.total_pages);
+          console.log("Total items:", pagination.total);
         } else {
-          throw new Error("API returned success: false");
+          // API returned success: false
+          const errorMessage = response.data.message || "Failed to fetch blogs";
+          throw new Error(errorMessage);
         }
       } catch (err) {
         console.error("Fetch blogs error:", err);
-        setError("Failed to fetch blogs");
+
+        // Set appropriate error message
+        let errorMessage = "Failed to fetch blogs";
+
+        if (err.response) {
+          // API responded with error status
+          if (err.response.status === 401) {
+            errorMessage = "Authentication failed. Please login again.";
+          } else if (err.response.status === 403) {
+            errorMessage = "You don't have permission to view blogs.";
+          } else if (err.response.status === 404) {
+            errorMessage = "Blogs endpoint not found.";
+          } else if (err.response.status >= 500) {
+            errorMessage = "Server error. Please try again later.";
+          } else if (err.response.data && err.response.data.message) {
+            errorMessage = err.response.data.message;
+          }
+        } else if (err.request) {
+          errorMessage = "Network error. Please check your connection.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        setError(errorMessage);
+
+        setBlogs([]);
+        setTotalPages(1);
+        setTotalItems(0);
       } finally {
         setInitialLoading(false);
         setIsUpdating(false);
@@ -121,15 +167,6 @@ const BlogPage = () => {
     [currentPage, statusFilter]
   );
 
-  // Reset to page 1 when search or filter changes
-  useEffect(
-    () => {
-      if (searchTerm && currentPage !== 1 && !initialLoading) {
-        setCurrentPage(1);
-      }
-    },
-    [searchTerm, statusFilter]
-  );
 
   const itemsPerPage = 10;
 
@@ -144,7 +181,6 @@ const BlogPage = () => {
   const handleDeleteBlog = async (blogId, blogTitle) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `You are about to delete "${blogTitle}". This action cannot be undone!`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -154,7 +190,9 @@ const BlogPage = () => {
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#ffffff" : "#000000",
       customClass: {
-        popup: isDark ? "dark-swal rounded-xl border-2 border-emerald-500" : "rounded-xl border-2 border-emerald-500"
+        popup: isDark
+          ? "dark-swal rounded-xl border-2 border-emerald-500"
+          : "rounded-xl border-2 border-emerald-500"
       }
     });
 
@@ -195,6 +233,10 @@ const BlogPage = () => {
 
   const handleStatusFilterChange = e => {
     setStatusFilter(e.target.value);
+    setFilterChanged(true);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   };
 
   const handlePageChange = page => {
@@ -209,7 +251,7 @@ const BlogPage = () => {
     <div
       className={`min-h-screen transition-colors duration-300 ${isDark
         ? "bg-gray-900"
-        : "bg-gary-50"}`}
+        : "bg-gray-50"}`}
     >
       <div className="p-0 md:p-4">
         {/* Header */}

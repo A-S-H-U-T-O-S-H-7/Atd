@@ -176,7 +176,7 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-6">
+        <div className="flex-1 overflow-y-auto py-6 custom-scrollbar">
           <nav className="flex flex-col px-3 space-y-2">
             {menuList.map((item, index) => (
               <div key={index}>
