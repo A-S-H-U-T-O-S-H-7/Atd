@@ -4,7 +4,6 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../../SearchBar";
 import ChequeDepositTable from "./ChequeDepositTable";
-import ChequeDepositModal from "./ManageChequeDeposit";
 import { useRouter } from "next/navigation";
 
 const ChequeDepositPage = () => {
@@ -100,7 +99,7 @@ const ChequeDepositPage = () => {
       penalInterest: 4.0,
       penalty: 1000
     }
-  ]);
+  ]); 
 
   const itemsPerPage = 10;
 

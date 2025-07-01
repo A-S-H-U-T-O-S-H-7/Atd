@@ -2,7 +2,7 @@ import React from "react";
 import {
   Calendar,
   Clock,
-    X,FileCheck
+    X,DocumentIcon
 } from "lucide-react";
 import { IoDocumentAttach } from "react-icons/io5";
 
@@ -10,7 +10,10 @@ const EnquiriesRow = ({
   enquiry,
   index,
   isDark,
-  onFileView
+  onFileView,
+  onLoanEligibilityClick,
+  onVerifyClick,
+  onCheckClick
 }) => {
   const getStatusColor = status => {
     switch (status.toLowerCase()) {
@@ -232,7 +235,7 @@ const EnquiriesRow = ({
 
       {/* Photo */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasPhoto}
           onClick={() => onFileView(enquiry, "photo")}
           title="View Photo"
@@ -241,7 +244,7 @@ const EnquiriesRow = ({
 
       {/* Pan Card */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasPanCard}
           onClick={() => onFileView(enquiry, "pancard")}
           title="View Pan Card"
@@ -250,7 +253,7 @@ const EnquiriesRow = ({
 
       {/* Address Proof */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasAddressProof}
           onClick={() => onFileView(enquiry, "addressproof")}
           title="View Address Proof"
@@ -259,7 +262,7 @@ const EnquiriesRow = ({
 
       {/* ID Proof */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasIdProof}
           onClick={() => onFileView(enquiry, "idproof")}
           title="View ID Proof"
@@ -268,7 +271,7 @@ const EnquiriesRow = ({
 
       {/* Salary Proof */}
       <td className="px-6 py-4">
-        <FileCheck 
+        <DocumentIcon 
           hasDoc={enquiry.hasSalaryProof}
           onClick={() => onFileView(enquiry, "salaryproof")}
           title="View Salary Proof"
@@ -277,7 +280,7 @@ const EnquiriesRow = ({
 
       {/* Bank Statement */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasBankStatement}
           onClick={() => onFileView(enquiry, "bankstatement")}
           title="View Bank Statement"
@@ -286,7 +289,7 @@ const EnquiriesRow = ({
 
       {/* Bank Verification Report */}
       <td className="px-6 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasBankVerificationReport}
           onClick={() => onFileView(enquiry, "bankverification")}
           title="View Bank Verification Report"
@@ -295,7 +298,7 @@ const EnquiriesRow = ({
 
       {/* Social Score Report */}
       <td className="px-6 py-4">
-        <FileCheck 
+        <DocumentIcon 
           hasDoc={enquiry.hasSocialScoreReport}
           onClick={() => onFileView(enquiry, "socialscore")}
           title="View Social Score Report"
@@ -304,7 +307,7 @@ const EnquiriesRow = ({
 
       {/* CIBIL Score Report */}
       <td className="px-6 text-blue-600 py-4">
-        <FileCheck
+        <DocumentIcon
           hasDoc={enquiry.hasCibilScoreReport}
           onClick={() => onFileView(enquiry, "cibilscore")}
           title="View CIBIL Score Report"
@@ -329,7 +332,8 @@ const EnquiriesRow = ({
       <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
           <button
-            className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
+          onClick={() => onVerifyClick(enquiry)}
+           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-blue-800/50 border hover:bg-blue-800 text-blue-200"
                 : "bg-blue-200 border hover:bg-blue-200 text-blue-800"
@@ -345,6 +349,7 @@ const EnquiriesRow = ({
       {/* Appraisal Report */}
       <td className="px-6 py-4">
       <button
+              onClick={() => onCheckClick(enquiry)}
             className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-pink-900/50 border hover:bg-pink-800 text-pink-300"
@@ -358,6 +363,8 @@ const EnquiriesRow = ({
       {/* Eligibility */}
       <td className="px-6 py-4">
       <button
+      onClick={() => onLoanEligibilityClick(enquiry)}
+
             className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-teal-900/50 border hover:bg-teal-800 text-teal-300"

@@ -13,7 +13,10 @@ const EnquiriesTable = ({
   onPageChange,
   onUploadClick,
   onDetailClick,
-  onFileView
+  onFileView,
+  onLoanEligibilityClick,
+  onVerifyClick ,
+  onCheckClick
 }) => {
   return (
     <>
@@ -216,14 +219,18 @@ const EnquiriesTable = ({
             <tbody>
               {paginatedEnquiries.map((enquiry, index) => (
                 <EnquiriesRow
-                  key={enquiry.id}
-                  enquiry={enquiry}
-                  index={index}
-                  isDark={isDark}
-                  onUploadClick={onUploadClick}
-                  onDetailClick={onDetailClick}
-                  onFileView={onFileView}
-                />
+                key={enquiry.id}
+                enquiry={enquiry}
+                index={index}
+                isDark={isDark}
+                onUploadClick={onUploadClick}
+                onDetailClick={onDetailClick}
+                onFileView={onFileView}
+                onLoanEligibilityClick={onLoanEligibilityClick}
+                onVerifyClick={onVerifyClick}
+                onCheckClick={onCheckClick}
+
+              />
               ))}
             </tbody>
           </table>

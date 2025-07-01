@@ -49,7 +49,6 @@ const ManageChequeDepositPage = () => {
   useEffect(() => {
     if (isEdit) {
       // In real app, fetch deposit data by editId
-      // For demo, using sample data
       const sampleData = {
         loanNo: "ATDAM00282",
         name: "Rajesh Kumar",

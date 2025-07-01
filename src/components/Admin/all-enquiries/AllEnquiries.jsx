@@ -4,20 +4,20 @@ import { ArrowLeft, Download } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import EnquiriesTable from "./EnquiriesTable";
+import { useRouter } from "next/navigation";
 import { exportToExcel } from "@/components/utils/exportutil";
-import LoanEligibility from "./LoanEligibility";
 
 // Main All Enquiries Component
 const AllEnquiries = () => {
   const { isDark } = useAdminAuth();
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
-  const [showLoanEligibility, setShowLoanEligibility] = useState(false);
-  const [selectedEnquiryForEligibility, setSelectedEnquiryForEligibility] = useState(null);
+  
 
   
   const [enquiries, setEnquiries] = useState([
@@ -45,6 +45,8 @@ const AllEnquiries = () => {
       roi: "12.5%",
       tenure: "24 months",
       loanTerm: "Short Term",
+      grossSalary: "80000", // Added gross salary
+      netSalary: "65000",   // Added net salary
       hasPhoto: true,
       hasPanCard: true,
       hasAddressProof: true,
@@ -57,7 +59,8 @@ const AllEnquiries = () => {
       approvalNote: "Pending verification",
       status: "Pending",
       hasAppraisalReport: false,
-      eligibility: "Eligible"
+      eligibility: "Eligible",
+      organizationName: "ATD"
     },
     {
       id: 2,
@@ -83,6 +86,8 @@ const AllEnquiries = () => {
       roi: "8.75%",
       tenure: "240 months",
       loanTerm: "Long Term",
+      grossSalary: "120000", // Added gross salary
+      netSalary: "95000",    // Added net salary
       hasPhoto: true,
       hasPanCard: true,
       hasAddressProof: true,
@@ -95,158 +100,6 @@ const AllEnquiries = () => {
       approvalNote: "Documents verified",
       status: "Approved",
       hasAppraisalReport: true,
-      eligibility: "Eligible"
-    },
-    {
-      id: 3,
-      srNo: 3,
-      enquirySource: "Branch Visit",
-      crnNo: "CRN001236",
-      accountId: "ACC003",
-      enquiryDate: "2024-06-22",
-      enquiryTime: "11:45 AM",
-      name: "AMIT VERMA GUPTA",
-      firstName: "AMIT",
-      lastName: "GUPTA",
-      currentAddress: "456 Commercial Street, Mumbai",
-      currentState: "Maharashtra",
-      currentCity: "Mumbai",
-      address: "789 Linking Road, Bandra",
-      state: "Maharashtra",
-      city: "Mumbai",
-      phoneNo: "9654321098",
-      email: "amit.gupta@gmail.com",
-      appliedLoan: "11000",
-      loanAmount: "10,00,000",
-      roi: "14.25%",
-      tenure: "60 months",
-      loanTerm: "Medium Term",
-      hasPhoto: false,
-      hasPanCard: true,
-      hasAddressProof: false,
-      hasIdProof: true,
-      hasSalaryProof: false,
-      hasBankStatement: false,
-      hasBankVerificationReport: false,
-      hasSocialScoreReport: false,
-      hasCibilScoreReport: false,
-      approvalNote: "Incomplete documents",
-      status: "Rejected",
-      hasAppraisalReport: false,
-      eligibility: "Not Eligible"
-    },
-    {
-      id: 4,
-      srNo: 4,
-      enquirySource: "Phone Call",
-      crnNo: "CRN001237",
-      accountId: "ACC004",
-      enquiryDate: "2024-06-23",
-      enquiryTime: "09:30 AM",
-      name: "SUNITA DEVI YADAV",
-      firstName: "SUNITA",
-      lastName: "YADAV",
-      currentAddress: "321 Anna Salai, Chennai",
-      currentState: "Tamil Nadu",
-      currentCity: "Chennai",
-      address: "654 T Nagar, Chennai",
-      state: "Tamil Nadu",
-      city: "Chennai",
-      phoneNo: "9543210987",
-      email: "sunita.yadav@gmail.com",
-      appliedLoan: "5000",
-      loanAmount: "8,00,000",
-      roi: "9.5%",
-      tenure: "84 months",
-      loanTerm: "Long Term",
-      hasPhoto: true,
-      hasPanCard: true,
-      hasAddressProof: true,
-      hasIdProof: true,
-      hasSalaryProof: true,
-      hasBankStatement: true,
-      hasBankVerificationReport: false,
-      hasSocialScoreReport: true,
-      hasCibilScoreReport: true,
-      approvalNote: "Under review",
-      status: "Pending",
-      hasAppraisalReport: true,
-      eligibility: "Eligible"
-    },
-    {
-      id: 5,
-      srNo: 5,
-      enquirySource: "Website",
-      crnNo: "CRN001238",
-      accountId: "ACC005",
-      enquiryDate: "2024-06-24",
-      enquiryTime: "03:20 PM",
-      name: "DEEPAK KUMAR SINGH",
-      firstName: "DEEPAK",
-      lastName: "SINGH",
-      currentAddress: "987 Park Street, Kolkata",
-      currentState: "West Bengal",
-      currentCity: "Kolkata",
-      address: "123 Salt Lake, Kolkata",
-      state: "West Bengal",
-      city: "Kolkata",
-      phoneNo: "9432109876",
-      email: "deepak.singh@gmail.com",
-      appliedLoan: "8000",
-      loanAmount: "15,00,000",
-      roi: "7.25%",
-      tenure: "120 months",
-      loanTerm: "Long Term",
-      hasPhoto: true,
-      hasPanCard: true,
-      hasAddressProof: true,
-      hasIdProof: true,
-      hasSalaryProof: true,
-      hasBankStatement: true,
-      hasBankVerificationReport: true,
-      hasSocialScoreReport: true,
-      hasCibilScoreReport: true,
-      approvalNote: "Approved with conditions",
-      status: "Approved",
-      hasAppraisalReport: true,
-      eligibility: "Eligible"
-    },
-    {
-      id: 6,
-      srNo: 6,
-      enquirySource: "Mobile App",
-      crnNo: "CRN001239",
-      accountId: "ACC006",
-      enquiryDate: "2024-06-25",
-      enquiryTime: "01:10 PM",
-      name: "KAVITA SHARMA MEHTA",
-      firstName: "KAVITA",
-      lastName: "MEHTA",
-      currentAddress: "555 Residency Road, Pune",
-      currentState: "Maharashtra",
-      currentCity: "Pune",
-      address: "777 Koregaon Park, Pune",
-      state: "Maharashtra",
-      city: "Pune",
-      phoneNo: "9321098765",
-      email: "kavita.mehta@gmail.com",
-      appliedLoan: "15,000",
-      loanAmount: "3,00,000",
-      roi: "11.75%",
-      tenure: "12 months",
-      loanTerm: "Short Term",
-      hasPhoto: false,
-      hasPanCard: true,
-      hasAddressProof: true,
-      hasIdProof: false,
-      hasSalaryProof: false,
-      hasBankStatement: true,
-      hasBankVerificationReport: false,
-      hasSocialScoreReport: false,
-      hasCibilScoreReport: true,
-      approvalNote: "Photo and ID proof required",
-      status: "Pending",
-      hasAppraisalReport: false,
       eligibility: "Eligible"
     }
   ]);
@@ -297,6 +150,8 @@ const AllEnquiries = () => {
       'ROI': enquiry.roi,
       'Tenure': enquiry.tenure,
       'Loan Term': enquiry.loanTerm,
+      'Gross Salary': enquiry.grossSalary,
+      'Net Salary': enquiry.netSalary,
       'Approval Note': enquiry.approvalNote,
       'Status': enquiry.status,
       'Eligibility': enquiry.eligibility
@@ -309,7 +164,6 @@ const AllEnquiries = () => {
     }
   };
 
-  // Filter enquiries
   const filteredEnquiries = enquiries.filter(enquiry => {
     const matchesSearch = 
       enquiry.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -334,6 +188,25 @@ const AllEnquiries = () => {
   const totalPages = Math.ceil(filteredEnquiries.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedEnquiries = filteredEnquiries.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleLoanEligibilityClick = (enquiry) => {
+    // Store the enquiry data in localStorage before navigation
+    localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
+    router.push(`/crm/all-enquiries/${enquiry.id}/loan-eligibility`);
+  };
+
+  const handleVerifyClick = (enquiry) => {
+    // Store the enquiry data in localStorage before navigation
+    localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
+    router.push(`/crm/all-enquiries/${enquiry.id}/application-form`);
+  };
+
+  const handleCheckClick = (enquiry) => {
+    // Store the enquiry data in localStorage before navigation
+    localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
+    router.push(`/crm/all-enquiries/${enquiry.id}/appraisal-report`);
+  };
+
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -415,6 +288,9 @@ const AllEnquiries = () => {
           onUploadClick={handleUploadClick}
           onDetailClick={handleDetailClick}
           onFileView={handleFileView}
+          onLoanEligibilityClick={handleLoanEligibilityClick}
+          onVerifyClick={handleVerifyClick}
+          onCheckClick = {handleCheckClick}
         />
       </div>
     </div>

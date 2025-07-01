@@ -11,7 +11,7 @@ import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
-import { Scale, BanknoteArrowUp, ChartNoAxesCombined, ReceiptIndianRupee , BadgeCheck} from "lucide-react";
+import { Scale, BanknoteArrowUp, ChartNoAxesCombined,Codesandbox,Boxes, ReceiptIndianRupee , BadgeCheck} from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { GiExpense } from "react-icons/gi";
 import { TbMessageCircleFilled } from "react-icons/tb";
@@ -21,6 +21,15 @@ import { useAdminAuth } from '@/lib/AdminAuthContext';
 
 const menuList = [
   { name: 'Dashboard', link: '/crm/dashboard', icon: <FaHome /> },
+  {
+    name: 'Manage Enquiries',
+    icon: <Codesandbox />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'Manage Application', link: '/crm/manage-application', icon: <Boxes size={16} />},
+    ]
+  },
+  
   { name: 'All Enquiries', link: '/crm/all-enquiries', icon: <TbMessageCircleFilled />  },
   { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled />  },
   { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd />  },
