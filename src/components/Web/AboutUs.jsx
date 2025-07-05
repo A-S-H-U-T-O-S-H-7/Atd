@@ -12,22 +12,18 @@ import {
   Shield,
   Building
 } from "lucide-react";
+import Image from "next/image";
 
 const AboutUs = () => {
-  return (
-    <div className="bg-white pt-5 text-gray-800">
+  return <div className="bg-white pt-5 text-gray-800">
       {/* Banner Image Section */}
-      <div className="relative mx-4 rounded-xl md:mx-10 h-72 bg-gradient-to-r from-teal-500 to-teal-300  mb-12">
-        <img
-          src="/heroimage7.png"
-          alt="ATD Money Banner"
-          className="w-full h-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
-          <h1 className="text-5xl font-bold mb-4">About ATD Money</h1>
-          <p className="text-xl max-w-3xl text-center">
-            India's No. 1 personal loan app for salaried professionals
-          </p>
+      <div className=" mx-4  md:mx-10 border border-emerald-400 
+                            bg-gradient-to-br from-emerald-50 to-cyan-50
+                            shadow-lg shadow-emerald-100
+                            rounded-xl
+                            p-4 md:p-6">
+        <div>
+          <Image src="/AboutUs.jpg" alt="Aboutus Banner" width={4500} height={4200} className="w-500 h-60 rounded-xl" priority />
         </div>
       </div>
 
@@ -43,19 +39,9 @@ const AboutUs = () => {
 
         <div className="bg-purple-50 p-3 md:p-8 rounded-2xl shadow-sm border border-purple-100">
           <p>
-            ATD Money is a leading digital lending platform, owned and operated
-            by
-            <strong> ATD FINANCIAL SERVICES PVT LTD</strong>, a Non-Banking
-            Financial Company (NBFC) established in <strong>1996</strong> and
-            registered with the Reserve Bank of India (RBI) under{" "}
-            <strong>License No. B-12-00315</strong> (verification available on
-            the
-            <i> Sachet RBI Portal </i>). With a strong foundation and decades of
-            experience, we are committed to delivering hassle-free, transparent,
-            and responsible lending services. Our goal is to empower individuals
-            to overcome financial challenges and regain control of their
-            financial well-being. At ATD Money, we believe in providing
-            financial freedom in a smooth, efficient, and user-friendly manner.
+            ATD Money is a leading digital lending platform, owned and operated by
+            <strong> ATD FINANCIAL SERVICES PVT LTD</strong>, a Non-Banking Financial Company (NBFC) established in <strong>1996</strong> and registered with the Reserve Bank of India (RBI) under <strong>License No. B-12-00315</strong> (verification available on the
+            <i> Sachet RBI Portal </i>). With a strong foundation and decades of experience, we are committed to delivering hassle-free, transparent, and responsible lending services. Our goal is to empower individuals to overcome financial challenges and regain control of their financial well-being. At ATD Money, we believe in providing financial freedom in a smooth, efficient, and user-friendly manner.
           </p>
         </div>
 
@@ -63,7 +49,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl shadow-md border border-gray-100">
             <div className="flex items-center mb-4">
               <Info className="text-blue-500 mr-3" size={24} />
-              <h2 className=" text-xl md:text-2xl font-semibold">Company Info</h2>
+              <h2 className=" text-xl md:text-2xl font-semibold">
+                Company Info
+              </h2>
             </div>
             <ul className="space-y-2">
               <li>
@@ -76,11 +64,7 @@ const AboutUs = () => {
                 <strong>Lender:</strong> ATD FINANCIAL SERVICES PVT LTD
               </li>
               <li>
-                <strong>RBI License:</strong> B-12-00315 (<a
-                target="_blank"
-                  href="https://sachet.rbi.org.in/"
-                  className="text-blue-500 underline"
-                >
+                <strong>RBI License:</strong> B-12-00315 (<a target="_blank" href="https://sachet.rbi.org.in/" className="text-blue-500 underline">
                   Verify
                 </a>)
               </li>
@@ -93,7 +77,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl shadow-md border border-gray-100">
             <div className="flex items-center mb-6">
               <Award className="text-purple-500 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">Key Features</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                Key Features
+              </h2>
             </div>
             <ul className="list-disc pl-5 space-y-2">
               <li>Instant Approval & Disbursement within minutes</li>
@@ -107,7 +93,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-xl shadow-md border border-gray-100">
             <div className="flex items-center mb-6">
               <Users className="text-green-500 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">Eligibility Criteria</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                Eligibility Criteria
+              </h2>
             </div>
             <ul className="list-disc pl-5 space-y-2">
               <li>Indian Citizen</li>
@@ -120,7 +108,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-yellow-50 to-white p-6 rounded-xl shadow-md border border-gray-100">
             <div className="flex items-center mb-6">
               <CheckCircle className="text-yellow-500 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">Why ATD Money?</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                Why ATD Money?
+              </h2>
             </div>
             <ul className="list-disc pl-5 space-y-2">
               <li>30,000+ mini loans disbursed</li>
@@ -136,7 +126,9 @@ const AboutUs = () => {
           <section className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl shadow-md border border-purple-100">
             <div className="flex items-center mb-6">
               <CreditCard className="text-purple-600 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">Loan Details & Charges</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                Loan Details & Charges
+              </h2>
             </div>
             <ul className="space-y-2">
               <li>
@@ -153,8 +145,8 @@ const AboutUs = () => {
               </li>
               <li>
                 Above charges (Except ROI) varies depending upon, risk profile
-                of the customer, past relation of the customer, Prompt repayment
-                of earlier loans etc.
+                of the customer, past relation of the customer, Prompt
+                repayment of earlier loans etc.
               </li>
             </ul>
           </section>
@@ -173,18 +165,15 @@ const AboutUs = () => {
             <ul className="list-disc pl-5 space-y-2">
               <li>Interest Payable: 304.85</li>
               <li>
-                Processing + Documentation Fees (3.5% + 3.5%): 413.00 (Incl. GST
-                @18% Rs. 63.00)
+                Processing + Documentation Fees (3.5% + 3.5%): 413.00 (Incl.
+                GST @18% Rs. 63.00)
               </li>
               <li>Disbursed Amount: 4,587.00 (after deductions)</li>
               <li>Total Repayable Amount: 5,305.00</li>
               <li>Our Presence across India</li>
             </ul>
             <p className="pt-4">
-              <strong>Prepayment Charges- Rs.0/-</strong> When customers delay
-              their scheduled repayment, a penalty is charged. We made our
-              customers aware regarding fees & charges through agreement which
-              we shared on their registered email ids.
+              <strong>Prepayment Charges- Rs.0/-</strong> When customers delay their scheduled repayment, a penalty is charged. We made our customers aware regarding fees & charges through agreement which we shared on their registered email ids.
             </p>
           </div>
         </div>
@@ -192,7 +181,9 @@ const AboutUs = () => {
         <div className="bg-gradient-to-br from-green-50 to-white p-6 rounded-xl shadow-md border border-green-100">
           <div className="flex items-center mb-6">
             <TrendingUp className="text-green-600 mr-3" size={24} />
-            <h2 className="text-xl md:text-2xl font-semibold">Benefits & Risks</h2>
+            <h2 className="text-xl md:text-2xl font-semibold">
+              Benefits & Risks
+            </h2>
           </div>
           <ul className="list-disc pl-5 space-y-2">
             <li>
@@ -210,7 +201,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center mb-6">
               <FileText className="text-gray-700 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">Required Documents</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                Required Documents
+              </h2>
             </div>
             <ul className="list-disc pl-5 space-y-1">
               <li>Recent Photograph</li>
@@ -225,7 +218,9 @@ const AboutUs = () => {
           <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center mb-6">
               <Download className="text-gray-700 mr-3" size={24} />
-              <h2 className="text-xl md:text-2xl font-semibold">How to Apply</h2>
+              <h2 className="text-xl md:text-2xl font-semibold">
+                How to Apply
+              </h2>
             </div>
             <ol className="list-decimal pl-5 space-y-1">
               <li>Download & Install ATD Money App</li>
@@ -276,8 +271,7 @@ const AboutUs = () => {
           </p>
         </footer>
       </div>
-    </div>
-  );
+    </div>;
 };
 
 export default AboutUs;

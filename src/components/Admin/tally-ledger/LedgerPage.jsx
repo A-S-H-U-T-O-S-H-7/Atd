@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Calendar } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import LedgerTable from "./LedgerTable";
-import DateFilter from "./TallyDateFilter";
+import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 
 const LedgerPage = () => {

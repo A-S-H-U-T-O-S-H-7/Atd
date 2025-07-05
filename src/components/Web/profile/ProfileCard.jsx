@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
-import { User, Camera, Phone, Mail, Star, Edit3, Verified } from 'lucide-react';
+import { User, Phone, Mail, Star, Edit3, Verified } from 'lucide-react';
 
 export default function ProfileCard({ user }) {
   const [imageError, setImageError] = useState(false);

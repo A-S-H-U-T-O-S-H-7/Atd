@@ -73,7 +73,7 @@ const BankDetails = ({ formik, isDark }) => {
               className={selectClassName}
             >
               <option value="">Select Account Type</option>
-              <option value="Savings">Savings Account</option>
+              <option value="SAVING">Savings Account</option>
               <option value="Current">Current Account</option>
               <option value="Salary">Salary Account</option>
               <option value="Fixed Deposit">Fixed Deposit</option>
@@ -179,11 +179,10 @@ const BankDetails = ({ formik, isDark }) => {
               className={selectClassName}
             >
               <option value="">Select Status</option>
-              <option value="New Customer">New Customer</option>
-              <option value="Existing Customer">Existing Customer</option>
-              <option value="Pending Verification">Pending Verification</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
+              <option value="NEW CUSTOMER">New Customer</option>
+              <option value="EXISTING CUSTOMER">Existing Customer</option>
+              <option value="PENDING VERIFICATION">Pending Verification</option>
+              
             </select>
           </div>
 

@@ -30,6 +30,7 @@ function Navbar() {
     { name: "Loans", href: "/user_signup" },
     { name: "About us", href: "/aboutus" },
     { name: "Contact us", href: "/contactus" },
+
     
   ];
 

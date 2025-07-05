@@ -68,9 +68,9 @@ const LoanDetails = ({ formik, isDark }) => {
               className={selectClassName}
             >
               <option value="">Select Loan Term</option>
-              <option value="Short Term">Short Term</option>
-              <option value="Medium Term">Medium Term</option>
-              <option value="Long Term">Long Term</option>
+              <option value="1">One Day</option>
+               <option value="4">One Time Payment</option>
+              
             </select>
           </div>
 

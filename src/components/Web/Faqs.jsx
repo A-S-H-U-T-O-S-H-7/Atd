@@ -150,24 +150,23 @@ const faqData = [
     setActiveIndex(prev => (prev === index ? null : index));
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <div className="relative h-60 w-full">
-        <Image
-          src="/heroimage4.png"
-          alt="FAQs Banner"
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <h1 className="text-2xl md:text-4xl font-bold text-white">Frequently Asked Questions</h1>
+  return <div className="min-h-screen text-gray-800">
+      <div className=" mx-4 mt-6 md:mx-10 border border-emerald-400 
+                bg-gradient-to-br from-emerald-50 to-cyan-50
+                shadow-lg shadow-emerald-100
+                rounded-xl
+                p-4 md:p-6">
+        <div >
+          <Image src="/FAQs.jpg" alt="Blog Banner" width={4500} height={4200} className="w-500 h-60 rounded-xl" priority />
         </div>
       </div>
 
       <section className="px-4 md:px-10 py-12">
-        <h1 className="text-2xl md:text-4xl font-bold text-center pb-10 text-teal-500">Frequently Asked Questions</h1>
+        <h1 className="text-2xl md:text-4xl font-bold text-center pb-10 text-teal-500">
+          Frequently Asked Questions
+        </h1>
 
-        {faqData.map((item, index) => (
+        {faqData.map((item, index) =>
           <div
             key={index}
             className="bg-white shadow-md rounded-xl mb-4 border border-gray-200 transition-all"
@@ -176,21 +175,22 @@ const faqData = [
               onClick={() => toggle(index)}
               className="w-full flex justify-between items-center p-5 text-left text-base md:text-lg font-semibold"
             >
-              <span className="pr-4  text-left flex-1">{item.question}</span>
+              <span className="pr-4  text-left flex-1">
+                {item.question}
+              </span>
               <FaAngleDown
-                className={`min-w-[20px] min-h-[20px] text-xl transition-transform duration-300 ${
-                  activeIndex === index ? "rotate-180 text-teal-600" : ""
-                }`}
+                className={`min-w-[20px] min-h-[20px] text-xl transition-transform duration-300 ${activeIndex ===
+                index
+                  ? "rotate-180 text-teal-600"
+                  : ""}`}
               />
             </button>
-            {activeIndex === index && (
+            {activeIndex === index &&
               <div className="px-5 pb-5 whitespace-pre-line text-gray-600 transition-all duration-300">
                 {item.answer}
-              </div>
-            )}
+              </div>}
           </div>
-        ))}
+        )}
       </section>
-    </div>
-  );
+    </div>;
 }

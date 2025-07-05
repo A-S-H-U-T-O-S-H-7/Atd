@@ -23,9 +23,9 @@ const videos = [
   },
   {
     title: "Central KYC Records Registry",
-    videoUrl: "https://youtu.be/rdi7G1hY4-w?si=v7_1FirnZvJP0I4f",
+    videoUrl: "https://youtu.be/G34EE3zj9xM",
     thumbnail: "/kyc.png",
-    youtubeId: "rdi7G1hY4-w" 
+    youtubeId: "G34EE3zj9xM" 
   }
 ];
 

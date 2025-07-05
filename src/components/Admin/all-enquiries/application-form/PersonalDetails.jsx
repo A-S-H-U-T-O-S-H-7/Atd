@@ -132,9 +132,9 @@ const PersonalDetails = ({ formik, isDark }) => {
               className={selectClassName}
             >
               <option value="">--Please Select Gender--</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
+              <option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
             </select>
           </div>
 
@@ -170,7 +170,7 @@ const PersonalDetails = ({ formik, isDark }) => {
                 className={selectClassName}
               >
                 <option value="">Year</option>
-                {Array.from({length: 80}, (_, i) => {
+                {Array.from({length: 70}, (_, i) => {
                   const year = new Date().getFullYear() - 18 - i;
                   return <option key={year} value={year}>{year}</option>
                 })}

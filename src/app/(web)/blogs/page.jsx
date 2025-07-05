@@ -94,7 +94,7 @@ export default function BlogPage() {
       return () => observer.disconnect();
     },
     [hasMorePosts, isLoading, isLoadingMore, loadMorePosts]
-  );
+  ); 
 
   return (
     <div className="min-h-screen pt-5 bg-gradient-to-b from-gray-50 to-gray-100">
@@ -104,9 +104,10 @@ export default function BlogPage() {
         alt="Blog Banner"
         width={4500}
         height={4200}
-        className="w-full rounded-xl"
+        className="w-500 h-60 rounded-xl"
         priority
       />
+      
       </div>
       <h1 className="flex justify-center pt-10 text-xl md:text-5xl font-semibold">
         Blogs

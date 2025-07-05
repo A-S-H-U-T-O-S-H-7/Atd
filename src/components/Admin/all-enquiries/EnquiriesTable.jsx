@@ -15,9 +15,53 @@ const EnquiriesTable = ({
   onDetailClick,
   onFileView,
   onLoanEligibilityClick,
-  onVerifyClick ,
+  onVerifyClick,
   onCheckClick
 }) => {
+  // Common header style
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold ${
+    isDark ? "text-gray-100" : "text-gray-700"
+  }`;
+
+  const tableHeaders = [
+    { label: "SR. No.", width: "80px" },
+    { label: "Enquiry Source", width: "160px" },
+    { label: "CRN No", width: "140px" },
+    { label: "Account ID", width: "140px" },
+    { label: "Enquiry Date", width: "160px" },
+    { label: "Enquiry Time", width: "140px" },
+    { label: "Name", width: "200px" },
+    { label: "First Name", width: "120px" },
+    { label: "Last Name", width: "120px" },
+    { label: "Current Address", width: "250px" },
+    { label: "Current State", width: "120px" },
+    { label: "Current City", width: "120px" },
+    { label: "Address", width: "250px" },
+    { label: "State", width: "100px" },
+    { label: "City", width: "100px" },
+    { label: "Phone No.", width: "140px" },
+    { label: "E-mail", width: "200px" },
+    { label: "Applied Loan", width: "120px" },
+    { label: "Loan Amount", width: "120px" },
+    { label: "ROI", width: "80px" },
+    { label: "Tenure", width: "100px" },
+    { label: "Loan Term", width: "140px" },
+    { label: "Photo", width: "80px" },
+    { label: "Pan Card", width: "100px" },
+    { label: "Address Proof", width: "120px" },
+    { label: "ID Proof", width: "100px" },
+    { label: "Salary Proof", width: "120px" },
+    { label: "Bank Statement", width: "130px" },
+    { label: "Bank Verification Report", width: "160px" },
+    { label: "Social Score Report", width: "140px" },
+    { label: "Cibil Score Report", width: "140px" },
+    { label: "Approval Note", width: "140px" },
+    { label: "Status", width: "100px" },
+    { label: "Action", width: "120px" },
+    { label: "Appraisal Report", width: "140px" },
+    { label: "Eligibility", width: "100px" }
+  ];
+
   return (
     <>
       <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
@@ -33,204 +77,31 @@ const EnquiriesTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "80px" }}>
-                  SR. No.
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "160px" }}>
-                  Enquiry Source
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  CRN No
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Account ID
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "160px" }}>
-                  Enquiry Date
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Enquiry Time
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "200px" }}>
-                  Name
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  First Name
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Last Name
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "150px" }}>
-                  Current Address
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Current State
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Current City
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "150px" }}>
-                  Address
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  State
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  City
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Phone No.
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "200px" }}>
-                  E-mail
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Applied Loan
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Loan Amount
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "80px" }}>
-                  ROI
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  Tenure
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Loan Term
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "80px" }}>
-                  Photo
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  Pan Card
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Address Proof
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  ID Proof
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Salary Proof
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "130px" }}>
-                  Bank Statement
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "160px" }}>
-                  Bank Verification Report
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Social Score Report
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Cibil Score Report
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Approval Note
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  Status
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Action
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "140px" }}>
-                  Appraisal Report
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  Eligibility
-                </th>
-               
+                {tableHeaders.map((header, index) => (
+                  <th 
+                    key={index}
+                    className={headerStyle}
+                    style={{ minWidth: header.width }}
+                  >
+                    {header.label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {paginatedEnquiries.map((enquiry, index) => (
                 <EnquiriesRow
-                key={enquiry.id}
-                enquiry={enquiry}
-                index={index}
-                isDark={isDark}
-                onUploadClick={onUploadClick}
-                onDetailClick={onDetailClick}
-                onFileView={onFileView}
-                onLoanEligibilityClick={onLoanEligibilityClick}
-                onVerifyClick={onVerifyClick}
-                onCheckClick={onCheckClick}
-
-              />
+                  key={enquiry.id}
+                  enquiry={enquiry}
+                  index={index}
+                  isDark={isDark}
+                  onUploadClick={onUploadClick}
+                  onDetailClick={onDetailClick}
+                  onFileView={onFileView}
+                  onLoanEligibilityClick={onLoanEligibilityClick}
+                  onVerifyClick={onVerifyClick}
+                  onCheckClick={onCheckClick}
+                />
               ))}
             </tbody>
           </table>

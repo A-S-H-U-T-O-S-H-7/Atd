@@ -98,12 +98,18 @@ const ReferenceDetails = ({ formik, isDark }) => {
               className={selectClassName}
             >
               <option value="">--Please Select Relation--</option>
-              <option value="friend">Friend</option>
-              <option value="colleague">Colleague</option>
-              <option value="neighbor">Neighbor</option>
-              <option value="relative">Relative</option>
-              <option value="business_associate">Business Associate</option>
-              <option value="other">Other</option>
+              <option value="Friend">Friend</option>
+              <option value="Father">Father</option>
+              <option value="Mother">Mother</option>
+              <option value="Spouse">Spouse</option>
+              <option value="Brother">Brother</option>
+              <option value="Sister">Sister</option>          
+
+              <option value="Colleague">Colleague</option>
+              <option value="Neighbor">Neighbor</option>
+              <option value="Relative">Relative</option>
+              <option value="Business_associate">Business Associate</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
