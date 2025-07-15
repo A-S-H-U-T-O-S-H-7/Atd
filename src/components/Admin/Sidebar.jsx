@@ -3,19 +3,29 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FiMenu, FiX,  FiChevronRight } from 'react-icons/fi';
-import { FaHome, FaSms ,FaFileExport, FaMoneyCheckAlt,FaBook} from 'react-icons/fa';
-import { MdReviews, MdReportProblem,MdOutlineAccessTimeFilled } from "react-icons/md";
+import { FaHome, FaSms ,FaFileExport, FaMoneyCheckAlt,FaBook,FaHandHoldingUsd,FaMobileAlt,
+  FaEnvelopeOpenText,FaHourglassHalf,FaBriefcase} from 'react-icons/fa';
+import { MdReviews, MdReportProblem,MdOutlineAccessTimeFilled,MdFlashAuto, MdOutlineQrCode2,
+  MdAssignmentTurnedIn,MdCreditScore,MdPendingActions,MdDoneAll,MdCancel,MdBlockFlipped,MdMenuBook,
+  MdDownload,MdSupportAgent,MdAttachMoney,MdOutlineHistoryEdu
+ } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
 import { RiAccountPinBoxFill } from "react-icons/ri";
 import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
-import { Scale, BanknoteArrowUp, ChartNoAxesCombined,Codesandbox,Boxes, ReceiptIndianRupee , BadgeCheck} from "lucide-react";
+import { Scale, BanknoteArrowUp, ChartNoAxesCombined,Codesandbox,Boxes, 
+  ReceiptIndianRupee , BadgeCheck, Stamp,UserLock, } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
-import { GiExpense } from "react-icons/gi";
+import { GiExpense, GiWallet,GiMoneyStack  } from "react-icons/gi";
 import { TbMessageCircleFilled } from "react-icons/tb";
 import { FaHourglassEnd } from "react-icons/fa6";
+import { BsCreditCard2FrontFill } from "react-icons/bs";
+import { LuFileOutput } from "react-icons/lu";
+import { BiSpreadsheet } from "react-icons/bi";
+
+
 
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 
@@ -27,16 +37,53 @@ const menuList = [
     isDropdown: true,
     subItems: [
       { name: 'Manage Application', link: '/crm/manage-application', icon: <Boxes size={16} />},
+      { name: 'Disburse Application', link: '/crm/disburse-application', icon: <MdAssignmentTurnedIn />},
+      { name: 'Credit Approval', link: '/crm/credit-approval', icon: <MdCreditScore />},
+      { name: 'Sanction Application', link: '/crm/sanction-application', icon: <Stamp />},
+      { name: 'Inprocess Application', link: '/crm/inprogress-application', icon: <MdPendingActions />},
+      { name: 'Followup Application', link: '/crm/followup-application', icon: <FaEnvelopeOpenText/>},
+      { name: 'Completed Application', link: '/crm/completed-application', icon: <MdDoneAll />},
+      { name: 'Pending Appliaction', link: '/crm/pending-application', icon: <FaHourglassHalf />},
+      { name: 'Rejected Appliaction', link: '/crm/rejected-application', icon: <MdCancel />},
+      { name: 'Cancelled Appliaction', link: '/crm/cancelled-application', icon: <MdBlockFlipped />},
+      { name: 'Returned Appliaction', link: '/crm/returned-application', icon: <LuFileOutput />},
+      { name: 'Closed By Admin Appliaction', link: '/crm/closedbyadmin-application', icon: <UserLock />},
+      
+
+
     ]
   },
   
   { name: 'All Enquiries', link: '/crm/all-enquiries', icon: <TbMessageCircleFilled />  },
-  { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled />  },
-  { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd />  },
-  { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook />  },
-  { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport />},
-  { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },
-  { name: 'Cibil Report', link: '/crm/cibil-report', icon: <BadgeCheck /> },
+  { name: 'Disburse Reporting', link: '/crm/disburse-reporting', icon: <FaHandHoldingUsd />  },
+  { name: 'Collection Reporting', link: '/crm/collection-reporting', icon: <GiWallet />  },
+  {
+    name: 'Auto Collection',
+    icon: <MdFlashAuto />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'E-Collection', link: '/crm/e-collection', icon: <BsCreditCard2FrontFill />},
+      { name: 'UPI Collection', link: '/crm/upi-collection', icon: <MdOutlineQrCode2 /> },
+    ]
+  },
+    { name: 'Ledger', link: '/crm/ledger', icon: <BiSpreadsheet />},
+    { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
+    { name: 'Cibil Report', link: '/crm/cibil-report', icon: <BadgeCheck /> },
+    { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook />  },
+    { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport />},
+    { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd />  },
+    { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled />  },
+    { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },   
+    {
+    name: 'Profit/Loss Deposit',
+    icon: <IoBarChart />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense />      },
+      { name: 'Track Profit/Loss', link: '/crm/profit-loss', icon: <ChartNoAxesCombined size={16} /> },
+    ]
+  },
+    { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack />  },
 
   {
     name: 'Cash/Cheque Deposit',
@@ -47,20 +94,8 @@ const menuList = [
       { name: 'Cash Management', link: '/crm/cash-management', icon: <IoMdCash /> },
     ]
   },
-  {
-    name: 'Profit/Loss Deposit',
-    icon: <IoBarChart />    ,
-    isDropdown: true,
-    subItems: [
-      { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense />      },
-      { name: 'Track Profit/Loss', link: '/crm/profit-loss', icon: <ChartNoAxesCombined size={16} /> },
-    ]
-  },
-  { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
-  { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
-  { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
-  { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
-  {
+    { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
+{
     name: 'Complaints',
     icon: <MdReportProblem />    ,
     isDropdown: true,
@@ -69,10 +104,37 @@ const menuList = [
       { name: 'Manage Complaints', link: '/crm/complaints/manage-complaints', icon: <BiCog /> },
     ]
   },
-  { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
-  { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
+    { name: 'RBI Guidelines Management', link: '/crm/rbi-guidelines', icon: <MdMenuBook />  },
+    { name: 'Client History', link: '/crm/client-history', icon: < MdOutlineHistoryEdu /> },
+    { name: 'Registered From App', link: '/crm/registered-from-app', icon: <FaMobileAlt />  },
+    { name: 'Download App', link: '/crm/download-app', icon: <MdDownload />  },
+    { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
   { name: 'References', link: '/crm/references', icon: <VscReferences /> },
-  { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
+   {
+    name: 'Business Loan Enquiry',
+    icon: <FaMoneyCheckAlt />    ,
+    isDropdown: true,
+    subItems: [
+      { name: 'Upto 5 lacs', link: '/crm/businessloan-upto-5l', icon: <FaBriefcase/>},
+      { name: 'Between 5L-1.5cr', link: '/crm/businessloan-above-5l', icon: <MdAttachMoney /> },
+    ]
+  },
+
+    { name: 'Help Ticket', link: '/crm/help-ticket', icon: <MdSupportAgent />  },
+      { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
+        { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
+          { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
+
+  { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
+
+
+
+  
+  
+ 
+  
+  
+  
   
 ];
 

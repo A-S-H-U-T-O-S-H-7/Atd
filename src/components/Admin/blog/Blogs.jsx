@@ -259,6 +259,7 @@ const BlogPage = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
+              onClick={() => router.back()}
                 className={`p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"}`}
@@ -268,7 +269,8 @@ const BlogPage = () => {
                     ? "text-emerald-400"
                     : "text-emerald-600"}`}
                 />
-              </button>
+                
+                 </button>
               <h1
                 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${isDark
                   ? "from-emerald-400 to-teal-400"

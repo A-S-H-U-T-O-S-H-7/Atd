@@ -7,6 +7,7 @@ import ComplaintTable from "./ComplaintTable";
 import ComplaintDetailModal from "./ComplaintDetails";
 import UploadModal from "./UploadModal";
 import { exportToExcel } from "@/components/utils/exportutil";
+import { useRouter } from "next/navigation";
 
 // Main Complaint Management Component
 const ComplaintPage = () => {
@@ -17,6 +18,7 @@ const ComplaintPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const router = useRouter()
   
   const [complaints, setComplaints] = useState([
     {
@@ -169,7 +171,9 @@ const ComplaintPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button
+              onClick={()=>router.back()}
+               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"

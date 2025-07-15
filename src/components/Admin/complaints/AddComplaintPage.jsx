@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import ComplaintFormFields from './ComplaintsFormFields';
 import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useRouter } from 'next/navigation';
 
 const AddComplaintPage = () => {
   const { isDark } = useAdminAuth();
@@ -13,6 +14,7 @@ const AddComplaintPage = () => {
   const [loanAcNo, setLoanAcNo] = useState('');
   const [loanProvider, setLoanProvider] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -59,6 +61,7 @@ const AddComplaintPage = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <button
+              onClick={()=> router.back()}
                 className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
                   isDark
                     ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"

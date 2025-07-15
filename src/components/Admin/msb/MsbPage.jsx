@@ -7,6 +7,7 @@ import Pagination from "../Pagination";
 import AccountTableRow from "./MsbTableRaw";
 import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
+import { useRouter } from "next/navigation";
 
 const CreateMSBAccountAccount = () => {
 
@@ -89,6 +90,7 @@ const mockAccountData = [
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState(mockAccountData);
     const [accounts, setAccounts] = useState(mockAccountData);
+    const router = useRouter();
 
    
     const itemsPerPage = 10;
@@ -178,6 +180,7 @@ const mockAccountData = [
             <div className="flex flex-wrap gap-6 items-center justify-between mb-10">
               <div className="flex  items-center space-x-4">
                 <button
+                onClick={()=> router.back()}
                   className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                     isDark
                       ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"

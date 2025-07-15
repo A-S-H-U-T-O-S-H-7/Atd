@@ -8,6 +8,16 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
 import { mockApplicationsData } from "@/lib/MockApplicationData";
+import ChequeModal from "../application-modals/ChequeSubmit";
+import SendToCourierModal from "../application-modals/SendToCourierModal";
+import CourierPickedModal from "../application-modals/CourierPickedModal";
+import OriginalDocumentsModal from "../application-modals/OriginalDocumentsModal";
+import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
+import ChangeStatusModal from "../application-modals/StatusModal";
+import RemarksModal from "../application-modals/RemarkModal";
+import RefundPDCModal from "../application-modals/RefundPdcModal";
+import CallDetailsModal from "../CallDetailsModal";
+import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 
 const ManageApplication = () => {
   const { isDark } = useAdminAuth();
@@ -19,6 +29,287 @@ const ManageApplication = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [chequeModalOpen, setChequeModalOpen] = useState(false);
+const [currentApplication, setCurrentApplication] = useState(null);
+const [currentChequeNo, setCurrentChequeNo] = useState('');
+const [courierModalOpen, setCourierModalOpen] = useState(false);
+const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
+const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
+const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
+const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
+const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
+const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
+const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
+const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
+const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
+const [remarksModalOpen, setRemarksModalOpen] = useState(false);
+const [currentRemarksApplication, setCurrentRemarksApplication] = useState(null);
+const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
+const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
+const [showCallModal, setShowCallModal] = useState(false);
+const [selectedApplicant, setSelectedApplicant] = useState(null);
+const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
+const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+
+const handleCall = (applicant) => {
+  setSelectedApplicant(applicant);
+  setShowCallModal(true);
+};
+
+const handleDocumentVerificationModalOpen = (application) => {
+  setCurrentDocumentApplication(application);
+  setDocumentVerificationModalOpen(true);
+};
+
+const handleDocumentVerificationModalClose = () => {
+  setDocumentVerificationModalOpen(false);
+  setCurrentDocumentApplication(null);
+};
+
+const handleDocumentVerify = (application, documentId) => {
+  // Navigate to application form for verification
+  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+  router.push(`/crm/application-form/${application.id}`);
+  // Close modal after navigation
+  setDocumentVerificationModalOpen(false);
+};
+
+// check modal handlers
+
+const handleChequeModalOpen = (application, chequeNumber) => {
+  setCurrentApplication(application);
+  setCurrentChequeNo(chequeNumber);
+  setChequeModalOpen(true);
+};
+
+const handleChequeModalClose = () => {
+  setChequeModalOpen(false);
+  setCurrentApplication(null);
+  setCurrentChequeNo('');
+};
+
+const handleChequeSubmit = async (newChequeNo) => {
+  try {
+    // Your API call here
+    console.log('Cheque number saved:', newChequeNo);
+    // Update the application data if needed
+  } catch (error) {
+    console.error('Error saving cheque number:', error);
+    throw error;
+  }
+};
+
+// original document handler 
+
+const handleOriginalDocumentsModalOpen = (application) => {
+  setCurrentOriginalDocumentsApplication(application);
+  setOriginalDocumentsModalOpen(true);
+};
+
+const handleOriginalDocumentsModalClose = () => {
+  setOriginalDocumentsModalOpen(false);
+  setCurrentOriginalDocumentsApplication(null);
+};
+
+const handleOriginalDocumentsSubmit = async (receivedDate) => {
+  try {
+    // Your API call here to save original documents received date
+    console.log('Original documents received date saved:', receivedDate);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentOriginalDocumentsApplication.id 
+          ? { ...app, originalDocuments: 'Yes', originalDocumentsDate: receivedDate }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving original documents received date:', error);
+    throw error;
+  }
+};
+
+const handleRemarksModalOpen = (application) => {
+  setCurrentRemarksApplication(application);
+  setRemarksModalOpen(true);
+};
+
+const handleRemarksModalClose = () => {
+  setRemarksModalOpen(false);
+  setCurrentRemarksApplication(null);
+};
+
+const handleRefundPDCModalOpen = (application) => {
+  setCurrentRefundPDCApplication(application);
+  setRefundPDCModalOpen(true);
+};
+
+const handleRefundPDCModalClose = () => {
+  setRefundPDCModalOpen(false);
+  setCurrentRefundPDCApplication(null);
+};
+
+const handleRefundPDCSubmit = async (refundStatus) => {
+  try {
+    console.log('Refund PDC status saved:', refundStatus);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentRefundPDCApplication.id 
+          ? { ...app, refundPdc: refundStatus }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving refund PDC status:', error);
+    throw error;
+  }
+};
+
+// Add these handlers with your existing handlers
+const handleChangeStatusModalOpen = (application) => {
+  setCurrentChangeStatusApplication(application);
+  setChangeStatusModalOpen(true);
+};
+
+const handleChangeStatusModalClose = () => {
+  setChangeStatusModalOpen(false);
+  setCurrentChangeStatusApplication(null);
+};
+
+const handleChangeStatusSubmit = async (updateData) => {
+  try {
+    // Your API call here to save the status changes
+    console.log('Status changes saved:', updateData);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentChangeStatusApplication.id 
+          ? { 
+              ...app, 
+              ...(updateData.courierPickedDate && { courierPickedDate: updateData.courierPickedDate }),
+              ...(updateData.originalDocumentsReceived && { originalDocumentsReceived: updateData.originalDocumentsReceived })
+            }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving status changes:', error);
+    throw error;
+  }
+};
+// Add these handlers with your existing ones
+const handleDisburseEmandateModalOpen = (application) => {
+  setCurrentDisburseEmandateApplication(application);
+  setDisburseEmandateModalOpen(true);
+};
+
+const handleDisburseEmandateModalClose = () => {
+  setDisburseEmandateModalOpen(false);
+  setCurrentDisburseEmandateApplication(null);
+};
+
+const handleDisburseEmandateSubmit = async (selectedOption) => {
+  try {
+    // Your API call here to save disburse e-mandate option
+    console.log('Disburse e-mandate option saved:', selectedOption);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentDisburseEmandateApplication.id 
+          ? { ...app, receivedDisburse: selectedOption }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving disburse e-mandate option:', error);
+    throw error;
+  }
+};
+
+const handleCourierPickedModalOpen = (application) => {
+  setCurrentCourierPickedApplication(application);
+  setCourierPickedModalOpen(true);
+};
+
+const handleCourierPickedModalClose = () => {
+  setCourierPickedModalOpen(false);
+  setCurrentCourierPickedApplication(null);
+};
+
+const handleCourierPickedSubmit = async (pickedDate) => {
+  try {
+    // Your API call here to save courier picked date
+    console.log('Courier picked date saved:', pickedDate);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentCourierPickedApplication.id 
+          ? { ...app, courierPicked: 'Yes', courierPickedDate: pickedDate }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving courier picked date:', error);
+    throw error;
+  }
+};
+
+// Add courier modal handlers
+const handleCourierModalOpen = (application) => {
+  setCurrentCourierApplication(application);
+  setCourierModalOpen(true);
+};
+
+const handleCourierModalClose = () => {
+  setCourierModalOpen(false);
+  setCurrentCourierApplication(null);
+};
+
+const handleCourierSubmit = async (courierDate) => {
+  try {
+    // Your API call here to save courier date
+    console.log('Courier date saved:', courierDate);
+    
+    // Update the application data
+    setApplications(prev => 
+      prev.map(app => 
+        app.id === currentCourierApplication.id 
+          ? { ...app, sendToCourier: 'Yes', courierDate: courierDate }
+          : app
+      )
+    );
+  } catch (error) {
+    console.error('Error saving courier date:', error);
+    throw error;
+  }
+};
+
+const handleLoanEligibilityClick = (application) => {
+  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+  router.push(`/crm/loan-eligibility/${application.id}`);
+};
+
+const handleCheckClick = (application) => {
+  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+  router.push(`/crm/appraisal-report/${application.id}`);
+};
+
+const handleReplaceKYCClick = (application) => {
+  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+  router.push(`/crm/replace-kyc/${application.id}`);
+};
+
+const handleActionClick = (application) => {
+  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+  router.push(`/crm/application-form/${application.id}`);
+};
+
 
   // Advanced Search States
   const [searchField, setSearchField] = useState("");
@@ -202,40 +493,6 @@ const ManageApplication = () => {
       } finally {
         setExporting(false);
       }
-    }
-  };
-
-  const handleFileView = async (application, fileName) => {
-    if (!fileName) return;
-    
-    try {
-      // Simulate file viewing - in real implementation, this would open from storage
-      console.log(`Viewing file: ${fileName} for application: ${application.loanNo}`);
-      alert(`Opening file: ${fileName}`);
-    } catch (error) {
-      console.error("Failed to get file URL:", error);
-      alert("Failed to load file");
-    }
-  };
-
-  const handleActionClick = (application, actionType) => {
-    console.log(`${actionType} action for application:`, application.loanNo);
-    // Handle different actions based on actionType
-    switch (actionType) {
-      case 'edit':
-        router.push(`/crm/manage-applications/${application.id}/edit`);
-        break;
-      case 'view':
-        router.push(`/crm/manage-applications/${application.id}/view`);
-        break;
-      case 'disburse':
-        // Handle disburse action
-        break;
-      case 'collect':
-        // Handle collection action
-        break;
-      default:
-        console.log('Unknown action:', actionType);
     }
   };
 
@@ -456,11 +713,127 @@ const ManageApplication = () => {
   itemsPerPage={itemsPerPage}
   isDark={isDark}
   onPageChange={setCurrentPage}
-  onFileView={handleFileView}
   onActionClick={handleActionClick}
   loading={loading}
+  onChequeModalOpen={handleChequeModalOpen}
+  onCourierModalOpen={handleCourierModalOpen}
+  onCourierPickedModalOpen={handleCourierPickedModalOpen}
+  onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}  
+  onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
+  onChangeStatusClick={handleChangeStatusModalOpen} 
+  onRemarksClick={handleRemarksModalOpen}
+  onRefundPDCClick={handleRefundPDCModalOpen}
+  onLoanEligibilityClick={handleLoanEligibilityClick}  
+  onCheckClick={handleCheckClick}
+  onDocumentStatusClick={handleDocumentVerificationModalOpen}
+  onReplaceKYCClick={handleReplaceKYCClick} 
+  onCall={handleCall}   
 />
       </div>
+      
+     {/* modals */}
+      {currentRefundPDCApplication && (
+  <RefundPDCModal
+    isOpen={refundPDCModalOpen}
+    onClose={handleRefundPDCModalClose}
+    onSubmit={handleRefundPDCSubmit}
+    isDark={isDark}
+    customerName={currentRefundPDCApplication.name}
+    loanNo={currentRefundPDCApplication.loanNo}
+  />
+)}
+
+{currentDocumentApplication && (
+  <DocumentVerificationModal
+    isOpen={documentVerificationModalOpen}
+    onClose={handleDocumentVerificationModalClose}
+    onVerify={handleDocumentVerify}
+    isDark={isDark}
+    application={currentDocumentApplication}
+  />
+)}
+
+ {currentApplication && (
+  <ChequeModal
+    isOpen={chequeModalOpen}
+    onClose={handleChequeModalClose}
+    onSubmit={handleChequeSubmit}
+    isDark={isDark}
+    initialChequeNo={currentChequeNo}
+    customerName={currentApplication.name}
+    isEdit={!!currentChequeNo}
+  />
+)}
+
+{currentCourierApplication && (
+  <SendToCourierModal
+    isOpen={courierModalOpen}
+    onClose={handleCourierModalClose}
+    onSubmit={handleCourierSubmit}
+    isDark={isDark}
+    customerName={currentCourierApplication.name}
+    loanNo={currentCourierApplication.loanNo}
+  />
+)}
+
+{currentCourierPickedApplication && (
+  <CourierPickedModal
+    isOpen={courierPickedModalOpen}
+    onClose={handleCourierPickedModalClose}
+    onSubmit={handleCourierPickedSubmit}
+    isDark={isDark}
+    customerName={currentCourierPickedApplication.name}
+    loanNo={currentCourierPickedApplication.loanNo}
+  />
+)}
+{currentOriginalDocumentsApplication && (
+  <OriginalDocumentsModal
+    isOpen={originalDocumentsModalOpen}
+    onClose={handleOriginalDocumentsModalClose}
+    onSubmit={handleOriginalDocumentsSubmit}
+    isDark={isDark}
+    customerName={currentOriginalDocumentsApplication.name}
+    loanNo={currentOriginalDocumentsApplication.loanNo}
+  />
+)}
+{currentDisburseEmandateApplication && (
+  <DisburseEmandateModal
+    isOpen={disburseEmandateModalOpen}
+    onClose={handleDisburseEmandateModalClose}
+    onSubmit={handleDisburseEmandateSubmit}
+    isDark={isDark}
+    customerName={currentDisburseEmandateApplication.name}
+    loanNo={currentDisburseEmandateApplication.loanNo}
+  />
+)}
+
+{currentChangeStatusApplication && (
+  <ChangeStatusModal
+    isOpen={changeStatusModalOpen}
+    onClose={handleChangeStatusModalClose}
+    onSubmit={handleChangeStatusSubmit}
+    isDark={isDark}
+    customerName={currentChangeStatusApplication.name}
+    loanNo={currentChangeStatusApplication.loanNo}
+  />
+)}
+
+{currentRemarksApplication && (
+  <RemarksModal
+    isOpen={remarksModalOpen}
+    onClose={handleRemarksModalClose}
+    isDark={isDark}
+    customerName={currentRemarksApplication.name}
+    loanNo={currentRemarksApplication.loanNo}
+    application={currentRemarksApplication}
+  />
+)}
+
+<CallDetailsModal isOpen={showCallModal} onClose={() => {
+          setShowCallModal(false);
+          setSelectedApplicant(null);
+        }} data={selectedApplicant} isDark={isDark}  />
+ 
     </div>
   );
 };

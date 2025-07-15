@@ -1,6 +1,4 @@
-import { useState } from "react";
-import CreateNoticeModal from "./CreateNoticeModal";
-import CreateCriminalCaseModal from "./CriminalCaseModal";
+
 import {
   Calendar,
   Phone,
@@ -8,18 +6,14 @@ import {
   CreditCard,
   FileText,
   MapPin,
-  AlertCircle,
-  CheckCircle,
-  Clock,
+    Clock,
   User,
   Hash
 } from "lucide-react";
 
 
-const LegalRow = ({ legal, index, isDark }) => {
-  const [isCreateNoticeModalOpen, setIsCreateNoticeModalOpen] = useState(false);
-  const [isCriminalCaseModalOpen, setIsCriminalCaseModalOpen] = useState(false); // Add this line
-
+const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase  }) => {
+  
 
   const getDeliveryStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -397,7 +391,7 @@ const LegalRow = ({ legal, index, isDark }) => {
             Send Notice
           </button>
           <button
-  onClick={() => setIsCreateNoticeModalOpen(true)} // Add this onClick
+  onClick={() => onCreateNotice(legal)}
   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
     isDark
       ? "bg-green-900/50 hover:bg-green-800 text-green-300 border border-green-700"
@@ -407,7 +401,7 @@ const LegalRow = ({ legal, index, isDark }) => {
   Create Notice
 </button>
 <button
-  onClick={() => setIsCriminalCaseModalOpen(true)} // Add this onClick
+  onClick={() => onCriminalCase(legal)}
   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
     isDark
       ? "bg-purple-900/50 hover:bg-purple-800 text-purple-300 border border-purple-700"
@@ -418,18 +412,7 @@ const LegalRow = ({ legal, index, isDark }) => {
 </button>
         </div>
       </td>
-      <CreateNoticeModal
-      isOpen={isCreateNoticeModalOpen}
-      onClose={() => setIsCreateNoticeModalOpen(false)}
-      legal={legal}
-      isDark={isDark}
-    />
-    <CreateCriminalCaseModal
-      isOpen={isCriminalCaseModalOpen}
-      onClose={() => setIsCriminalCaseModalOpen(false)}
-      legal={legal}
-      isDark={isDark}
-    />
+      
     </tr>
   );
 };

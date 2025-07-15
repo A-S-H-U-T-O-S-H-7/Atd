@@ -5,12 +5,19 @@ import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import LegalTable from "./LegalTable";
 import { exportToExcel } from "@/components/utils/exportutil";
+import { useRouter } from "next/navigation";
+import CreateNoticeModal from "./CreateNoticeModal";
+import CreateCriminalCaseModal from "./CriminalCaseModal";
 
 // Main Legal Management Component
 const LegalPage = () => {
   const { isDark } = useAdminAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+  const [isCreateNoticeModalOpen, setIsCreateNoticeModalOpen] = useState(false);
+const [isCriminalCaseModalOpen, setIsCriminalCaseModalOpen] = useState(false);
+const [selectedLegal, setSelectedLegal] = useState(null);
   
   const [legals, setLegals] = useState([
     {
@@ -152,6 +159,16 @@ const LegalPage = () => {
     }
   };
 
+  const handleCreateNotice = (legal) => {
+  setSelectedLegal(legal);
+  setIsCreateNoticeModalOpen(true);
+};
+
+const handleCriminalCase = (legal) => {
+  setSelectedLegal(legal);
+  setIsCriminalCaseModalOpen(true);
+};
+
   // Filter legals based on search term
   const filteredLegals = legals.filter(legal => {
     const searchLower = searchTerm.toLowerCase();
@@ -178,7 +195,9 @@ const LegalPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button 
+              onClick={()=>router.back()}
+              className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
                   : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"
@@ -349,8 +368,24 @@ const LegalPage = () => {
       itemsPerPage={itemsPerPage}
       isDark={isDark}
       onPageChange={setCurrentPage}
+      onCreateNotice={handleCreateNotice}    
+  onCriminalCase={handleCriminalCase}  
     />
   </div>
+
+  {/* Add these modals before the closing </div> */}
+<CreateNoticeModal
+  isOpen={isCreateNoticeModalOpen}
+  onClose={() => setIsCreateNoticeModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+/>
+<CreateCriminalCaseModal
+  isOpen={isCriminalCaseModalOpen}
+  onClose={() => setIsCriminalCaseModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+/>
 </div>
 );
 };

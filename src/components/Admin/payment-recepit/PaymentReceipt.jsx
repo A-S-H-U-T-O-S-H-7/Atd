@@ -5,6 +5,7 @@ import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import PaymentReceiptTable from "./PaymentReceiptTable";
 import PaymentUpdateModal from "./PaymentUpdateModal";
+import { useRouter } from "next/navigation";
 
 // Main Payment Receipt Management Component
 const PaymentReceiptPage = () => {
@@ -13,6 +14,7 @@ const PaymentReceiptPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const router = useRouter();
   
   const [payments, setPayments] = useState([
     {
@@ -175,7 +177,9 @@ const PaymentReceiptPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button 
+              onClick={()=>router.back()}
+              className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"

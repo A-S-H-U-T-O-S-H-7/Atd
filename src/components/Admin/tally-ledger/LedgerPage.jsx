@@ -6,6 +6,9 @@ import SearchBar from "../SearchBar";
 import LedgerTable from "./LedgerTable";
 import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
+import CallDetailsModal from "../CallDetailsModal";
+import CustomerTransactionDetails from "../CustomerTransactionDetails";
+import { useRouter } from "next/navigation";
 
 const LedgerPage = () => {
   const { isDark } = useAdminAuth();
@@ -14,6 +17,11 @@ const LedgerPage = () => {
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [showCallModal, setShowCallModal] = useState(false);
+    const [selectedApplicant, setSelectedApplicant] = useState(null);
+    const [showTransactionModal, setShowTransactionModal] = useState(false);
+    const [selectedTransactionData, setSelectedTransactionData] = useState(null);
+    const router = useRouter()
 
   // Sample ledger data - replace with your actual data
   const [ledgerData, setLedgerData] = useState([
@@ -151,6 +159,22 @@ const LedgerPage = () => {
     }
   };
 
+  const handleCall = (applicant) => {
+  setSelectedApplicant(applicant);
+  setShowCallModal(true);
+};
+
+const handleViewTransaction = (item) => { 
+  setSelectedTransactionData(item); 
+  setShowTransactionModal(true); 
+}
+
+const handleBalanceUpdate = (updateData) => {
+    // Handle balance update logic
+    console.log('Balance updated:', updateData);
+  };
+
+
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
@@ -170,7 +194,9 @@ const LedgerPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button
+              onClick={()=> router.back()}
+               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
@@ -252,8 +278,26 @@ const LedgerPage = () => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
+          onCall={handleCall} 
+        onViewTransaction={handleViewTransaction}  
+ 
         />
       </div>
+
+      <CallDetailsModal 
+      isOpen={showCallModal} 
+      onClose={() => {
+          setShowCallModal(false);
+          setSelectedApplicant(null);
+        }} data={selectedApplicant} isDark={isDark}  />
+
+        <CustomerTransactionDetails
+  isOpen={showTransactionModal}
+  onClose={() => setShowTransactionModal(false)}
+  data={selectedTransactionData}
+  isDark={isDark}
+  onUpdateBalance={handleBalanceUpdate}
+/>
     </div>
   );
 };

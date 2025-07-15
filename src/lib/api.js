@@ -416,7 +416,30 @@ export const formatEnquiryForUI = (enquiry) => {
     
   };
 };
+ 
+export const enachAPI = {
+  getBankList: () => {
+    return api.get("/enach-bank");
+  },
+  
+  getBankModes: (bankName) => {
+    return api.get(`/enach-bank/${encodeURIComponent(bankName)}`);
+  },
+  
+  getBankCode: (modeId) => {
+    return api.get(`/enach-bank/bank-code/${modeId}`);
+  }
+};
 
+export const locationAPI = {
+  getStates: () => {
+    return api.get("/states");
+  },
+  
+  getCities: (stateName) => {
+    return api.get(`/cities?state=${encodeURIComponent(stateName)}`);
+  }
+};
 
 
 // =============================================================================
@@ -476,4 +499,90 @@ export const formatRejectionStatusForUI = (statusData) => {
     id: status.id,
     reason: status.reason
   }));
+};
+
+// =============================================================================
+// APPRAISAL API FUNCTIONS - New additions based on API documentation
+// =============================================================================
+
+export const appraisalAPI = {
+  // 1. Get appraisal report data
+  getAppraisalReport: (applicationId) => 
+    api.get(`/crm/appraisal/edit/${applicationId}`),
+
+  // 2. Update personal information (father name and addresses)
+  updatePersonalInfo: (data) =>
+    api.post("/crm/appraisal/personal", data),
+
+  // 3. Save personal remarks
+  savePersonalRemarks: (data) =>
+    api.post("/crm/appraisal/personal/remark", data),
+
+  // 4. Save first alternate number
+  saveAlternateNumber1: (data) =>
+    api.post("/crm/appraisal/personal/mobile/first", data),
+
+  // 5. Save second alternate number
+  saveAlternateNumber2: (data) =>
+    api.post("/crm/appraisal/personal/mobile/second", data),
+
+  // 6. Save additional references
+  saveAdditionalReferences: (data) =>
+    api.post("/crm/appraisal/personal/reference", data),
+
+  // 7. Save personal final verification
+  savePersonalFinalVerification: (data) =>
+    api.post("/crm/appraisal/personal/final-verification", data),
+
+  // 8. Save salary remarks
+  saveSalaryRemarks: (data) =>
+    api.post("/crm/appraisal/salary/remarks", data),
+
+  // 9. Add household income
+  addHouseHoldIncome: (data) =>
+    api.post("/crm/appraisal/add/house-hold-income", data),
+
+  // 10. Save salary verification
+  saveSalaryVerification: (data) =>
+    api.post("/crm/appraisal/salary/verification", data),
+
+  // 11. Save organization remarks
+  saveOrganizationRemarks: (data) =>
+    api.post("/crm/appraisal/organisation/remarks", data),
+
+  // 12. Save organization verification
+  saveOrganizationVerification: (data) =>
+    api.post("/crm/appraisal/organisation/verification", data),
+
+  // 13. Save bank remarks
+  saveBankRemarks: (data) =>
+    api.post("/crm/appraisal/bank/statement/remarks", data),
+
+  // 14. Save bank verification
+  saveBankVerification: (data) =>
+    api.post("/crm/appraisal/bank/statement/verification", data),
+
+  // 15. Save social remarks
+  saveSocialRemarks: (data) =>
+    api.post("/crm/appraisal/social/remarks", data),
+
+  // 16. Save social verification
+  saveSocialVerification: (data) =>
+    api.post("/crm/appraisal/social/verification", data),
+
+  // 17. Save CIBIL remarks
+  saveCibilRemarks: (data) =>
+    api.post("/crm/appraisal/cibil/remarks", data),
+
+  // 18. Save CIBIL verification
+  saveCibilVerification: (data) =>
+    api.post("/crm/appraisal/cibil/verification", data),
+
+  // 19. Save final verification
+  saveFinalVerification: (data) =>
+    api.post("/crm/appraisal/final-verification", data),
+
+  // 20. Reject case
+  rejectCase: (data) =>
+    api.post("/crm/appraisal/reject", data)
 };

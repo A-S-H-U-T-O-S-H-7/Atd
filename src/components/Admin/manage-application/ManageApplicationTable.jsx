@@ -11,12 +11,23 @@ const ManageApplicationTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onUploadClick,
-  onDetailClick,
+  
   onFileView,
   onActionClick,
-  onVerifyClick,
-  onCheckClick
+  onChequeModalOpen,
+  onCourierModalOpen,
+  onCourierPickedModalOpen,
+  onOriginalDocumentsModalOpen,
+  onDisburseEmandateModalOpen,
+  onChangeStatusClick,
+  onRemarksClick,
+  onRefundPDCClick,
+  onLoanEligibilityClick,  
+   onCheckClick, 
+   onReplaceKYCClick, 
+   onCall, 
+   onDocumentStatusClick, 
+   
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold ${
@@ -24,79 +35,82 @@ const ManageApplicationTable = ({
   }`;
 
   // Table headers configuration with their respective widths
-  const tableHeaders = [
-    { label: "Sn. no", width: "80px" },
-    { label: "Call", width: "80px" },
-    { label: "Loan No.", width: "120px" },
-    { label: "CRN No.", width: "140px" },
-    { label: "Account ID", width: "140px" },
-    { label: "Approved Date", width: "160px" },
-    { label: "Disburse Date", width: "160px" },
-    { label: "Due Date", width: "120px" },
-    { label: "Name", width: "200px" },
-    { label: "Current Address", width: "180px" },
-    { label: "Current State", width: "140px" },
-    { label: "Current City", width: "120px" },
-    { label: "Permanent Address", width: "180px" },
-    { label: "State", width: "100px" },
-    { label: "City", width: "100px" },
-    { label: "Phone No.", width: "140px" },
-    { label: "E-mail", width: "200px" },
-    { label: "Password", width: "120px" },
-    { label: "Amount", width: "120px" },
-    { label: "Approved", width: "120px" },
-    { label: "Admin Fee", width: "120px" },
-    { label: "ROI", width: "80px" },
-    { label: "Tenure", width: "100px" },
-    { label: "Renewal Sanction Date", width: "160px" },
-    { label: "Renewal Tenure", width: "140px" },
-    { label: "Renewal Maturity Date", width: "160px" },
-    { label: "Renewal Outstanding Balance", width: "180px" },
-    { label: "Renewal Remarks", width: "140px" },
-    { label: "Renewal Sanction Letter", width: "160px" },
-    { label: "Photo", width: "80px" },
-    { label: "Pan Proof", width: "100px" },
-    { label: "Address Proof", width: "120px" },
-    { label: "ID Proof", width: "100px" },
-    { label: "Salary Proof", width: "120px" },
-    { label: "Bank Statement", width: "130px" },
-    { label: "Video KYC", width: "100px" },
-    { label: "Approval Note", width: "140px" },
-    { label: "Enquiry Source", width: "140px" },
-    { label: "Bank Verification Report", width: "180px" },
-    { label: "Social Score Report", width: "160px" },
-    { label: "Cibil Score Report", width: "160px" },
-    { label: "NACH Form", width: "120px" },
-    { label: "PDC", width: "80px" },
-    { label: "Agreement", width: "120px" },
-    { label: "Cheque No.", width: "120px" },
-    { label: "Send To Courier", width: "140px" },
-    { label: "Courier Picked", width: "140px" },
-    { label: "Original Documents", width: "160px" },
-    { label: "Received Disburse", width: "120px" },
-    { label: "Behalf of E-mandate", width: "160px" },
-    { label: "Loan Term", width: "120px" },
-    { label: "Disbursal Account", width: "160px" },
-    { label: "Customer A/c Verified", width: "180px" },
-    { label: "Sanction Letter", width: "140px" },
-    { label: "Emandate Status", width: "160px" },
-    { label: "ICICI Emandate Status", width: "180px" },
-    { label: "Ready For Approve", width: "160px" },
-    { label: "Bank A/c Verification", width: "180px" },
-    { label: "Disburse Approval", width: "160px" },
+  const tableHeaders = [{ label: "SR. No", width: "100px" },
+        { label: "Call", width: "100px" },
+        { label: "Loan No.", width: "120px" },
+        { label: "CRN No.", width: "140px" },
+        { label: "Account ID", width: "140px" },
+        { label: "Approved Date", width: "160px" },
+        { label: "Disburse Date", width: "160px" },
+        { label: "Due Date", width: "160px" },
+        { label: "Name", width: "200px" },
+        { label: "Current Address", width: "180px" },
+        { label: "Current State", width: "140px" },
+        { label: "Current City", width: "120px" },
+        { label: "Permanent Address", width: "180px" },
+        { label: "State", width: "100px" },
+        { label: "City", width: "100px" },
+        { label: "Phone No.", width: "140px" },
+        { label: "E-mail", width: "200px" },
+        { label: "Amount Approved", width: "120px" },
+        { label: "Admin Fee", width: "140px" },
+        { label: "ROI", width: "80px" },
+        { label: "Tenure", width: "100px" },
+        { label: "Renewal Sanction Date", width: "160px" },
+        { label: "Renewal Tenure", width: "140px" },
+        { label: "Renewal Maturity Date", width: "160px" },
+        { label: "Renewal Outstanding Balance", width: "180px" },
+        { label: "Renewal Remarks", width: "140px" },
+        { label: "Renewal Sanction Letter", width: "160px" },
+        { label: "Photo", width: "80px" },
+        { label: "Pan Proof", width: "100px" },
+        { label: "Address Proof", width: "120px" },
+        { label: "ID Proof", width: "100px" },
+        { label: "Salary Proof", width: "120px" },
+        { label: "Bank Statement", width: "130px" },
+        { label: "Video KYC", width: "100px" },
+        { label: "Approval Note", width: "180px" },
+        { label: "Enquiry Source", width: "140px" },
+        { label: "Bank Verification Report", width: "180px" },
+        { label: "Social Score Report", width: "160px" },
+        { label: "Cibil Score Report", width: "160px" },
+        { label: "NACH Form", width: "120px" },
+        { label: "PDC", width: "80px" },
+        { label: "Agreement", width: "120px" },
+        { label: "Cheque No.", width: "120px" },
+        { label: "Send To Courier", width: "140px" },
+        { label: "Courier Picked", width: "140px" },
+        { label: "Original Documents Received", width: "120px" },
+        { label: "Disburse Behalf of E-mandate", width: "120px" },
+        { label: "Loan Term", width: "120px" },
+        { label: "Disbursal Account", width: "160px" },
+        { label: "Customer A/c Verified", width: "180px" },
+        { label: "Sanction Letter", width: "140px" },
+        { label: "Emandate Status", width: "100px" },
+        { label: "ICICI Emandate Status", width: "180px" },
+        { label: "Ready For Approve", width: "180px" },
+        { label: "Bank A/c Verification", width: "180px" },
+        { label: "Disburse Approval", width: "160px" },
+        //here i sthe space for Disburse and collection
+  
+        { label: "Loan Status", width: "120px" },
+        { label: "Change Status", width: "200px" },
+        { label: "Action", width: "140px" },
+        { label: "Remarks", width: "120px" },
+        { label: "Document Status", width: "210px" },
+        { label: "Refund PDC", width: "120px" },
+
+        { label: "Appraisal Report", width: "160px" },
+        { label: "Eligibility", width: "120px" },
+        { label: "Replace KYC", width: "160px" },
+        { label: "Settled", width: "100px" },
+
+
+        
     { label: "Disburse", width: "100px" },
     { label: "Collection", width: "120px" },
-    { label: "Loan Status", width: "120px" },
-    { label: "Change Status", width: "140px" },
-    { label: "Action", width: "120px" },
-    { label: "Remarks", width: "120px" },
-    { label: "Document Status", width: "160px" },
-    { label: "NOC", width: "80px" },
-    { label: "Refund PDC", width: "120px" },
-    { label: "Appraisal Report", width: "160px" },
-    { label: "Eligibility", width: "120px" },
-    { label: "Replace KYC", width: "140px" },
-    { label: "Settled", width: "100px" }
+            { label: "NOC", width: "120px" },
+
   ];
 
   return (
@@ -134,7 +148,20 @@ const ManageApplicationTable = ({
                   isDark={isDark}
                   onFileView={onFileView}
                   onActionClick={onActionClick}
-                />
+                  onChequeModalOpen={onChequeModalOpen}
+                  onCourierModalOpen={onCourierModalOpen}
+                  onCourierPickedModalOpen={onCourierPickedModalOpen}
+                  onOriginalDocumentsModalOpen={onOriginalDocumentsModalOpen}
+                  onDisburseEmandateModalOpen={onDisburseEmandateModalOpen}
+                  onChangeStatusClick={onChangeStatusClick}
+                  onRemarksClick={onRemarksClick}
+                  onRefundPDCClick={onRefundPDCClick}
+                  onLoanEligibilityClick={onLoanEligibilityClick}  
+                  onCheckClick={onCheckClick}
+                  onReplaceKYCClick = {onReplaceKYCClick}
+                  onCall={onCall}
+                  onDocumentStatusClick={onDocumentStatusClick}
+                  />
               ))}
             </tbody>
           </table>

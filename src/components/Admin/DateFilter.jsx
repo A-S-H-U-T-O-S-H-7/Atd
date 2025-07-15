@@ -8,21 +8,16 @@ const DateFilter = ({ isDark, onFilterChange }) => {
   const handleDateChange = (type, value) => {
     const newDateRange = { ...dateRange, [type]: value };
     setDateRange(newDateRange);
-    // Auto-apply filter when date changes
-    if (onFilterChange) {
-      onFilterChange({ dateRange: newDateRange, source: sourceFilter });
-    }
+    // Removed auto-apply filter - only updates local state
   };
 
   const handleSourceChange = (value) => {
     setSourceFilter(value);
-    // Auto-apply filter when source changes
-    if (onFilterChange) {
-      onFilterChange({ dateRange, source: value });
-    }
+    // Removed auto-apply filter - only updates local state
   };
 
   const handleApplyFilter = () => {
+    // Only apply filter when button is clicked
     if (onFilterChange) {
       onFilterChange({ dateRange, source: sourceFilter });
     }
@@ -33,6 +28,7 @@ const DateFilter = ({ isDark, onFilterChange }) => {
     const clearedSource = "all";
     setDateRange(clearedDateRange);
     setSourceFilter(clearedSource);
+    // Apply the cleared filters immediately when clear is clicked
     if (onFilterChange) {
       onFilterChange({ dateRange: clearedDateRange, source: clearedSource });
     }
@@ -132,7 +128,7 @@ const DateFilter = ({ isDark, onFilterChange }) => {
         </div>
       </div>
 
-      {/* Filter Summary
+      {/* Filter Summary - Uncomment if needed
       {(dateRange.start || dateRange.end || sourceFilter !== "all") && (
         <div className={`mt-4 p-3 rounded-lg border ${
           isDark ? "bg-gray-700/50 border-emerald-600/20" : "bg-emerald-50 border-emerald-200"

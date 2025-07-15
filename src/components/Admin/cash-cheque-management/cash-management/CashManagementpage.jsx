@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowLeft, Plus, CreditCard, TrendingUp, Building, Calendar } from "lucide-react";
+import { ArrowLeft, Plus, } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import CashTable from "./CashTable";
 import CashDepositModal from "./CashDepositModal";
-import { exportToExcel } from "@/components/utils/exportutil";
+import { useRouter } from "next/navigation";
 
 // Main Cash Management Component
 const CashManagementPage = () => {
@@ -12,6 +12,7 @@ const CashManagementPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState(null);
+  const router = useRouter();
   
   const [deposits, setDeposits] = useState([
     {
@@ -115,7 +116,9 @@ const CashManagementPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button
+              onClick={()=> router.back()}
+               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
                   : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"

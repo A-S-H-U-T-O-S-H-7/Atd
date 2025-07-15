@@ -2,6 +2,19 @@ import React from 'react';
 import { FileText } from 'lucide-react';
 
 const BasicInformation = ({ formik, isDark }) => {
+
+   console.log('🔍 BASIC INFO - Formik values:', formik.values);
+  console.log('🔍 BASIC INFO - Specific fields:', {
+    name: formik.values?.name,
+    crnNo: formik.values?.crnNo,
+    organizationName: formik.values?.organizationName,
+    state: formik.values?.state,
+    city: formik.values?.city,
+    accountDetails: formik.values?.accountDetails,
+    ifscCode: formik.values?.ifscCode,
+    loanAccountNo: formik.values?.loanAccountNo
+  });
+  
   const valueClassName = `text-sm font-medium ${
     isDark ? "text-white" : "text-gray-900"
   }`;
@@ -43,7 +56,7 @@ const BasicInformation = ({ formik, isDark }) => {
           <div>
             <div className={fieldClassName}>
               <div className={labelClassName}>CRN</div>
-              <div className={valueClassName}>{formik.values?.phoneNo || 'N/A'}</div>
+              <div className={valueClassName}>{formik.values?.crnNo || 'N/A'}</div>
             </div>
           </div>
 
@@ -74,13 +87,8 @@ const BasicInformation = ({ formik, isDark }) => {
               <div className={valueClassName}>{formik.values?.city || 'N/A'}</div>
             </div>
           </div>
-          <div>
-    <div className={fieldClassName}>
-      <div className={labelClassName}>Phone Number</div>
-      <div className={valueClassName}>{formik.values?.phoneNo || 'N/A'}</div>
-    </div>
-  </div>
-
+          
+    
           <div>
             <div className={fieldClassName}>
               <div className={labelClassName}>IFSC Code</div>

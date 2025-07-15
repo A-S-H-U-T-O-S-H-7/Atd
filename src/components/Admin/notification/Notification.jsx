@@ -4,9 +4,11 @@ import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { ArrowLeft, Send, Bell } from 'lucide-react';
 import FormFields from './FormFields';
 import RichTextEditor from '../RichTextEditor';
+import { useRouter } from 'next/navigation';
 
 const NotificationPage = () => {
   const { isDark } = useAdminAuth();
+  const router = useRouter()
   const [customerType, setCustomerType] = useState('custom');
   const [emails, setEmails] = useState('');
   const [subject, setSubject] = useState('');
@@ -57,6 +59,7 @@ const NotificationPage = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
+              onClick={()=> router.back()}
                 className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                   isDark
                     ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"

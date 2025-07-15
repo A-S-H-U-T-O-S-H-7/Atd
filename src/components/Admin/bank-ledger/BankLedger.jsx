@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowLeft, Building, TrendingUp } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useAdminAuth } from "@/lib/AdminAuthContext";
 import BankLedgerTable from "./BankLedgerTable";
 import BankLedgerFilters from "./BankLedgerFilter";
+import { useRouter } from "next/navigation";
 
 const BankLedgerPage = () => {
   const { isDark } = useAdminAuth();
@@ -13,6 +14,7 @@ const BankLedgerPage = () => {
     dateFrom: "",
     dateTo: ""
   });
+  const router = useRouter();
 
   // Sample bank ledger data
   const [ledgerEntries] = useState([
@@ -139,7 +141,9 @@ const BankLedgerPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button
+              onClick={()=>router.back()}
+               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
                   : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"

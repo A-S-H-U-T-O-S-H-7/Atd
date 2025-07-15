@@ -10,7 +10,9 @@ const LedgerTable = ({
   totalPages,
   itemsPerPage,
   isDark,
-  onPageChange
+  onPageChange,
+   onCall,
+  onViewTransaction
 }) => {
   return (
     <>
@@ -91,6 +93,8 @@ const LedgerTable = ({
                   item={item}
                   index={index}
                   isDark={isDark}
+                  onCall={onCall}
+                  onViewTransaction={onViewTransaction}
                 />
               ))}
             </tbody>

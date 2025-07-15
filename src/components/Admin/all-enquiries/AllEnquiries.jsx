@@ -98,7 +98,7 @@ const AllEnquiries = () => {
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchEnquiries();
-  }, [currentPage, searchField, searchTerm, dateRange.start, dateRange.end]);
+  }, [currentPage, searchField, searchTerm,dateRange]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -108,7 +108,7 @@ const AllEnquiries = () => {
     }, 60000); // 1min
   
     return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm, dateRange.start, dateRange.end]);
+  }, [currentPage, searchField, searchTerm,dateRange]);
   
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -126,14 +126,14 @@ const AllEnquiries = () => {
   const handleAdvancedSearch = ({ field, term }) => {
     setSearchField(field);
     setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   // Handle Date Filter
   const handleDateFilter = (filters) => {
     setDateRange(filters.dateRange);
     setSourceFilter(filters.source);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1); 
   };
 
   // Clear all filters
@@ -156,46 +156,58 @@ const AllEnquiries = () => {
     srNo: (currentPage - 1) * itemsPerPage + index + 1 
   }));
 
-  // Export functionality
   const handleExport = async (type) => {
-    if (type === 'excel') {
-      try {
-        setExporting(true);
-        const response = await enquiryAPI.exportEnquiries();
-        
-        if (response.data.success) {
-          const exportData = response.data.data.map(enquiry => ({
-            'CRN No': enquiry.crnno,
-            'Account ID': enquiry.accountId,
-            'Name': enquiry.name,
-            'Date of Birth': enquiry.dob,
-            'Gender': enquiry.gender,
-            'Phone': enquiry.phone,
-            'Email': enquiry.email,
-            'City': enquiry.city,
-            'State': enquiry.state,
-            'Company Name': enquiry.company_name,
-            'Net Salary': enquiry.net_salary,
-            'Applied Amount': enquiry.applied_amount,
-            'Account No': enquiry.account_no,
-            'IFSC Code': enquiry.ifsc_code,
-            'ROI': enquiry.roi,
-            'Tenure': enquiry.tenure,
-            'Approval Note': enquiry.approval_note,
-            'Remark': enquiry.remark,
-            'Created At': new Date(enquiry.created_at).toLocaleDateString('en-GB')
-          }));
+  if (type === 'excel') {
+    try {
+      setExporting(true);
+      const response = await enquiryAPI.exportEnquiries();
+      
+      if (response.data.success) {
+        const headers = [
+          'CRN No', 'Account ID', 'Name', 'Date of Birth', 'Gender', 
+          'Phone', 'Email', 'City', 'State', 'Company Name', 
+          'Net Salary', 'Applied Amount', 'Account No', 'IFSC Code', 
+          'ROI', 'Tenure (Days)', 'Approval Note', 'Remark', 'Created Date'
+        ];
 
-          exportToExcel(exportData, 'all-enquiries');
-        }
-      } catch (err) {
-        console.error("Export error:", err);
+        // Create data rows
+        const dataRows = response.data.data.map(enquiry => [
+          enquiry.crnno,
+          enquiry.accountId,
+          enquiry.name,
+          enquiry.dob,
+          enquiry.gender,
+          enquiry.phone,
+          enquiry.email || 'N/A',
+          enquiry.city,
+          enquiry.state,
+          enquiry.company_name,
+          enquiry.net_salary,
+          enquiry.applied_amount,
+          enquiry.account_no || 'N/A',
+          enquiry.ifsc_code || 'N/A',
+          `${(parseFloat(enquiry.roi) * 100).toFixed(2)}%`,
+          enquiry.tenure,
+          enquiry.approval_note,
+          enquiry.remark || 'N/A',
+          new Date(enquiry.created_at).toLocaleDateString('en-GB')
+        ]);
+
+        // Combine headers and data
+        const exportData = [headers, ...dataRows];
+
+        exportToExcel(exportData, 'all-enquiries');
+      } else {
         setError("Failed to export data. Please try again.");
-      } finally {
-        setExporting(false);
       }
+    } catch (err) {
+      console.error("Export error:", err);
+      setError("Failed to export data. Please try again.");
+    } finally {
+      setExporting(false);
     }
-  };
+  }
+};
 
   const handleUploadClick = (enquiry) => {
     setSelectedEnquiry(enquiry);
@@ -222,17 +234,17 @@ const AllEnquiries = () => {
 
   const handleLoanEligibilityClick = (enquiry) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
-    router.push(`/crm/all-enquiries/${enquiry.id}/loan-eligibility`);
+    router.push(`/crm/loan-eligibility/${enquiry.id}`);
   };
 
   const handleVerifyClick = (enquiry) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
-    router.push(`/crm/all-enquiries/${enquiry.id}/application-form`);
+    router.push(`/crm/application-form/${enquiry.id}`);
   };
 
   const handleCheckClick = (enquiry) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
-    router.push(`/crm/all-enquiries/${enquiry.id}/appraisal-report`);
+    router.push(`/crm/appraisal-report/${enquiry.id}`);
   };
 
   if (loading && enquiries.length === 0) {
@@ -348,9 +360,9 @@ const AllEnquiries = () => {
               } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
             >
               <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              <option value="1">Pending</option>
+              <option value="2">Approved</option>
+              <option value="3">Rejected</option>
             </select>
           </div>
 

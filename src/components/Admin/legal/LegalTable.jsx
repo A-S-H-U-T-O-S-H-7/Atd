@@ -10,7 +10,9 @@ const LegalTable = ({
   totalPages,
   itemsPerPage,
   isDark,
-  onPageChange
+  onPageChange,
+  onCreateNotice,    
+  onCriminalCase
 }) => {
   return (
     <>
@@ -82,6 +84,8 @@ const LegalTable = ({
                   legal={legal}
                   index={index}
                   isDark={isDark}
+                  onCreateNotice={onCreateNotice}    
+                  onCriminalCase={onCriminalCase}
                 />
               ))}
             </tbody>

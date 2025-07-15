@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { ArrowLeft, Download} from 'lucide-react';
 import ExportDateFilter from '../ExportDateFilter';
 import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useRouter } from 'next/navigation';
 
 
 const TallyExport = () => {
   const { isDark } = useAdminAuth();
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const router = useRouter();
   
     const handleExport = () => {
       console.log('Exporting CIBIL reports with date range:', dateRange);
@@ -23,7 +25,9 @@ const TallyExport = () => {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-4 mb-6">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              <button 
+              onClick={()=> router.back()}
+              className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"

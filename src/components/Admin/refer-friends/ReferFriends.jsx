@@ -7,10 +7,12 @@ import ReferFriendsTableRow from "./ReferFriendsTableRaw";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { referralAPI, formatReferralForUI } from "@/lib/api";
 import SearchBar from "../SearchBar";
+import { useRouter } from "next/navigation";
 
 const ReferFriends = () => {
 
   const { isDark } = useAdminAuth();
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [referrals, setReferrals] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,9 @@ const ReferFriends = () => {
         <div className="mb-8">
           <div className="flex flex-wrap gap-6 items-center justify-between mb-10">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${isDark ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30" : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"}`}>
+              <button 
+              onClick={()=> router.back()}
+              className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${isDark ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30" : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"}`}>
                 <ArrowLeft className={`w-5 h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
               </button>
               <h1

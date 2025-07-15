@@ -8,7 +8,8 @@ const OverdueApplicantTable = ({
   onCall,
   onAdjustment,
   onRenew,
-  onSendNotice
+  onSendNotice,
+  onOverdueAmountClick 
 }) => {
   return (
     <>
@@ -108,6 +109,7 @@ const OverdueApplicantTable = ({
                   onAdjustment={onAdjustment}
                   onRenew={onRenew}
                   onSendNotice={onSendNotice}
+                  onOverdueAmountClick={onOverdueAmountClick}
                 />
               ))}
             </tbody>

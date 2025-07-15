@@ -6,21 +6,20 @@ import {
   Eye,
 } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
-import CallDetailsModal from "../CallDetailsModal";
-import CustomerTransactionDetails from "../CustomerTransactionDetails";
 
 
-const LedgerRow = ({ item, index, isDark }) => {
+
+const LedgerRow = ({ item, index, isDark,onCall, onViewTransaction }) => {
 
     const [showCallModal, setShowCallModal] = useState(false);
      const [showLedgerModal, setShowLedgerModal] = useState(false);
 
-    const handleView = (item) => {
-  setShowLedgerModal(true);
+     const handleView = (item) => {
+  onViewTransaction(true);
 };
 
 const handleCall = (item) => {
-  setShowCallModal(true);
+  onCall(true);
 }
 const handleDownloadPDF = (item) => {
     // Add your PDF download logic here
@@ -32,10 +31,7 @@ const handleDownloadPDF = (item) => {
     console.log('Call submitted:', callData);
   };
   
-  const handleBalanceUpdate = (updateData) => {
-    // Handle balance update logic
-    console.log('Balance updated:', updateData);
-  };
+ 
   
 
   const getDueDateStatus = (dueDate) => {
@@ -101,7 +97,7 @@ const handleDownloadPDF = (item) => {
       <td className="px-6 py-4">
         <button
         onClick={handleCall}
-          className={`px-3 cursor-pointer py-1 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+          className={`px-3 cursor-pointer py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
               : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
@@ -257,21 +253,6 @@ const handleDownloadPDF = (item) => {
   </div>
 </td>
 
-<CallDetailsModal
-  isOpen={showCallModal}
-  onClose={() => setShowCallModal(false)}
-  data={item}
-  isDark={isDark}
-  onSubmit={handleCallSubmit}
-/>
-
-<CustomerTransactionDetails
-  isOpen={showLedgerModal}
-  onClose={() => setShowLedgerModal(false)}
-  data={item}
-  isDark={isDark}
-  onUpdateBalance={handleBalanceUpdate}
-/>
     </tr>
   );
 };

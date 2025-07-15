@@ -3,7 +3,6 @@ import { Users } from "lucide-react";
 import OverdueApplicantRow from "./OverdueApplicantListRow";
 import Pagination from "../Pagination";
 
-
 const OverdueApplicantListTable = ({ 
   paginatedApplicants,
   filteredApplicants,
@@ -15,7 +14,11 @@ const OverdueApplicantListTable = ({
   onCall,
   onAdjustment,
   onRenew,
-  onSendNotice
+  onSendNotice,
+  onOverdueAmountClick,
+  onView,
+  onChargeICICI,
+  onSREAssign
 }) => {
   return (
     <>
@@ -115,9 +118,13 @@ const OverdueApplicantListTable = ({
                   onAdjustment={onAdjustment}
                   onRenew={onRenew}
                   onSendNotice={onSendNotice}
+                  onOverdueAmountClick={onOverdueAmountClick}
+                  onView={onView}
+                  onChargeICICI={onChargeICICI}
+                  onSREAssign={onSREAssign}
                 />
               ))}
-            </tbody>
+            </tbody> 
           </table>
         </div>
         
@@ -131,17 +138,18 @@ const OverdueApplicantListTable = ({
             </div>
           </div>
         )}
+        
         {totalPages > 0 && (
-  <div className="mt-8">
-    <Pagination
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={onPageChange}
-      totalItems={filteredApplicants.length}  
-      itemsPerPage={itemsPerPage}   
-    />
-  </div>
-)}
+          <div className="mt-8">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              totalItems={filteredApplicants.length}  
+              itemsPerPage={itemsPerPage}   
+            />
+          </div>
+        )}
       </div>
     </>
   );

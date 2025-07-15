@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Building, Calendar } from "lucide-react";
+import { Search, Building, Calendar, RotateCcw } from "lucide-react";
 
 const BankLedgerFilters = ({ 
   filters, 
@@ -15,6 +15,14 @@ const BankLedgerFilters = ({
     });
   };
 
+  const handleReset = () => {
+    onFilterChange({
+      selectedBank: '',
+      dateFrom: '',
+      dateTo: ''
+    });
+  };
+
   return (
     <div className={`rounded-2xl shadow-lg border p-6 mb-6 ${
       isDark
@@ -23,16 +31,16 @@ const BankLedgerFilters = ({
     }`}>
       <div className="flex items-center space-x-2 mb-4">
         <Search className={`w-5 h-5 ${
-          isDark ? "text-blue-400" : "text-blue-600"
+          isDark ? "text-emerald-400" : "text-emerald-600"
         }`} />
         <h2 className={`text-lg font-semibold ${
           isDark ? "text-gray-100" : "text-gray-800"
         }`}>
-          Search Box
+          Date Filter
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Bank Dropdown */}
         <div className="space-y-2">
           <label className={`block text-sm font-medium ${
@@ -47,7 +55,7 @@ const BankLedgerFilters = ({
             <select
               value={filters.selectedBank}
               onChange={(e) => handleInputChange('selectedBank', e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
                 isDark
                   ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
@@ -78,7 +86,7 @@ const BankLedgerFilters = ({
               type="date"
               value={filters.dateFrom}
               onChange={(e) => handleInputChange('dateFrom', e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
                 isDark
                   ? "bg-gray-700 border-gray-600 text-gray-100"
                   : "bg-white border-gray-300 text-gray-900"
@@ -102,7 +110,7 @@ const BankLedgerFilters = ({
               type="date"
               value={filters.dateTo}
               onChange={(e) => handleInputChange('dateTo', e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
                 isDark
                   ? "bg-gray-700 border-gray-600 text-gray-100"
                   : "bg-white border-gray-300 text-gray-900"
@@ -118,12 +126,28 @@ const BankLedgerFilters = ({
             onClick={onSearch}
             className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 hover:scale-105 ${
               isDark
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : "bg-emerald-500 hover:bg-emerald-600 text-white"
             }`}
           >
             <Search className="w-4 h-4" />
             <span>Search</span>
+          </button>
+        </div>
+
+        {/* Reset Button */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium opacity-0">Reset</label>
+          <button
+            onClick={handleReset}
+            className={`w-full px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 hover:scale-105 ${
+              isDark
+                ? "bg-gray-600 hover:bg-gray-700 text-white border border-gray-500"
+                : "bg-gray-500 hover:bg-gray-600 text-white border border-gray-400"
+            }`}
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset</span>
           </button>
         </div>
       </div>

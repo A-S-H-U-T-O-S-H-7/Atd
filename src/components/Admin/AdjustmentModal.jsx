@@ -5,10 +5,11 @@ const AdjustmentModal = ({ isOpen, onClose, applicant, isDark, onSubmit }) => {
   const [adjustmentType, setAdjustmentType] = useState('');
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [date, setDate] = useState('');
+  const [remark, setRemark] = useState('');
 
   const handleSubmit = () => {
     if (!adjustmentType || !adjustmentAmount || !date) {
-      alert('Please fill all fields');
+      alert('Please fill all required fields');
       return;
     }
     
@@ -16,7 +17,8 @@ const AdjustmentModal = ({ isOpen, onClose, applicant, isDark, onSubmit }) => {
       applicant: applicant,
       type: adjustmentType,
       amount: adjustmentAmount,
-      date: date
+      date: date,
+      remark: remark
     };
     
     onSubmit(adjustmentData);
@@ -25,6 +27,7 @@ const AdjustmentModal = ({ isOpen, onClose, applicant, isDark, onSubmit }) => {
     setAdjustmentType('');
     setAdjustmentAmount('');
     setDate('');
+    setRemark('');
     onClose();
   };
 
@@ -125,6 +128,26 @@ const AdjustmentModal = ({ isOpen, onClose, applicant, isDark, onSubmit }) => {
                   isDark 
                     ? 'bg-gray-700 border-gray-600 text-white' 
                     : 'bg-white border-gray-300 text-gray-900'
+                }`}
+              />
+            </div>
+
+            {/* Remark */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${
+                isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                Remark :
+              </label>
+              <textarea
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                placeholder="Enter remark (optional)"
+                rows="3"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                 }`}
               />
             </div>

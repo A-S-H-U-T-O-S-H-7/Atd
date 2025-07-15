@@ -82,7 +82,7 @@ const EnquiriesRow = ({
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className="px-6 py-4"> 
         <span className={`text-sm font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
           {enquiry.crnNo}
         </span>

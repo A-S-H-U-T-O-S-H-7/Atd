@@ -1,15 +1,5 @@
-import React, { useState } from "react";
-import {
-  Calendar,
-  Phone,
-  Mail,
-  User,
-  CreditCard,
-  DollarSign
-} from "lucide-react";
-import CallDetailsModal from "../CallDetailsModal";
-import AdjustmentModal from "../AdjustmentModal";
-import OverdueAmountModal from "../OverdueAmountModal";
+import { Phone, Mail } from "lucide-react";
+
 
 const OverdueApplicantRow = ({
   applicant,
@@ -18,51 +8,26 @@ const OverdueApplicantRow = ({
   onCall,
   onAdjustment,
   onRenew,
-  onSendNotice
+  onSendNotice,
+  onOverdueAmountClick
 }) => {
-
-const [showCallModal, setShowCallModal] = useState(false);
-const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
-const [showOverdueModal, setShowOverdueModal] = useState(false);
 
 
 
 const handleCall = (item) => {
-    setShowCallModal(true);
-  }
-  const handleAdjustment = (applicant) => {
-    setShowAdjustmentModal(true);
-  };
+  onCall(applicant); 
+};
 
-  const handleCallSubmit = (callData) => {
-    // Handle call submission logic
-    console.log('Call submitted:', callData);
-  };
-  const handleAdjustmentSubmit = (adjustmentData) => {
-    console.log('Adjustment submitted:', adjustmentData);
-    setShowAdjustmentModal(false);
-  };
+ const handleAdjustment = (applicant) => {
+  onAdjustment(applicant);  
+};
+
+const handleOverdueAmountClick = () => {
+  onOverdueAmountClick(applicant);  
+};
     
-  const handleOverdueAmountClick = () => {
-    setShowOverdueModal(true);
-  };
+ 
 
-  const getStatusColor = status => {
-    switch (status.toLowerCase()) {
-      case "adjustment":
-        return isDark
-          ? "bg-pink-900/50 text-pink-300 border-pink-700"
-          : "bg-pink-100 text-pink-800 border-pink-200";
-      case "overdue":
-        return isDark
-          ? "bg-red-900/50 text-red-300 border-red-700"
-          : "bg-red-100 text-red-800 border-red-200";
-      default:
-        return isDark
-          ? "bg-gray-700 text-gray-300 border-gray-600"
-          : "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -306,29 +271,6 @@ const handleCall = (item) => {
           </span>
         </div>
       </td>
-
-      <CallDetailsModal
-  isOpen={showCallModal}
-  onClose={() => setShowCallModal(false)}
-  data={applicant}
-  isDark={isDark}
-  onSubmit={handleCallSubmit}
-/>
-
-<AdjustmentModal
-  isOpen={showAdjustmentModal}
-  onClose={() => setShowAdjustmentModal(false)}
-  applicant={applicant}
-  isDark={isDark}
-  onSubmit={handleAdjustmentSubmit}
-/>
-
-<OverdueAmountModal
-  isOpen={showOverdueModal}
-  onClose={() => setShowOverdueModal(false)}
-  applicant={applicant}
-  isDark={isDark}
-/>
 
     </tr>
   );

@@ -50,7 +50,12 @@ const AlternativeNumberRemark = ({ formik, onSectionSave, isDark }) => {
           <div>
             <label className={labelClassName}>Alternative Mobile No</label>
             <div className={staticDisplayClassName}>
-              {formik.values.alternateMobileNo || 'Not provided'}
+              {formik.values.alternateMobileNo1 || 'Not provided'}
+            </div>
+            <div className='mt-3'>
+            <div className={staticDisplayClassName}>
+              {formik.values.alternateMobileNo2 || 'Not provided'}
+            </div>
             </div>
           </div>
 

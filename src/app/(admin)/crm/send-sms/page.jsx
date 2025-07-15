@@ -5,9 +5,11 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 import SendSMSCard from '@/components/Admin/sms/SmsCard';
 import ExportMobileCard from '@/components/Admin/sms/MobileCard';
+import { useRouter } from 'next/navigation';
 
 const SMSSendPage = () => {
   const { isDark } = useAdminAuth();
+  const router = useRouter();
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-emerald-50/30'}`}>
@@ -16,6 +18,7 @@ const SMSSendPage = () => {
         <div className="mb-6">
           <div className="flex items-center space-x-4 mb-4">
             <button
+            onClick={()=>router.back()}
               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 isDark
                   ? 'hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30'

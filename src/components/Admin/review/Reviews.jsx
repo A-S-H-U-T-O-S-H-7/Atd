@@ -6,10 +6,12 @@ import SearchBar from "../SearchBar";
 import ReviewTable from "./ReviewTable";
 import ReviewStatusModal from "./ReviewStatusModal";
 import { reviewAPI, formatReviewForUI, getReviewStatusNumber } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 const ReviewPage = () => {
   const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+    const router = useRouter();
+    const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
@@ -123,8 +125,8 @@ const ReviewPage = () => {
   };
 
   const handleBackClick = () => {
-    // Add your navigation logic here
-    console.log("Back button clicked");
+   router.back()
+  
   };
 
   return (

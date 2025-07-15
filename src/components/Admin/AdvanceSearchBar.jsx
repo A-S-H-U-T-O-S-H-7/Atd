@@ -36,6 +36,18 @@ const AdvancedSearchBar = ({
     }
   };
 
+  const handleClear = () => {
+    setSearchTerm('');
+    setSelectedField(defaultSearchField || searchOptions[0]?.value || '');
+    // Optionally call onSearch with empty values to clear results
+    if (onSearch) {
+      onSearch({
+        field: defaultSearchField || searchOptions[0]?.value || '',
+        term: ''
+      });
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -120,6 +132,8 @@ const AdvancedSearchBar = ({
         />
       </div>
 
+      
+
       {/* Search button */}
       <button
         type="button"
@@ -136,6 +150,27 @@ const AdvancedSearchBar = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <span>Search</span>
+        </div>
+      </button>
+
+
+      {/* Clear button */}
+      <button
+        type="button"
+        onClick={handleClear}
+        disabled={!searchTerm.trim()}
+        className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 focus:ring-2 focus:ring-gray-500/20 focus:outline-none ${
+          !searchTerm.trim()
+            ? (isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+            : (isDark ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-500 text-white hover:bg-gray-600')
+        }`}
+        title="Clear search"
+      >
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          <span>Clear</span>
         </div>
       </button>
     </div>
