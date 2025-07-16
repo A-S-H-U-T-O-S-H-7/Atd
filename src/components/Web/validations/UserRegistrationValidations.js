@@ -160,10 +160,10 @@ const PersonalDetailsSchema = Yup.object().shape({
     isSameAsCurrent: Yup.boolean()
   }),
 
-  fatherName: Yup.string()
+ fatherName: Yup.string()
     .matches(
-      /^([SDW]\/O\s+)?[a-zA-Z\s]+$/,
-      "Father's Name must only contain letters, spaces, and valid prefixes (S/O, D/O, W/O)"
+        /^([SDW]\/O\s+)?[a-zA-Z\s,:.]+$/,
+        "This Field must only contain letters, spaces, commas, colons, and valid prefixes (S/O, D/O, W/O, C/O)"
     )
     .min(5, "Father's Name must be at least 5 characters")
     .max(50, "Father's Name cannot exceed 50 characters")
