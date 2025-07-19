@@ -1,10 +1,10 @@
-import UserSignupPage from '@/components/Web/(basic-registration)/UserSignup'
+import BasicProfile from '@/components/Web/(basic-registration)/BasicProfile'
 import React from 'react'
 
 function page() {
   return (
     <div>
-      <UserSignupPage/>
+      <BasicProfile/>
     </div>
   )
 }

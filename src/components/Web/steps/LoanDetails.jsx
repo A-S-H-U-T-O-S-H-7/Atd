@@ -172,46 +172,7 @@ function LoanDetails() {
                                 {/* Complete Loan Application Form */}
                                 <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
                                     
-                                    {/* Employment Details Section */}
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                                <Briefcase className="w-4 h-4 text-white" />
-                                            </div>
-                                            <h2 className="text-xl font-semibold text-gray-800">Employment Details</h2>
-                                        </div>
-
-                                        {/* Employment Type */}
-                                        <div className="space-y-2 mb-6">
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Employment Type<span className="text-red-500 ml-1">*</span>
-                                            </label>
-                                            <div className="flex gap-6">
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <Field
-                                                        type="radio"
-                                                        name="isSalaried"
-                                                        value="true"
-                                                        className="w-4 h-4 text-teal-600 "
-                                                    />
-                                                    <span className="text-gray-700">Salaried</span>
-                                                </label>
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <Field
-                                                        type="radio"
-                                                        name="isSalaried"
-                                                        value="false"
-                                                        className="w-4 h-4 text-teal-600 "
-                                                    />
-                                                    <span className="text-gray-700">Self-Employed</span>
-                                                </label>
-                                            </div>
-                                            <ErrorMessage name="isSalaried" component="p" className="text-red-500 text-sm" />
-                                        </div>
-
-                                
-                                    </div>
-
+                                   
                                     {/* Loan Information Section */}
                                     <div>
                                         <div className="flex items-center gap-3 mb-6">

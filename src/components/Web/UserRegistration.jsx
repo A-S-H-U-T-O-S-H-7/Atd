@@ -21,17 +21,18 @@ if (step === null) {
 }
   return (
     <div>
-      {step === 1 && <MobileVerification/>}
+      {/* {step === 1 && <MobileVerification/>}
       {step === 2 && <EmailVerification/>}
-      {step === 3 && <AadharVerification/>}
-      {step === 4 && <ReferralCode/>}
-      {step === 5 && <PersonalDetails />}
-      {step === 6 && <KYCDetails />}
-      {step === 7 && <LoanDetails />}
-      {step === 8 && <ServiceDetails />}
-      {step === 9 && <BankDetails />}
-      {step === 10 && <DocumentUpload /> }
-      {step === 11 && <References />}
+      {step === 3 && <AadharVerification/>} */}
+
+      {step === 1 && <ReferralCode/>}
+      {step === 2 && <PersonalDetails />}
+      {step === 3 && <KYCDetails />}
+      {step === 4 && <LoanDetails />}
+      {step === 5 && <ServiceDetails />}
+      {step === 6 && <BankDetails />}
+      {step === 7 && <DocumentUpload /> }
+      {step === 8 && <References />}
       
     </div>
   );

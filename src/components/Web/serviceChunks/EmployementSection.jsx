@@ -26,7 +26,7 @@ const EmploymentSection = ({ values }) => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">Work Experience</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Working Since</h3>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

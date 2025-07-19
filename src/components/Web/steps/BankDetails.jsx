@@ -141,7 +141,7 @@ function BankDetails() {
                                     <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center">
                                         <Building2 className="w-4 h-4 text-white" />
                                     </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Banking Information</h2>
+                                    <h2 className="text-xl font-semibold text-gray-800">Bank Account Details</h2>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -218,19 +218,7 @@ function BankDetails() {
                                         </Field>
                                         <ErrorMessage name="accountType" component="p" className="text-red-500 text-sm" />
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Account Details Section */}
-                            <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6 md:p-8">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-8 h-8 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                        <Shield className="w-4 h-4 text-white" />
-                                    </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Account Details</h2>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Account Number */}
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">
@@ -261,7 +249,7 @@ function BankDetails() {
                                         </p>
                                     </div>
 
-                                    {/* Confirm Account Number */}
+                                     {/* Confirm Account Number */}
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-gray-700">
                                             Confirm Account Number<span className="text-red-500 ml-1">*</span>
@@ -279,7 +267,6 @@ function BankDetails() {
                                         <ErrorMessage name="confirmAccountNumber" component="p" className="text-red-500 text-sm" />
                                     </div>
                                 </div>
-
                                 {/* Account Number Match Indicator */}
                                 {values.accountNumber && values.confirmAccountNumber && (
                                     <div className={`mt-4 p-3 rounded-xl text-sm font-medium ${
