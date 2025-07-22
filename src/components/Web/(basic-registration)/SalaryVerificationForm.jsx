@@ -76,7 +76,7 @@ function SalariedCheck({ onNext, onError }) {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center">
                         
                         {/* Left Section: Image and Text Content */}
-<div className="order-2 lg:order-1 md:col-span-2 flex space-y-2">
+<div className="order-2 lg:order-1 md:col-span-2 flex flex-col md:flex-row space-y-2">
                             {/* Image Section - Fixed height container */}
                             <div className="flex justify-center lg:justify-start">
                                 <div className="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-72 lg:h-72 xl:w-100 xl:h-130 flex-shrink-0">
