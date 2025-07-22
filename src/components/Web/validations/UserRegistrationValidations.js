@@ -162,7 +162,7 @@ const PersonalDetailsSchema = Yup.object().shape({
 
  fatherName: Yup.string()
     .matches(
-        /^([SDW]\/O\s+)?[a-zA-Z\s,:.]+$/,
+        /^([SDWC]\/O\s+)?[a-zA-Z\s,:.]+$/,
         "This Field must only contain letters, spaces, commas, colons, and valid prefixes (S/O, D/O, W/O, C/O)"
     )
     .min(5, "Father's Name must be at least 5 characters")
@@ -179,13 +179,15 @@ const PersonalDetailsSchema = Yup.object().shape({
     mobileNumber: Yup.string()
       .matches(/^\d{10}$/, "Must be exactly 10 digits")
       .test(
-        "unique-mobile",
-        "Reference mobile number cannot be same as your registered mobile number",
-        function (value) {
-          const { phoneNumber } = this.options.context || {};
-          return value !== phoneNumber;
-        }
-      )
+  "unique-mobile", 
+  "Reference mobile number cannot be same as your registered mobile number",
+  function (value) {
+    if (!value) return true;
+    const { phoneNumber } = this.options.context || {};
+    console.log("Comparing:", value, "with", phoneNumber); // Add this debug line temporarily
+    return value !== phoneNumber;
+  }
+)
       .required("Family reference mobile number is required"),
 
     email: Yup.string()

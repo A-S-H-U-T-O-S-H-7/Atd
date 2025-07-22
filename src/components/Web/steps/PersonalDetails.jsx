@@ -15,7 +15,7 @@ import FamilyReferenceSection from '../personalDetailsChunk/FamilyReference';
 
 function PersonalDetails() {
   const {
-    personalData,
+    personalData, 
     setPersonalData,
     step,
     setStep,
@@ -29,6 +29,8 @@ function PersonalDetails() {
   } = useUser();
 
   const [sameAddress, setSameAddress] = useState(personalData.permanentAddress.isSameAsCurrent || false);
+  const [currentCities, setCurrentCities] = useState([]);
+const [permanentCities, setPermanentCities] = useState([]);
 
   // Utility functions
   const isCurrentAddressComplete = (values) => {
@@ -144,23 +146,44 @@ function PersonalDetails() {
     }
   };
 
-  const getInitialValues = () => ({
-    ...personalData,
-    firstName: personalData.firstName || aadharData?.fullName?.split(' ')[0] || '',
-    lastName: personalData.lastName || aadharData?.fullName?.split(' ').slice(1).join(' ') || '',
-    gender: personalData.gender || mapGenderFromAadhar(aadharData?.gender) || '',
-    dob: personalData.dob || aadharData?.dob || '',
-    fatherName: personalData.fatherName || aadharData?.careOf || '',
-    currentAddress: {
-      ...personalData.currentAddress,
-      street: personalData.currentAddress?.street || getFullAddressFromAadhar() || '',
-      city: personalData.currentAddress?.city || aadharData?.address?.subdist || '',
-      state: personalData.currentAddress?.state || aadharData?.address?.state || '',
-      pincode: personalData.currentAddress?.pincode || aadharData?.zip || '',
-      addressType: personalData.currentAddress?.addressType || ''
-
-    }
-  });
+ const getInitialValues = () => ({
+  ...personalData,
+  firstName: personalData.firstName || aadharData?.fullName?.split(' ')[0] || '',
+  lastName: personalData.lastName || aadharData?.fullName?.split(' ').slice(1).join(' ') || '',
+  gender: personalData.gender || mapGenderFromAadhar(aadharData?.gender) || '',
+  dob: personalData.dob || aadharData?.dob || '',
+  fatherName: personalData.fatherName || aadharData?.careOf || '',
+  currentAddress: {
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    addressType: '',
+    ...personalData.currentAddress, 
+    street: personalData.currentAddress?.street || getFullAddressFromAadhar() || '',
+    city: personalData.currentAddress?.city || aadharData?.address?.subdist || '',
+    state: personalData.currentAddress?.state || aadharData?.address?.state || '',
+    pincode: personalData.currentAddress?.pincode || aadharData?.zip || '',
+  },
+  permanentAddress: {
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    addressType: '',
+    isSameAsCurrent: false,
+    ...personalData.permanentAddress, 
+  },
+  alternativeEmail: personalData.alternativeEmail || '',
+  familyReference: {
+    name: '',
+    address: '',
+    mobileNumber: '',
+    email: '',
+    relation: '',
+    ...personalData.familyReference,
+  }
+});
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 p-4 md:p-6'>
@@ -183,21 +206,26 @@ function PersonalDetails() {
               
               <BasicInformationSection />
               
-              <AddressSection
-                title="Current Address"
-                addressPrefix="currentAddress"
-              />
-              
-              <AddressSection
-                title="Permanent Address"
-                addressPrefix="permanentAddress"
-                showSameAddressOption={true}
-                sameAddress={sameAddress}
-                onSameAddressChange={handleSameAddressChange}
-                isCurrentAddressComplete={isCurrentAddressComplete(values)}
-                values={values}
-                setFieldValue={setFieldValue}
-              />
+            <AddressSection
+  title="Current Address"
+  addressPrefix="currentAddress"
+  setFieldValue={setFieldValue}
+  values={values}  
+  cities={currentCities}
+  setCities={setCurrentCities}
+/>
+<AddressSection
+  title="Permanent Address"
+  addressPrefix="permanentAddress"
+  showSameAddressOption={true}
+  sameAddress={sameAddress}
+  onSameAddressChange={handleSameAddressChange}
+  isCurrentAddressComplete={isCurrentAddressComplete(values)}
+  values={values}
+  setFieldValue={setFieldValue}
+  cities={permanentCities}
+  setCities={setPermanentCities}
+/>
               
               <FamilyReferenceSection />
               

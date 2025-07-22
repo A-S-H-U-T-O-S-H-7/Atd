@@ -114,6 +114,14 @@ api.interceptors.response.use(
   }
 );
 
+// Basic Registration/Signup
+export const registrationAPI = {
+  sendOTP: (userData) => api.post("/registration/otp/send", userData),
+  verifyOTP: (otpData) => api.post("/registration/otp/verify", otpData),
+  
+  resendOTP: (resendData) => api.post("/registration/otp/resend", resendData)
+};
+
 // =============================================================================
 // BLOG API FUNCTIONS - Updated to match API documentation
 // =============================================================================
