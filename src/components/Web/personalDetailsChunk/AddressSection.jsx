@@ -85,7 +85,7 @@ const AddressSection = ({
       setCities([]);
     }
   };
-
+ 
   const addressTypeOptions = [
     { value: "4", label: "Owned" },
     { value: "2", label: "Rented" }
