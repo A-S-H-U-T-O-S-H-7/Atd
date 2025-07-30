@@ -1,11 +1,11 @@
 "use client"
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 export default function EmailVerification() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id'); // Get the 'id' parameter from URL
+  const params = useParams();
+  const id = params.id; // Get the id from the dynamic route [id]
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
 
