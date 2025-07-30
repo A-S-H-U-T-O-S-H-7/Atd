@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function EmailVerification() {
   const router = useRouter();
-  const { id } = router.query;
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id'); // Get the 'id' parameter from URL
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
 
@@ -37,6 +38,7 @@ export default function EmailVerification() {
         setMessage('Verification failed or link expired.');
       }
     } catch (error) {
+      console.error('Verification error:', error);
       setStatus('error');
       setMessage('Something went wrong.');
     }
@@ -76,7 +78,7 @@ export default function EmailVerification() {
             <div className="text-4xl mb-4">❌</div>
             <p className="text-red-600">{message}</p>
             <button 
-              onClick={() => router.push('/profile')}
+              onClick={() => router.push('/userprofile')}
               className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Go to Profile
