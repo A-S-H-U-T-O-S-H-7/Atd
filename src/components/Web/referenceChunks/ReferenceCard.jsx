@@ -13,6 +13,14 @@ const ReferenceCard = ({
   const hasEmailDuplicate = duplicateEmails.length > 0;
   const isComplete = reference.name && reference.phone && reference.email;
 
+  // Enhanced phone number formatting for API compatibility
+  const handlePhoneChange = (e, form, fieldName) => {
+    const value = e.target.value;
+    // Only allow numbers and limit to 10 digits
+    const numericValue = value.replace(/\D/g, '').slice(0, 10);
+    form.setFieldValue(fieldName, numericValue);
+  };
+
   return (
     <div className="bg-white/50 backdrop-blur-sm border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-lg transition-all duration-200">
       {/* Reference Header */}
@@ -55,7 +63,7 @@ const ReferenceCard = ({
           <label className="block text-sm font-medium text-gray-700">
             Phone Number<span className="text-red-500 ml-1">*</span>
           </label>
-          <Field name={`references.${index}.phone`}>
+         <Field name={`references.${index}.phone`}>
             {({ field, form }) => (
               <input
                 {...field}
@@ -64,12 +72,11 @@ const ReferenceCard = ({
                 className={`w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300 ${
                   hasPhoneDuplicate ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
                 }`}
-                onChange={(e) => {
-                  const formattedValue = formatPhoneNumber(e.target.value);
-                  form.setFieldValue(field.name, formattedValue);
-                }}
+                onChange={(e) => handlePhoneChange(e, form, field.name)}
                 maxLength="10"
                 value={field.value || ''}
+                pattern="[0-9]{10}"
+                inputMode="numeric"
               />
             )}
           </Field>

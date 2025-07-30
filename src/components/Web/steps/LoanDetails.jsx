@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { LoanDetailsSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
-import { Briefcase, ChevronLeft, ChevronRight, AlertCircle, CheckCircle, MapPin, Calculator, Percent, Calendar, IndianRupee, FileCheck } from 'lucide-react';
+import {  ChevronLeft, ChevronRight, AlertCircle, Calculator, Percent, Calendar, IndianRupee, Info  } from 'lucide-react';
 
 function LoanDetails() {
     const {
@@ -16,13 +16,13 @@ function LoanDetails() {
         setLoader,
         phoneData,
         errorMessage,
-        setErrorMessage
+        setErrorMessage,
+        token
     } = useUser();
 
     const [dailyInterest, setDailyInterest] = useState(0);
     const [totalRepayAmount, setTotalRepayAmount] = useState(0);
     const [totalInterest, setTotalInterest] = useState(0);
-    const [isEligible, setIsEligible] = useState(true);
 
     // Fixed ROI of 0.067%
     const FIXED_ROI = 0.067;
@@ -55,24 +55,21 @@ function LoanDetails() {
 
     const handleLoanDetails = async (values) => {
         try {
-            if (!isEligible) {
-                setErrorMessage("You are not eligible for this loan. Only salaried employees can proceed.");
-                return;
-            }
-    
+            
             setErrorMessage("");
             setLoader(true);
     
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/form`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    step: 7,
-                    userid: phoneData?.userid, 
-                    provider: 1,
+                    step: 4,
+                    // userid: phoneData?.userid, 
+                    // provider: 1,
                     amount: values.amount,
                     tenure: values.tenure,
                 }),
@@ -81,7 +78,7 @@ function LoanDetails() {
             const result = await response.json();
             console.log(result);
     
-            if (response.ok) {
+              if (response.ok && result.success) {
                 setLoanData({ ...values });
                 setStep(step + 1);
                 setLoader(false);
@@ -128,37 +125,25 @@ function LoanDetails() {
                         Loan Details
                     </h1>
                     <p className="text-gray-600">
-                        Please provide your loan requirements and employment details
+                        Please provide your loan requirements
                     </p>
                 </div>
 
                 <Formik
                     initialValues={{
                         ...loanData,
-                        termsAccepted: false
                     }}
                     validationSchema={LoanDetailsSchema}
                     onSubmit={(values) => { handleLoanDetails(values); }}
                     enableReinitialize
                 >
-                    {({ isValid, touched, setFieldValue, values }) => {
+                    {({ isValid, touched, setFieldValue, values, errors }) => {
                         // Calculate loan details whenever values change
                         React.useEffect(() => {
                             calculateLoanDetails(values.amount, values.tenure);
                         }, [values.amount, values.tenure]);
 
-                        // Check eligibility based on employment type
-                        React.useEffect(() => {
-                            if (values.isSalaried === 'false') {
-                                setIsEligible(false);
-                                setErrorMessage("Only salaried employees are eligible for this loan.");
-                            } else if (values.isSalaried === 'true') {
-                                setIsEligible(true);
-                                setErrorMessage("");
-                            }
-                        }, [values.isSalaried]);
-
-                        return (
+                          return (
                             <Form className="space-y-8">
                                 {errorMessage && (
                                     <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-2xl p-4">
@@ -290,6 +275,18 @@ function LoanDetails() {
                                                 <div className="mt-4 text-center text-sm text-gray-600">
                                                     <p>Daily Interest: ₹{dailyInterest.toFixed(2)} | Total Interest: ₹{Math.round(totalInterest)}</p>
                                                 </div>
+                                                  {/* Enhanced Processing Fee Notice */}
+        <div className="mt-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-dashed border-orange-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+                <div className="flex-shrink-0 mt-0.5">
+                    <Info className="w-4 h-4 text-orange-500" />
+                </div>
+                <div className="text-xs text-orange-700">
+                    <p className="font-medium  text-orange-600">A processing Fee & documentation charges will apply and can varies based on individual profiles.</p>
+                </div>
+            </div>
+        </div>
+
                                             </div>
                                         )}
                                     </div>
@@ -309,7 +306,7 @@ function LoanDetails() {
                                     </button>
                                     
                                     <button 
-                                        disabled={loader || !isEligible} 
+                                       disabled={loader || !isValid || !values.amount || !values.tenure }
                                         type='submit' 
                                         className="inline-flex items-center cursor-pointer justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                                     >

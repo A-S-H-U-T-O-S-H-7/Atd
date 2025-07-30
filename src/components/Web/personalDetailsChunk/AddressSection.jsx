@@ -92,7 +92,7 @@ const AddressSection = ({
   ];
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6 md:p-8">
+    <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-4 md:p-6">
       <SectionHeader icon={MapPin} title={title} />
 
       {showSameAddressOption &&
@@ -141,17 +141,34 @@ const AddressSection = ({
           </label>
         </div>}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
+        {/* Address Line 1 */}
         <FormField
-          name={`${addressPrefix}.street`}
-          label="Complete Address"
+          name={`${addressPrefix}.addressLine1`}
+          label="Address Line 1"
           as="textarea"
-          rows={3}
-          placeholder={`Enter complete ${title.toLowerCase()}`}
+          rows={2}
+          placeholder="Street address, building name"
           required
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Address Line 2 */}
+        <FormField
+          name={`${addressPrefix}.addressLine2`}
+          label="Address Line 2"
+          as="textarea"
+          rows={2}
+          placeholder="Area, locality, landmark (optional)"
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+          <FormField
+            name={`${addressPrefix}.houseNo`}
+            label="House/Flat No."
+            placeholder="Enter house/flat number"
+            required
+          />
+
           <FormField
             name={`${addressPrefix}.state`}
             label="State"

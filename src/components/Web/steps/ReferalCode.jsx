@@ -19,7 +19,8 @@ function ReferralCode() {
         loader,
         setLoader,
         errorMessage,
-        setErrorMessage
+        setErrorMessage,
+        token
     } = useUser();
 
     const [successMessage, setSuccessMessage] = useState("");
@@ -34,15 +35,17 @@ function ReferralCode() {
             setErrorMessage("");
             setSuccessMessage("");
             
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/refferal`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/refferal`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    provider: 1,
-                    userid: phoneData.userid,
+                    // provider: 1,
+                    // userid: phoneData.userid,
+                    step: 2,
                     referral_code: values.referralCode
                 }),
             });

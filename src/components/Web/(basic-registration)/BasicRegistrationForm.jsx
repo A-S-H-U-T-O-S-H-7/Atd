@@ -4,14 +4,14 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { BeatLoader } from "react-spinners";
 import {
   Check, X, User, Mail, Phone, CreditCard,
-  Building, Calendar, IndianRupee, FileText, ChevronLeft, Shield, AlertCircle
+  Building, Calendar, IndianRupee, FileText, ChevronLeft, Shield, AlertCircle, Info, LogIn
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 import * as Yup from "yup";
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from "@/lib/firebase";
-import { registrationAPI } from "@/lib/api";
 
 const RegistrationValidationSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -65,15 +65,45 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [verifiedEmail, setVerifiedEmail] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const formatMobileNumber = (value) => value.replace(/\D/g, "").slice(0, 10);
   const formatAadharNumber = (value) => value.replace(/\D/g, "").slice(0, 12);
   const formatPanNumber = (value) => value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
 
+  // Helper function to check if error indicates existing user
+  const isExistingUserError = (errorMessage) => {
+    const existingUserKeywords = [
+      'already been taken',
+      'mobile has already been taken',
+      'panno has already been taken', 
+      'email has already been taken'
+    ];
+    return existingUserKeywords.some(keyword => 
+      errorMessage.toLowerCase().includes(keyword.toLowerCase())
+    );
+  };
+
+  // Helper function to format error message in one line
+  const formatErrorMessage = (errorMessage) => {
+    if (!isExistingUserError(errorMessage)) return errorMessage;
+    
+    const fields = [];
+    if (errorMessage.includes('mobile has already been taken')) fields.push('mobile');
+    if (errorMessage.includes('panno has already been taken')) fields.push('PAN');
+    if (errorMessage.includes('email has already been taken')) fields.push('email');
+    
+    if (fields.length > 0) {
+      return `Sorry!! The ${fields.join(', ')} have already been taken.`;
+    }
+    return errorMessage;
+  };
+
   const handleGoogleVerify = async (setFieldValue) => {
     try {
       setGoogleLoading(true);
-      onError(""); // Clear any previous errors
+      setError(""); // Clear any previous errors
       
       const googleProvider = new GoogleAuthProvider();
       googleProvider.addScope('email');
@@ -122,7 +152,7 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
         userMessage = `Failed to verify email: ${error.message}`;
       }
       
-      onError(userMessage);
+      setError(userMessage);
     } finally {
       setGoogleLoading(false);
     }
@@ -130,7 +160,7 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
 
   const onSubmit = async (values) => {
     setLoading(true);
-    onError(""); // Clear any previous errors
+    setError(""); // Clear any previous errors
     
     try {
       const requestData = {
@@ -147,46 +177,56 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
         provider: 1
       };
 
-      const response = await registrationAPI.sendOTP(requestData);
-      
-      if (response.data.success) {
-        // Success - move to OTP verification
-        onNext("otp", { ...values, email: verifiedEmail || values.email,
-              phoneNumber: values.phoneNumber 
+      // Direct API call instead of registrationAPI.sendOTP
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/send`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      });
 
-         });
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        onNext("otp", { 
+          ...values, 
+          email: verifiedEmail || values.email,
+          phoneNumber: values.phoneNumber 
+        });
       } else {
-        onError(response.data.message || "Registration failed. Please try again.");
+        if (result.errors) {
+          const errorMessages = Object.entries(result.errors)
+            .map(([ field, messages]) => `${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n');
+          setError(`Sorry!!\n${errorMessages}`);
+        } else {
+          setError(result.message || `Registration failed (${response.status}). Please check your details and try again.`);
+        }
       }
+
     } catch (error) {
       console.error('Registration error:', error);
-      if (error.response?.data?.message) {
-        onError(error.response.data.message);
-      } else if (error.response?.data?.errors) {
-        // Handle validation errors
-        const errorMessages = Object.values(error.response.data.errors).flat();
-        onError(errorMessages.join(', '));
-      } else {
-        onError("An error occurred during registration. Please try again.");
-      }
+      setError("An error occurred during registration. Please try again.");
+
     } finally {
       setLoading(false);
     }
   };
 
-  const InputField = ({ name, label, placeholder, icon: Icon, type = "text", formatFunction, maxLength }) => (
+  const InputField = ({ name, label, placeholder, type = "text", formatFunction, maxLength, showMobileWarning = false }) => (
     <Field name={name}>
       {({ field, form, meta }) => (
         <div className="mb-3 relative group">
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             {label} <span className="text-red-500">*</span>
           </label>
-          <div className={`flex items-center px-4  rounded-xl bg-white/70 backdrop-blur-sm border shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-1 ${
+          <div className={`flex items-center px-4 rounded-xl bg-white/70 backdrop-blur-sm border shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-1 ${
             meta.touched ? 
               meta.error ? "border-red-400 ring-red-200 focus-within:ring-red-200" : "border-emerald-400 ring-emerald-200 focus-within:ring-emerald-200" 
               : "border-gray-300 ring-transparent focus-within:ring-blue-200 focus-within:border-blue-400"
           }`}>
-            <Icon className="w-5 h-5 text-gray-500 mr-3 group-focus-within:text-blue-500" />
             <input
               {...field}
               type={type}
@@ -206,6 +246,16 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
             )}
           </div>
           <ErrorMessage name={name} component="p" className="text-red-500 text-xs mt-1 ml-1" />
+          
+          {/* Mobile Warning Info */}
+          {showMobileWarning && (
+            <div className="flex items-center gap-2 mt-3">
+              <Info className="w-4 h-4 text-orange-600 flex-shrink-0" />
+              <p className="text-xs text-orange-700 font-medium">
+                Only provide Aadhar registered mobile number
+              </p>
+            </div>
+          )}
         </div>
       )}
     </Field>
@@ -220,6 +270,54 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
         <div className="absolute bottom-[-10%] right-[-10%] w-[250px] h-[250px] bg-indigo-100 rounded-full animate-pulse delay-1000" />
         <div className="absolute top-[20%] left-[20%] w-[350px] h-[350px] bg-emerald-100 rounded-full rotate-45 animate-spin" style={{ animationDuration: '20s' }} />
       </div>
+
+      {/* Modern Error Toast - Replace the existing error toast section */}
+{error && !error.includes("successfully") && (
+  <div className="fixed top-4 right-4 z-50 max-w-sm">
+    <div className="bg-white/95 backdrop-blur-lg border border-red-100 rounded-2xl shadow-2xl shadow-red-500/20 overflow-hidden">
+      {/* Header with gradient background */}
+      <div className="bg-gradient-to-r from-red-50 to-pink-50 px-4 py-3 border-b border-red-100">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-semibold text-red-800">Registration Issue</h4>
+          </div>
+          <button 
+            onClick={() => setError("")}
+            className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors group"
+          >
+            <X className="w-3 h-3 text-red-600 group-hover:text-red-700" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="p-4">
+        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+          {formatErrorMessage(error)}
+        </p>
+        
+        {isExistingUserError(error) && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 border border-blue-100">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-gray-600">Already have an account?</span>
+              <button
+                type="button"
+                onClick={() => router.push('/userlogin')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 text-xs font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:scale-105"
+              >
+                <LogIn className="w-3 h-3" />
+                Login Now
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       <div className="relative z-10 flex justify-center items-center min-h-screen px-3 md:px-4 py-6">
         <div className="w-full max-w-4xl">
@@ -262,36 +360,32 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                       name="firstName" 
                       label="First Name"
                       placeholder="Enter your first name" 
-                      icon={User} 
                       maxLength={50} 
                     />
                     <InputField 
                       name="lastName" 
                       label="Last Name"
                       placeholder="Enter your last name" 
-                      icon={User} 
                       maxLength={50} 
                     />
                     <InputField 
                       name="phoneNumber" 
                       label="Mobile Number"
                       placeholder="Enter 10-digit mobile number" 
-                      icon={Phone} 
                       formatFunction={formatMobileNumber} 
-                      maxLength={10} 
+                      maxLength={10}
+                      showMobileWarning={true}
                     />
                     <InputField 
                       name="dob" 
                       label="Date of Birth"
                       placeholder="Select your date of birth" 
-                      icon={Calendar} 
                       type="date" 
                     />
                     <InputField 
                       name="panNumber" 
                       label="PAN Number"
                       placeholder="ABCDE1234F" 
-                      icon={CreditCard} 
                       formatFunction={formatPanNumber} 
                       maxLength={10} 
                     />
@@ -299,7 +393,6 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                       name="aadharNumber" 
                       label="Aadhar Number"
                       placeholder="Enter 12-digit Aadhar number" 
-                      icon={FileText} 
                       formatFunction={formatAadharNumber} 
                       maxLength={12} 
                     />
@@ -307,16 +400,42 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                       name="companyName" 
                       label="Company Name"
                       placeholder="Enter your company name" 
-                      icon={Building} 
                     />
                     <InputField 
                       name="netSalary" 
                       label="Net Monthly Salary"
                       placeholder="Enter amount in rupees" 
-                      icon={IndianRupee} 
                       type="number" 
                     />
                   </div>
+
+                  {/* Terms and Conditions */}
+                  <Field name="agreeToTerms">
+                    {({ field, form }) => (
+                      <div className="mb-6">
+                        <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={e => form.setFieldValue("agreeToTerms", e.target.checked)}
+                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mt-0.5"
+                          />
+                          <label className="text-sm text-gray-700 leading-relaxed">
+                            I agree to ATD Money's{" "}
+                            <Link href="/privacypolicy" className="text-blue-600 hover:underline font-medium">
+                              Privacy Policy
+                            </Link>
+                            {" "}and{" "}
+                            <Link href="/terms&condition" className="text-blue-600 hover:underline font-medium">
+                              Terms & Conditions
+                            </Link>
+                            . I consent to receive communications and marketing materials.
+                          </label>
+                        </div>
+                        <ErrorMessage name="agreeToTerms" component="p" className="text-red-500 text-xs mt-2 ml-1" />
+                      </div>
+                    )}
+                  </Field>
 
                   {/* Email Verification Section */}
                   <div className="mb-4">
@@ -368,34 +487,6 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                       </div>
                     )}
                   </div>
-
-                  {/* Terms and Conditions */}
-                  <Field name="agreeToTerms">
-                    {({ field, form }) => (
-                      <div className="mb-6">
-                        <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={e => form.setFieldValue("agreeToTerms", e.target.checked)}
-                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 mt-0.5"
-                          />
-                          <label className="text-sm text-gray-700 leading-relaxed">
-                            I agree to ATD Money's{" "}
-                            <Link href="/privacypolicy" className="text-blue-600 hover:underline font-medium">
-                              Privacy Policy
-                            </Link>
-                            {" "}and{" "}
-                            <Link href="/terms&condition" className="text-blue-600 hover:underline font-medium">
-                              Terms & Conditions
-                            </Link>
-                            . I consent to receive communications and marketing materials.
-                          </label>
-                        </div>
-                        <ErrorMessage name="agreeToTerms" component="p" className="text-red-500 text-xs mt-2 ml-1" />
-                      </div>
-                    )}
-                  </Field>
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button

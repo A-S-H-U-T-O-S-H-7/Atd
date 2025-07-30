@@ -1,8 +1,8 @@
 export const transformToApiFormat = (formData, phoneData) => {
     const apiData = {
-      step: 11,
-      provider: 1,
-      userid: phoneData.userid,
+      step: 6,
+      // provider: 1,
+      // userid: phoneData.userid,
     };
   
     if (Array.isArray(formData.references)) {

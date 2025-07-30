@@ -5,7 +5,9 @@ import { XCircle } from "lucide-react";
 import SalariedCheck from "./SalaryVerificationForm";
 import BasicRegistrationForm from "./BasicRegistrationForm";
 import BasicOtpVerification from "./BasicOtpVerification";
-import { registrationAPI } from "@/lib/api";
+import { useUser } from "@/lib/UserRegistrationContext"; 
+import { useAuth } from "@/lib/AuthContext";
+
 
 export default function UserSignupPage() {
   const [phase, setPhase] = useState("salaried"); 
@@ -15,6 +17,8 @@ export default function UserSignupPage() {
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(true);
   const router = useRouter();
+  const { setToken, setUserId, setStep } = useUser();
+  const { login } = useAuth();
 
   const handleNext = (nextPhase, data = {}) => {
     setUserData(prev => ({ ...prev, ...data }));
@@ -34,65 +38,76 @@ export default function UserSignupPage() {
   };
 
   // Handle OTP verification
-  const handleVerifyOTP = async (otpData) => {
-    setOtpLoader(true);
-    setError("");
+const handleVerifyOTP = async (otpData) => {
+  setOtpLoader(true);
+  setError("");
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/verify`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(otpData)
+    });
     
-    try {
-      const response = await registrationAPI.verifyOTP(otpData);
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+     
+setToken(result.access_token);
+setUserId(result.user.id || result.user._id);
+setStep(result.user.step || 1);
+login(result.user, result.access_token);
+
+setError("Registration completed successfully!");
+setTimeout(() => {router.push('/userProfile');}, 1500);
       
-      if (response.data.success) {
-        localStorage.setItem('userId', response.data.userid);
-        
-        router.push('/basic-profile');
-      } else {
-        setError(response.data.message || "OTP verification failed. Please try again.");
-      }
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else if (error.response?.data?.errors) {
-        // Handle validation errors
-        const errorMessages = Object.values(error.response.data.errors).flat();
-        setError(errorMessages.join(', '));
-      } else {
-        setError("An error occurred during verification. Please try again.");
-      }
-    } finally {
+    } else {
+      setError(result.message || "OTP verification failed. Please try again.");
       setOtpLoader(false);
     }
-  };
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    setError("An error occurred during verification. Please try again.");
+    setOtpLoader(false);
+  } 
+};
 
   // Handle OTP resend
   const handleResendOTP = async () => {
-    setError("");
-    
-    try {
-      const response = await registrationAPI.resendOTP({
+  setError("");
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/resend`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
         mobile: parseInt(userData.phoneNumber),
         provider: 1
-      });
-      
-      if (response.data.success) {
-        setCountdown(60);
-        setCanResend(false);
-        setTimeout(() => setCanResend(true), 60000);
-        // Show success message briefly
-        setError("OTP sent successfully!");
-        setTimeout(() => setError(""), 3000);
-      } else {
-        setError(response.data.message || "Failed to resend OTP. Please try again.");
-      }
-    } catch (error) {
-      console.error('Resend OTP error:', error);
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Failed to resend OTP. Please try again.");
-      }
+      })
+    });
+
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      setCountdown(60);
+      setCanResend(false);
+      setTimeout(() => setCanResend(true), 60000);
+      setError("OTP sent successfully!");
+      setTimeout(() => setError(""), 3000);
+    } else {
+      setError(result.message || "Failed to resend OTP. Please try again.");
     }
-  };
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    setError("Failed to resend OTP. Please try again.");
+  }
+};
 
   // Handle changing phone number (go back to form)
   const handleChangeNumber = () => {
@@ -117,7 +132,7 @@ export default function UserSignupPage() {
             userData={userData}
             onBack={() => setPhase("salaried")}
           />
-        );
+        ); 
       case "otp":
         return (
           <BasicOtpVerification

@@ -29,7 +29,7 @@ const OrganizationSection = () => {
             label="Office Phone"
             placeholder="Enter office phone number"
             maxLength="11"
-            helpText="10-11 digits"
+            helpText="Preferably Landline number (10-11 digits)"
             required
           />
 

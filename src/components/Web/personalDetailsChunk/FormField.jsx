@@ -1,6 +1,6 @@
  import { Field, ErrorMessage } from "formik";
  
- const FormField = ({ 
+const FormField = ({ 
   name, 
   label, 
   type = "text", 
@@ -14,8 +14,12 @@
   onChange, 
   disabled = false, 
 }) => {
-  const baseClasses = "w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300";
+  const baseClasses = "w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300";
   
+  const disabledClasses = disabled 
+    ? "bg-gray-100 text-gray-500 cursor-not-allowed opacity-75 border-gray-300" 
+    : "bg-white/50 backdrop-blur-sm";
+
   return (
     <div className={`space-y-2 ${className}`}>
       <label className="block text-sm font-medium text-gray-700">
@@ -28,9 +32,9 @@
           {({ field, form }) => (
             <select
               {...field}
-              onChange={onChange ? (e) => onChange(e, form.setFieldValue) : field.onChange} // Handle custom onChange
+              onChange={onChange ? (e) => onChange(e, form.setFieldValue) : field.onChange}
               disabled={disabled}
-              className={`${baseClasses} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`${baseClasses} ${disabledClasses}`}
             >
               <option value="">{placeholder}</option>
               {options.map((option) => (
@@ -47,7 +51,8 @@
           as="textarea"
           rows={rows}
           placeholder={placeholder}
-          className={`${baseClasses} resize-none`}
+          disabled={disabled}
+          className={`${baseClasses} ${disabledClasses} resize-none`}
         />
       ) : (
         <Field
@@ -55,7 +60,8 @@
           type={type}
           placeholder={placeholder}
           maxLength={maxLength}
-          className={baseClasses}
+          disabled={disabled}
+          className={`${baseClasses} ${disabledClasses}`}
         />
       )}
       

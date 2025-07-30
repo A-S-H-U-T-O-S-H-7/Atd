@@ -1,7 +1,7 @@
 import React from 'react';
-import { Users } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 import FormField from './FormField';
+import { Users, Gift } from 'lucide-react';
 
 const FamilyReferenceSection = () => {
   const relationOptions = [
@@ -50,7 +50,7 @@ const FamilyReferenceSection = () => {
           required
         />
       </div>
-      
+       
       <FormField
         name="familyReference.address"
         label="Address"
@@ -59,6 +59,20 @@ const FamilyReferenceSection = () => {
         placeholder="Enter complete address"
         required
       />
+
+      {/* Referral Code Section - Special Styling */}
+<div className="mt-8 p-6 overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl shadow-lg">
+  <div className="flex items-center gap-2 mb-3">
+    <Gift className="w-5 h-5 text-amber-600" />
+    <h3 className="text-lg font-semibold text-amber-800">Referral Code (Optional)</h3>
+  </div>
+  <FormField
+    name="referralCode"
+    label=""
+    placeholder="Enter referral code to get special benefits"
+    className="bg-white border-amber-300 focus:border-amber-500 focus:ring-amber-200"
+  />
+</div>
     </div>
   );
 };

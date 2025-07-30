@@ -21,7 +21,8 @@ function DocumentUpload() {
         loader,
         setLoader,
         errorMessage,
-        setErrorMessage
+        setErrorMessage,
+        token
     } = useUser();
 
     const [uploadStatus, setUploadStatus] = useState({});
@@ -166,15 +167,16 @@ function DocumentUpload() {
             const downloadURL = await getDownloadURL(uploadResult.ref);
             
             // Step 2: Save filename to your API
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/form`, {
                 method: "POST",
-                headers: {
+                headers: { 
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    step: 10,
-                    provider: 1,
-                    userid: phoneData?.userid,
+                    step: 5,
+                    // provider: 1,
+                    // userid: phoneData?.userid,
                     upload: config.apiValue,
                     filename: randomFileName
                 }),

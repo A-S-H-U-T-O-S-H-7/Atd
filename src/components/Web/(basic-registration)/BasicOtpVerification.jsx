@@ -107,6 +107,17 @@ function BasicOtpVerification({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-emerald-100 relative overflow-hidden">
+       
+      {loader && (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+        <p className="text-lg font-semibold text-gray-800">Your Profile is Loading 😊...</p>
+        <p className="text-sm text-gray-600">Please wait while we process your request</p>
+      </div>
+    </div>
+  )}
+
       {/* Abstract Shapes */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-5%] left-[-10%] w-[250px] h-[250px] bg-blue-200 rounded-full animate-pulse" />
@@ -217,7 +228,7 @@ function BasicOtpVerification({
                   >
                     {loader ? (
                       <>
-                        <BeatLoader color="#fff" size={8} />
+    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                         <span>Verifying...</span>
                       </>
                     ) : (

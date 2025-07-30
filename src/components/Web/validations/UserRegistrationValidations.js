@@ -1,5 +1,4 @@
 import * as Yup from "yup";
-
 // Step 1: Phone Number Validation Schema
 const PhoneValidationSchema = Yup.object({
   phoneNumber: Yup.string()
@@ -15,52 +14,7 @@ const PhoneOtpSchema = Yup.object({
     .required("Phone OTP is required")
 });
 
-// Step 2: Email Validation Schema
-const EmailValidationSchema = Yup.object({
-  email: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format"
-    )
-    .required("Email is required")
-});
-
-// Step 2: Email OTP Validation Schema
-const EmailOtpSchema = Yup.object({
-  emailOtp: Yup.string()
-    .trim()
-    .matches(/^\d{6}$/, "OTP must be exactly 6 digits and numeric")
-    .required("Email OTP is required")
-});
-
-// Step 3: Aadhar Number Validation Schema
-const AadharValidationSchema = Yup.object({
-  aadharNumber: Yup.string()
-    .matches(/^\d{12}$/, "Must be exactly 12 digits")
-    .required("Aadhar number is required")
-});
-
-// Step 3: Aadhar OTP Validation Schema
-const AadharOtpSchema = Yup.object({
-  aadharOtp: Yup.string()
-    .trim()
-    .matches(/^\d{6}$/, "OTP must be exactly 6 digits and numeric")
-    .required("Aadhar OTP is required")
-});
-
-// Step 4: referral Validation Schema
-const ReferralValidationSchema = Yup.object().shape({
-  referralCode: Yup.string()
-    .min(6, "Referral code must be at least 6 characters")
-    .max(12, "Referral code must be at most 12 characters")
-    .matches(
-      /^[A-Z0-9]+$/,
-      "Referral code must contain only uppercase letters and numbers"
-    )
-    .required("Referral code is required")
-});
-
-// Step 5: Personal Details Validation Schema
+// Step 2: Personal Details Validation Schema
 const PersonalDetailsSchema = Yup.object().shape({
   firstName: Yup.string()
     .matches(/^[a-zA-Z\s]+$/, "First Name must only contain letters and spaces")
@@ -78,6 +32,7 @@ const PersonalDetailsSchema = Yup.object().shape({
     .oneOf(["Male", "Female", "Other"], "Please select a valid gender")
     .required("Gender is required"),
 
+ 
   alternativeEmail: Yup.string()
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -105,16 +60,19 @@ const PersonalDetailsSchema = Yup.object().shape({
     )
     .required("Date of Birth is required"),
 
+  // FIX ADDRESS STRUCTURE TO MATCH COMPONENTS
   currentAddress: Yup.object().shape({
-    street: Yup.string()
+    houseNo: Yup.string()
+      .min(1, "House number is required")
+      .required("House number is required"),
+    addressLine1: Yup.string()
       .min(5, "Address must be at least 5 characters")
       .max(200, "Address cannot exceed 200 characters")
-      .required("Current address is required"),
+      .required("Address line 1 is required"),
+    addressLine2: Yup.string().nullable(), // Optional field
     city: Yup.string()
-      .matches(/^[a-zA-Z\s]+$/, "City must only contain letters and spaces")
       .required("City is required"),
     state: Yup.string()
-      .matches(/^[a-zA-Z\s]+$/, "State must only contain letters and spaces")
       .required("State is required"),
     pincode: Yup.string()
       .matches(/^[0-9]{6}$/, "Must be a valid 6-digit pincode")
@@ -123,23 +81,25 @@ const PersonalDetailsSchema = Yup.object().shape({
   }),
 
   permanentAddress: Yup.object().shape({
-    street: Yup.string()
-      .min(5, "Address must be at least 5 characters")
-      .max(200, "Address cannot exceed 200 characters")
+    houseNo: Yup.string().when("isSameAsCurrent", {
+      is: false,
+      then: (schema) => schema.min(1, "House number is required").required("House number is required"),
+      otherwise: (schema) => schema.nullable()
+    }),
+    addressLine1: Yup.string()
       .when("isSameAsCurrent", {
         is: false,
-        then: (schema) => schema.required("Permanent address is required"),
+        then: (schema) => schema.min(5, "Address must be at least 5 characters").max(200, "Address cannot exceed 200 characters").required("Address line 1 is required"),
         otherwise: (schema) => schema.nullable()
       }),
+    addressLine2: Yup.string().nullable(), // Always optional
     city: Yup.string()
-      .matches(/^[a-zA-Z\s]+$/, "City must only contain letters and spaces")
       .when("isSameAsCurrent", {
         is: false,
         then: (schema) => schema.required("City is required"),
         otherwise: (schema) => schema.nullable()
       }),
     state: Yup.string()
-      .matches(/^[a-zA-Z\s]+$/, "State must only contain letters and spaces")
       .when("isSameAsCurrent", {
         is: false,
         then: (schema) => schema.required("State is required"),
@@ -159,11 +119,19 @@ const PersonalDetailsSchema = Yup.object().shape({
     }),
     isSameAsCurrent: Yup.boolean()
   }),
-
- fatherName: Yup.string()
+ 
+  referralCode: Yup.string()
+    .min(6, "Referral code must be at least 6 characters")
+    .max(12, "Referral code must be at most 12 characters")
     .matches(
-        /^([SDWC]\/O\s+)?[a-zA-Z\s,:.]+$/,
-        "This Field must only contain letters, spaces, commas, colons, and valid prefixes (S/O, D/O, W/O, C/O)"
+      /^[A-Z0-9]+$/,
+      "Referral code must contain only uppercase letters and numbers"
+    ),
+
+  fatherName: Yup.string()
+    .matches(
+        /^[a-zA-Z\s]+$/,
+        "Father's Name must only contain letters and spaces"
     )
     .min(5, "Father's Name must be at least 5 characters")
     .max(50, "Father's Name cannot exceed 50 characters")
@@ -184,30 +152,27 @@ const PersonalDetailsSchema = Yup.object().shape({
   function (value) {
     if (!value) return true;
     const { phoneNumber } = this.options.context || {};
-    console.log("Comparing:", value, "with", phoneNumber); // Add this debug line temporarily
-    return value !== phoneNumber;
+    
+    // Ensure both values are strings before calling replace
+    const cleanValue = String(value || '').replace(/\D/g, '');
+    const cleanPhoneNumber = String(phoneNumber || '').replace(/\D/g, '');
+    
+    return cleanValue !== cleanPhoneNumber;
   }
 )
       .required("Family reference mobile number is required"),
 
     email: Yup.string()
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Invalid email format"
-      )
-      .test(
-        "unique-email",
-        "Reference email cannot be same as your registered email",
-        function (value) {
-          const { userEmail } = this.options.context || {};
-          return value !== userEmail;
-        }
-      )
-      .required("Family reference email is required"),
+      .email('Invalid email format')
+      .required('Family reference email is required')
+      .test('not-same-as-user', 'Reference email cannot be same as your email', function(value) {
+        const userEmail = this.from[1].value.email;
+        return value !== userEmail;
+      }),
 
     relation: Yup.string()
-      .min(3, "Relation must be at least 2 characters")
-      .max(30, "FRelation cannot exceed 30 characters")
+      .min(2, "Relation must be at least 2 characters") 
+      .max(30, "Relation cannot exceed 30 characters")
       .required("Relation is required"),
 
     address: Yup.string()
@@ -217,23 +182,35 @@ const PersonalDetailsSchema = Yup.object().shape({
   })
 });
 
-// Step 6: KYC Details Validation Schema
-const KycDetailsSchema = Yup.object().shape({
-  panNumber: Yup.string()
-    .matches(/^[A-Za-z]{5}[0-9]{4}[A-Za-z]$/, "Invalid PAN number format")
-    .required("PAN number is required"),
+// Step 3: Bank/Loan Details Validation Schema
+const BankLoanDetailsSchema = Yup.object().shape({
+  ifscCode: Yup.string()
+    .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format")
+    .required("IFSC Code is required"),
 
-  crnNumber: Yup.string()
-    .min(5, "CRN number must be at least 5 characters")
-    .max(20, "CRN number cannot exceed 20 characters")
-    .required("CRN number is required")
-});
+  bankName: Yup.string()
+    .min(2, "Bank name must be at least 2 characters")
+    .max(100, "Bank name cannot exceed 100 characters")
+    .required("Bank Name is required"),
 
-// Updated Step 7: Loan Details Validation Schema
-const LoanDetailsSchema = Yup.object().shape({
-  isSalaried: Yup.string().required("Please specify if you are salaried"),
+  bankBranch: Yup.string()
+    .min(2, "Bank branch must be at least 2 characters")
+    .max(100, "Bank branch cannot exceed 100 characters")
+    .required("Bank Branch is required"),
 
-  amount: Yup.string()
+  accountNumber: Yup.string()
+    .matches(/^\d{9,18}$/, "Enter a valid account number (9-18 digits)")
+    .required("Account number is required"),
+
+  confirmAccountNumber: Yup.string()
+    .oneOf([Yup.ref("accountNumber")], "Account numbers must match")
+    .required("Confirm account number is required"),
+
+  accountType: Yup.string()
+    .oneOf(["SAVING", "CURRENT"], "Please select a valid account type")
+    .required("Account Type is required"),
+
+    amount: Yup.string()
     .required("Loan amount is required")
     .test("min-amount", "Minimum loan amount is ₹3,000", function (value) {
       const numValue = parseInt(value?.replace(/[^0-9]/g, "") || "0");
@@ -244,7 +221,6 @@ const LoanDetailsSchema = Yup.object().shape({
       return numValue <= 50000;
     }),
 
-  // Fix: Change to string validation since select sends string values
   tenure: Yup.string()
     .required("Loan tenure is required")
     .oneOf(
@@ -253,7 +229,7 @@ const LoanDetailsSchema = Yup.object().shape({
     )
 });
 
-// Step 8: Service/Employment Details Validation Schema
+// Step 4: Service/Employment Details Validation Schema
 const ServiceDetailsSchema = Yup.object().shape({
   organizationName: Yup.string()
     .min(2, "Organization name must be at least 2 characters")
@@ -341,36 +317,7 @@ const ServiceDetailsSchema = Yup.object().shape({
   })
 });
 
-// Step 9: Bank Details Validation Schema
-const BankDetailsSchema = Yup.object().shape({
-  ifscCode: Yup.string()
-    .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format")
-    .required("IFSC Code is required"),
-
-  bankName: Yup.string()
-    .min(2, "Bank name must be at least 2 characters")
-    .max(100, "Bank name cannot exceed 100 characters")
-    .required("Bank Name is required"),
-
-  bankBranch: Yup.string()
-    .min(2, "Bank branch must be at least 2 characters")
-    .max(100, "Bank branch cannot exceed 100 characters")
-    .required("Bank Branch is required"),
-
-  accountNumber: Yup.string()
-    .matches(/^\d{9,18}$/, "Enter a valid account number (9-18 digits)")
-    .required("Account number is required"),
-
-  confirmAccountNumber: Yup.string()
-    .oneOf([Yup.ref("accountNumber")], "Account numbers must match")
-    .required("Confirm account number is required"),
-
-  accountType: Yup.string()
-    .oneOf(["SAVING", "CURRENT"], "Please select a valid account type")
-    .required("Account Type is required")
-});
-
-// Step 10: Document Upload Validation Schema
+// Step 5: Document Upload Validation Schema
 const DocumentUploadSchema = Yup.object().shape({
   aadharFront: Yup.mixed()
     .required("Aadhar Front is required")
@@ -506,7 +453,7 @@ const DocumentUploadSchema = Yup.object().shape({
     )
 });
 
-// Step 11: References Validation Schema
+// Step 6: References Validation Schema
 const ReferencesSchema = Yup.object().shape({
   references: Yup.array()
     .of(
@@ -548,22 +495,20 @@ const ReferencesSchema = Yup.object().shape({
         const emails = references.map((ref) => ref.email).filter(Boolean);
         return emails.length === new Set(emails).size;
       }
-    )
+    ),
+
+    consentToContact: Yup.boolean()
+    .oneOf([true], "You must provide consent to contact your references")
+    .required("Consent is required")
+
 });
 
 export {
   PhoneValidationSchema,
   PhoneOtpSchema,
-  EmailValidationSchema,
-  EmailOtpSchema,
-  AadharValidationSchema,
-  AadharOtpSchema,
-  ReferralValidationSchema,
   PersonalDetailsSchema,
-  LoanDetailsSchema,
-  KycDetailsSchema,
+  BankLoanDetailsSchema,
   ServiceDetailsSchema,
-  BankDetailsSchema,
   DocumentUploadSchema,
   ReferencesSchema
 };

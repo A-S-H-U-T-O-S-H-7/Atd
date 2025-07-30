@@ -1,49 +1,111 @@
 import React from 'react';
-import { BeatLoader } from 'react-spinners';
-import { ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const NavigationButtons = ({ 
   step, 
   setStep, 
   loader, 
   completedCount, 
-  hasDuplicates,
-  isSubmitting 
+  hasDuplicates, 
+  isSubmitting,
+  values,
+  isFormValid 
 }) => {
-  const isFormComplete = completedCount >= 5 && !hasDuplicates;
-  
+  const handlePrevious = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
-      <button 
-        type="button"
-        onClick={() => setStep(step - 1)}
-        disabled={isSubmitting}
-        className="inline-flex cursor-pointer items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:bg-gray-200 hover:border-gray-300 transition-all duration-200 order-2 sm:order-1 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="w-4 h-4" />
-        Previous
-      </button>
-      
-      <button 
-        disabled={loader || !isFormComplete || isSubmitting} 
-        type='submit' 
-        className="inline-flex items-center cursor-pointer justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
-      >
-        {loader || isSubmitting ? (
-          <BeatLoader color="#fff" size={8} />
-        ) : (
-          <>
-            {isFormComplete ? (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                Complete Registration
-              </>
+    <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6">
+      {/* Progress Summary */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">Progress Summary</h3>
+          <div className="flex items-center gap-2">
+            {isFormValid ? (
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
             ) : (
-              `Complete All References (${completedCount}/5)`
+              <AlertCircle className="w-5 h-5 text-amber-500" />
             )}
-          </>
-        )}
-      </button>
+            <span className={`font-medium ${isFormValid ? 'text-green-600' : 'text-amber-600'}`}>
+              {completedCount}/5 References Complete
+            </span>
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div 
+            className="bg-gradient-to-r from-teal-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${(completedCount / 5) * 100}%` }}
+          ></div>
+        </div>
+
+        {/* Validation Messages */}
+        <div className="space-y-2">
+          {completedCount < 5 && (
+            <p className="text-amber-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Please complete all {5 - completedCount} remaining reference(s)
+            </p>
+          )}
+          
+          {hasDuplicates && (
+            <p className="text-red-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Please resolve duplicate phone numbers or emails
+            </p>
+          )}
+          
+          {!values.consentToContact && completedCount === 5 && !hasDuplicates && (
+            <p className="text-amber-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Please provide consent to contact your references
+            </p>
+          )}
+          
+          {isFormValid && (
+            <p className="text-green-600 text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              All requirements met! Ready to submit.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={handlePrevious}
+          disabled={loader}
+          className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Previous
+        </button>
+
+        <button
+          type="submit"
+          disabled={!isFormValid || isSubmitting}
+          className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${
+            isFormValid && !isSubmitting
+              ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white hover:shadow-lg transform hover:-translate-y-0.5'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          {isSubmitting ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Submitting...
+            </div>
+          ) : (
+            'Complete Registration'
+          )}
+        </button>
+      </div>
     </div>
   );
 };

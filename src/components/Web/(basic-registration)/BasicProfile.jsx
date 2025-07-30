@@ -1,137 +1,165 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import React from 'react';
-import { User, Mail, Phone, Calendar, CreditCard, FileText, Wallet, Shield, Clock, Zap, Users, Gift } from 'lucide-react';
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useUser } from "@/lib/UserRegistrationContext";
 
-function BasicProfile() {
-  const user = {
-    name: 'Ashutosh Mohanty',
-    email: 'ashutosh@example.com',
-    phone: '+91-9876543210',
-    dob: '01/01/1990',
-    aadhar: 'XXXX-XXXX-1234',
-    pan: 'ABCDE1234F',
+export default function BasicProfilePage() {
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { updateUserId, phoneData } = useUser();
+  
+  // Get userId from URL or context or localStorage
+  const getUserId = () => {
+    const urlUserId = searchParams.get('userId');
+    const contextUserId = phoneData.userid;
+    const localStorageUserId = localStorage.getItem('userId');
+    
+    return urlUserId || contextUserId || localStorageUserId;
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 overflow-hidden">
-      {/* Simple Abstract Background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 bg-teal-100/30 rounded-full blur-2xl"></div>
-      </div>
+  useEffect(() => {
+    const userId = getUserId();
+    
+    if (!userId) {
+      // No userId found, redirect to signup
+      router.push('/user_signup');
+      return;
+    }
 
-      <div className="relative z-10 h-full flex flex-col p-6">
-        {/* Clean Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="bg-white rounded-xl p-3 shadow-sm">
-            <Image src="/atdlogo.png" alt="ATD Money" width={100} height={32} />
-          </div>
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
-          </div>
+    // Update context with userId if not already set
+    if (!phoneData.userid) {
+      updateUserId(userId);
+    }
+
+    // Fetch user profile
+    fetchUserProfile(userId);
+  }, []);
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/${userId}`, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setUserProfile(result.user);
+      } else {
+        setError(result.message || "Failed to fetch user profile");
+      }
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      setError("Error fetching profile: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApplyClick = () => {
+    const userId = getUserId();
+    
+    if (!userId) {
+      setError("User ID not found. Please signup again.");
+      return;
+    }
+
+    // Navigate to multi-step form starting from referral step
+    // Pass userId in URL to ensure it's available
+    router.push(`/loan-registration?userId=${userId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading profile...</p>
         </div>
+      </div>
+    );
+  }
 
-        {/* Main Content - Single Row */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 px-10 mx-auto w-full">
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <p>{error}</p>
+          <button 
+            onClick={() => router.push('/signup')}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Back to Signup
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Your Profile</h1>
           
-          {/* Profile Card - Compact */}
-          <div className="bg-white border border-emerald-400 rounded-2xl p-6 shadow-lg shadow-teal-200">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className="ml-3">
-                <h2 className="text-lg font-semibold text-slate-800">Profile</h2>
-                <p className="text-sm text-slate-500">User Information</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              {[
-                { icon: User, label: 'Name', value: user.name },
-                { icon: Mail, label: 'Email', value: user.email },
-                { icon: Phone, label: 'Mobile', value: user.phone },
-                { icon: Calendar, label: 'DOB', value: user.dob },
-                { icon: CreditCard, label: 'Aadhar', value: user.aadhar },
-                { icon: FileText, label: 'PAN', value: user.pan },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center text-sm">
-                  <item.icon className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0" />
-                  <span className="text-slate-600 w-16 flex-shrink-0">{item.label}:</span>
-                  <span className="text-slate-800 font-medium truncate">{item.value}</span>
+          {userProfile && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <p className="mt-1 text-gray-900">{userProfile.fname}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Loan Card - Clean */}
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
-            
-            <div className="flex items-center mb-4">
-              <Wallet className="w-8 h-8 mr-3" />
-              <div>
-                <h3 className="text-xl font-semibold">Personal Loan</h3>
-                <p className="text-emerald-100 text-sm">Quick & Easy</p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <p className="mt-1 text-gray-900">{userProfile.lname}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                  <p className="mt-1 text-gray-900">{userProfile.dob}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <p className="mt-1 text-gray-900">{userProfile.phone}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <p className="mt-1 text-gray-900">{userProfile.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Company</label>
+                  <p className="mt-1 text-gray-900">{userProfile.company}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Net Salary</label>
+                  <p className="mt-1 text-gray-900">₹{userProfile.netsalary}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Account ID</label>
+                  <p className="mt-1 text-gray-900">{userProfile.accountId}</p>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={handleApplyClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition duration-200"
+                >
+                  Apply Now
+                </button>
               </div>
             </div>
-            
-            <div className="mb-6">
-              <p className="text-3xl font-bold mb-2">Up to ₹50,000</p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="flex items-center text-sm">
-                <Shield className="w-4 h-4 mr-2" />
-                <span>No collateral</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Clock className="w-4 h-4 mr-2" />
-                <span>30-45 mins</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Zap className="w-4 h-4 mr-2" />
-                <span>Instant</span>
-              </div>
-              <div className="flex items-center text-sm">
-                <FileText className="w-4 h-4 mr-2" />
-                <span>Paperless</span>
-              </div>
-            </div>
-            
-            <Link href="/loan-registration">
-              <button className="w-full bg-white text-emerald-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors">
-                Apply Now
-              </button>
-            </Link>
-          </div>
-
-          {/* Referral Card - Simple */}
-          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-6 text-white relative overflow-hidden">
-            <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/10 rounded-full -ml-10 -mb-10"></div>
-            
-            <div className="flex items-center mb-4">
-              <Gift className="w-8 h-8 mr-3" />
-              <div>
-                <h3 className="text-xl font-semibold">Earn ₹100</h3>
-                <p className="text-cyan-100 text-sm">Instant Reward</p>
-              </div>
-            </div>
-            
-            <p className="text-cyan-100 mb-6 text-sm">
-              Refer a friend and get rewarded instantly
-            </p>
-            
-            <button className="w-full bg-white text-cyan-600 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center">
-              <Users className="w-4 h-4 mr-2" />
-              Refer Now
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-export default BasicProfile;

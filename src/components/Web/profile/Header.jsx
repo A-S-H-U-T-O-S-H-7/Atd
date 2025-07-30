@@ -70,19 +70,12 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
               <ChevronDown className={`w-4 h-4 text-slate-500 transition-all duration-300 ${showProfileMenu ? 'rotate-180 text-blue-500' : ''}`} />
             </button>
             
-            <div className={`absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-xl border border-slate-200/50 py-2 transition-all duration-300 ${
+            <div className={`absolute right-0  w-48 bg-white/95 backdrop-blur-md rounded-xl shadow-xl border border-slate-200/50 py-2 transition-all duration-300 ${
               showProfileMenu 
                 ? 'opacity-100 translate-y-0 pointer-events-auto' 
                 : 'opacity-0 -translate-y-2 pointer-events-none'
             }`}>
-              <button 
-                onClick={onClientHistory}
-                className="w-full px-4 py-3 text-left hover:bg-blue-50/50 flex items-center space-x-3 transition-all duration-200 group/item"
-              >
-                <History className="w-4 h-4 text-slate-500 group-hover/item:text-blue-500 transition-colors" />
-                <span className="text-slate-700 group-hover/item:text-blue-600 font-medium">Loan History</span>
-              </button>
-              <div className="h-px bg-slate-200/50 mx-2 my-1"></div>
+             
               <button 
                 onClick={handleLogoutClick}
                 className="w-full px-4 py-3 cursor-pointer text-left hover:bg-red-50/50 flex items-center space-x-3 transition-all duration-200 text-red-600 group/item"

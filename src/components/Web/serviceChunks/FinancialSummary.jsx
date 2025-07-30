@@ -33,17 +33,7 @@ const FinancialSummary = ({ values, availableIncome }) => {
         </div>
       </div>
       
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
-          Recommended EMI Limit:{" "}
-          <span className="font-semibold text-teal-600">
-            ₹{formatAmount((availableIncome * 0.6).toFixed(0))}
-          </span>
-          <span className="text-xs ml-1">
-            (60% of available income)
-          </span>
-        </p>
-      </div>
+      
     </div>
   );
 };

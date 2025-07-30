@@ -39,7 +39,7 @@ const SalarySection = ({ values, availableIncome }) => {
           name="familyIncome"
           label="Family Income (₹)"
           placeholder="Enter total family income"
-          helpText="Total monthly income of all family members"
+          helpText="Total monthly income of all family members (only includes Mother, Father, Spouse, Unmarried children )"
           required
         />
 

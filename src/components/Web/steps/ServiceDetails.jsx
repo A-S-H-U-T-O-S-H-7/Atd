@@ -23,7 +23,8 @@ function ServiceDetails() {
     loader,
     setLoader,
     errorMessage,
-    setErrorMessage
+    setErrorMessage,
+    token
   } = useUser();
 
   const [availableIncome, setAvailableIncome] = useState(0);
@@ -31,19 +32,20 @@ function ServiceDetails() {
   const handleServiceDetails = async (values) => {
     try {
       setServiceData({ ...values });
-      setLoader(true);
+      setLoader(true);    
       setErrorMessage("");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/user/form`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          step: 8,
-          userid: phoneData.userid,
-          provider: 1,
+          step: 4, 
+          // userid: phoneData.userid,
+          // provider: 1,
           organizationname: values.organizationName,
           organisationaddress: values.organizationAddress,
           officephone: values.officePhone,
