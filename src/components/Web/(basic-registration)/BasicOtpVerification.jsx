@@ -114,6 +114,9 @@ function BasicOtpVerification({
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
         <p className="text-lg font-semibold text-gray-800">Your Profile is Loading 😊...</p>
         <p className="text-sm text-gray-600">Please wait while we process your request</p>
+<p className="text-md font-medium bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text ">
+  🚀 Ready to apply for your loan? Let's get started!
+</p>
       </div>
     </div>
   )}

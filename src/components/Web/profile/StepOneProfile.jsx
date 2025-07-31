@@ -82,16 +82,16 @@ export default function StepOneProfile({ user, router, logout }) {
           
           {/* Welcome Section - Responsive */}
           <div className="text-center mb-6 lg:mb-10">
-            {/* <div className="w-16 h-16 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 lg:mb-4 shadow-lg">
-              <span className="text-lg lg:text-2xl font-bold text-white">
-                {userData?.fname?.charAt(0)}{userData?.lname?.charAt(0)}
-              </span>
-            </div> */}
+
             <h1 className="text-2xl lg:text-4xl font-bold text-slate-800 mb-1 lg:mb-2">
               Welcome, {userData?.fname || 'User'}!😊
             </h1>
-            <p className="text-slate-600 text-sm lg:text-lg">Ready to apply for your loan</p>
-          </div>
+<p className="text-slate-600 text-sm lg:text-lg font-medium mb-2">
+    🎉 You've successfully signed up!
+  </p>
+  <p className="text-base lg:text-xl font-semibold bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent">
+    ✨ Complete your loan registration to get instant funding! 💰
+  </p>          </div>
 
           {/* Personal Loan Card - Responsive */}
           <div className="max-w-md lg:max-w-2xl mx-auto mb-8 lg:mb-12">
@@ -136,19 +136,27 @@ export default function StepOneProfile({ user, router, logout }) {
                   </div>
                 </div>
                 
+                
                 <button
                   onClick={handleApplyForLoan}
                   className="w-full cursor-pointer bg-white text-orange-600 py-3 px-4 lg:py-4 lg:px-6 rounded-xl lg:rounded-2xl font-semibold lg:text-lg
-                           hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 
-                           shadow-lg flex items-center justify-center gap-2"
+                           hover:bg-gray-50 transform transition-all duration-300 
+                           shadow-lg flex items-center justify-center gap-2 relative overflow-hidden
+                           animate-pulse hover:animate-none
+                           before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent
+                           before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
                 >
-                  Apply Now
-                  <Zap className="w-4 h-4 lg:w-5 lg:h-5" />
+                  
+                  <span className="relative z-10 flex items-center gap-2">
+                    Apply Now for Instant Loan
+                    <Zap className="w-4 h-4 lg:w-5 lg:h-5 animate-bounce" />
+                  </span>
                 </button>
               </div>
             </div>
           </div>
 
+          
           {/* Profile Cards Grid - Responsive */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8 mb-6 lg:mb-10">
             

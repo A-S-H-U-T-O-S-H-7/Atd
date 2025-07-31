@@ -282,7 +282,7 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
             <AlertCircle className="w-4 h-4 text-red-600" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-red-800">Registration Issue</h4>
+            <h4 className="text-sm font-semibold text-red-800">Signup Issue</h4>
           </div>
           <button 
             onClick={() => setError("")}
@@ -352,6 +352,8 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                     <img src="/atdlogo.png" alt="Logo" className="mx-auto w-16 h-16 mb-3 shadow-md rounded-xl bg-white p-2" />
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome to ATD Money</h1>
                     <p className="text-gray-600">Instant Loan from ₹3,000 to ₹50,000</p>
+                    <p className="text-blue-600 font-medium mt-2">Create your account to get started</p>
+
                   </div>
 
                   {/* Form Fields */}
@@ -514,7 +516,7 @@ function BasicRegistrationForm({ onNext, onError, userData, onBack }) {
                         </>
                       ) : (
                         <>
-                          <span>Register & Send OTP</span>
+                          <span>Sign Up Now</span>
                           <Mail className="w-4 h-4" />
                         </>
                       )}
