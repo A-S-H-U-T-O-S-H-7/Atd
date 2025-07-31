@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { FaAngleDown } from "react-icons/fa6";
+import { useRouter } from 'next/navigation';
 import { BiSolidLock } from "react-icons/bi";
+import { FaAngleDown, FaAngleLeft } from "react-icons/fa6";
+
 
 export default function PrivacyPolicy() {
   const [activeSection, setActiveSection] = useState(null);
+  const router = useRouter();
 
-  const toggleSection = index => {
-    setActiveSection(activeSection === index ? null : index);
-  };
+
 
   const sections = [
     {
@@ -160,10 +161,19 @@ export default function PrivacyPolicy() {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <div className="  py-10 px-4 md:px-10">
         <header className="mb-12 text-center">
+          <div className="flex justify-end mb-4">
+  {/* Back button - top right */}
+  <button 
+    onClick={() => router.back()} 
+    className="flex items-center cursor-pointer gap-2 bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium"
+  >
+    <FaAngleLeft className="w-4 h-4" />
+    Back
+  </button>
+</div>
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center">
               <BiSolidLock className="text-white w-8 h-8" />
@@ -173,60 +183,80 @@ export default function PrivacyPolicy() {
             Privacy Policy
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            ATD Money is devoted to shielding the private and financial details
-            submitted by our customers and would make the best effort to defend
-            such info and details from unconstitutional use.
+            ATD Money is devoted to shielding the private and financial
+            details submitted by our customers and would make the best effort
+            to defend such info and details from unconstitutional use.
           </p>
         </header>
 
         <div className="bg-white rounded-xl shadow-xl overflow-hidden mb-10">
           <div className="p-4 md:p-8 bg-teal-600 text-white">
             <h2 className="text-2xl text-center font-bold">
-              Privacy Policy Overview
+              Privacy Policy Overview 
             </h2>
             <p className="mt-2 text-indigo-100">
               This Privacy Policy would be relevant to use of the website or
               other web application of ATD Money. The terms and conditions of
-              Website Use as stated in 'Policy on Website Use of the ATD Money'
-              as modified infrequently is integrated herein by way of reference.
+              Website Use as stated in 'Policy on Website Use of the ATD
+              Money' as modified infrequently is integrated herein by way of
+              reference.
             </p>
           </div>
 
           <div className="divide-y divide-gray-200">
             {sections.map((section, index) =>
               <div key={index} className="accordion-item">
-                
-                  <h3 className="text-lg ml-5 mt-5 text-left sm:text-xl font-medium text-gray-900">
-                    {section.title}
-                  </h3>
-                  
-                  <div
-                    className="px-6 py-5 sm:px-8 bg-gray-50 text-gray-700 prose prose-indigo max-w-none"
-                    dangerouslySetInnerHTML={{ __html: section.content }}
-                  />
+                <h3 className="text-lg ml-5 mt-5 text-left sm:text-xl font-medium text-gray-900">
+                  {section.title}
+                </h3>
+
+                <div
+                  className="px-6 py-5 sm:px-8 bg-gray-50 text-gray-700 prose prose-indigo max-w-none"
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                />
               </div>
             )}
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md text-gray-800 max-w-md">
-  <h2 className="text-xl font-semibold text-teal-700 mb-4">Grievance Officer</h2>
+          <h2 className="text-xl font-semibold text-teal-700 mb-4">
+            Grievance Officer
+          </h2>
 
-  <p className="font-medium text-lg mb-2">Mr. Kisan Sahoo</p>
-  <p className="mb-4">Grievance Officer</p>
+          <p className="font-medium text-lg mb-2">Mr. Kisan Sahoo</p>
+          <p className="mb-4">Grievance Officer</p>
 
-  <div className="text-sm leading-relaxed mb-4">
-    <p>1st Floor, C 316, B and C, Sector 10, Noida,</p>
-    <p>Gautam Buddha Nagar, Uttar Pradesh, 201301</p>
-    <p className="mt-2">📞 Mob: <a href="tel:+919999589201" className="text-teal-600 hover:underline">+91-9999589201</a></p>
-    <p>📧 Email: <a href="mailto:grievances@atdmoney.com" className="text-teal-600 hover:underline">grievances@atdmoney.com</a></p>
-  </div>
+          <div className="text-sm leading-relaxed mb-4">
+            <p>1st Floor, C 316, B and C, Sector 10, Noida,</p>
+            <p>Gautam Buddha Nagar, Uttar Pradesh, 201301</p>
+            <p className="mt-2">
+              📞 Mob: <a href="tel:+919999589201" className="text-teal-600 hover:underline">
+                +91-9999589201
+              </a>
+            </p>
+            <p>
+              📧 Email: <a href="mailto:grievances@atdmoney.com" className="text-teal-600 hover:underline">
+                grievances@atdmoney.com
+              </a>
+            </p>
+          </div>
 
-  <p className="text-sm text-gray-600">
-    Please review the privacy policy periodically to ensure you're aware of the latest updates.
-  </p>
+          <p className="text-sm text-gray-600">
+            Please review the privacy policy periodically to ensure you're
+            aware of the latest updates.
+          </p>
+        </div>
+       <div className="flex justify-end my-4">
+  {/* Back button - top right */}
+  <button 
+    onClick={() => router.back()} 
+    className="flex items-center cursor-pointer gap-2 bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium"
+  >
+    <FaAngleLeft className="w-4 h-4" />
+    Back
+  </button>
 </div>
-
 
         <footer className="text-center mt-6 text-gray-600 text-sm">
           <p>
@@ -234,6 +264,5 @@ export default function PrivacyPolicy() {
           </p>
         </footer>
       </div>
-    </div>
-  );
+    </div>;
 }

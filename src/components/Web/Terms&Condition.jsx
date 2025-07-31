@@ -14,9 +14,12 @@ import {
   FaHeadset, 
   FaPhone 
 } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { FaAngleLeft } from 'react-icons/fa6';
 
 export default function TermsOfUse() {
   const [activeSection, setActiveSection] = useState('useOfInformation');
+  const router = useRouter();
 
   const toggleSection = (section) => {
     setActiveSection(activeSection === section ? null : section);
@@ -214,8 +217,19 @@ export default function TermsOfUse() {
 
   return (
     <div className="bg-gradient-to-br from-teal-50 to-teal-100">
-      <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-10 py-10 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
+           <div className="flex justify-end my-4">
+            {/* Back button - top right */}
+            <button 
+              onClick={() => router.back()} 
+              className="flex items-center cursor-pointer gap-2 bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium"
+            >
+              <FaAngleLeft className="w-4 h-4" />
+              Back
+            </button>
+          </div>
+          
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-teal-600 rounded-full flex items-center justify-center">
               <FaFileAlt className="h-8 w-8 text-white" />
@@ -297,6 +311,16 @@ export default function TermsOfUse() {
             </div>
           </div>
         </div>
+        <div className="flex justify-end my-4">
+            {/* Back button - top right */}
+            <button 
+              onClick={() => router.back()} 
+              className="flex items-center cursor-pointer gap-2 bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium"
+            >
+              <FaAngleLeft className="w-4 h-4" />
+              Back
+            </button>
+          </div>
         
         <footer className="text-center text-gray-600 text-sm">
           <p>© {new Date().getFullYear()} ATD Money. All rights reserved.</p>

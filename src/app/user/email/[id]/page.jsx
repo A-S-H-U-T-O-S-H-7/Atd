@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 export default function EmailVerification() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id; // Get the id from the dynamic route [id]
+  const id = params.id; 
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
 
@@ -31,7 +31,7 @@ export default function EmailVerification() {
         setMessage('Email verified successfully!');
         
         setTimeout(() => {
-          router.push('/userprofile');
+          router.push('/userProfile');
         }, 3000);
       } else {
         setStatus('error');
