@@ -10,7 +10,9 @@ const FamilyReferenceSection = () => {
     { value: "Brother", label: "Brother" },
     { value: "Sister", label: "Sister" },
     { value: "Husband", label: "Husband" },
-    { value: "Spouse", label: "Spouse" }
+    { value: "Spouse", label: "Spouse" },
+    { value: "Son", label: "Son" },
+    { value: "Daughter", label: "Daughter" }
   ];
 
   return (
