@@ -142,6 +142,13 @@ const AddressSection = ({
         </div>}
 
       <div className="space-y-4">
+        <FormField
+            name={`${addressPrefix}.houseNo`}
+            label="House/Flat No."
+            placeholder="Enter house/flat number"
+            required
+          />
+
         {/* Address Line 1 */}
         <FormField
           name={`${addressPrefix}.addressLine1`}
@@ -161,14 +168,8 @@ const AddressSection = ({
           placeholder="Area, locality, landmark (optional)"
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-          <FormField
-            name={`${addressPrefix}.houseNo`}
-            label="House/Flat No."
-            placeholder="Enter house/flat number"
-            required
-          />
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          
           <FormField
             name={`${addressPrefix}.state`}
             label="State"

@@ -37,7 +37,7 @@ const EmploymentSection = ({ values }) => {
                 as="select"
                 className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
               >
-                <option value="">Select Month</option>
+                <option value="">Select</option>
                 {Array.from({ length: 12 }, (_, i) => {
                   const months = [
                     'January', 'February', 'March', 'April', 'May', 'June',
@@ -60,7 +60,7 @@ const EmploymentSection = ({ values }) => {
                 as="select"
                 className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
               >
-                <option value="">Select Year</option>
+                <option value="">Select</option>
                 {Array.from({ length: 50 }, (_, i) => {
                   const year = new Date().getFullYear() - i;
                   return (

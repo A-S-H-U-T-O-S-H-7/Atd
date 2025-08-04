@@ -90,7 +90,7 @@ export default function StepOneProfile({ user, router, logout }) {
     🎉 You've successfully signed up!
   </p>
   <p className="text-base lg:text-xl font-semibold bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent">
-    ✨ Complete your loan registration to get instant funding! 💰
+    ✨ Complete your loan application to get instant funding! 💰
   </p>          </div>
 
           {/* Personal Loan Card - Responsive */}

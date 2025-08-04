@@ -41,14 +41,15 @@ const CongratulationsModal = ({ show, onClose, userName }) => {
               {userName} 🎊
             </p>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Your registration has been completed successfully! 
+              Your loan application has been successfully submitted!<br />
+
               Welcome to ATD Money family.
             </p>
             
             {/* Success Badge */}
             <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200 mb-6">
               <span className="text-green-500">✅</span>
-              <span className="font-medium">Registration Complete</span>
+              <span className="font-medium">Applied Successfully</span>
             </div>
             
             {/* Close Button */}

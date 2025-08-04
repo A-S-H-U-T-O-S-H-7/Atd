@@ -31,7 +31,7 @@ export default function EmailVerification() {
         setMessage('Email verified successfully!');
         
         setTimeout(() => {
-          router.push('/userProfile');
+          router.push('/');
         }, 3000);
       } else {
         setStatus('error');

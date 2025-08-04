@@ -83,7 +83,7 @@ function DocumentUpload() {
         },
         bankStatement: { 
             label: '6 Month Bank Statement', 
-            accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
+             accept: 'application/pdf',
             maxSize: 5, 
             apiValue: 'statement',
             bucket: 'bank-statement'
@@ -342,8 +342,12 @@ function DocumentUpload() {
                                 Choose {config.label}
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
-                                Max {config.maxSize}MB • Images & PDF
-                            </span>
+    Max {config.maxSize}MB • {
+        fieldName === 'photo' ? 'Images only' : 
+        fieldName === 'bankStatement' ? 'PDF only' : 
+        'Images & PDF'
+    }
+</span>
                         </label>
                     </div>
                 ) : (

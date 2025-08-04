@@ -180,7 +180,7 @@ function BasicOtpVerification({
                         onChange={(e) => handleChange(i, e.target.value, setFieldValue)}
                         onKeyDown={(e) => handleKeyDown(e, i, setFieldValue)}
                         onPaste={(e) => handlePaste(e, i, setFieldValue)}
-                        className="w-12 h-14 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+                        className=" w-10 h-12  md:w-12 md:h-14 text-center text-xl font-bold border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
                       />
                     ))}
                   </div>

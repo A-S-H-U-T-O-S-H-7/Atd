@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 import { Field, ErrorMessage } from 'formik';
 import SectionCard from './SectionCard';
 import CurrencyField from './CurrencyField';
@@ -7,7 +7,7 @@ import FinancialSummary from './FinancialSummary';
 
 const SalarySection = ({ values, availableIncome }) => {
   return (
-    <SectionCard icon={DollarSign} title="Salary Details">
+    <SectionCard icon={IndianRupee} title="Salary Details">
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <CurrencyField

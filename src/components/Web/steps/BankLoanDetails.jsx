@@ -323,7 +323,7 @@ function BankLoanDetails() {
                                                         <Info className="w-4 h-4 text-orange-500" />
                                                     </div>
                                                     <div className="text-xs text-orange-700">
-                                                        <p className="font-medium text-orange-600">A processing fee & documentation charges will apply and can vary based on individual profiles.</p>
+                                                        <p className="font-medium text-orange-600">A processing fee & documentation charges will apply and may vary based on individual profiles.</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -409,7 +409,6 @@ function BankLoanDetails() {
                                             >
                                                 <option value="" disabled>Select Account Type</option>
                                                 <option value="SAVING">Savings Account</option>
-                                                <option value="CURRENT">Current Account</option>
                                             </Field>
                                             <ErrorMessage name="accountType" component="p" className="text-red-500 text-sm" />
                                         </div>
