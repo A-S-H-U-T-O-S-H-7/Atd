@@ -62,8 +62,8 @@ export default function InformationCards({ user, loanHistory = [] }) {
   return (
     <div className="mt-6 md:mt-0">
       {/* Three Column Grid - Responsive */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 auto-rows-min">
-        {/* Personal Information */}
+      <div className="grid grid-cols-1 mt-4 auto-rows-min">
+        {/* Personal Information
         <CollapsibleCard
           title="Personal Information"
           icon={User}
@@ -79,9 +79,9 @@ export default function InformationCards({ user, loanHistory = [] }) {
             <InfoItem label="Gender" value={user?.gender} icon={User} />
             <InfoItem label="Father's Name" value={user?.fathername} icon={User} />
           </div>
-        </CollapsibleCard>
+        </CollapsibleCard> */}
 
-        {/* Account Details */}
+        {/* Account Details
         <CollapsibleCard
           title="Account Details"
           icon={FileText}
@@ -97,7 +97,7 @@ export default function InformationCards({ user, loanHistory = [] }) {
             <InfoItem label="Aadhar Number" value={user?.aadhar_no || 'Not provided'} icon={CreditCard} />
             <InfoItem label="PAN Number" value={user?.pan_no || 'Not provided'} icon={FileText} />
           </div>
-        </CollapsibleCard>
+        </CollapsibleCard> */}
 
         {/* Loan History */}
         <CollapsibleCard

@@ -76,7 +76,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden max-w-full">
+    <div className="bg-white rounded-xl mb-5 shadow-sm border border-gray-200 overflow-hidden max-w-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-3 border-b border-gray-100">
         <div className="flex items-center justify-between">
@@ -130,8 +130,16 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         </div>
 
         {/* Additional Info Messages */}
+        {loanStatus === 'sanctioned_approved' && (
+          <div className="mt-4 p-2 bg-pink-50 border border-pink-100 rounded-lg">
+            <p className="text-sm text-pink-700 ">
+              🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps: Video Verification, E-Mandate, and Digital loan agreement.
+            </p>
+          </div>
+        )}
+
         {loanStatus === 'sanctioned_rejected' && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg">
+          <div className="mt-4 p-2 bg-red-50 border border-red-100 rounded-lg">
             <p className="text-sm text-red-700">
               Your loan application has been rejected. Please contact support for more information.
             </p>
@@ -139,7 +147,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         )}
 
         {loanStatus === 'disbursed' && (
-          <div className="mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+          <div className="mt-4 p-2 bg-emerald-50 border border-emerald-100 rounded-lg">
             <p className="text-sm text-emerald-700">
               🎉 Congratulations! Your loan has been disbursed successfully.
             </p>
@@ -147,7 +155,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         )}
 
         {loanStatus === 'closed' && (
-          <div className="mt-4 p-3 bg-gray-50 border border-gray-100 rounded-lg">
+          <div className="mt-4 p-2 bg-gray-50 border border-gray-100 rounded-lg">
             <p className="text-sm text-gray-700">
               Your loan has been successfully closed. Thank you for banking with us!
             </p>

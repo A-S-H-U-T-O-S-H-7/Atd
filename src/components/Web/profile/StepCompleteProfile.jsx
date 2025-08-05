@@ -17,6 +17,8 @@ import UserFooter from './UserFooter';
 import VerificationComponent from './VerificationComponent';
 import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
+import UserInfoSection from './UserInfo';
+import CreditScoreSection from './CreditScore';
 
 export default function StepCompleteProfile({ 
   user, 
@@ -117,21 +119,25 @@ export default function StepCompleteProfile({
             ))}
           </div>
         </div>
+        <LoanStatusTracker loanStatus={currentStatus} />
+
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Profile & Verification */}
             <div className="lg:col-span-1">
               <ProfileCard user={user} loanStatus={currentStatus} />
-              <VerificationComponent loanStatus={currentStatus} />
+              <InformationCards user={user} />
+
             </div>
             
             {/* Right Column - Information & Features */}
             <div className="lg:col-span-2">
               <div className="space-y-6">
-                        <LoanStatusTracker loanStatus={currentStatus} />
+              <VerificationComponent loanStatus={currentStatus} />
+              <CreditScoreSection creditScore={user?.creditScore || 750} />
 
-                <InformationCards user={user} />
                 <ReviewSection />
+                <UserInfoSection user={user} />
                 <AppDownloadSection />
               </div>
             </div>

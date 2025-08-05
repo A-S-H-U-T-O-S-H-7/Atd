@@ -83,15 +83,33 @@ const VerificationComponent = ({ loanStatus = 'applied' }) => {
   };
 
   return (
-    <div className="mx-auto mt-10">
+    <div className="mx-auto ">
+       {/* Status Message */}
+      {!isVerificationEnabled && (
+        <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-700 font-medium text-center">
+            🔒 Verification options will be available once your loan is sanctioned and approved.
+          </p>
+        </div>
+      )}
+
+      {isVerificationEnabled && (
+        <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-sm text-green-700 font-medium text-center">
+            ✅ Verification options are now available. Please complete all verification steps.
+          </p>
+        </div>
+      )}
       <div className={`border-2 p-2 sm:p-4 flex flex-col sm:flex-row justify-between items-center rounded-2xl shadow-lg gap-4 sm:gap-6 lg:gap-4 transition-all duration-300 ${
         isVerificationEnabled 
           ? 'border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-100' 
           : 'border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100'
       }`}>
         
+        
         {/* Video Verification */}
         <div className="flex flex-col items-center gap-2 sm:gap-4 flex-1 w-full sm:w-auto">
+          
           <VerificationIcon 
             icon={FaUserCheck}
             title="Video Verification"
@@ -128,7 +146,7 @@ const VerificationComponent = ({ loanStatus = 'applied' }) => {
         <div className="flex flex-col items-center gap-2 sm:gap-4 flex-1 w-full sm:w-auto">
           <VerificationIcon 
             icon={FaSignature}
-            title="E-sign Agreement"
+            title="Digital Loan Agreement"
             enabled={isVerificationEnabled}
             colorScheme="purple"
           />
@@ -137,27 +155,12 @@ const VerificationComponent = ({ loanStatus = 'applied' }) => {
             tooltipText=" Not available !!"
             colorScheme="purple"
           >
-            E-sign Agreement
+            Digital Loan Agreement
           </VerificationButton>
         </div>
       </div>
 
-      {/* Status Message */}
-      {!isVerificationEnabled && (
-        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-sm text-amber-700 font-medium text-center">
-            🔒 Verification options will be available once your loan is sanctioned and approved.
-          </p>
-        </div>
-      )}
-
-      {isVerificationEnabled && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-700 font-medium text-center">
-            ✅ Verification options are now available. Please complete all verification steps.
-          </p>
-        </div>
-      )}
+     
     </div>
   );
 };

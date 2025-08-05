@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
-import { User, Phone, Mail, Star, Edit3, Verified, Info } from 'lucide-react';
+import { User, Phone, Mail, Star, Edit3, Verified, Info, AlertTriangle, CheckCircle, Hash } from 'lucide-react';
 
 export default function ProfileCard({ user, loanStatus = 'applied' }) {
   const [imageError, setImageError] = useState(false);
@@ -40,12 +40,15 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
   // Check if Apply for New Loan button should be enabled
   const isNewLoanEnabled = loanStatus === 'closed';
 
+  // Check account activation status
+  const isAccountActivated = user?.email_verified === 1;
+
   // Tooltip component
   const Tooltip = ({ children, text, show }) => (
     <div className="relative group">
       {children}
       {show && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
           {text}
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
         </div>
@@ -76,7 +79,47 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
       </div>
       
       <h2 className="text-xl font-bold text-slate-800 mb-1">{user?.fname} {user?.lname}</h2>
-      <p className="text-slate-500 mb-4">ID: {user?.accountId}</p>
+      <p className="text-slate-500 mb-2">ID: {user?.accountId}</p>
+      <p className='mb-5'><span className="font-medium text-slate-600">CRN No:</span>
+          <span className="font-bold text-slate-800">{user?.crnno || 'Not assigned'}</span></p>
+
+      
+
+      {/* Account Activation Status */}
+<div
+  className={`rounded-xl px-4 py-4 mb-4 border-2 ${
+    user?.accountActivation === 1
+      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+      : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
+  }`}
+>
+  <div className="flex items-center justify-center space-x-2">
+    {user?.accountActivation === 1 ? (
+      <>
+        <div className="bg-green-500 rounded-full p-1">
+          <CheckCircle className="w-4 h-4 text-white" />
+        </div>
+        <span className="font-semibold text-green-700">Account Activated</span>
+      </>
+    ) : (
+      <>
+        <div className="bg-red-500 rounded-full p-2">
+          <AlertTriangle className="w-4 h-4 text-white" />
+        </div>
+        <span className="font-semibold text-red-700">Account Not Activated</span>
+      </>
+    )}
+  </div>
+
+  {user?.accountActivation !== 1 && (
+    <div className="text-center">
+      <p className="text-sm text-red-600 mb-3">
+        Please verify the link sent to your official email to activate your account
+      </p>
+    </div>
+  )}
+</div>
+
       
       {/* Contact Information */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl px-2 py-4 md:p-4 mb-6 border border-blue-200">
@@ -94,18 +137,20 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
         </div>
       </div>
 
-      {/* Registration Progress */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200 mb-6">
-        <div className="flex items-center justify-center space-x-2 mb-3">
-          <Star className="w-5 h-5 text-blue-500" />
-          <span className="font-semibold text-slate-700">Registration Progress</span>
-        </div>
-        <div className="text-2xl font-bold text-blue-600 mb-2">{calculateProgress()}%</div>
-        <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
-          <div 
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500" 
-            style={{ width: `${calculateProgress()}%` }}
-          ></div>
+      {/* Application Process - Single Line */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl px-6 py-4 border border-blue-200 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-2">
+              <Star className="w-3 h-3 md:w-5 md:h-5 text-white" />
+            </div>
+            <span className="font-semibold text-slate-700 text-sm md:text-lg">Application Process</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {calculateProgress()}%
+            </span>
+          </div>
         </div>
       </div>
 
