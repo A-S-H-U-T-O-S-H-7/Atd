@@ -91,7 +91,7 @@ const UserInfoSection = ({ user }) => {
   const closeModal = () => setActiveModal(null);
 
   return (
-    <div className="bg-gradient-to-br from-cyan-100 via-emerald-50 to-teal-100 rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 mb-6">
+    <div className="bg-gradient-to-br from-cyan-100 via-emerald-50 to-teal-100 rounded-2xl shadow-lg border border-gray-200 p-4 ">
       <div className="mb-4 sm:mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Information Overview</h2>
         <p className="text-sm sm:text-base text-gray-600">Click on any card to view detailed information</p>
@@ -105,7 +105,7 @@ const UserInfoSection = ({ user }) => {
               key={card.id}
               onClick={() => openModal(card.id)}
               className={`
-                cursor-pointer group relative p-3 sm:p-4 rounded-xl transition-all duration-300 
+                cursor-pointer group relative p-3 sm:p-4 rounded-full w-34 transition-all duration-300 
                 transform hover:scale-105 hover:shadow-lg ${card.hoverShadow}
                 ${card.cardGradient} border-2 ${card.borderColor} ${card.hoverBorder}
               `}

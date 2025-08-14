@@ -68,41 +68,41 @@ const ReviewSection = () => {
           )}
         </div>
 
-        {/* Review Text Area */}
-        <div>
-          <textarea
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-            placeholder="Write your review here... (optional)"
-            className="w-full p-4 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-slate-50"
-            rows="3"
-          />
-        </div>
+        {/* Review Text Area and Submit Button */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div className="flex-1 w-full">
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="Write your review here... "
+              className="w-full p-4 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-slate-50"
+              rows="3"
+            />
+          </div>
 
-        {/* Submit Button */}
-        <div className="text-center">
-          {submitted ? (
-            <div className="flex items-center justify-center space-x-2 text-green-600 font-semibold">
-              <ThumbsUp className="w-5 h-5" />
-              <span>Thank you for your feedback!</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={rating === 0}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 mx-auto ${
-                rating > 0
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              <Send className="w-4 h-4" />
-              <span>Submit Review</span>
-            </button>
-          )}
+          {/* Submit Button */}
+          <div className="w-full sm:w-auto flex  justify-center">
+            {submitted ? (
+              <div className="flex items-center justify-center space-x-2 text-green-600 font-semibold px-6 py-3">
+                <ThumbsUp className="w-5 h-5" />
+                <span>Thank you for your feedback!</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={rating === 0}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 whitespace-nowrap ${
+                  rating > 0
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <Send className="w-4 h-4" />
+                <span>Submit Review</span>
+              </button>
+            )}
+          </div>
         </div>
-
-       
       </div>
     </div>
   );

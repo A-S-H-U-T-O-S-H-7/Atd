@@ -75,6 +75,11 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
     return 'bg-gray-200';
   };
 
+  const handleBankReportClick = () => {
+    // Placeholder for future API integration
+    console.log('Bank Account Report button clicked');
+  };
+
   return (
     <div className="bg-white rounded-xl mb-5 shadow-sm border border-gray-200 overflow-hidden max-w-full">
       {/* Header */}
@@ -99,8 +104,8 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         </div>
       </div>
 
-      {/* Milestones */}
-      <div className="p-5">
+      {/* Milestones - Added min-height to prevent stretching */}
+      <div className="p-5 min-h-[180px]">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
             <React.Fragment key={step.key}>
@@ -130,13 +135,28 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         </div>
 
         {/* Additional Info Messages */}
-        {loanStatus === 'sanctioned_approved' && (
+        {loanStatus === 'inprogress' && (
+          <div className="mt-4 p-2 bg-blue-50 border border-blue-100 rounded-lg">
+            <p className="text-sm text-blue-700 mb-3">
+              Loan application <span className="font-semibold">in progress</span>. For further processing select 
+            
+            <button 
+              onClick={handleBankReportClick}
+              className="bg-blue-600 hover:bg-blue-700 ml-3 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Bank Account Report
+            </button>
+            </p>
+          </div>
+        )}
+
+        {/* {loanStatus === 'sanctioned_approved' && (
           <div className="mt-4 p-2 bg-pink-50 border border-pink-100 rounded-lg">
             <p className="text-sm text-pink-700 ">
               🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps: Video Verification, E-Mandate, and Digital loan agreement.
             </p>
           </div>
-        )}
+        )} */}
 
         {loanStatus === 'sanctioned_rejected' && (
           <div className="mt-4 p-2 bg-red-50 border border-red-100 rounded-lg">
