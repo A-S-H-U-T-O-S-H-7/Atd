@@ -33,7 +33,7 @@ export default function LoanButtons({ loanStatus = 'applied' }) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-center border border-teal-200 my-5 rounded-xl px-3 py-5 bg-white  gap-4">
+    <div className="flex flex-col sm:flex-row items-center justify-center border border-teal-200 my-5 rounded-xl px-3 py-5 bg-white  gap-4">
       {/* Pay Now Button */}
       <Tooltip 
         text={!isPayNowEnabled ? "Pay Now is available only after loan disbursement" : ""}

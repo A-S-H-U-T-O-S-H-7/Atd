@@ -98,7 +98,7 @@ const ReviewSection = () => {
                 }`}
               >
                 <Send className="w-4 h-4" />
-                <span>Submit Review</span>
+                <span>Submit</span>
               </button>
             )}
           </div>

@@ -11,7 +11,7 @@ function UserFooter() {
       {/* Main Footer Section */}
       <div className="bg-blue-950 text-gray-300">
         <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
             {/* Brand and Description */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
@@ -41,6 +41,60 @@ function UserFooter() {
                 disbursals, we aim to bridge financial gaps for everyday needs.
               </p>
             </div>
+
+            {/* Quick links */}
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-semibold text-white relative pb-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-16 after:bg-teal-500">
+                            Quick Links
+                          </h4>
+                          <ul className="space-y-3">
+                            <li>
+                              <Link
+                                href="/aboutus"
+                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                              >
+                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                                About Us
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/contactus"
+                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                              >
+                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                                Contact Us
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/faqs"
+                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                              >
+                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                                FAQs
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/blogs"
+                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                              >
+                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                                Blogs
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/reviews"
+                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                              >
+                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                                Reviews
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
 
             {/* Quick contact */}
             <div className="space-y-4">

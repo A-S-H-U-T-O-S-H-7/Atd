@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Clock, XCircle, Banknote, FileCheck } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Banknote, FileCheck, Landmark } from 'lucide-react';
 
 export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
   // Loan status can be: 'applied', 'inprogress', 'sanctioned_approved', 'sanctioned_rejected', 'disbursed', 'closed'
@@ -134,22 +134,33 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
           ))}
         </div>
 
-        {/* Additional Info Messages */}
-        {loanStatus === 'inprogress' && (
-          <div className="mt-4 p-2 bg-blue-50 border border-blue-100 rounded-lg">
-            <p className="text-sm text-blue-700 mb-3">
-              Loan application <span className="font-semibold">in progress</span>. For further processing select 
-            
-            <button 
-              onClick={handleBankReportClick}
-              className="bg-blue-600 hover:bg-blue-700 ml-3 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Bank Account Report
-            </button>
-            </p>
-          </div>
-        )}
+       {/* Additional Info Messages */}
+{loanStatus === 'inprogress' && (
+  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+    <div className="flex flex-col sm:flex-row items-center gap-2">
+      <div className="text-sm text-blue-700">
+        <span>Loan application </span>
+        <span className="font-semibold">in progress.</span><br/>
+        <span>For further processing select:</span>
+      </div>
+             
+      <div className="flex flex-col items-center gap-2">
+        <div className="rounded-full bg-blue-100 border-2 border-blue-300 flex flex-col items-center justify-center w-16 h-16 shadow-sm">
+          <Landmark className="text-blue-600 w-4 h-4" />
+          <p className="text-xs font-semibold text-blue-700 mt-0.5">Report</p>
+        </div>
+                 
+        <button
+          onClick={handleBankReportClick}
+          className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 whitespace-nowrap"
+        >
+          Bank Account Report
+        </button>
+      </div>
 
+    </div>
+  </div>
+)}
         {/* {loanStatus === 'sanctioned_approved' && (
           <div className="mt-4 p-2 bg-pink-50 border border-pink-100 rounded-lg">
             <p className="text-sm text-pink-700 ">
