@@ -138,7 +138,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
 {loanStatus === 'inprogress' && (
   <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
     <div className="flex flex-col sm:flex-row items-center gap-2">
-      <div className="text-sm text-blue-700">
+      <div className="text-sm italic text-blue-700">
         <span>Loan application </span>
         <span className="font-semibold">in progress.</span><br/>
         <span>For further processing select:</span>
@@ -170,7 +170,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         )} */}
 
         {loanStatus === 'sanctioned_rejected' && (
-          <div className="mt-4 p-2 bg-red-50 border border-red-100 rounded-lg">
+          <div className="mt-4 p-2 italic bg-red-50 border border-red-100 rounded-lg">
             <p className="text-sm text-red-700">
               Your loan application has been rejected. Please contact support for more information.
             </p>
@@ -178,7 +178,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         )}
 
         {loanStatus === 'disbursed' && (
-          <div className="mt-4 p-2 bg-emerald-50 border border-emerald-100 rounded-lg">
+          <div className="mt-4 p-2 italic bg-emerald-50 border border-emerald-100 rounded-lg">
             <p className="text-sm text-emerald-700">
               🎉 Congratulations! Your loan has been disbursed successfully.
             </p>
@@ -186,7 +186,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         )}
 
         {loanStatus === 'closed' && (
-          <div className="mt-4 p-2 bg-gray-50 border border-gray-100 rounded-lg">
+          <div className="mt-4 p-2 italic bg-gray-50 border border-gray-100 rounded-lg">
             <p className="text-sm text-gray-700">
               Your loan has been successfully closed. Thank you for banking with us!
             </p>

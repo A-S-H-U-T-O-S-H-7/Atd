@@ -150,7 +150,7 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs sm:text-sm text-amber-700  leading-relaxed">
-                  Please verify the link sent to your official email to activate your account
+                  Please verify the link sent to your <span className="font-semibold">OFFICIAL EMAIL</span> to activate your account
                 </p>
               </div>
             </div>

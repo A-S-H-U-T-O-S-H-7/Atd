@@ -17,7 +17,6 @@ import UserFooter from './UserFooter';
 import VerificationComponent from './VerificationComponent';
 import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
-import UserInfoSection from './UserInfo';
 import CreditScoreSection from './CreditScore';
 import LoanButtons from './LoanButtons';
 
@@ -102,6 +101,7 @@ export default function StepCompleteProfile({
         />
         
         <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">
+          {/* commnent from here */}
           <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-4">Loan Status For Testing</h1>
           <div className="flex flex-wrap gap-2">
@@ -121,9 +121,8 @@ export default function StepCompleteProfile({
           </div>
         </div>
 
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Profile & Verification */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <ProfileCard user={user} loanStatus={currentStatus} />
               <LoanButtons loanStatus={currentStatus} />
@@ -153,8 +152,10 @@ export default function StepCompleteProfile({
 
           </div>
         </div>
-        <div className='px-4 md:px-8  pb-5'>
-          {/* ReviewSection - Only visible on screens smaller than lg */}
+
+
+        {/* ReviewSection - Only visible on screens smaller than lg */}
+         <div className='px-4 md:px-8  pb-5'>
           <div className="block pb-5 lg:hidden">
             <ReviewSection />
           </div>
