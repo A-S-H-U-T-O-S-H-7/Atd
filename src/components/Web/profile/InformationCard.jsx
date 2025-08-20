@@ -110,7 +110,7 @@ export default function LoanInformation({ loanHistory = [] }) {
 
   return (
     <>
-      <div className="relative rounded-full w-full bg-gradient-to-r from-blue-100 via-teal-100 to-cyan-100 border border-cyan-300 shadow-md px-6 py-2 flex flex-col items-center justify-between gap-2 overflow-hidden">
+      <div className="relative rounded-full w-full bg-gradient-to-r from-blue-100 via-teal-100 to-cyan-100 border border-cyan-300 shadow-md px-2 md:px-6 py-2 flex flex-col items-center justify-between gap-2 overflow-hidden">
         
         {/* Content - Image */}
         <div className="relative z-10 flex-shrink-0">
@@ -124,7 +124,7 @@ export default function LoanInformation({ loanHistory = [] }) {
         {/* Text and Button */}
         <div className="relative z-10 flex flex-col justify-between items-center w-full gap-6">
           <div className="text-center md:text-left">
-            <h3 className="text-xl font-bold text-blue-700 mb-2 drop-shadow-sm">View Your Loan History</h3>
+            <h3 className=" text-lg  md:text-xl font-bold text-blue-700 mb-2 drop-shadow-sm">View Your Loan History</h3>
             <p className="text-blue-600/80 text-xs font-medium">Track all your loan applications & status</p>
           </div>
 

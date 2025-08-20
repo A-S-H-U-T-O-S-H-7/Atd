@@ -142,7 +142,7 @@ export default function StepCompleteProfile({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-pink-200 rounded-xl bg-gradient-to-br from-rose-100 via-teal-50 to-cyan-200 px-4 py-4">
 
                             <InformationCards user={user} />
-                                        <CreditScoreSection creditScore={user?.creditScore || 750} />
+                            <CreditScoreSection creditScore={user?.creditScore || 750} />
 
                             </div>
 

@@ -9,7 +9,7 @@ export default function CreditScoreSection({ creditScore = 750 }) {
   };
 
   return (
-    <div className="relative rounded-full w-full bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100  border border-rose-300 shadow-md px-6 py-2 flex flex-col  items-center justify-between gap-2 overflow-hidden">
+    <div className="relative rounded-full w-full bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100  border border-rose-300 shadow-md px-1 md:px-6 py-2 flex flex-col  items-center justify-between gap-2 overflow-hidden">
       
     
 
@@ -25,7 +25,7 @@ export default function CreditScoreSection({ creditScore = 750 }) {
       {/* Text and Button */}
       <div className="relative z-10 flex flex-col  justify-between items-center w-full gap-6">
         <div className="text-center md:text-left">
-          <h3 className="text-xl font-bold text-pink-700 mb-2 drop-shadow-sm">Get Your CIBIL Report Now</h3>
+          <h3 className="text-lg md:text-xl font-bold text-pink-700 mb-2 drop-shadow-sm">Get Your CIBIL Report Now</h3>
           <p className="text-pink-600/80 text-xs font-medium">Instant access to your credit history</p>
         </div>
 
