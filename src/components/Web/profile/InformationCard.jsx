@@ -115,7 +115,7 @@ export default function LoanInformation({ loanHistory = [] }) {
         {/* Content - Image */}
         <div className="relative z-10 flex-shrink-0">
           <div className="relative">
-            <Image src="/loanhistory.png" alt="Loan History" width={100} height={180} className="rounded-xl" />
+            <Image src="/loanhistory.png" alt="Loan History" width={120} height={200} className="rounded-xl" />
             {/* Subtle glow effect around image */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-teal-400/20 rounded-xl blur-lg -z-10 scale-110"></div>
           </div>
