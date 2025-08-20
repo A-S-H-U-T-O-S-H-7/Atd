@@ -38,7 +38,7 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
     fetchProfileImage();
   }, [user.selfie, imageError]);
 
-  const isAccountActivated = user?.accountActivation === 1;
+  const isAccountActivated = user?.accountActivation === 0;
 
   const infoCards = [
     {

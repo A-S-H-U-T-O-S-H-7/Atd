@@ -171,26 +171,26 @@ export const UserContextProvider = ({ children }) => {
             // referralCode: userData.referral_code || prev.referralCode,
             currentAddress: {
               ...prev.currentAddress,
-              street: userData.curr_address || prev.currentAddress.street,
-              city: userData.curr_city || prev.currentAddress.city,
-              state: userData.curr_state || prev.currentAddress.state,
-              pincode: userData.curr_pincode
-                ? String(userData.curr_pincode)
+              street: userData.current_address || prev.currentAddress.street,
+              city: userData.current_city || prev.currentAddress.city,
+              state: userData.current_state || prev.currentAddress.state,
+              pincode: userData.current_pincode
+                ? String(userData.current_pincode)
                 : prev.currentAddress.pincode,
-              addressType: userData.curr_address_code
-                ? String(userData.curr_address_code)
+              addressType: userData.current_address_code
+                ? String(userData.current_address_code)
                 : prev.currentAddress.addressType
             },
             permanentAddress: {
               ...prev.permanentAddress,
-              street: userData.per_address || prev.permanentAddress.street,
-              city: userData.per_city || prev.permanentAddress.city,
-              state: userData.per_state || prev.permanentAddress.state,
-              pincode: userData.per_pincode
-                ? String(userData.per_pincode)
+              street: userData.address || prev.permanentAddress.street,
+              city: userData.city || prev.permanentAddress.city,
+              state: userData.state || prev.permanentAddress.state,
+              pincode: userData.pincode
+                ? String(userData.pincode)
                 : prev.permanentAddress.pincode,
-              addressType: userData.per_address_code
-                ? String(userData.per_address_code)
+              addressType: userData.address_code
+                ? String(userData.address_code)
                 : prev.permanentAddress.addressType
             },
             familyReference: {
@@ -211,50 +211,40 @@ export const UserContextProvider = ({ children }) => {
           setBankLoanData((prev) => ({
             ...prev,
             // Loan fields
-            amount: userData.loanAmount || userData.loan_amount || prev.amount,
-            tenure: userData.loanTenure || userData.loan_tenure || prev.tenure,
+            amount: userData.applied_amount || userData.loan_amount || prev.amount,
+            tenure: userData.tenure || userData.loan_tenure || prev.tenure,
             // Bank fields
             ifscCode: userData.ifsc_code || prev.ifscCode,
             bankName: userData.bank_name || prev.bankName,
-            bankBranch: userData.bank_branch || prev.bankBranch,
-            accountNumber: userData.account_number || prev.accountNumber,
+            bankBranch: userData.branch_name || prev.bankBranch,
+            accountNumber: userData.account_no || prev.accountNumber,
             accountType: userData.account_type || prev.accountType
           }));
         }
 
         // Step 4: Service Data
-        if (userData.step >= 4) {
-          setServiceData((prev) => ({
-            ...prev,
-            organizationName:
-              userData.companyName ||
-              userData.company_name ||
-              prev.organizationName,
-            monthlySalary:
-              userData.monthlySalary ||
-              userData.monthly_salary ||
-              prev.monthlySalary,
-            netMonthlySalary:
-              userData.netSalary ||
-              userData.net_salary ||
-              prev.netMonthlySalary,
-            designation: userData.designation || prev.designation,
-            organizationAddress:
-              userData.company_address || prev.organizationAddress,
-            officePhone: userData.office_phone || prev.officePhone,
-            hrName: userData.hr_name || prev.hrName,
-            hrPhone: userData.hr_phone || prev.hrPhone,
-            hrEmail: userData.hr_email || prev.hrEmail,
-            website: userData.company_website || prev.website,
-            officialEmail: userData.official_email || prev.officialEmail,
-            familyIncome: userData.family_income || prev.familyIncome,
-            existingEmi: userData.existing_emi || prev.existingEmi,
-            workingSince: {
-              month: userData.working_since_month || prev.workingSince.month,
-              year: userData.working_since_year || prev.workingSince.year
-            }
-          }));
-        }
+       if (userData.step >= 4) {
+  setServiceData((prev) => ({
+    ...prev,
+    organizationName: userData.organisation_name || prev.organizationName,
+    netMonthlySalary: userData.net_monthly_salary || prev.netMonthlySalary,
+    monthlySalary: userData.gross_monthly_salary || prev.monthlySalary,
+    designation: userData.designation || prev.designation,
+    organizationAddress: userData.organisation_address || prev.organizationAddress,
+    officePhone: userData.office_phone || prev.officePhone,
+    hrName: userData.contact_person || prev.hrName,
+    hrPhone: userData.hr_mobile || prev.hrPhone,
+    hrEmail: userData.hr_mail || prev.hrEmail,
+    website: userData.website || prev.website,
+    officialEmail: userData.official_email || prev.officialEmail,
+    familyIncome: userData.net_house_hold_income || prev.familyIncome,
+    existingEmi: userData.existing_emi || prev.existingEmi,
+    workingSince: {
+      month: userData.work_since_mm || prev.workingSince.month,
+      year: userData.work_since_yy || prev.workingSince.year
+    }
+  }));
+}
 
         // Step 5: Document Status
         if (userData.step >= 5) {

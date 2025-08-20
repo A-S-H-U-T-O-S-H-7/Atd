@@ -4,12 +4,11 @@ import { Formik, Form, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { DocumentUploadSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
-import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle } from 'lucide-react';
+import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle, Zap } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
-
-
 
 function DocumentUpload() {
     const {
@@ -29,62 +28,63 @@ function DocumentUpload() {
     const [uploadingFiles, setUploadingFiles] = useState(new Set());
     const [uploadedFiles, setUploadedFiles] = useState(new Map());
     const [allFilesUploaded, setAllFilesUploaded] = useState(false);
+    const [compressingFiles, setCompressingFiles] = useState(new Set());
 
-    // Document configuration with Firebase bucket mapping
+    // Document configuration with Firebase bucket mapping - Updated max sizes to 3MB
     const documentConfig = {
         photo: { 
             label: 'Selfie', 
             accept: 'image/jpeg,image/jpg,image/png', 
-            maxSize: 1, 
+            maxSize: 3, 
             apiValue: 'selfie',
             bucket: 'photo'
         },
         aadharFront: { 
             label: 'Aadhar Card (Front)', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'idproof',
             bucket: 'idproof'
         },
         aadharBack: { 
             label: 'Aadhar Card (Back)', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'addressproof',
             bucket: 'address'
         },
         panCard: { 
             label: 'PAN Card', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'pancard',
             bucket: 'pan'
         },
         salarySlip1: { 
             label: 'Latest Salary Slip', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'firstsalaryslip',
             bucket: 'first_salaryslip'
         },
         salarySlip2: { 
             label: '2nd Month Salary Slip', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'secondsalaryslip',
             bucket: 'second_salaryslip'
         },
         salarySlip3: { 
             label: '3rd Month Salary Slip', 
             accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
-            maxSize: 2, 
+            maxSize: 3, 
             apiValue: 'thirdsalaryslip',
             bucket: 'third_salaryslip'
         },
         bankStatement: { 
             label: '6 Month Bank Statement', 
              accept: 'application/pdf',
-            maxSize: 5, 
+            maxSize: 5, // Keep bank statement at 5MB since it's PDF only
             apiValue: 'statement',
             bucket: 'bank-statement'
         }
@@ -110,6 +110,49 @@ function DocumentUpload() {
         const randomString = Math.random().toString(36).substring(2, 15);
         const timestamp = Date.now();
         return `${timestamp}-${randomString}.${ext}`;
+    };
+
+    // Check if file is an image
+    const isImageFile = (file) => {
+        return file.type.startsWith('image/');
+    };
+
+    // Compress image file
+    const compressImage = async (file, fieldName) => {
+        try {
+            setCompressingFiles(prev => new Set([...prev, fieldName]));
+            
+            const options = {
+                maxSizeMB: 2.8, // Target slightly under 3MB to ensure we stay within limit
+                maxWidthOrHeight: 1920, // Good balance between quality and size
+                useWebWorker: true, // Use web worker for better performance
+                initialQuality: 0.8, // Start with 80% quality
+                alwaysKeepResolution: false, // Allow resolution reduction if needed
+            };
+
+            console.log(`🗜️ Compressing ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+            
+            const compressedFile = await imageCompression(file, options);
+            
+            console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+            
+            // Create new file with original name but compressed content
+            const finalFile = new File([compressedFile], file.name, {
+                type: compressedFile.type,
+                lastModified: Date.now(),
+            });
+
+            return finalFile;
+        } catch (error) {
+            console.error('Image compression failed:', error);
+            throw new Error('Image compression failed. Please try with a different image.');
+        } finally {
+            setCompressingFiles(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(fieldName);
+                return newSet;
+            });
+        }
     };
 
     // Check for duplicate files
@@ -138,9 +181,19 @@ function DocumentUpload() {
             return { valid: false, error: `Invalid file type for ${config.label}. Please select a valid file.` };
         }
 
-        const maxSizeBytes = config.maxSize * 1024 * 1024;
+        // For images, allow larger initial size since we'll compress
+        const maxSizeBytes = isImageFile(file) ? 
+            config.maxSize * 1024 * 1024 * 3 : // Allow 3x size for images (will be compressed)
+            config.maxSize * 1024 * 1024; // Keep original limit for PDFs
+
         if (file.size > maxSizeBytes) {
-            return { valid: false, error: `File size exceeds ${config.maxSize}MB for ${config.label}` };
+            const maxDisplaySize = isImageFile(file) ? 
+                `${config.maxSize * 3}MB (will be compressed to ${config.maxSize}MB)` : 
+                `${config.maxSize}MB`;
+            return { 
+                valid: false, 
+                error: `File size exceeds ${maxDisplaySize} for ${config.label}` 
+            };
         }
 
         return { valid: true };
@@ -175,8 +228,6 @@ function DocumentUpload() {
                 },
                 body: JSON.stringify({
                     step: 5,
-                    // provider: 1,
-                    // userid: phoneData?.userid,
                     upload: config.apiValue,
                     filename: randomFileName
                 }),
@@ -225,7 +276,7 @@ function DocumentUpload() {
         }
     };
 
-    // Handle file change
+    // Handle file change with compression
     const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
         if (!file) return;
 
@@ -239,43 +290,67 @@ function DocumentUpload() {
             return;
         }
 
-        // Check for duplicates
-        const duplicateCheck = checkForDuplicateFile(file, fieldName);
-        if (duplicateCheck.isDuplicate) {
-            setErrorMessage(
-                `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file.`
-            );
-            setTimeout(() => setErrorMessage(''), 5000);
-            return;
-        }
+        let processedFile = file;
 
-        // Remove old file from tracking if replacing
-        if (currentFile) {
-            const oldFileHash = generateFileHash(currentFile);
-            setUploadedFiles(prev => {
-                const newMap = new Map(prev);
-                newMap.delete(oldFileHash);
-                return newMap;
-            });
-        }
+        try {
+            // Compress image if it's an image file and larger than max size
+            if (isImageFile(file) && file.size > (config.maxSize * 1024 * 1024)) {
+                console.log(`📷 Image detected: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+                processedFile = await compressImage(file, fieldName);
+                
+                // Final size check after compression
+                if (processedFile.size > (config.maxSize * 1024 * 1024)) {
+                    setErrorMessage(
+                        `After compression, ${config.label} is still too large (${(processedFile.size / 1024 / 1024).toFixed(2)}MB). Please try with a smaller image.`
+                    );
+                    setTimeout(() => setErrorMessage(''), 5000);
+                    return;
+                }
+            }
 
-        // Set the file in form
-        setFieldValue(fieldName, file);
-        
-        // Upload to Firebase and API
-        const uploadResult = await uploadFileToAPI(file, fieldName);
-        
-        if (!uploadResult.success) {
-            setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
-            setTimeout(() => setErrorMessage(''), 5000);
+            // Check for duplicates (use original file for hash to detect same source)
+            const duplicateCheck = checkForDuplicateFile(file, fieldName);
+            if (duplicateCheck.isDuplicate) {
+                setErrorMessage(
+                    `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file.`
+                );
+                setTimeout(() => setErrorMessage(''), 5000);
+                return;
+            }
+
+            // Remove old file from tracking if replacing
+            if (currentFile) {
+                const oldFileHash = generateFileHash(currentFile);
+                setUploadedFiles(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(oldFileHash);
+                    return newMap;
+                });
+            }
+
+            // Set the processed file in form
+            setFieldValue(fieldName, processedFile);
             
-            // Remove from tracking on failure
-            const fileHash = generateFileHash(file);
-            setUploadedFiles(prev => {
-                const newMap = new Map(prev);
-                newMap.delete(fileHash);
-                return newMap;
-            });
+            // Upload to Firebase and API
+            const uploadResult = await uploadFileToAPI(processedFile, fieldName);
+            
+            if (!uploadResult.success) {
+                setErrorMessage(`Failed to upload ${config.label}: ${uploadResult.error}`);
+                setTimeout(() => setErrorMessage(''), 5000);
+                
+                // Remove from tracking on failure
+                const fileHash = generateFileHash(processedFile);
+                setUploadedFiles(prev => {
+                    const newMap = new Map(prev);
+                    newMap.delete(fileHash);
+                    return newMap;
+                });
+            }
+
+        } catch (error) {
+            console.error('File processing error:', error);
+            setErrorMessage(error.message || `Failed to process ${config.label}`);
+            setTimeout(() => setErrorMessage(''), 5000);
         }
     };
 
@@ -311,12 +386,18 @@ function DocumentUpload() {
         const file = values[fieldName];
         const status = uploadStatus[fieldName];
         const isUploading = uploadingFiles.has(fieldName);
+        const isCompressing = compressingFiles.has(fieldName);
 
         return (
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                     {config.label}
                     <span className="text-red-500 ml-1">*</span>
+                    {/* {isImageFile({type: config.accept.split(',')[0]}) && (
+                        <span className="text-xs text-green-600 ml-2 font-normal">
+                            📱 Auto-compress if needed
+                        </span>
+                    )} */}
                 </label>
                 
                 {!file ? (
@@ -342,18 +423,22 @@ function DocumentUpload() {
                                 Choose {config.label}
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
-    Max {config.maxSize}MB • {
-        fieldName === 'photo' ? 'Images only' : 
-        fieldName === 'bankStatement' ? 'PDF only' : 
-        'Images & PDF'
-    }
-</span>
+                                Max {config.maxSize}MB • {
+                                    fieldName === 'photo' ? 'Images only' : 
+                                    fieldName === 'bankStatement' ? 'PDF only' : 
+                                    'Images & PDF'
+                                }
+                            </span>
                         </label>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl">
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
-                            {isUploading || status?.status === 'uploading' ? (
+                            {isCompressing ? (
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                    <Zap className="w-5 h-5 text-orange-500 animate-pulse" />
+                                </div>
+                            ) : isUploading || status?.status === 'uploading' ? (
                                 <div className="w-5 h-5 flex items-center justify-center">
                                     <BeatLoader color="#14b8a6" size={4} />
                                 </div>
@@ -371,6 +456,9 @@ function DocumentUpload() {
                                 </p>
                                 <p className="text-xs text-gray-500">
                                     {formatFileSize(file.size)}
+                                    {isCompressing && (
+                                        <span className="text-orange-600 ml-2">⚡ Compressing...</span>
+                                    )}
                                     {status?.status === 'uploading' && (
                                         <span className="text-blue-600 ml-2">⏳ Uploading...</span>
                                     )}
@@ -396,10 +484,15 @@ function DocumentUpload() {
                                     }
                                 }}
                                 className="hidden"
+                                disabled={isCompressing || isUploading}
                             />
                             <label
                                 htmlFor={`${fieldName}_replace`}
-                                className="px-3 py-1 text-xs bg-teal-100 text-teal-700 rounded-lg hover:bg-teal-200 cursor-pointer transition-colors"
+                                className={`px-3 py-1 text-xs rounded-lg transition-colors cursor-pointer ${
+                                    isCompressing || isUploading
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                                }`}
                             >
                                 Replace
                             </label>
@@ -508,7 +601,7 @@ function DocumentUpload() {
                                 </div>
                             ))}
 
-                            {/* Guidelines */}
+                            {/* Updated Guidelines */}
                             <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-xl p-6">
                                 <div className="flex items-start gap-3">
                                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -522,8 +615,7 @@ function DocumentUpload() {
                                             <li>• Documents should be clear and readable</li>
                                             <li>• Accept both images (JPG, PNG) and PDF files</li>
                                             <li>• Salary slips must be from the last 3 consecutive months</li>
-                                            <li>• Bank statement should cover the last 6 months</li>
-                                            <li>• Files are uploaded automatically when selected</li>
+                                            <li>• Bank statement should cover the last 6 months (max 5MB)</li>
                                             <li>• Each document must be unique - same file cannot be used for multiple fields</li>
                                         </ul>
                                     </div>

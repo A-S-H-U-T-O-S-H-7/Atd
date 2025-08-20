@@ -380,8 +380,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 1MB",
-      (value) => value && value.size <= 1 * 1024 * 1024
+      "File size should not exceed 2MB",
+      (value) => value && value.size <= 2 * 1024 * 1024
     ),
    
   salarySlip1: Yup.mixed()

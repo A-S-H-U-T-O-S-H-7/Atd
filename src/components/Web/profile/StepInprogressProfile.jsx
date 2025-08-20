@@ -338,9 +338,9 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
                     </div>
                     <div className="flex justify-between items-center p-2 lg:p-3 bg-emerald-100/50 rounded-lg">
                       <span className="text-slate-600 flex items-center">
-                        Salary
+                        Net Salary
                       </span>
-                      <span className="font-medium">{userData?.netsalary ? formatCurrency(userData.netsalary) : 'N/A'}</span>
+                      <span className="font-medium">{userData?.net_monthly_salary ? formatCurrency(userData.net_monthly_salary) : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -389,7 +389,7 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
                     <Building2 className="w-4 h-4 lg:w-5 lg:h-5 text-teal-600" />
                     <span className="font-semibold lg:text-lg text-slate-800">Company</span>
                   </div>
-                  <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.company || 'N/A'}</span>
+                  <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.organisation_name || 'N/A'}</span>
                 </div>
               </div>
             </div>

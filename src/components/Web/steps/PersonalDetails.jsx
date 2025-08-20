@@ -211,7 +211,6 @@ const getInitialValues = () => ({
   phoneNumber: personalData.phoneNumber || user?.mobile || user?.phone || '',
   aadharNumber: personalData.aadharNumber || user?.aadhar_no || '',
   panNumber: personalData.panNumber || user?.pan_no || '',
-  referralCode: personalData.referralCode || user?.referral_code || '', // Added this line
   currentAddress: {
     houseNo: '',
     addressLine1: '',

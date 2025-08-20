@@ -5,6 +5,8 @@ import { BeatLoader } from "react-spinners";
 import { ServiceDetailsSchema } from "../validations/UserRegistrationValidations";
 import { useUser } from "@/lib/UserRegistrationContext";
 import { Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+
 
 // Import sub-components
 import PageHeader from "../serviceChunks/PageHeader";
@@ -13,6 +15,7 @@ import HRContactSection from "../serviceChunks/HrContactSection";
 import EmploymentSection from "../serviceChunks/EmployementSection";
 import SalarySection from "../serviceChunks/SalarySection";
 import ErrorAlert from "../serviceChunks/ErrorAlert";
+
 function ServiceDetails() {
   const {
     serviceData,
@@ -28,6 +31,7 @@ function ServiceDetails() {
   } = useUser();
 
   const [availableIncome, setAvailableIncome] = useState(0);
+    const { user } = useAuth();
 
   const handleServiceDetails = async (values) => {
     try {
@@ -42,7 +46,7 @@ function ServiceDetails() {
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           step: 4, 
           // userid: phoneData.userid,
           // provider: 1,
@@ -80,13 +84,20 @@ function ServiceDetails() {
     }
   };
 
+  const getInitialValues = () => ({
+  ...serviceData,
+  organizationName: serviceData.organizationName || user?.organisation_name || '',
+  netMonthlySalary: serviceData.netMonthlySalary || user?.net_monthly_salary || '',
+  // ... other existing fields
+});
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 p-4 md:p-6'>
       <div className="max-w-6xl mx-auto">
         <PageHeader />
         
         <Formik
-          initialValues={serviceData}
+          initialValues={getInitialValues()}
           validationSchema={ServiceDetailsSchema}
           onSubmit={handleServiceDetails}
           enableReinitialize
