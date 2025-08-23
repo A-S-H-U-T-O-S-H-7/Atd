@@ -172,8 +172,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         {loanStatus === 'sanctioned_rejected' && (
           <div className="mt-4 p-2 italic bg-red-50 border border-red-100 rounded-lg">
             <p className="text-sm text-red-700">
-              Your loan application has been rejected. Please contact support for more information.
-            </p>
+            💔 Your loan application has been declined at this time 😔. You’re welcome to reapply after 30 days </p>
           </div>
         )}
 
@@ -188,7 +187,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
         {loanStatus === 'closed' && (
           <div className="mt-4 p-2 italic bg-gray-50 border border-gray-100 rounded-lg">
             <p className="text-sm text-gray-700">
-              Your loan has been successfully closed. Thank you for banking with us!
+              🙏 Your loan has been successfully closed. Thank you for banking with us!✨
             </p>
           </div>
         )}

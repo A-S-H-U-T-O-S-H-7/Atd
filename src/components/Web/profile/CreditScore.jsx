@@ -2,22 +2,19 @@
 
 import Image from 'next/image';
 
-export default function CreditScoreSection({ creditScore = 750 }) {
+export default function CreditScoreSection({ creditScore = 750,imageWidth = 280, imageHeight = 380 }) {
   const handleGetReport = () => {
     console.log('Downloading CIBIL report...');
     // Future implementation: API call to download report
   };
 
   return (
-    <div className="relative rounded-full w-full bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100  border border-rose-300 shadow-md px-1 md:px-6 py-2 flex flex-col  items-center justify-between gap-2 overflow-hidden">
-      
-    
+    <div className="relative rounded-2xl w-full bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100  border border-rose-300 shadow-md px-1 md:px-6 py-2 flex flex-col  items-center justify-between gap-2 overflow-hidden">    
 
       {/* Content - now with relative positioning to stay above background */}
       <div className="relative z-10 flex-shrink-0">
         <div className="relative">
-          <Image src="/creditscore.png" alt="Credit Score" width={150} height={250} className="rounded-xl " />
-          {/* Subtle glow effect around image */}
+<Image src="/creditscore.png" alt="Credit Score" width={imageWidth} height={imageHeight} className="rounded-xl " />          {/* Subtle glow effect around image */}
           <div className="absolute inset-0 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-xl blur-lg -z-10 scale-110"></div>
         </div>
       </div>

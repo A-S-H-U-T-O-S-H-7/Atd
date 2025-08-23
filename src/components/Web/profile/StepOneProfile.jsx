@@ -3,6 +3,7 @@
 import { User, Phone, Mail, CreditCard, Building2, IndianRupee, Users, CheckCircle, Zap, Clock, FileText, Copy, Gift, Banknote } from 'lucide-react';
 import Header from './Header';
 import UserFooter from './UserFooter';
+import CreditScoreSection from './CreditScore';
 
 export default function StepOneProfile({ user, router, logout }) {
   const handleApplyForLoan = () => {
@@ -228,7 +229,11 @@ export default function StepOneProfile({ user, router, logout }) {
               </div>
             </div>
 
-            {/* Referral Program - Enhanced Design */}
+            <CreditScoreSection/>
+          </div>
+
+<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {/* Referral Program - Enhanced Design */}
             <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white shadow-lg relative overflow-hidden md:col-span-2 lg:col-span-1">
               {/* Abstract background */}
               <div className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-20 lg:h-20 bg-white/10 rounded-full"></div>
@@ -263,7 +268,6 @@ export default function StepOneProfile({ user, router, logout }) {
                 </div>
               </div>
             </div>
-          </div>
 
           {/* Company Info - Single Row */}
           <div className="bg-white/70 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-md border border-white/50 p-4 lg:p-6 mb-6 lg:mb-10">
@@ -275,17 +279,9 @@ export default function StepOneProfile({ user, router, logout }) {
               <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.company || 'N/A'}</span>
             </div>
           </div>
-
-          {/* Verification Status - Responsive */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-center">
-            <div className="flex items-center justify-center gap-2 lg:gap-3 mb-2 lg:mb-3">
-              <CheckCircle className="w-5 h-5 lg:w-6 lg:h-6 text-emerald-600" />
-              <span className="font-semibold lg:text-lg text-emerald-800">Account Verified</span>
-            </div>
-            <p className="text-emerald-700 text-sm lg:text-base">
-              Ready for loan applications
-            </p>
           </div>
+
+         
         </div>
       </div>
     </div>

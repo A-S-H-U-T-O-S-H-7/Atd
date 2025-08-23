@@ -5,6 +5,7 @@ import { User, Phone, Mail, CreditCard, Building2, IndianRupee, Users, CheckCirc
 import Header from './Header';
 import ProtectedRoute from './ProtectRoute';
 import UserFooter from './UserFooter';
+import CreditScoreSection from './CreditScore';
 
 export default function StepInProgressProfile({ user, router, userStep, logout }) {
   const totalSteps = 5;
@@ -345,53 +346,60 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
                   </div>
                 </div>
 
-                {/* Referral Program - Enhanced Design */}
-                <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white shadow-lg relative overflow-hidden md:col-span-2 lg:col-span-1">
-                  {/* Abstract background */}
-                  <div className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-20 lg:h-20 bg-white/10 rounded-full"></div>
-                  <div className="absolute -bottom-1 -left-1 lg:-bottom-2 lg:-left-2 w-12 h-12 lg:w-16 lg:h-16 bg-white/10 rounded-full"></div>
-                  <div className="absolute top-1/2 right-1/4 w-6 h-6 lg:w-8 lg:h-8 bg-white/10 rotate-45"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-3 lg:mb-4">
-                      <div className="flex items-center gap-2 lg:gap-3">
-                        <Gift className="w-5 h-5 lg:w-6 lg:h-6" />
-                        <h3 className="font-bold lg:text-lg">Referral Program</h3>
-                      </div>
-                      <div className="text-xs lg:text-sm bg-yellow-400/30 px-2 py-1 rounded-full">
-                        Earn ₹100
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mb-2 lg:mb-3">
-                      <div>
-                        <div className="text-xs lg:text-sm opacity-90 mb-1">Your referral code</div>
-                        <div className="text-xl lg:text-2xl font-bold tracking-widest">
-                          {userData?.referral_code || 'N/A'}
-                        </div>
-                      </div>
-                      <button className="bg-white/20 hover:bg-white/30 transition-colors p-2 lg:p-3 rounded-lg">
-                        <Copy className="w-4 h-4 lg:w-5 lg:h-5" />
-                      </button>
-                    </div>
-                    
-                    <div className="text-xs lg:text-sm opacity-90">
-                      Share with friends and earn rewards instantly
-                    </div>
-                  </div>
-                </div>
+              <CreditScoreSection/>
+                
               </div>
 
-              {/* Company Info - Single Row */}
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-md border border-white/50 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {/* Referral Program - Enhanced Design */}
+            <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white shadow-lg relative overflow-hidden md:col-span-2 lg:col-span-1">
+              {/* Abstract background */}
+              <div className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-20 lg:h-20 bg-white/10 rounded-full"></div>
+              <div className="absolute -bottom-1 -left-1 lg:-bottom-2 lg:-left-2 w-12 h-12 lg:w-16 lg:h-16 bg-white/10 rounded-full"></div>
+              <div className="absolute top-1/2 right-1/4 w-6 h-6 lg:w-8 lg:h-8 bg-white/10 rotate-45"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
                   <div className="flex items-center gap-2 lg:gap-3">
-                    <Building2 className="w-4 h-4 lg:w-5 lg:h-5 text-teal-600" />
-                    <span className="font-semibold lg:text-lg text-slate-800">Company</span>
+                    <Gift className="w-5 h-5 lg:w-6 lg:h-6" />
+                    <h3 className="font-bold lg:text-lg">Referral Program</h3>
                   </div>
-                  <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.organisation_name || 'N/A'}</span>
+                  <div className="text-xs lg:text-sm bg-yellow-400/30 px-2 py-1 rounded-full">
+                    Earn ₹100
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mb-2 lg:mb-3">
+                  <div>
+                    <div className="text-xs lg:text-sm opacity-90 mb-1">Your referral code</div>
+                    <div className="text-xl lg:text-2xl font-bold tracking-widest">
+                      {userData?.referral_code || 'N/A'}
+                    </div>
+                  </div>
+                  <button className="bg-white/20 hover:bg-white/30 transition-colors p-2 lg:p-3 rounded-lg">
+                    <Copy className="w-4 h-4 lg:w-5 lg:h-5" />
+                  </button>
+                </div>
+                
+                <div className="text-xs lg:text-sm opacity-90">
+                  Share with friends and earn rewards instantly
                 </div>
               </div>
+            </div>
+
+          {/* Company Info - Single Row */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-md border border-white/50 p-4 lg:p-6 mb-6 lg:mb-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Building2 className="w-4 h-4 lg:w-5 lg:h-5 text-teal-600" />
+                <span className="font-semibold lg:text-lg text-slate-800">Company</span>
+              </div>
+              <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.organisation_name || 'N/A'}</span>
+            </div>
+          </div>
+          </div>
+
+              
             </div>
           </div>
         </div>

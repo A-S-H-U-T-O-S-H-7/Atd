@@ -38,7 +38,7 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
     fetchProfileImage();
   }, [user.selfie, imageError]);
 
-  const isAccountActivated = user?.accountActivation === 0;
+  const isAccountActivated = user?.accountActivation === 1;
 
   const infoCards = [
     {
@@ -144,11 +144,11 @@ export default function ProfileCard({ user, loanStatus = 'applied' }) {
         {/* Activation Message for Non-Activated Accounts */}
         {!isAccountActivated && (
           <div className="mx-4 sm:mx-6 lg:mx-8 px-2 py-1   sm:mb-6 lg:mb-8  bg-gradient-to-r from-amber-50/90 to-orange-50/90 border border-dashed border-amber-500 rounded-xl backdrop-blur-sm">
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
               <div className="flex-shrink-0 py-3 items-center justify-center">
                 <Info className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1  min-w-0">
                 <p className="text-xs sm:text-sm text-amber-700  leading-relaxed">
                   Please verify the link sent to your <span className="font-semibold">OFFICIAL EMAIL</span> to activate your account
                 </p>

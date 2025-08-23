@@ -137,12 +137,20 @@ export default function StepCompleteProfile({
               <div className="space-y-6">
                         <LoanStatusTracker loanStatus={currentStatus} />
 
-              <VerificationComponent loanStatus={currentStatus} />
+              {currentStatus !== 'disbursed' && currentStatus !== 'closed' && currentStatus !== 'sanctioned_rejected' && (
+  <VerificationComponent loanStatus={currentStatus} />
+)}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-pink-200 rounded-xl bg-gradient-to-br from-rose-100 via-teal-50 to-cyan-200 px-4 py-4">
 
                             <InformationCards user={user} />
-                            <CreditScoreSection creditScore={user?.creditScore || 750} />
+                            <div className='border rounded-full overflow-hidden mt-2 border-rose-300  '>
+<CreditScoreSection 
+  className="rounded-full" 
+  creditScore={user?.creditScore || 750} 
+  imageWidth={150} 
+  imageHeight={250} 
+/>                            </div>
 
                             </div>
 
