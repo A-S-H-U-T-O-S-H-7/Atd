@@ -202,7 +202,7 @@ const handlePersonalDetails = async (values) => {
 
 const getInitialValues = () => ({
   ...personalData,
-  firstName: personalData.firstName || user?.fname || '',
+  firstName: personalData.firstName || user?.fname || '', 
   lastName: personalData.lastName || user?.lname || '',
   gender: personalData.gender || user?.gender || '',
   dob: personalData.dob || user?.dob || '',

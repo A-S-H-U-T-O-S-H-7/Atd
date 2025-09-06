@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { CheckCircle, Clock, XCircle, Banknote, FileCheck, Landmark } from 'lucide-react';
 
 export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
-  // Loan status can be: 'applied', 'inprogress', 'sanctioned_approved', 'sanctioned_rejected', 'disbursed', 'closed'
   
   const getStatusConfig = (status) => {
     const configs = {

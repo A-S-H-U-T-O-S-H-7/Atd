@@ -19,6 +19,7 @@ import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
 import CreditScoreSection from './CreditScore';
 import LoanButtons from './LoanButtons';
+import ReferBlock from './ReferBlock';
 
 export default function StepCompleteProfile({ 
   user, 
@@ -152,7 +153,15 @@ export default function StepCompleteProfile({
   imageHeight={250} 
 />                            </div>
 
+
+
+
                             </div>
+
+{currentStatus !== 'applied' && currentStatus !== 'inprogress' && currentStatus !== 'sanctioned_approved' && (
+  <ReferBlock user={user} />
+)}
+
 
               
               </div>

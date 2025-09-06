@@ -18,7 +18,7 @@ const BasicInformationSection = () => {
         <FormField
           name="firstName"
           label="First Name"
-          placeholder="Enter your first name"
+          placeholder="Enter your first name" 
           required
         />
 
