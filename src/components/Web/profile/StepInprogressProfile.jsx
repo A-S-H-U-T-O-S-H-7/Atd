@@ -352,7 +352,7 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           {/* Referral Program - Enhanced Design */}
-            <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white shadow-lg relative overflow-hidden md:col-span-2 lg:col-span-1">
+            <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl lg:rounded-2xl p-4 lg:p-6 text-white shadow-lg relative overflow-hidden md:col-span-2 order-2 md:order-1 lg:col-span-1">
               {/* Abstract background */}
               <div className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-20 lg:h-20 bg-white/10 rounded-full"></div>
               <div className="absolute -bottom-1 -left-1 lg:-bottom-2 lg:-left-2 w-12 h-12 lg:w-16 lg:h-16 bg-white/10 rounded-full"></div>
@@ -388,15 +388,17 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
             </div>
 
           {/* Company Info - Single Row */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-md border border-white/50 p-4 lg:p-6 mb-6 lg:mb-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 lg:gap-3">
-                <Building2 className="w-4 h-4 lg:w-5 lg:h-5 text-teal-600" />
-                <span className="font-semibold lg:text-lg text-slate-800">Company</span>
+          <div className="bg-gradient-to-br from-cyan-200 to-violet-200 backdrop-blur-sm rounded-xl lg:rounded-2xl shadow-md border border-dashed border-violet-500 p-4 lg:p-6  order-1 md:order-2 ">
+            <div className="flex flex-col items-center justify-between">
+                <div className="text-4xl mb-4">💼</div>
+
+              <div className="flex justify-center items-center gap-2 lg:gap-3">
+                <span className="font-semibold mb-4 lg:text-lg text-slate-800"> Company Name</span>
               </div>
-              <span className="text-sm lg:text-base font-medium text-slate-700">{userData?.company || 'N/A'}</span>
+              <span className="text-sm lg:text-lg font-medium text-slate-700">{userData?.company || 'N/A'}</span>
             </div>
           </div>
+
           </div>
 
               

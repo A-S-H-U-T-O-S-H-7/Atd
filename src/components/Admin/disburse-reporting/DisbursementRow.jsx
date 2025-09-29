@@ -64,13 +64,15 @@ const handleTransactionStatus = (item) => {
       } ${
         index % 2 === 0
           ? isDark 
-            ? "bg-gray-700/30" 
+            ? "bg-gray-700/80" 
             : "bg-gray-50"
           : ""
       }`}
     >
       {/* SN */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
           isDark
             ? " text-white"
@@ -81,7 +83,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Loan No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
           
           <span className={`text-sm font-semibold ${
@@ -93,7 +97,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Disburse Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -107,7 +113,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
                    <span className={`text-sm font-medium ${
             isDark ? "text-blue-500" : "text-blue-800"
@@ -118,7 +126,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Tran. Ref. No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <span className={`text-sm font-medium ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -127,7 +137,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Tran. Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -141,8 +153,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Sanctioned Amount */}
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
+<td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>        <div className="flex items-center space-x-2">
           <span className={`text-sm font-bold px-2 py-1 rounded ${
             isDark ? "bg-orange-900/50 text-orange-300" : "bg-orange-100 text-orange-800"
           }`}>
@@ -152,7 +165,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Disbursed Amount */}
-      <td className="px-6 py-4">
+          <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-bold px-2 py-1 rounded ${
             isDark ? "bg-green-900/50 text-green-300" : "bg-green-100 text-green-800"
@@ -163,7 +178,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Sender a/c no */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
           <Building className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -177,7 +194,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Sender name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <div className="flex items-center space-x-2">
          
           <span className={`text-sm font-medium ${
@@ -189,7 +208,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Transaction */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <button
           onClick={() => handleTransaction(item)}
           className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
@@ -203,7 +224,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Transaction */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <button
           onClick={() => handleTransfer(item)}
           className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
@@ -217,7 +240,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* ICICI Transaction Status */}
-<td className="px-6 py-4">
+<td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
   <button
     onClick={() => handleTransactionStatus(item)}
     className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
@@ -231,7 +256,9 @@ const handleTransactionStatus = (item) => {
 </td>
 
       {/* Beneficiary Bank IFSC Code */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <span className={`text-sm font-medium ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -240,8 +267,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Beneficiary a/c type */}
-      <td className="px-6 py-4">
-      <span className={`text-sm font-semibold ${
+<td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>      <span className={`text-sm font-semibold ${
           isDark ? "text-teal-400" : "text-teal-600"
         }`}>
           {item.beneficiaryAcType}
@@ -249,8 +277,10 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Beneficiary a/c no */}
-      <td className="px-6 py-4">
-        <span className={`text-sm font-medium ${
+<td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
+          <span className={`text-sm font-medium ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
           {item.beneficiaryAcNo}
@@ -258,8 +288,10 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Beneficiary a/c name */}
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
+<td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
+          <div className="flex items-center space-x-2">
           
           <span className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
@@ -270,7 +302,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Send to Rec */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <span className={`text-sm font-medium ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -279,7 +313,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* New Loan */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-gray-600/80" : "border-gray-300/90"
+}`}>
         <button
           onClick={() => handleNewLoan(item)}
           className={`px-3 cursor-pointer py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
@@ -293,7 +329,9 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${
+  isDark ? "border-transparent" : "border-transparent"
+}`}>
       <button
   onClick={() => handleUpdate(item)}
   className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${

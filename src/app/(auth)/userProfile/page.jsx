@@ -19,7 +19,7 @@ export default function Profile() {
 
   console.log("👤 Profile component - loading:", loading);
   console.log("👤 Profile component - user:", user);
-  console.log("👤 Profile component - user step:", userStep);
+  console.log("👤 Profile component - user step:", userStep); 
 
   const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -55,12 +55,17 @@ export default function Profile() {
     congratulationsTriggered
   };
 
-  if (loading || !user) {
+  if (loading ) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <LoadingSpinner />
       </div>
     );
+  }
+
+  if (!user) {
+    router.push('/userlogin');
+    return null;
   }
 
   // Step-based rendering
