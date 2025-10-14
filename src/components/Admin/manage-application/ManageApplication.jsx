@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import ManageApplicationTable from "./ManageApplicationTable";
 import { useRouter } from "next/navigation";
 import { exportToExcel } from "@/components/utils/exportutil";
@@ -18,9 +17,11 @@ import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
 import CallDetailsModal from "../CallDetailsModal";
 import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ManageApplication = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark"; 
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");

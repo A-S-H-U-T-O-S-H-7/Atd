@@ -1,17 +1,18 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import ReviewTable from "./ReviewTable";
 import ReviewStatusModal from "./ReviewStatusModal";
-import { reviewAPI, formatReviewForUI, getReviewStatusNumber } from "@/lib/api";
+import { reviewAPI,formatReviewForUI,getReviewStatusNumber } from "@/lib/services/ReviewServices";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ReviewPage = () => {
-  const { isDark } = useAdminAuth();
-    const router = useRouter();
-    const [currentPage, setCurrentPage] = useState(1);
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
@@ -49,10 +50,10 @@ const ReviewPage = () => {
       
       const response = await reviewAPI.getReviews(params);
       
-      if (response?.data?.data) {
-        const formattedReviews = response.data.data.map(formatReviewForUI);
+      if (response?.data) {
+        const formattedReviews = response.data.map(formatReviewForUI);
         setReviews(formattedReviews);
-        setTotalReviews(response.data.pagination?.total || 0);
+        setTotalReviews(response.pagination?.total || 0);
       } else {
         setReviews([]);
         setTotalReviews(0);
@@ -239,6 +240,8 @@ const ReviewPage = () => {
           onPageChange={handlePageChange}
           onStatusClick={handleStatusClick}
           loading={loading}
+          isDark={isDark}
+
         />
 
         {/* Review Status Modal */}
@@ -250,6 +253,8 @@ const ReviewPage = () => {
           }}
           review={selectedReview}
           onSubmit={handleModalSubmit}
+          isDark={isDark}
+
         />
       </div>
     </div>

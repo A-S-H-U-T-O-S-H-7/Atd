@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download, Mail } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import OverdueApplicantTable from "./OverdueApplicantListTable";
 import { exportToExcel } from "@/components/utils/exportutil";
@@ -10,11 +9,13 @@ import AdjustmentModal from "../AdjustmentModal";
 import OverdueAmountModal from "../OverdueAmountModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Main Overdue Applicant Management Component
 const OverdueApplicantList = () => {
-  const { isDark } = useAdminAuth();
-const [searchField, setSearchField] = useState("");
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+ const [searchField, setSearchField] = useState("");
 const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);

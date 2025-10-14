@@ -1,17 +1,18 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download, Calendar, FileText, Building2 } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import DateRangeFilter from "../DateRangeFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import BusinessLoan5lTable from "./BusinessLoan5lTable";
 import BusinessCallModal from "./BusinessCallModal";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const BusinessLoanEnquiry5lPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });

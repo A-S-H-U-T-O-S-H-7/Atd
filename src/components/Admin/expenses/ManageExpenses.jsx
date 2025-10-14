@@ -1,14 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import ExpensesTable from "./ExpensesTable";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 
 const ManageExpensesPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [yearFilter, setYearFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("all");

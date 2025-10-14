@@ -1,11 +1,7 @@
 import React from "react";
 import { Star, Calendar, Phone, Mail } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 
-const ReviewRow = ({ review, index, onStatusClick }) => {
-  const { isDark } = useAdminAuth();
-  
-
+const ReviewRow = ({ review, index, onStatusClick, isDark }) => {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "approved":
@@ -45,31 +41,31 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
 
   return (
     <tr
-      className={`transition-all border  duration-200 ${
+      className={`transition-all border duration-200 ${
         isDark
-          ? "hover:bg-gradient-to-r border-emerald-800 hover:from-gray-700/50 hover:to-emerald-900/20"
-          : "hover:bg-gradient-to-r border-emerald-400 hover:from-emerald-50/50 hover:to-teal-50/50"
+          ? "border-emerald-800 hover:bg-gradient-to-r hover:from-gray-700/50 hover:to-emerald-900/20"
+          : "border-emerald-400 hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/50"
+      } ${
+        index % 2 === 0
+          ? isDark
+            ? "bg-gray-700/80"
+            : "bg-gray-50"
+          : ""
       }`}
     >
       {/* Serial Number */}
-      <td className="px-6 py-5">
-        <span
-          className={`text-sm font-bold ${
-            isDark ? "text-white" : "text-gray-900"
-          }`}
-        >
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <span className={`text-sm font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
           {index}
         </span>
       </td>
 
       {/* Customer */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-4">
           <div
             className={`relative ${
-              isDark
-                ? "ring-2 ring-emerald-500/50"
-                : "ring-2 ring-emerald-400"
+              isDark ? "ring-2 ring-emerald-500/50" : "ring-2 ring-emerald-400"
             } rounded-full p-0.5`}
           >
             <img
@@ -79,18 +75,12 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
             />
             <div
               className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 ${
-                isDark
-                  ? "bg-emerald-500 border-gray-800"
-                  : "bg-emerald-400 border-white"
+                isDark ? "bg-emerald-500 border-gray-800" : "bg-emerald-400 border-white"
               }`}
             />
           </div>
           <div className="min-w-0 flex-1">
-            <div
-              className={`text-sm font-semibold ${
-                isDark ? "text-white" : "text-gray-900"
-              }`}
-            >
+            <div className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
               {review.name}
             </div>
           </div>
@@ -98,49 +88,25 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
       </td>
 
       {/* Contact */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="space-y-2">
-          <div
-            className={`flex items-center space-x-3 text-sm font-medium ${
-              isDark ? "text-white" : "text-gray-900"
-            }`}
-          >
-            <div
-              className={`p-1.5 rounded-lg ${
-                isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-              }`}
-            >
-              <Phone
-                className={`w-3.5 h-3.5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`}
-              />
+          <div className={`flex items-center space-x-3 text-sm font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+            <div className={`p-1.5 rounded-lg ${isDark ? "bg-emerald-900/50" : "bg-emerald-100"}`}>
+              <Phone className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
             </div>
             <span>{review.phone}</span>
           </div>
-          <div
-            className={`flex items-center space-x-3 text-sm ${
-              isDark ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            <div
-              className={`p-1.5 rounded-lg ${
-                isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-              }`}
-            >
-              <Mail
-                className={`w-3.5 h-3.5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`}
-              />
+          <div className={`flex items-center space-x-3 text-sm font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+            <div className={`p-1.5 rounded-lg ${isDark ? "bg-emerald-900/50" : "bg-emerald-100"}`}>
+              <Mail className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
             </div>
-            <span className="break-all font-medium">{review.email}</span>
+            <span className="break-all">{review.email}</span>
           </div>
         </div>
       </td>
 
       {/* CRN Number */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`px-4 py-2 text-sm font-bold rounded-md border-2 ${
             isDark
@@ -153,27 +119,21 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
       </td>
 
       {/* Review */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="max-w-sm">
-          <p
-            className={`text-sm leading-relaxed ${
-              isDark ? "text-gray-200" : "text-gray-800"
-            }`}
-          >
+          <p className={`text-sm leading-relaxed ${isDark ? "text-gray-200" : "text-gray-800"}`}>
             {review.review}
           </p>
         </div>
       </td>
 
       {/* Rating */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
           <div className="flex space-x-1">{renderStars(review.rating)}</div>
           <span
             className={`text-sm font-bold px-2 py-1 rounded-lg ${
-              isDark
-                ? "text-yellow-300 bg-yellow-900/30"
-                : "text-yellow-700 bg-yellow-100"
+              isDark ? "text-yellow-300 bg-yellow-900/30" : "text-yellow-700 bg-yellow-100"
             }`}
           >
             {review.rating}.0
@@ -182,7 +142,7 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
       </td>
 
       {/* Status */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onStatusClick(review)}
           className={`px-4 py-2 text-xs font-bold rounded-md cursor-pointer capitalize transition-all duration-200 hover:shadow-lg hover:scale-105 border-2 ${getStatusColor(
@@ -194,20 +154,16 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
       </td>
 
       {/* Reply */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="max-w-sm">
-          <p
-            className={`text-sm leading-relaxed ${
-              isDark ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
+          <p className={`text-sm leading-relaxed ${isDark ? "text-gray-200" : "text-gray-800"}`}>
             {review.reply || "No reply yet"}
           </p>
         </div>
       </td>
 
       {/* Approved By */}
-      <td className="px-6 py-5">
+      <td className={`px-6 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-medium px-3 py-1 rounded-lg ${
             review.approvedBy
@@ -224,22 +180,10 @@ const ReviewRow = ({ review, index, onStatusClick }) => {
       </td>
 
       {/* Date */}
-      <td className="px-6 py-5">
-        <div
-          className={`flex items-center space-x-2 text-sm font-medium ${
-            isDark ? "text-gray-300" : "text-gray-600"
-          }`}
-        >
-          <div
-            className={`p-1.5 rounded-lg ${
-              isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-            }`}
-          >
-            <Calendar
-              className={`w-3.5 h-3.5 ${
-                isDark ? "text-emerald-400" : "text-emerald-600"
-              }`}
-            />
+      <td className={`px-6 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className={`flex items-center space-x-2 text-sm font-medium`}>
+          <div className={`p-1.5 rounded-lg ${isDark ? "bg-emerald-900/50" : "bg-emerald-100"}`}>
+            <Calendar className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
           </div>
           <span>{review.date}</span>
         </div>

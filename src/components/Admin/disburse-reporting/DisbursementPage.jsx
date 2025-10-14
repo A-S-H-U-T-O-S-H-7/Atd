@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download, Calendar, Search, Filter } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DisbursementTable from "./DisbursementTable";
 import BankDateFilter from "../BankDateFilter";
@@ -12,11 +11,13 @@ import TransactionDetailsModal from "./TransationDetailsModal";
 import DisburseStatusModal from "./DisburseStatus";
 import { useRouter } from "next/navigation";
 import TransferModal from "./TransferModal";
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"; 
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 
 const DisbursementPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+    const isDark = theme === "dark";
   const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });

@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import ClientHistoryTable from "./ClientHistoryTable";
 import ClientViewModal from "./ClientViewModal";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ClientHistoryPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);

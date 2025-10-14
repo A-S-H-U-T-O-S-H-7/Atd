@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowLeft, Download, Calendar, FileText, Smartphone } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { ArrowLeft, Download } from "lucide-react";
 import DownloadedAppTable from "./DownloadAppTable";
 import DateRangeFilter from "../DateRangeFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const DownloadedAppPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState({ start: "", end: "" });

@@ -1,16 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import PaymentReceiptTable from "./PaymentReceiptTable";
 import PaymentUpdateModal from "./PaymentUpdateModal";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Main Payment Receipt Management Component
 const PaymentReceiptPage = () => {
-  const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);

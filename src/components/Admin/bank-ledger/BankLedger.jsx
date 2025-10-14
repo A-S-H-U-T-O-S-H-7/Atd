@@ -1,14 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import BankLedgerTable from "./BankLedgerTable";
 import BankLedgerFilters from "./BankLedgerFilter";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const BankLedgerPage = () => {
-  const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     selectedBank: "",
     dateFrom: "",

@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ManageChequeDepositPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('id');
   const isEdit = !!editId;

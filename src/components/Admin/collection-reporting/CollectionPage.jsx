@@ -1,16 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download, Calendar, FileText } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import CollectionTable from "./CollectionTable";
 import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 
 const CollectionPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+ const isDark = theme === "dark";
   const [currentPage, setCurrentPage] = useState(1);
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");

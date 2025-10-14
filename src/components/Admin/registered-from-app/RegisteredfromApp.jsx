@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import RegisteredAppTable from "./RegisteredAppTable";
 import DateFilter from "../AgentDateFilter";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const RegisteredFromAppPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadDateSearch, setDownloadDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");

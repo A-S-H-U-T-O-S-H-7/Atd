@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { mockApplicationsData } from "@/lib/MockApplicationData";
@@ -9,9 +8,11 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import CompletedTable from "./CompletedTable";
 import CallDetailsModal from "../CallDetailsModal";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const CompletedApplication = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { ArrowLeft, Check, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAdminAuth } from '@/lib/AdminAuthContext';
-import { eligibilityAPI, formatEligibilityForUI, formatRejectionStatusForUI } from '@/lib/api';
+import { eligibilityAPI, formatEligibilityForUI, formatRejectionStatusForUI } from '@/lib/services/EligibilityServices';
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 // Toast Component
 const Toast = ({ message, type, onClose }) => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+    const isDark = theme === "dark";
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,7 +46,8 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 const LoanEligibility = ({ enquiry, onBack }) => {
-  const { isDark } = useAdminAuth();
+const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedRejectionId, setSelectedRejectionId] = useState('');
   const [rejectionReasons, setRejectionReasons] = useState([]);
@@ -73,8 +75,8 @@ const LoanEligibility = ({ enquiry, onBack }) => {
         // Fetch eligibility data
         const eligibilityResponse = await eligibilityAPI.getEligibilityData(enquiry.id);
         
-        if (eligibilityResponse.data.success) {
-          const formattedData = formatEligibilityForUI(eligibilityResponse.data);
+        if (eligibilityResponse.success) {
+          const formattedData = formatEligibilityForUI(eligibilityResponse);
           setEligibilityData(formattedData);
         } else {
           showToast('Failed to load eligibility data', 'error');
@@ -83,8 +85,8 @@ const LoanEligibility = ({ enquiry, onBack }) => {
         // Fetch rejection reasons
         const rejectionResponse = await eligibilityAPI.getRejectionStatuses();
         
-        if (rejectionResponse.data.success) {
-          const formattedReasons = formatRejectionStatusForUI(rejectionResponse.data);
+        if (rejectionResponse.success) {
+          const formattedReasons = formatRejectionStatusForUI(rejectionResponse);
           setRejectionReasons(formattedReasons);
         } else {
           showToast('Failed to load rejection reasons', 'error');
@@ -131,15 +133,30 @@ const LoanEligibility = ({ enquiry, onBack }) => {
   const handleApprove = async (values) => {
     try {
       setSubmitting(true);
+
+       const approvedAmount = parseFloat(values.finalRecommended);
+        const maxLimit = parseFloat(values.maximumLimit);
+        
+        if (isNaN(approvedAmount) || isNaN(maxLimit)) {
+            showToast('Please enter valid numbers', 'error');
+            setSubmitting(false);
+            return;
+        }
+        
+        if (approvedAmount <= 0 || maxLimit <= 0) {
+            showToast('Amounts must be greater than 0', 'error');
+            setSubmitting(false);
+            return;
+        }
       
       const response = await eligibilityAPI.updateEligibility({
         id: eligibilityData.id,
-        approved_amount: parseFloat(values.finalRecommended),
-        max_limit: parseFloat(values.maximumLimit)
+        approved_amount: approvedAmount,
+        max_limit: maxLimit
       });
 
-      if (response.data.success) {
-        showToast('Loan application approved successfully!', 'success');
+      if (response.success) {
+    showToast(response.message || 'Loan application approved successfully!', 'success');
         setTimeout(() => {
           onBack();
         }, 1000);
@@ -147,7 +164,7 @@ const LoanEligibility = ({ enquiry, onBack }) => {
         setSubmitting(false); 
       }
     } catch (error) {
-      showToast('Failed to approve loan application', 'error');
+    showToast(response.message || 'Approval failed', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +185,7 @@ const LoanEligibility = ({ enquiry, onBack }) => {
         remark: selectedReason.reason
       });
 
-      if (response.data.success) {
+      if (response.success) {
         showToast('Loan application rejected successfully!', 'success');
         setShowRejectModal(false);
         setTimeout(() => {

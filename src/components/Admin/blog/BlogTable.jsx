@@ -1,6 +1,7 @@
 import React from "react";
 import Pagination from "../Pagination";
 import BlogTableRow from "./BlogTableRow";
+import { ClimbingBoxLoader } from "react-spinners";
 
 const BlogTable = ({
   blogs,
@@ -15,6 +16,7 @@ const BlogTable = ({
   onDelete,
   onPageChange
 }) => {
+  console.log(isDark);
   return (
     <div
       className={`rounded-2xl shadow-2xl border-2 overflow-hidden transition-opacity duration-200 ${

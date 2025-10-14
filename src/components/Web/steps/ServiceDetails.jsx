@@ -55,7 +55,7 @@ function ServiceDetails() {
           officephone: values.officePhone,
           hrname: values.hrName,
           hrphone: parseInt(values.hrPhone, 10),
-          website: values.website,
+          website: values.website, 
           hremail: values.hrEmail,
           designation: values.designation,
           worksince_mm: values.workingSince.month,

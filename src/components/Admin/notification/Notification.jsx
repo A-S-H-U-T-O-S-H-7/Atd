@@ -1,14 +1,15 @@
 'use client';
 import React, { useState } from 'react';
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { ArrowLeft, Send, Bell } from 'lucide-react';
 import FormFields from './FormFields';
 import RichTextEditor from '../RichTextEditor';
 import { useRouter } from 'next/navigation';
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 const NotificationPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter()
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter()
   const [customerType, setCustomerType] = useState('custom');
   const [emails, setEmails] = useState('');
   const [subject, setSubject] = useState('');

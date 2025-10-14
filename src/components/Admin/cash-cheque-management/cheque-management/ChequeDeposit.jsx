@@ -1,14 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../../SearchBar";
 import ChequeDepositTable from "./ChequeDepositTable";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ChequeDepositPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

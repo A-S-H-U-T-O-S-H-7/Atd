@@ -1,16 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, MessageSquare } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import HelpTicketTable from "./HelpTicketTable";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import ReplyModal from "./ReplyModal";
 import SummaryModal from "./SummaryModal";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const HelpTicketPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);

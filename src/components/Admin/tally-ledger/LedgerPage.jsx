@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download, Calendar } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import LedgerTable from "./LedgerTable";
 import DateFilter from "../AgentDateFilter";
@@ -9,10 +8,12 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import CallDetailsModal from "../CallDetailsModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const LedgerPage = () => {
-  const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");

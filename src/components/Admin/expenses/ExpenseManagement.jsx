@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, X, Calendar, IndianRupee } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ExpenseManagement = () => {
-  const { isDark } = useAdminAuth();
-  const [isEdit] = useState(false); // This would come from URL params in real app
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [isEdit] = useState(false); // This would come from URL params in real app
 
   const [formData, setFormData] = useState({
     month: "",

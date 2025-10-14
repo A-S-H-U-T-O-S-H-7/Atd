@@ -1,5 +1,5 @@
 "use client";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 import { Mail, Users } from "lucide-react";
 
 export default function FormFields({
@@ -10,8 +10,8 @@ export default function FormFields({
   subject,
   setSubject
 }) {
-  const { isDark } = useAdminAuth();
-
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
   return (
     <div className="grid gap-6">
       {/* Customer Type */}

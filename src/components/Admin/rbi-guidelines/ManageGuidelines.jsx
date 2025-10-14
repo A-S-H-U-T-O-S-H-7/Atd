@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Edit } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import GuidelineFormFields from './GuidelineFormFields';
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import Swal from "sweetalert2";
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 const ManageGuidelinePage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const searchParams = useSearchParams();
   const guidelineId = searchParams.get('id');
   const isEditMode = Boolean(guidelineId);

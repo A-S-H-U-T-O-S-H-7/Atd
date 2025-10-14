@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { useAdminAuth } from '@/lib/AdminAuthContext'
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 const AdvancedSearchBar = ({ 
   searchOptions = [],
@@ -9,7 +9,8 @@ const AdvancedSearchBar = ({
   className = "",
   defaultSearchField
 }) => {
-  const { isDark } = useAdminAuth();
+ const { theme } = useThemeStore();
+   const isDark = theme === "dark";
   const [selectedField, setSelectedField] = useState(defaultSearchField || searchOptions[0]?.value || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

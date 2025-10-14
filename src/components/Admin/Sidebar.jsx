@@ -2,145 +2,150 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FiMenu, FiX,  FiChevronRight } from 'react-icons/fi';
-import { FaHome, FaSms ,FaFileExport, FaMoneyCheckAlt,FaBook,FaHandHoldingUsd,FaMobileAlt,
-  FaEnvelopeOpenText,FaHourglassHalf,FaBriefcase} from 'react-icons/fa';
-import { MdReviews, MdReportProblem,MdOutlineAccessTimeFilled,MdFlashAuto, MdOutlineQrCode2,
-  MdAssignmentTurnedIn,MdCreditScore,MdPendingActions,MdDoneAll,MdCancel,MdBlockFlipped,MdMenuBook,
-  MdDownload,MdSupportAgent,MdAttachMoney,MdOutlineHistoryEdu
- } from "react-icons/md";
+import { FiMenu, FiX, FiChevronRight } from 'react-icons/fi';
+import {
+  FaHome, FaSms, FaFileExport, FaMoneyCheckAlt, FaBook, FaHandHoldingUsd, FaMobileAlt,
+  FaEnvelopeOpenText, FaHourglassHalf, FaBriefcase
+} from 'react-icons/fa';
+import {
+  MdReviews, MdReportProblem, MdOutlineAccessTimeFilled, MdFlashAuto, MdOutlineQrCode2,
+  MdAssignmentTurnedIn, MdCreditScore, MdPendingActions, MdDoneAll, MdCancel, MdBlockFlipped, MdMenuBook,
+  MdDownload, MdSupportAgent, MdAttachMoney, MdOutlineHistoryEdu
+} from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
 import { RiAccountPinBoxFill } from "react-icons/ri";
 import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
-import { Scale, BanknoteArrowUp, ChartNoAxesCombined,Codesandbox,Boxes, 
-  ReceiptIndianRupee , BadgeCheck, Stamp,UserLock, } from "lucide-react";
+import {
+  Scale, BanknoteArrowUp, ChartNoAxesCombined, Codesandbox, Boxes,
+  ReceiptIndianRupee, BadgeCheck, Stamp, UserLock,
+} from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
-import { GiExpense, GiWallet,GiMoneyStack  } from "react-icons/gi";
+import { GiExpense, GiWallet, GiMoneyStack } from "react-icons/gi";
 import { TbMessageCircleFilled } from "react-icons/tb";
 import { FaHourglassEnd } from "react-icons/fa6";
 import { BsCreditCard2FrontFill } from "react-icons/bs";
 import { LuFileOutput } from "react-icons/lu";
 import { BiSpreadsheet } from "react-icons/bi";
-
-
-
-import { useAdminAuth } from '@/lib/AdminAuthContext';
+import { useAdminAuthStore } from '@/lib/store/authAdminStore'
+import { useThemeStore } from '@/lib/store/useThemeStore'
 
 const menuList = [
   { name: 'Dashboard', link: '/crm/dashboard', icon: <FaHome /> },
   {
     name: 'Manage Enquiries',
-    icon: <Codesandbox />    ,
+    icon: <Codesandbox />,
     isDropdown: true,
     subItems: [
-      { name: 'Manage Application', link: '/crm/manage-application', icon: <Boxes size={16} />},
-      { name: 'Disburse Application', link: '/crm/disburse-application', icon: <MdAssignmentTurnedIn />},
-      { name: 'Credit Approval', link: '/crm/credit-approval', icon: <MdCreditScore />},
-      { name: 'Sanction Application', link: '/crm/sanction-application', icon: <Stamp />},
-      { name: 'Inprocess Application', link: '/crm/inprogress-application', icon: <MdPendingActions />},
-      { name: 'Followup Application', link: '/crm/followup-application', icon: <FaEnvelopeOpenText/>},
-      { name: 'Completed Application', link: '/crm/completed-application', icon: <MdDoneAll />},
-      { name: 'Pending Appliaction', link: '/crm/pending-application', icon: <FaHourglassHalf />},
-      { name: 'Rejected Appliaction', link: '/crm/rejected-application', icon: <MdCancel />},
-      { name: 'Cancelled Appliaction', link: '/crm/cancelled-application', icon: <MdBlockFlipped />},
-      { name: 'Returned Appliaction', link: '/crm/returned-application', icon: <LuFileOutput />},
-      { name: 'Closed By Admin Appliaction', link: '/crm/closedbyadmin-application', icon: <UserLock />},
-      
+      { name: 'Manage Application', link: '/crm/manage-application', icon: <Boxes size={16} /> },
+      { name: 'Disburse Application', link: '/crm/disburse-application', icon: <MdAssignmentTurnedIn /> },
+      { name: 'Credit Approval', link: '/crm/credit-approval', icon: <MdCreditScore /> },
+      { name: 'Sanction Application', link: '/crm/sanction-application', icon: <Stamp /> },
+      { name: 'Inprocess Application', link: '/crm/inprogress-application', icon: <MdPendingActions /> },
+      { name: 'Followup Application', link: '/crm/followup-application', icon: <FaEnvelopeOpenText /> },
+      { name: 'Completed Application', link: '/crm/completed-application', icon: <MdDoneAll /> },
+      { name: 'Pending Appliaction', link: '/crm/pending-application', icon: <FaHourglassHalf /> },
+      { name: 'Rejected Appliaction', link: '/crm/rejected-application', icon: <MdCancel /> },
+      { name: 'Cancelled Appliaction', link: '/crm/cancelled-application', icon: <MdBlockFlipped /> },
+      { name: 'Returned Appliaction', link: '/crm/returned-application', icon: <LuFileOutput /> },
+      { name: 'Closed By Admin Appliaction', link: '/crm/closedbyadmin-application', icon: <UserLock /> },
+
 
 
     ]
   },
-  
-  { name: 'All Enquiries', link: '/crm/all-enquiries', icon: <TbMessageCircleFilled />  },
-  { name: 'Disburse Reporting', link: '/crm/disburse-reporting', icon: <FaHandHoldingUsd />  },
-  { name: 'Collection Reporting', link: '/crm/collection-reporting', icon: <GiWallet />  },
+
+  { name: 'All Enquiries', link: '/crm/all-enquiries', icon: <TbMessageCircleFilled /> },
+  { name: 'Disburse Reporting', link: '/crm/disburse-reporting', icon: <FaHandHoldingUsd /> },
+  { name: 'Collection Reporting', link: '/crm/collection-reporting', icon: <GiWallet /> },
   {
     name: 'Auto Collection',
-    icon: <MdFlashAuto />    ,
+    icon: <MdFlashAuto />,
     isDropdown: true,
     subItems: [
-      { name: 'E-Collection', link: '/crm/e-collection', icon: <BsCreditCard2FrontFill />},
+      { name: 'E-Collection', link: '/crm/e-collection', icon: <BsCreditCard2FrontFill /> },
       { name: 'UPI Collection', link: '/crm/upi-collection', icon: <MdOutlineQrCode2 /> },
     ]
   },
-    { name: 'Ledger', link: '/crm/ledger', icon: <BiSpreadsheet />},
-    { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
-    { name: 'Cibil Report', link: '/crm/cibil-report', icon: <BadgeCheck /> },
-    { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook />  },
-    { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport />},
-    { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd />  },
-    { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled />  },
-    { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },   
-    {
+  { name: 'Ledger', link: '/crm/ledger', icon: <BiSpreadsheet /> },
+  { name: 'Bank Ledger', link: '/crm/bank-ledger', icon: < BsBank2 /> },
+  { name: 'Cibil Report', link: '/crm/cibil-report', icon: <BadgeCheck /> },
+  { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook /> },
+  { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport /> },
+  { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd /> },
+  { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled /> },
+  { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },
+  {
     name: 'Profit/Loss Deposit',
-    icon: <IoBarChart />    ,
+    icon: <IoBarChart />,
     isDropdown: true,
     subItems: [
-      { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense />      },
+      { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense /> },
       { name: 'Track Profit/Loss', link: '/crm/profit-loss', icon: <ChartNoAxesCombined size={16} /> },
     ]
   },
-    { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack />  },
+  { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack /> },
 
   {
     name: 'Cash/Cheque Deposit',
-    icon: <FaMoneyCheckAlt />    ,
+    icon: <FaMoneyCheckAlt />,
     isDropdown: true,
     subItems: [
-      { name: 'Cheque Management', link: '/crm/cheque-management', icon: <BanknoteArrowUp size={16} />},
+      { name: 'Cheque Management', link: '/crm/cheque-management', icon: <BanknoteArrowUp size={16} /> },
       { name: 'Cash Management', link: '/crm/cash-management', icon: <IoMdCash /> },
     ]
   },
-    { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
-{
+  { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },
+  {
     name: 'Complaints',
-    icon: <MdReportProblem />    ,
+    icon: <MdReportProblem />,
     isDropdown: true,
     subItems: [
       { name: 'Add Complaints', link: '/crm/complaints/add-complaint', icon: <BiPlus /> },
       { name: 'Manage Complaints', link: '/crm/complaints/manage-complaints', icon: <BiCog /> },
     ]
   },
-    { name: 'RBI Guidelines Management', link: '/crm/rbi-guidelines', icon: <MdMenuBook />  },
-    { name: 'Client History', link: '/crm/client-history', icon: < MdOutlineHistoryEdu /> },
-    { name: 'Registered From App', link: '/crm/registered-from-app', icon: <FaMobileAlt />  },
-    { name: 'Download App', link: '/crm/download-app', icon: <MdDownload />  },
-    { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
+  { name: 'RBI Guidelines Management', link: '/crm/rbi-guidelines', icon: <MdMenuBook /> },
+  { name: 'Client History', link: '/crm/client-history', icon: < MdOutlineHistoryEdu /> },
+  { name: 'Registered From App', link: '/crm/registered-from-app', icon: <FaMobileAlt /> },
+  { name: 'Download App', link: '/crm/download-app', icon: <MdDownload /> },
+  { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
   { name: 'References', link: '/crm/references', icon: <VscReferences /> },
-   {
+  {
     name: 'Business Loan Enquiry',
-    icon: <FaMoneyCheckAlt />    ,
+    icon: <FaMoneyCheckAlt />,
     isDropdown: true,
     subItems: [
-      { name: 'Upto 5 lacs', link: '/crm/businessloan-upto-5l', icon: <FaBriefcase/>},
+      { name: 'Upto 5 lacs', link: '/crm/businessloan-upto-5l', icon: <FaBriefcase /> },
       { name: 'Between 5L-1.5cr', link: '/crm/businessloan-above-5l', icon: <MdAttachMoney /> },
     ]
   },
 
-    { name: 'Help Ticket', link: '/crm/help-ticket', icon: <MdSupportAgent />  },
-      { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
-        { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
-          { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
+  { name: 'Help Ticket', link: '/crm/help-ticket', icon: <MdSupportAgent /> },
+  { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
+  { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
+  { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
 
   { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
 
 
 
-  
-  
- 
-  
-  
-  
-  
+
+
+
+
+
+
+
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isDark } = useAdminAuth();
+  const { theme, } = useThemeStore();
+  const { isAuthenticated, loading } = useAdminAuthStore();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -182,18 +187,17 @@ export default function Sidebar() {
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className={`fixed top-3 left-4 z-[50] lg:hidden p-3 rounded-xl shadow-lg transition-all duration-300 ${
-          isDark 
-            ? 'bg-gray-800/90 hover:bg-gray-700/90 text-emerald-400 border border-gray-600' 
-            : 'bg-white/90 hover:bg-emerald-50/90 text-emerald-600 border border-emerald-200'
-        } backdrop-blur-sm`}
+        className={`fixed top-3 left-4 z-[50] lg:hidden p-3 rounded-xl shadow-lg transition-all duration-300 ${theme === "dark"
+          ? 'bg-gray-800/90 hover:bg-gray-700/90 text-emerald-400 border border-gray-600'
+          : 'bg-white/90 hover:bg-emerald-50/90 text-emerald-600 border border-emerald-200'
+          } backdrop-blur-sm`}
       >
         {isMobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
       </button>
 
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsMobileOpen(false)}
         />
@@ -201,24 +205,20 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full shadow-xl z-50 transition-all duration-300 ease-in-out ${
-          isDark 
-            ? 'bg-gray-900/95 text-white border-r border-gray-700' 
-            : 'bg-white/98 text-gray-900 border-r border-emerald-200'
-        } backdrop-blur-md ${
-          isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
-        } lg:translate-x-0 ${
-          isExpanded ? 'lg:w-74' : 'lg:w-20'
-        } flex flex-col overflow-hidden`}
+        className={`fixed top-0 left-0 h-full shadow-xl z-50 transition-all duration-300 ease-in-out ${theme === "dark"
+          ? 'bg-gray-900/95 text-white border-r border-gray-700'
+          : 'bg-white/98 text-gray-900 border-r border-emerald-200'
+          } backdrop-blur-md ${isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
+          } lg:translate-x-0 ${isExpanded ? 'lg:w-74' : 'lg:w-20'
+          } flex flex-col overflow-hidden`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
       >
         {/* Logo Section */}
-        <div className={`flex items-center justify-between px-4 py-6 border-b transition-all duration-200 ${
-          isDark ? 'border-gray-700' : 'border-emerald-100'
-        }`}>
-          <Link 
-            href="/crm/dashboard" 
+        <div className={`flex items-center justify-between px-4 py-6 border-b transition-all duration-200 ${theme === "dark" ? 'border-gray-700' : 'border-emerald-100'
+          }`}>
+          <Link
+            href="/crm/dashboard"
             className="flex items-center hover:opacity-80 transition-opacity duration-200"
             onClick={() => setIsMobileOpen(false)}
           >
@@ -226,20 +226,19 @@ export default function Sidebar() {
             {(isExpanded || isMobileOpen) && (
               <div className="ml-3 overflow-hidden">
                 <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent">
-                  ATD 
+                  ATD
                 </span>
               </div>
             )}
           </Link>
-          
+
           {isMobileOpen && (
             <button
               onClick={() => setIsMobileOpen(false)}
-              className={`lg:hidden p-2 rounded-lg transition-colors duration-200 ${
-                isDark 
-                  ? 'hover:bg-gray-700 text-gray-400 hover:text-white' 
-                  : 'hover:bg-emerald-50 text-gray-600 hover:text-emerald-600'
-              }`}
+              className={`lg:hidden p-2 rounded-lg transition-colors duration-200 ${theme === "dark"
+                ? 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                : 'hover:bg-emerald-50 text-gray-600 hover:text-emerald-600'
+                }`}
             >
               <FiX size={20} />
             </button>
@@ -255,22 +254,20 @@ export default function Sidebar() {
                 {item.isDropdown ? (
                   <button
                     onClick={() => toggleDropdown(item.name)}
-                    className={`group cursor-pointer flex items-center justify-between w-full gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                      isParentActive(item.subItems)
-                        ? isDark
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg'
-                          : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                        : isDark
+                    className={`group cursor-pointer flex items-center justify-between w-full gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${isParentActive(item.subItems)
+                      ? theme === "dark"
+                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                      : theme === "dark"
                         ? 'hover:bg-gray-800 text-gray-300 hover:text-emerald-400'
                         : 'hover:bg-emerald-50 text-gray-700 hover:text-emerald-600'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`text-xl flex-shrink-0 transition-colors duration-200 ${
-                        isParentActive(item.subItems) 
-                          ? 'text-white' 
-                          : 'group-hover:scale-110'
-                      }`}>
+                      <div className={`text-xl flex-shrink-0 transition-colors duration-200 ${isParentActive(item.subItems)
+                        ? 'text-white'
+                        : 'group-hover:scale-110'
+                        }`}>
                         {item.icon}
                       </div>
                       {(isExpanded || isMobileOpen) && (
@@ -280,9 +277,8 @@ export default function Sidebar() {
                       )}
                     </div>
                     {(isExpanded || isMobileOpen) && (
-                      <div className={`transition-transform duration-200 ${
-                        openDropdowns[item.name] ? 'rotate-90' : ''
-                      }`}>
+                      <div className={`transition-transform duration-200 ${openDropdowns[item.name] ? 'rotate-90' : ''
+                        }`}>
                         <FiChevronRight size={16} />
                       </div>
                     )}
@@ -290,22 +286,20 @@ export default function Sidebar() {
                 ) : (
                   <Link
                     href={item.link}
-                    className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                      pathname === item.link
-                        ? isDark
-                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg'
-                          : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                        : isDark
+                    className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${pathname === item.link
+                      ? theme === "dark"
+                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                      : theme === "dark"
                         ? 'hover:bg-gray-800 text-gray-300 hover:text-emerald-400'
                         : 'hover:bg-emerald-50 text-gray-700 hover:text-emerald-600'
-                    }`}
+                      }`}
                     onClick={() => setIsMobileOpen(false)}
                   >
-                    <div className={`text-xl flex-shrink-0 transition-colors duration-200 ${
-                      pathname === item.link 
-                        ? 'text-white' 
-                        : 'group-hover:scale-110'
-                    }`}>
+                    <div className={`text-xl flex-shrink-0 transition-colors duration-200 ${pathname === item.link
+                      ? 'text-white'
+                      : 'group-hover:scale-110'
+                      }`}>
                       {item.icon}
                     </div>
                     {(isExpanded || isMobileOpen) && (
@@ -323,22 +317,20 @@ export default function Sidebar() {
                       <Link
                         key={subIndex}
                         href={subItem.link}
-                        className={`group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${
-                          pathname === subItem.link
-                            ? isDark
-                              ? 'bg-emerald-600/80 text-white shadow-md'
-                              : 'bg-emerald-500/80 text-white shadow-md'
-                            : isDark
+                        className={`group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${pathname === subItem.link
+                          ? theme === "dark"
+                            ? 'bg-emerald-600/80 text-white shadow-md'
+                            : 'bg-emerald-500/80 text-white shadow-md'
+                          : theme === "dark"
                             ? 'hover:bg-gray-800/80 text-gray-400 hover:text-emerald-300'
                             : 'hover:bg-emerald-50/80 text-gray-600 hover:text-emerald-600'
-                        }`}
+                          }`}
                         onClick={() => setIsMobileOpen(false)}
                       >
-                        <div className={`text-lg flex-shrink-0 transition-colors duration-200 ${
-                          pathname === subItem.link 
-                            ? 'text-white' 
-                            : 'group-hover:scale-110'
-                        }`}>
+                        <div className={`text-lg flex-shrink-0 transition-colors duration-200 ${pathname === subItem.link
+                          ? 'text-white'
+                          : 'group-hover:scale-110'
+                          }`}>
                           {subItem.icon}
                         </div>
                         <span className="whitespace-nowrap">

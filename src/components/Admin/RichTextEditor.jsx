@@ -1,5 +1,5 @@
 "use client";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 import dynamic from "next/dynamic";
 import "suneditor/dist/css/suneditor.min.css";
 
@@ -17,24 +17,24 @@ export default function RichTextEditor({
   error = null,
   required = false
 }) {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
 
   return (
     <div>
       {showLabel &&
         <label
-          className={`block text-sm font-medium mb-2 ${isDark
+          className={`block text-sm font-medium mb-2 ${theme=== "dark"
             ? "text-gray-300"
             : "text-gray-700"}`}
         >
           {label} {required && "*"}
         </label>}
       <div
-        className={`rounded-xl border-2 transition-all duration-200 overflow-hidden ${isDark
+        className={`rounded-xl border-2 transition-all duration-200 overflow-hidden ${theme=== "dark"
           ? "border-emerald-600/50 hover:border-emerald-500"
           : "border-emerald-300 hover:border-emerald-400"} ${error
-          ? "border-red-500"
-          : ""}`}
+            ? "border-red-500"
+            : ""}`}
       >
         <SunEditor
           onChange={onChange}
@@ -59,8 +59,8 @@ export default function RichTextEditor({
             attributesWhitelist: { all: "style" },
             fontSize: [8, 10, 12, 14, 16, 18, 20, 24, 28, 36],
             colorList: [
-              isDark ? "#10b981" : "#059669",
-              isDark ? "#14b8a6" : "#0d9488",
+              theme=== "dark" ? "#10b981" : "#059669",
+              theme=== "dark" ? "#14b8a6" : "#0d9488",
               "#000000",
               "#666666",
               "#888ea8",
@@ -78,11 +78,11 @@ export default function RichTextEditor({
             katex: false
           }}
           setDefaultStyle={`
-            background-color: ${isDark ? "#1f2937" : "#ffffff"};
+            background-color: ${theme=== "dark" ? "#1f2937" : "#ffffff"};
             border-radius: 0.75rem;
             min-height: ${minHeight};
             padding: 1rem;
-            color: ${isDark ? "#f3f4f6" : "#111827"};
+            color: ${theme=== "dark" ? "#f3f4f6" : "#111827"};
             border: none;
           `}
         />

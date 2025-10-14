@@ -1,17 +1,18 @@
 "use client";
 import React, { useState } from "react";
 import { AlertCircle, ArrowLeft, CheckCircle, CreditCard, Download, Scale } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import LegalTable from "./LegalTable";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
 import CreateNoticeModal from "./CreateNoticeModal";
 import CreateCriminalCaseModal from "./CriminalCaseModal";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Main Legal Management Component
 const LegalPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+ const isDark = theme === "dark";
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();

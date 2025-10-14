@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Plus, } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import CashTable from "./CashTable";
 import CashDepositModal from "./CashDepositModal";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Main Cash Management Component
 const CashManagementPage = () => {
-  const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [currentPage, setCurrentPage] = useState(1);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState(null);
   const router = useRouter();

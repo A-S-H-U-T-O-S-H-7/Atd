@@ -16,12 +16,14 @@ const EnquiriesTable = ({
   onFileView,
   onLoanEligibilityClick,
   onVerifyClick,
-  onCheckClick
+  onCheckClick,
+  
+  
 }) => {
   // Common header style
-  const headerStyle = `px-6 py-5 text-left text-sm font-bold ${
-    isDark ? "text-gray-100" : "text-gray-700"
-  }`;
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`;
 
   const tableHeaders = [
     { label: "SR. No.", width: "80px" },
@@ -92,7 +94,7 @@ const EnquiriesTable = ({
               {paginatedEnquiries.map((enquiry, index) => (
                 <EnquiriesRow
                   key={enquiry.id}
-                  enquiry={enquiry}
+                  enquiry={enquiry} 
                   index={index}
                   isDark={isDark}
                   onUploadClick={onUploadClick}
@@ -101,6 +103,7 @@ const EnquiriesTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}
                   onVerifyClick={onVerifyClick}
                   onCheckClick={onCheckClick}
+                 
                 />
               ))}
             </tbody>

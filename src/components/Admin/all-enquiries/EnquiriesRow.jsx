@@ -1,10 +1,17 @@
 import React from "react";
-import {
-  Calendar,
-  Clock,
-    X,DocumentIcon
-} from "lucide-react";
-import { IoDocumentAttach } from "react-icons/io5";
+import {Calendar,Clock} from "lucide-react";
+import PhotoDocument from "../documents/PhotoDocument";
+import PanCardDocument from "../documents/PanCardDocument";
+import AddressProofDocument from "../documents/AddressProofDocument";
+import IdProofDocument from "../documents/IdProofDocument";
+import SalaryProofDocument from "../documents/SalaryProofDocument";
+import BankStatementDocument from "../documents/BankStatementDocument";
+import BankVerificationDocument from "../documents/BankVerificationDocument";
+import SocialScoreDocument from "../documents/SocialScoreDocument";
+import CibilScoreDocument from "../documents/CibilScoreDocument";
+import ActionButton from "../action-buttons/ActionButton";
+import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
+import EligibilityButton from "../action-buttons/EligibilityButton";
 
 const EnquiriesRow = ({
   enquiry,
@@ -13,8 +20,22 @@ const EnquiriesRow = ({
   onFileView,
   onLoanEligibilityClick,
   onVerifyClick,
-  onCheckClick
+  onCheckClick,
+
 }) => {
+  // Common cell styles
+  const cellBase = "px-6 py-4 border-r";
+  const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
+  const cellStyle = `${cellBase} ${cellBorder}`;
+  
+  // Text styles
+  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
+  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
+  
+  // Icon styles
+  const iconAccent = `w-4 h-4 ${textAccent}`;
+  
   const getStatusColor = status => {
     switch (status.toLowerCase()) {
       case "pending":
@@ -36,376 +57,317 @@ const EnquiriesRow = ({
     }
   };
 
-  const DocumentIcon = ({ hasDoc, onClick, title, isDisabled }) => (
-    <div className="flex items-center justify-center">
-      {hasDoc ? (
-        <button
-          onClick={onClick}
-          disabled={isDisabled}
-          className={`p-2 rounded-lg transition-colors duration-200 ${
-            isDisabled 
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 cursor-pointer'
-          }`}
-          title={title}
-        >
-          <IoDocumentAttach className="text-lg" />
-        </button>
-      ) : (
-        <div className="p-1 rounded-lg bg-red-100 text-red-600" title="Document Missing">
-          <X size={16} />
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
-        ? "border-emerald-700 hover:bg-gray-700/50"
-        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
-        ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-        : ""}`}
+      className={`border-b transition-all duration-200 hover:shadow-lg ${
+        isDark
+          ? "border-emerald-700 hover:bg-gray-700/50"
+          : "border-emerald-300 hover:bg-emerald-50/50"
+      } ${
+        index % 2 === 0
+          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+          : ""
+      }`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
-        <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+      <td className={cellStyle}>
+        <span className={`font-medium ${textPrimary}`}>
           {enquiry.srNo}
         </span>
       </td>
 
       {/* Enquiry Source */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.enquirySource}
         </span>
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4"> 
-        <span className={`text-sm font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+      <td className={cellStyle}> 
+        <span className={`text-sm font-semibold ${textAccent}`}>
           {enquiry.crnNo}
         </span>
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.accountId}
         </span>
       </td>
 
       {/* Enquiry Date */}
-      <td className="px-6 py-4">
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {enquiry.enquiryDate}
           </span>
         </div>
       </td>
 
       {/* Enquiry Time */}
-      <td className="px-6 py-4">
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Clock className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-          <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+          <Clock className={iconAccent} />
+          <span className={`text-sm ${textSecondary}`}>
             {enquiry.enquiryTime}
           </span>
         </div>
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
-        <span className={`font-medium text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+      <td className={cellStyle}>
+        <span className={`font-medium text-sm ${textPrimary}`}>
           {enquiry.name}
         </span>
       </td>
 
       {/* First Name */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.firstName}
         </span>
       </td>
 
       {/* Last Name */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.lastName}
         </span>
       </td>
 
       {/* Current Address */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.currentAddress}
         </span>
       </td>
 
       {/* Current State */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.currentState}
         </span>
       </td>
 
       {/* Current City */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.currentCity}
         </span>
       </td>
 
       {/* Address */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.address}
         </span>
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.state}
         </span>
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.city}
         </span>
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
-          <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-            {enquiry.phoneNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
+          {enquiry.phoneNo}
+        </span>
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-2">
-          <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-            {enquiry.email}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
+          {enquiry.email}
+        </span>
       </td>
 
       {/* Applied Loan */}
-      <td className="px-6 py-4">
-      <span className="text-sm font-semibold text-green-500  px-1 py-0.5 rounded">₹</span>
+      <td className={cellStyle}>
+        <span className="text-sm font-semibold text-green-500 px-1 py-0.5 rounded">₹</span>
         <span className={`text-sm font-semibold ${isDark ? "text-green-500" : "text-green-700"}`}>
           {enquiry.appliedLoan}
         </span>
       </td>
 
       {/* Loan Amount */}
-      <td className="px-6 py-4">
+      <td className={cellStyle}>
         <div className="flex bg-orange-500 rounded-md p-1 items-center space-x-1">
-          <span className="text-xs  text-white px-1 py-0.5 rounded">₹</span>
-          <span className={`text-sm  font-medium ${isDark ? "text-gray-100" : "text-gray-100"}`}>
+          <span className="text-xs text-white px-1 py-0.5 rounded">₹</span>
+          <span className="text-sm font-medium text-gray-100">
             {enquiry.loanAmount}
           </span>
         </div>
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.roi}
         </span>
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.tenure}
         </span>
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.loanTerm}
         </span>
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <PhotoDocument 
+          fileName={enquiry.selfie} 
           hasDoc={enquiry.hasPhoto}
-          onClick={() => onFileView(enquiry, "photo")}
-          title="View Photo"
+          onFileView={onFileView}
         />
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <PanCardDocument 
+          fileName={enquiry.pan_proof}
           hasDoc={enquiry.hasPanCard}
-          onClick={() => onFileView(enquiry, "pancard")}
-          title="View Pan Card"
+          onFileView={onFileView}
+         
         />
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <AddressProofDocument 
+          fileName={enquiry.address_proof}
           hasDoc={enquiry.hasAddressProof}
-          onClick={() => onFileView(enquiry, "addressproof")}
-          title="View Address Proof"
+          onFileView={onFileView}
+         
         />
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <IdProofDocument 
+          fileName={enquiry.aadhar_proof}
           hasDoc={enquiry.hasIdProof}
-          onClick={() => onFileView(enquiry, "idproof")}
-          title="View ID Proof"
+          onFileView={onFileView}
+         
         />
       </td>
 
       {/* Salary Proof */}
-      <td className="px-6 py-4">
-  <div className="flex space-x-2">
-    <DocumentIcon
-      hasDoc={enquiry.hasSalaryProof}
-      onClick={() => onFileView(enquiry, enquiry.salarySlip1)}
-      title="View First Salary Slip"
-    />
-    <DocumentIcon
-      hasDoc={enquiry.hasSecondSalaryProof}
-      onClick={() => onFileView(enquiry, enquiry.salarySlip2)}
-      title="View Second Salary Slip"
-    />
-    <DocumentIcon
-      hasDoc={enquiry.hasThirdSalaryProof}
-      onClick={() => onFileView(enquiry, enquiry.salarySlip3)}
-      title="View Third Salary Slip"
-    />
-  </div>
-</td>
+      <td className={cellStyle}>
+        <SalaryProofDocument 
+          fileName={enquiry.salary_slip}
+          hasDoc={enquiry.hasSalaryProof}
+          secondFileName={enquiry.second_salary_slip}
+          hasSecondDoc={enquiry.hasSecondSalaryProof}
+          thirdFileName={enquiry.third_salary_slip}
+          hasThirdDoc={enquiry.hasThirdSalaryProof}
+          onFileView={onFileView}
+        />
+      </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <BankStatementDocument 
+          fileName={enquiry.bank_statement}
           hasDoc={enquiry.hasBankStatement}
-          onClick={() => onFileView(enquiry, "bankstatement")}
-          title="View Bank Statement"
+          onFileView={onFileView}
+         
         />
       </td>
 
       {/* Bank Verification Report */}
-      <td className="px-6 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <BankVerificationDocument 
+          fileName={enquiry.bank_verif_report}
           hasDoc={enquiry.hasBankVerificationReport}
-          onClick={() => onFileView(enquiry, "bankverification")}
-          title="View Bank Verification Report"
+          onFileView={onFileView}
+         
         />
       </td>
 
       {/* Social Score Report */}
-      <td className="px-6 py-4">
-        <DocumentIcon 
+      <td className={cellStyle}>
+        <SocialScoreDocument 
+          fileName={enquiry.social_score_report}
           hasDoc={enquiry.hasSocialScoreReport}
-          onClick={() => onFileView(enquiry, "socialscore")}
-          title="View Social Score Report"
+          onFileView={onFileView}
+          
         />
       </td>
 
       {/* CIBIL Score Report */}
-      <td className="px-6 text-blue-600 py-4">
-        <DocumentIcon
+      <td className={cellStyle}>
+        <CibilScoreDocument 
+          fileName={enquiry.cibil_score_report}
           hasDoc={enquiry.hasCibilScoreReport}
-          onClick={() => onFileView(enquiry, "cibilscore")}
-          title="View CIBIL Score Report"
+          onFileView={onFileView}
+          
         />
       </td>
 
       {/* Approval Note */}
-      <td className="px-6 py-4">
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {enquiry.approvalNote}
         </span>
       </td>
 
       {/* Status */}
-      <td className="px-6 py-4">
+      <td className={cellStyle}>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(enquiry.status)}`}>
           {enquiry.status}
         </span>
       </td>
 
       {/* Action */}
-<td className="px-6 py-4">
-  <div className="flex items-center space-x-2">
-    {enquiry.isFinalStage ? (
-      <span className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs">
-        Final Stage
-      </span>
-    ) : (
-      <button
-        onClick={() => onVerifyClick(enquiry)}
-        className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-          isDark
-            ? "bg-blue-800/50 border hover:bg-blue-800 text-blue-200"
-            : "bg-blue-200 border hover:bg-blue-200 text-blue-800"
-        }`}
-      >
-        Verify
-      </button>
-    )}
-  </div>
-</td>
-
-{/* Appraisal Report */}
-<td className="px-6 py-4">
-  {enquiry.finalReportStatus === "Recommended" ? (
-    <button
-      onClick={() => onFileView(enquiry, enquiry.finalReportFile)}
-      className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs"
-    >
-      View PDF
-    </button>
-  ) : enquiry.isFinalStage ? (
-    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-      Locked
-    </span>
-  ) : (
-    <button
-      onClick={() => onCheckClick(enquiry)}
-      className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-        isDark
-          ? "bg-pink-900/50 border hover:bg-pink-800 text-pink-300"
-          : "bg-pink-100 border hover:bg-pink-200 text-pink-700"
-      }`}
-    >
-      Check
-    </button>
-  )}
-</td>
-
-      {/* Eligibility */}
-      <td className="px-6 py-4">
-      <button
-      onClick={() => onLoanEligibilityClick(enquiry)}
-
-            className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-              isDark
-                ? "bg-teal-900/50 border hover:bg-teal-800 text-teal-300"
-                : "bg-teal-100 border hover:bg-teal-200 text-teal-700"
-            }`}
-          >
-            Eligibility
-          </button>
+      <td className={cellStyle}>
+        <div className="flex items-center space-x-2">
+          <ActionButton 
+            enquiry={enquiry}
+            isDark={isDark}
+            onVerifyClick={onVerifyClick}
+          />
+        </div>
       </td>
-      
+
+      {/* Appraisal Report */}
+      <td className={cellStyle}>
+        <AppraisalReportButton 
+          enquiry={enquiry}
+          isDark={isDark}
+          onFileView={onFileView}
+          onCheckClick={onCheckClick}
+        />
+      </td>
+
+      {/* Eligibility - Last column, no border-r */}
+      <td className={cellBase}>
+        <EligibilityButton 
+          enquiry={enquiry}
+          isDark={isDark}
+          onLoanEligibilityClick={onLoanEligibilityClick}
+        />
+      </td>
     </tr>
   );
 };

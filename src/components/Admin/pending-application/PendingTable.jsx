@@ -14,13 +14,13 @@ const PendingTable = ({
   onFileView,
   onActionClick,
   onLoanEligibilityClick,  
-   onCheckClick,
-   onCall
-   
+   onCheckClick, 
+   onCall,
+   onSendMail,
 }) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold ${
-    isDark ? "text-gray-100" : "text-gray-700"
+    const headerStyle = `px-6 py-5 text-left text-sm font-bold  border-r ${
+isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
   }`;
 
   // Table headers configuration with their respective widths
@@ -28,7 +28,7 @@ const PendingTable = ({
     { label: "SR. No", width: "100px" },
     { label: "Call", width: "100px" },
     { label: "Enquiry Source", width: "140px" },
-    { label: "Send Mail", width: "140px" },
+    { label: "Send Mail", width: "160px" },
 
 
     { label: "CRN No.", width: "140px" },
@@ -62,11 +62,11 @@ const PendingTable = ({
     { label: "Cibil Score Report", width: "160px" },
     { label: "Approval Note", width: "180px" },
     
-    { label: "Status", width: "120px" },
+    { label: "Status", width: "130px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
-    { label: "Link", width: "160px" },
+    // { label: "Link", width: "160px" },
 
   ];
 
@@ -108,6 +108,7 @@ const PendingTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onCall={onCall}
+                  onSendMail={onSendMail}
                   />
               ))}
             </tbody>

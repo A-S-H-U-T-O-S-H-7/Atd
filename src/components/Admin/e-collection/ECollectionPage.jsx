@@ -1,14 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft} from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import ECollectionTable from "./ECollectionTable";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateRangeFilter from "../DateRangeFilter";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ECollectionPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+ const isDark = theme === "dark";
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");

@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SoaDetails from "./SoaDetails";
 import SoaTable from "./SoaTable";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const SoaPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
 
   // Sample SOA data
   const [soaData] = useState({

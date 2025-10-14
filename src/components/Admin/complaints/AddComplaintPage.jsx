@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import ComplaintFormFields from './ComplaintsFormFields';
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { useRouter } from 'next/navigation';
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 const AddComplaintPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const [complaintDate, setComplaintDate] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [mobileNo, setMobileNo] = useState('');

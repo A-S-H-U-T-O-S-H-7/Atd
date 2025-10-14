@@ -1,21 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { blogAPI, formatBlogForUI, getStatusNumber } from "@/lib/api";
+import { blogAPI, formatBlogForUI, getStatusNumber } from "@/lib/services/BlogServices";
 import { toast } from "react-hot-toast";
 import BlogForm from "./BlogForm";
 import BlogSidebar from "./BlogSidebar";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ManageBlogPage = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter();
   const searchParams = useSearchParams();
   const blogId = searchParams.get('id');
   const isEditMode = Boolean(blogId);
 
-  // Form state - Updated field names to match API
   const [formData, setFormData] = useState({
     title: "",
     url: "",
@@ -32,15 +32,14 @@ const ManageBlogPage = () => {
   const [isLoadingBlog, setIsLoadingBlog] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Load blog data for editing
   useEffect(() => {
     const loadBlogData = async () => {
       if (isEditMode && blogId) {
         setIsLoadingBlog(true);
         try {
           const response = await blogAPI.getPost(blogId);
-          if (response.data.success) {
-            const blogData = formatBlogForUI(response.data.data);
+          if (response?.success) {
+            const blogData = formatBlogForUI(response?.data);
             setFormData({
               title: blogData.title || "",
               url: blogData.url || "",
@@ -86,12 +85,12 @@ const ManageBlogPage = () => {
     if (!formData.content.trim()) newErrors.content = "Content is required";
     if (!formData.metatitle.trim()) newErrors.metatitle = "Meta title is required";
     if (!formData.metadesc.trim()) newErrors.metadesc = "Meta description is required";
-    
+
     // Validate URL format (basic check)
     if (formData.url.trim() && !/^[a-z0-9-]+$/.test(formData.url.trim())) {
       newErrors.url = "URL should only contain lowercase letters, numbers, and hyphens";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,7 +112,7 @@ const ManageBlogPage = () => {
       submitData.append('metadesc', formData.metadesc);
       submitData.append('metakeword', formData.metakeword);
       submitData.append('status', getStatusNumber(formData.status));
-      
+
       // Only append image if a new one was selected
       if (formData.featuredImage) {
         submitData.append('featured', formData.featuredImage);
@@ -148,8 +147,8 @@ const ManageBlogPage = () => {
   // Show loading state while fetching blog data
   if (isLoadingBlog) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-gray-900" : "bg-emerald-50/30"}`}>
-        <div className={`text-center ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark? "bg-gray-900" : "bg-emerald-50/30"}`}>
+        <div className={`text-center ${isDark? "text-gray-300" : "text-gray-600"}`}>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
           Loading blog data...
         </div>
@@ -159,9 +158,8 @@ const ManageBlogPage = () => {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
-        isDark ? "bg-gray-900" : "bg-gray-200"
-      }`}
+      className={`min-h-screen transition-colors duration-300 ${isDark? "bg-gray-900" : "bg-gray-200"
+        }`}
     >
       <div className="p-0 md:p-4">
         {/* Header */}
@@ -170,24 +168,21 @@ const ManageBlogPage = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleBack}
-                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-                }`}
+                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${isDark
+                  ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                  : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                  }`}
               >
                 <ArrowLeft
-                  className={`w-5 h-5 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`}
+                  className={`w-5 h-5 ${isDark? "text-emerald-400" : "text-emerald-600"
+                    }`}
                 />
               </button>
               <h1
-                className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                  isDark
-                    ? "from-emerald-400 to-teal-400"
-                    : "from-emerald-600 to-teal-600"
-                } bg-clip-text text-transparent`}
+                className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${isDark
+                  ? "from-emerald-400 to-teal-400"
+                  : "from-emerald-600 to-teal-600"
+                  } bg-clip-text text-transparent`}
               >
                 {isEditMode ? "Edit Blog" : "Create New Blog"}
               </h1>

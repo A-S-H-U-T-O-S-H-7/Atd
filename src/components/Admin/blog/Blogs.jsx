@@ -1,15 +1,18 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import { useRouter } from "next/navigation";
-import { blogAPI, formatBlogForUI } from "@/lib/api";
+import { blogAPI, formatBlogForUI } from "@/lib/services/BlogServices";
 import BlogTable from "./BlogTable";
 import Swal from "sweetalert2";
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
-const BlogPage = () => {
-  const { isDark } = useAdminAuth();
+const BlogPage = () => { 
+
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const [error, setError] = useState("");
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,102 +20,52 @@ const BlogPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [filterChanged, setFilterChanged] = useState(false);
-
   const [blogs, setBlogs] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Debounced search function
   const [searchTimeout, setSearchTimeout] = useState(null);
 
   const fetchBlogs = useCallback(
     async (isInitialLoad = false) => {
       try {
-        // Set loading states
         if (isInitialLoad) {
           setInitialLoading(true);
         } else {
           setIsUpdating(true);
         }
-
-        // Clear any previous errors
         setError(null);
 
         const params = {
           page: currentPage,
           per_page: 10
         };
-
-        // Add search parameter if exists and is not empty
         if (searchTerm && searchTerm.trim()) {
           params.title = searchTerm.trim();
         }
-
-        // Add status filter if not 'all'
         if (statusFilter && statusFilter !== "all") {
           params.status = statusFilter === "published" ? "2" : "1";
         }
-
-        console.log("Fetching blogs with params:", params);
-
-        // Make API call
         const response = await blogAPI.getPosts(params);
-
-        console.log("API Response:", response.data);
-
-        // Validate response structure
-        if (!response || !response.data) {
+        if (!response) {
           throw new Error("Invalid response structure");
         }
 
-        if (response.data.success) {
-          // Handle successful response
-          const blogData = response.data.data || [];
+        if (response?.success) {
+          const blogData = response.data || [];
           const formattedBlogs = blogData.map(formatBlogForUI);
 
           setBlogs(formattedBlogs);
-
-          // Handle pagination data
-          const pagination = response.data.pagination || {};
+          const pagination = response.pagination || {};
           setTotalPages(pagination.total_pages || 1);
           setTotalItems(pagination.total || 0);
-
-          console.log("Blogs loaded:", formattedBlogs.length);
-          console.log("Total pages:", pagination.total_pages);
-          console.log("Total items:", pagination.total);
         } else {
-          // API returned success: false
-          const errorMessage = response.data.message || "Failed to fetch blogs";
+          const errorMessage = response?.message || "Failed to fetch blogs";
           throw new Error(errorMessage);
         }
       } catch (err) {
-        console.error("Fetch blogs error:", err);
-
-        // Set appropriate error message
         let errorMessage = "Failed to fetch blogs";
-
-        if (err.response) {
-          // API responded with error status
-          if (err.response.status === 401) {
-            errorMessage = "Authentication failed. Please login again.";
-          } else if (err.response.status === 403) {
-            errorMessage = "You don't have permission to view blogs.";
-          } else if (err.response.status === 404) {
-            errorMessage = "Blogs endpoint not found.";
-          } else if (err.response.status >= 500) {
-            errorMessage = "Server error. Please try again later.";
-          } else if (err.response.data && err.response.data.message) {
-            errorMessage = err.response.data.message;
-          }
-        } else if (err.request) {
-          errorMessage = "Network error. Please check your connection.";
-        } else if (err.message) {
-          errorMessage = err.message;
-        }
-
-        setError(errorMessage);
-
+        console.log(err);
+        setError(err.message);
         setBlogs([]);
         setTotalPages(1);
         setTotalItems(0);
@@ -124,12 +77,10 @@ const BlogPage = () => {
     [currentPage, searchTerm, statusFilter]
   );
 
-  // Initial load effect
   useEffect(() => {
     fetchBlogs(true);
   }, []);
 
-  // Debounced effect for search
   useEffect(
     () => {
       if (initialLoading) return;
@@ -158,7 +109,6 @@ const BlogPage = () => {
     [searchTerm]
   );
 
-  // Effect for page change and status filter (immediate)
   useEffect(
     () => {
       if (initialLoading) return;
@@ -259,7 +209,7 @@ const BlogPage = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
-              onClick={() => router.back()}
+                onClick={() => router.back()}
                 className={`p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"}`}
@@ -269,8 +219,8 @@ const BlogPage = () => {
                     ? "text-emerald-400"
                     : "text-emerald-600"}`}
                 />
-                
-                 </button>
+
+              </button>
               <h1
                 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${isDark
                   ? "from-emerald-400 to-teal-400"
@@ -358,7 +308,7 @@ const BlogPage = () => {
             onEdit={handleEditBlog}
             onDelete={handleDeleteBlog}
             onPageChange={handlePageChange}
-          />}
+          />} 
       </div>
     </div>
   );

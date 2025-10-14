@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import {  ArrowLeft, Download, User, } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import Pagination from "../Pagination";
 import AccountTableRow from "./MsbTableRaw";
 import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const CreateMSBAccountAccount = () => {
 
@@ -85,8 +85,9 @@ const mockAccountData = [
     }
   ];
   
-     const { isDark } = useAdminAuth();
-    const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState(mockAccountData);
     const [accounts, setAccounts] = useState(mockAccountData);

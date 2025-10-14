@@ -122,8 +122,7 @@ const BlogTableRow = ({
       <td className="px-6 py-5">
         <div
           className={`flex items-center space-x-2 text-sm font-medium ${isDark
-            ? "text-gray-300"
-            : "text-gray-600"}`}
+            ? "text-gray-300": "text-gray-600"}`}
         >
           <div
             className={`p-1.5 rounded-lg ${isDark

@@ -1,17 +1,18 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Download, User,Loader } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import Pagination from "../Pagination";
 import ReferFriendsTableRow from "./ReferFriendsTableRaw";
 import { exportToExcel } from "@/components/utils/exportutil";
-import { referralAPI, formatReferralForUI } from "@/lib/api";
+import { referralAPI,formatReferralForUI } from "@/lib/services/ReferenceServices";
 import SearchBar from "../SearchBar";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ReferFriends = () => {
 
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [referrals, setReferrals] = useState([]);
@@ -38,12 +39,12 @@ const ReferFriends = () => {
 
       const response = await referralAPI.getReferrals(params);
       
-      if (response.data.success) {
-        const formattedData = response.data.data.map(formatReferralForUI);
+      if (response.success) {
+        const formattedData = response.data.map(formatReferralForUI);
         setReferrals(formattedData);
-        setTotalRecords(response.data.pagination.total);
-        setTotalPages(response.data.pagination.total_pages);
-        setCurrentPage(response.data.pagination.current_page);
+        setTotalRecords(response.pagination.total);
+        setTotalPages(response.pagination.total_pages);
+        setCurrentPage(response.pagination.current_page);
       } else {
         setError("Failed to fetch referrals");
       }
@@ -167,22 +168,28 @@ const ReferFriends = () => {
               <table className="w-full min-w-max" style={{ minWidth: "900px" }}>
                 <thead className={`border-b-2 ${isDark ? "bg-gray-900 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}>
                   <tr>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "60px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "60px" }}>
                       SN
                     </th>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "180px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "180px" }}>
                       Refer By
                     </th>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "150px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "150px" }}>
                       Reference Name
                     </th>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "200px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "200px" }}>
                       Reference Email
                     </th>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "150px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "150px" }}>
                       Reference Mobile
                     </th>
-                    <th className={`px-6 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "120px" }}>
+                    <th className={`px-6 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "120px" }}>
                       Date
                     </th>
                   </tr>

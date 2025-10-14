@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { ArrowLeft, Download, Upload } from 'lucide-react';
 import FileUpload from './FileUpload';
 import ExportDateFilter from '../ExportDateFilter';
-import { useAdminAuth } from "@/lib/AdminAuthContext";
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 
 const CibilReportPage = () => {
-  const { isDark } = useAdminAuth();
-    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [selectedFile, setSelectedFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
   

@@ -1,5 +1,4 @@
 import React from "react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { FileText, Loader2 } from "lucide-react";
 import ReviewRow from "./ReviewRow";
 import Pagination from "../Pagination";
@@ -12,9 +11,9 @@ const ReviewTable = ({
   totalReviews,
   onPageChange,
   onStatusClick,
-  loading
+  loading,
+  isDark
 }) => {
-  const { isDark } = useAdminAuth();
   
   const startIndex = (currentPage - 1) * itemsPerPage;
 
@@ -50,80 +49,81 @@ const ReviewTable = ({
               >
                 <tr>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                      
                     }`}
                     style={{ minWidth: "60px" }}
                   >
                     SN
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "300px" }}
                   >
                     Customer
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "270px" }}
                   >
                     Contact
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "120px" }}
                   >
                     CRN No.
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "300px" }}
                   >
                     Review
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "120px" }}
                   >
                     Rating
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "100px" }}
                   >
                     Status
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "250px" }}
                   >
                     Reply
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "120px" }}
                   >
                     Approved By
                   </th>
                   <th
-                    className={`px-6 py-5 text-left text-sm font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-700"
+                    className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                     }`}
                     style={{ minWidth: "170px" }}
                   >
@@ -143,6 +143,7 @@ const ReviewTable = ({
                       review={review}
                       index={startIndex + index + 1}
                       onStatusClick={onStatusClick}
+                      isDark={isDark}
                     />
                   ))
                 ) : (

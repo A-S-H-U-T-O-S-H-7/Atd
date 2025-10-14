@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Plus, Download } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import { useRouter } from "next/navigation";
 import RbiGuidelinesTable from "./GuidelinesTable";
@@ -11,6 +10,7 @@ import StatusUpdateModal from "./StatusUpdateModal";
 import DocumentUploadModal from "./DocumentUploadModal";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Mock data for RBI Guidelines
 const mockRbiGuidelines = [
@@ -94,8 +94,9 @@ const mockRbiGuidelines = [
 ];
 
 const RbiGuidelinesPage = () => {
-  const { isDark } = useAdminAuth();
-  const router = useRouter();
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");

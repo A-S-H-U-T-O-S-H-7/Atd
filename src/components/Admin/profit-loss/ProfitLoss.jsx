@@ -1,12 +1,13 @@
 "use client";
 import React, { useState } from "react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchFilter from "./SearchFilter";
 import ProfitLossSummary from "./ProfitLoassSummery";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 const ProfitLossPage = () => {
-  const { isDark } = useAdminAuth();
-  const [selectedMonth, setSelectedMonth] = useState("--Select Month--");
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [selectedMonth, setSelectedMonth] = useState("--Select Month--");
   const [selectedYear, setSelectedYear] = useState("--Select Year--");
 
   // Sample data - replace with your actual data

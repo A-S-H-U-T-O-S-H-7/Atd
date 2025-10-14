@@ -1,18 +1,19 @@
 "use client";
 import React, { useState } from "react";
 import { ArrowLeft, Download } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import SearchBar from "../SearchBar";
 import ComplaintTable from "./ComplaintTable";
 import ComplaintDetailModal from "./ComplaintDetails";
 import UploadModal from "./UploadModal";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
+import { useThemeStore } from "@/lib/store/useThemeStore";
 
 // Main Complaint Management Component
 const ComplaintPage = () => {
-  const { isDark } = useAdminAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);

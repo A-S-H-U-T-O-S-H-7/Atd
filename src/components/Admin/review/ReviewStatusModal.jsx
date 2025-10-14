@@ -1,15 +1,14 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { useAdminAuth } from '@/lib/AdminAuthContext';
 import { X, CheckCircle } from 'lucide-react';
 
 const ReviewStatusModal = ({ 
   isOpen, 
   onClose, 
   review, 
-  onSubmit 
+  onSubmit,
+  isDark 
 }) => {
-  const { isDark } = useAdminAuth();
   const [status, setStatus] = useState('pending');
   const [replyText, setReplyText] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);

@@ -1,18 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import EnquiriesTable from "./EnquiriesTable";
-import { useRouter } from "next/navigation";
 import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
-import { enquiryAPI, formatEnquiryForUI } from "@/lib/api";
+import { enquiryAPI, formatEnquiryForUI } from "@/lib/services/AllEnquiriesServices";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { useThemeStore } from "@/lib/store/useThemeStore";
+import Swal from 'sweetalert2';
+import { useRouter } from "next/navigation";
+
 
 const AllEnquiries = () => {
-  const { isDark } = useAdminAuth();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -23,8 +26,7 @@ const AllEnquiries = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-
-  
+ 
   // Advanced Search States
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +49,40 @@ const AllEnquiries = () => {
     { value: 'phone', label: 'Phone Number' },
   ];
 
+  // Build API parameters correctly
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    // Add search parameters - FIXED: Use correct parameter names
+    if (searchField && searchTerm) {
+      params.search_by = searchField;
+      params.search_value = searchTerm;
+    }
+
+    // Add status filter - FIXED: Send to API instead of client-side filtering
+    if (statusFilter !== "all") {
+      params.status = statusFilter;
+    }
+
+    // Add date filters - FIXED: Use correct parameter names
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
+    }
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
+    }
+
+    // Add source filter - FIXED: Include source filter
+    if (sourceFilter !== "all") {
+      params.source_by = sourceFilter;
+    }
+
+    return params;
+  };
+
   // Fetch enquiries from API
   const fetchEnquiries = async (isAutoRefresh = false) => {
     try {
@@ -57,32 +93,14 @@ const AllEnquiries = () => {
       }
       setError(null);
       
-      const params = {
-        per_page: itemsPerPage,
-        page: currentPage,
-      };
-
-      // Add search parameters
-      if (searchField && searchTerm) {
-        params.search_by = searchField;
-        params.search_value = searchTerm;
-      }
-
-      // Add date filters
-      if (dateRange.start) {
-        params.from_date = dateRange.start;
-      }
-      if (dateRange.end) {
-        params.to_date = dateRange.end;
-      }
-
+      const params = buildApiParams();
       const response = await enquiryAPI.getAllEnquiries(params);
       
-      if (response.data.success) {
-        const formattedEnquiries = response.data.data.map(formatEnquiryForUI);
+      if (response.success) {
+        const formattedEnquiries = response.data.map(formatEnquiryForUI);
         setEnquiries(formattedEnquiries);
-        setTotalCount(response.data.pagination.total);
-        setTotalPages(response.data.pagination.total_pages);
+        setTotalCount(response.pagination?.total || response.data.length);
+        setTotalPages(response.pagination?.total_pages || 1);
       } else {
         setError("Failed to fetch enquiries");
       }
@@ -98,17 +116,18 @@ const AllEnquiries = () => {
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchEnquiries();
-  }, [currentPage, searchField, searchTerm,dateRange]);
+  }, [currentPage, searchField, searchTerm, dateRange, statusFilter, sourceFilter]);
 
+  // Auto-refresh implementations (keep as is)
   useEffect(() => {
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchEnquiries();
       }
-    }, 60000); // 1min
-  
+    }, 60000);
+
     return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm,dateRange]);
+  }, [currentPage, searchField, searchTerm, dateRange, statusFilter, sourceFilter]);
   
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -119,8 +138,7 @@ const AllEnquiries = () => {
   
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
-  
+  }, [currentPage, searchField, searchTerm, dateRange, statusFilter, sourceFilter]);
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -129,10 +147,10 @@ const AllEnquiries = () => {
     setCurrentPage(1); 
   };
 
-  // Handle Date Filter
+  // Handle Date Filter - FIXED: Include source filter
   const handleDateFilter = (filters) => {
     setDateRange(filters.dateRange);
-    setSourceFilter(filters.source);
+    setSourceFilter(filters.source || "all");
     setCurrentPage(1); 
   };
 
@@ -146,32 +164,58 @@ const AllEnquiries = () => {
     setCurrentPage(1);
   };
 
-  // Client-side status filtering (since API doesn't support status filter)
-  const filteredEnquiries = enquiries.filter(enquiry => {
-    const matchesStatus = statusFilter === "all" || 
-    enquiry.status.toLowerCase() === statusFilter.toLowerCase();
-    return matchesStatus;
-  }).map((enquiry, index) => ({
+  // FIXED: Remove client-side status filtering since it's now handled by API
+  const filteredEnquiries = enquiries.map((enquiry, index) => ({
     ...enquiry,
     srNo: (currentPage - 1) * itemsPerPage + index + 1 
   }));
 
-  const handleExport = async (type) => {
+ const handleExport = async (type) => {
   if (type === 'excel') {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Export Enquiries?',
+      text: 'This will export all enquiries with current filters .',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981', // Emerald color
+      cancelButtonColor: '#6b7280', // Gray color
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#f9fafb' : '#111827',
+      customClass: {
+        popup: isDark ? 'bg-gray-800' : 'bg-white',
+        title: isDark ? 'text-white' : 'text-gray-900',
+        htmlContainer: isDark ? 'text-gray-300' : 'text-gray-700',
+      }
+    });
+
+    // If user cancels, return early
+    if (!result.isConfirmed) {
+      return;
+    }
+
     try {
       setExporting(true);
-      const response = await enquiryAPI.exportEnquiries();
       
-      if (response.data.success) {
+      // Build export params with same filters but without pagination
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      
+      const response = await enquiryAPI.exportEnquiries(exportParams);
+      
+      if (response.success) {
         const headers = [
           'CRN No', 'Account ID', 'Name', 'Date of Birth', 'Gender', 
           'Phone', 'Email', 'City', 'State', 'Company Name', 
           'Net Salary', 'Applied Amount', 'Account No', 'IFSC Code', 
-          'ROI', 'Tenure (Days)', 'Approval Note', 'Remark', 'Created Date'
+          'ROI', 'Tenure (Days)', 'Approval Note', 'Remark', 'Created Date', 'Enquiry Type'
         ];
 
         // Create data rows
-        const dataRows = response.data.data.map(enquiry => [
+        const dataRows = response.data.map(enquiry => [
           enquiry.crnno,
           enquiry.accountId,
           enquiry.name,
@@ -190,24 +234,55 @@ const AllEnquiries = () => {
           enquiry.tenure,
           enquiry.approval_note,
           enquiry.remark || 'N/A',
-          new Date(enquiry.created_at).toLocaleDateString('en-GB')
+          new Date(enquiry.created_at).toLocaleDateString('en-GB'),
+          enquiry.enquiry_type || 'N/A'
         ]);
 
         // Combine headers and data
         const exportData = [headers, ...dataRows];
 
         exportToExcel(exportData, 'all-enquiries');
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Export Successful!',
+          text: 'Enquiries have been exported to Excel successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? '#1f2937' : '#ffffff',
+          color: isDark ? '#f9fafb' : '#111827',
+        });
       } else {
         setError("Failed to export data. Please try again.");
+        // Show error message
+        await Swal.fire({
+          title: 'Export Failed!',
+          text: 'Failed to export data. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          background: isDark ? '#1f2937' : '#ffffff',
+          color: isDark ? '#f9fafb' : '#111827',
+        });
       }
     } catch (err) {
       console.error("Export error:", err);
       setError("Failed to export data. Please try again.");
+      
+      // Show error message
+      await Swal.fire({
+        title: 'Export Error!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f9fafb' : '#111827',
+      });
     } finally {
       setExporting(false);
     }
   }
 };
+
 
   const handleUploadClick = (enquiry) => {
     setSelectedEnquiry(enquiry);
@@ -219,18 +294,62 @@ const AllEnquiries = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleFileView = async (enquiry, fileName) => {
-    if (!fileName) return;
+  const handleFileView = async (fileName, documentCategory) => {
+  console.log('File viewing started:', { fileName, documentCategory });
+  
+  if (!fileName) {
+    alert('No file available');
+    return;
+  }
+  
+  // Set loading state
+  
+  
+  try {
+    // Define folder mappings
+    const folderMappings = {
+      'bank_statement': 'bank-statement',
+      'aadhar_proof': 'idproof', 
+      'address_proof': 'address',
+      'pan_proof': 'pan',
+      'selfie': 'photo',
+      'salary_slip': 'first_salaryslip',
+      'second_salary_slip': 'second_salaryslip', 
+      'third_salary_slip': 'third_salaryslip',
+      'bank_verif_report': 'reports',
+      'social_score_report': 'reports',
+      'cibil_score_report': 'reports',
+    };
+
+    // Get the correct folder
+    const folder = folderMappings[documentCategory];
     
-    try {
-      const fileRef = ref(storage, `documents/${fileName}`);
-      const url = await getDownloadURL(fileRef);
-      window.open(url, '_blank');
-    } catch (error) {
-      console.error("Failed to get file URL:", error);
-      alert("Failed to load file");
+    if (!folder) {
+      console.error('No folder mapping found for:', documentCategory);
+      alert('Document type not configured');
+      return;
     }
-  };
+    
+    // Construct the full file path
+    const filePath = `${folder}/${fileName}`;
+    
+    console.log('Loading from Firebase path:', filePath);
+
+    const fileRef = ref(storage, filePath);
+    const url = await getDownloadURL(fileRef);
+    
+    // Open in new tab
+    const newWindow = window.open(url, '_blank');
+    if (!newWindow) {
+      alert('Popup blocked! Please allow popups for this site.');
+    }
+  } catch (error) {
+    console.error("Failed to load file:", error);
+    alert(`Failed to load file: ${fileName}. Please check if file exists in ${folder} folder.`);
+  } finally {
+   
+  }
+};
 
   const handleLoanEligibilityClick = (enquiry) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
@@ -275,15 +394,20 @@ const AllEnquiries = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                isDark
-                  ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                  : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-              }`}>
+
+              <button
+                onClick={() => router.back()}
+                className={`p-3 cursor-pointer rounded-xl transition-all duration-200 hover:scale-105 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
                 <ArrowLeft className={`w-5 h-5 ${
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
               </button>
+
               <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
@@ -309,7 +433,7 @@ const AllEnquiries = () => {
               <button
                 onClick={() => handleExport('excel')}
                 disabled={exporting}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                className={`px-4 py-2 cursor-pointer rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                   isDark
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-green-500 hover:bg-green-600 text-white"
@@ -445,8 +569,10 @@ const AllEnquiries = () => {
           onVerifyClick={handleVerifyClick}
           onCheckClick={handleCheckClick}
           loading={loading}
+         
         />
       </div>
+      
     </div>
   );
 };

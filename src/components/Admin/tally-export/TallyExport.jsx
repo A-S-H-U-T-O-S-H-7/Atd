@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Download} from 'lucide-react';
 import ExportDateFilter from '../ExportDateFilter';
-import { useAdminAuth } from "@/lib/AdminAuthContext";
 import { useRouter } from 'next/navigation';
+import { useThemeStore } from '@/lib/store/useThemeStore';
 
 
 const TallyExport = () => {
-  const { isDark } = useAdminAuth();
-    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+const { theme } = useThemeStore();
+ const isDark = theme === "dark";
+     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const router = useRouter();
   
     const handleExport = () => {
