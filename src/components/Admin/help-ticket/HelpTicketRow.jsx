@@ -35,7 +35,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       }`}
     >
       {/* Issue Date */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
@@ -49,7 +49,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       </td>
 
       {/* Ticket ID */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Hash className={`w-4 h-4 ${
             isDark ? "text-purple-400" : "text-purple-600"
@@ -63,7 +63,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       </td>
 
       {/* Subject */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <FileText className={`w-4 h-4 ${
             isDark ? "text-green-400" : "text-green-600"
@@ -77,7 +77,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       </td>
 
       {/* Message */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <MessageSquare className={`w-4 h-4 ${
             isDark ? "text-orange-400" : "text-orange-600"
@@ -91,7 +91,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       </td>
 
       {/* User */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <User className={`w-4 h-4 ${
             isDark ? "text-cyan-400" : "text-cyan-600"
@@ -105,7 +105,7 @@ const HelpTicketRow = ({ item, index, isDark, onReplyClick, onSummaryClick }) =>
       </td>
 
       {/* Status */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {getStatusBadge(item.status)}
       </td>
 

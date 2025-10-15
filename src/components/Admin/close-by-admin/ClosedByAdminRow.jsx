@@ -61,7 +61,7 @@ const ClosedByAdminRow = ({
         : ""}`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -74,7 +74,7 @@ const ClosedByAdminRow = ({
       
 
       {/* Form No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -85,7 +85,7 @@ const ClosedByAdminRow = ({
       
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -96,7 +96,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -105,7 +105,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Enquiry Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -123,7 +123,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-100"
@@ -135,7 +135,7 @@ const ClosedByAdminRow = ({
 
 
       {/* Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -144,7 +144,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -153,7 +153,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -162,7 +162,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -173,7 +173,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
           <span
@@ -188,7 +188,7 @@ const ClosedByAdminRow = ({
       
 
       {/* Approved Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span
             className={`text-sm  font-semibold ${isDark
@@ -201,7 +201,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -210,7 +210,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -219,7 +219,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -228,7 +228,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPhoto}
           fileName={application.photoFileName}
@@ -238,7 +238,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPanCard}
           fileName={application.panCardFileName}
@@ -248,7 +248,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAddressProof}
           fileName={application.addressProofFileName}
@@ -258,7 +258,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasIdProof}
           fileName={application.idProofFileName}
@@ -268,7 +268,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Salary Proof - Multiple Files */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex space-x-2">
           <DocumentIcon
             hasFile={application.hasSalaryProof}
@@ -292,7 +292,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankStatement}
           fileName={application.bankStatementFileName}
@@ -303,7 +303,7 @@ const ClosedByAdminRow = ({
 
 
       {/* Remark */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -312,7 +312,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-orange-400"
@@ -324,7 +324,7 @@ const ClosedByAdminRow = ({
 
      
       {/* Appraisal Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.finalReportStatus === "Recommended"
           ? <button
               onClick={() =>
@@ -348,7 +348,7 @@ const ClosedByAdminRow = ({
       </td>
 
       {/* Eligibility */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onLoanEligibilityClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -361,7 +361,7 @@ const ClosedByAdminRow = ({
 
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onActionClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark

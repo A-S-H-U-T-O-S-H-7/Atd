@@ -46,7 +46,7 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
     >
       
       {/* SN */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
           isDark
             ? "bg-emerald-900/50 text-emerald-300 border border-emerald-700"
@@ -57,9 +57,8 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Name */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
           }`}>
@@ -69,7 +68,7 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Email */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
@@ -83,9 +82,8 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Phone */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span className={`text-sm font-medium ${
             isDark ? "text-white" : "text-black"
           }`}>
@@ -95,9 +93,8 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Location */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span className={`text-sm font-medium ${
             isDark ? "text-white" : "text-black"
           }`}>
@@ -107,14 +104,13 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Download Date */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
           }`} />
           <span className={`text-sm font-medium ${
-                        isDark ? "text-white" : "text-black"
-
+            isDark ? "text-white" : "text-black"
           }`}>
             {item.downloadDate}
           </span>
@@ -122,7 +118,7 @@ const RegisteredAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Active/Inactive */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
           getStatusColor(item.activeInactive)
         }`}>

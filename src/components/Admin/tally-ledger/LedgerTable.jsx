@@ -29,58 +29,58 @@ const LedgerTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "60px" }}>
                   SN
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Call
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Loan No.
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "160px" }}>
                   Disburse Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "160px" }}>
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+                }`} style={{ minWidth: "190px" }}>
                   Due Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "210px" }}>
                   Name
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "300px" }}>
                   Address
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Phone No.
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "220px" }}>
                   E-mail
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Balance
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Action
                 </th>
@@ -113,7 +113,7 @@ const LedgerTable = ({
         )}
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

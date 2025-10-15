@@ -30,93 +30,93 @@ const ComplaintTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "80px" }}>
                   SR. No.
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "160px" }}>
                   Complaint Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "250px" }}>
                   Customer
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "270px" }}>
                   Contact
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Loan No.
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Loan Belong To
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "100px" }}>
                   Status
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "200px" }}>
                   Complaint Details
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Complaint Documents
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Complaint For
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Complaint Assign To
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Complaint Assign Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "200px" }}>
                   Complaint Resolution
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Resolution Documents
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Complaint Close Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Final Remarks
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
 }`} style={{ minWidth: "120px" }}>
   Upload
 </th>
-<th className={`px-6 py-5 text-left text-sm font-bold ${
-  isDark ? "text-gray-100" : "text-gray-700"
+<th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
 }`} style={{ minWidth: "120px" }}>
   Action
 </th>

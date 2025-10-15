@@ -1,5 +1,6 @@
 import React from "react";
-import { Calendar, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { Calendar, TrendingUp, TrendingDown } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 
 const SoaRow = ({ item, index, isDark }) => {
   const formatCurrency = (amount) => {
@@ -49,7 +50,7 @@ const SoaRow = ({ item, index, isDark }) => {
       }`}
     >
       {/* SN */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
           isDark
             ? "bg-blue-900/50 text-blue-300"
@@ -60,7 +61,7 @@ const SoaRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Particular */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           {item.particular.toLowerCase().includes("disbursement") }
           {item.particular.toLowerCase().includes("payment") }
@@ -71,7 +72,7 @@ const SoaRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Date */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
@@ -85,9 +86,9 @@ const SoaRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Principal Amount */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          <DollarSign className={`w-4 h-4 ${
+          <IndianRupee className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
           }`} />
           <span className={`text-sm font-semibold ${getAmountColor(item.principalAmount)}`}>
@@ -97,59 +98,97 @@ const SoaRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Interest */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.interest, "debit")}`}>
-          {formatCurrency(item.interest)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-red-400" : "text-red-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.interest, "debit")}`}>
+            {formatCurrency(item.interest)}
+          </span>
+        </div>
       </td>
 
       {/* Due Amount */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.dueAmount, "debit")}`}>
-          {formatCurrency(item.dueAmount)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-red-400" : "text-red-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.dueAmount, "debit")}`}>
+            {formatCurrency(item.dueAmount)}
+          </span>
+        </div>
       </td>
 
       {/* Receipt Amount */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.receiptAmount, "credit")}`}>
-          {formatCurrency(item.receiptAmount)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-green-400" : "text-green-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.receiptAmount, "credit")}`}>
+            {formatCurrency(item.receiptAmount)}
+          </span>
+        </div>
       </td>
 
       {/* Penalty */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.penalty, "debit")}`}>
-          {formatCurrency(item.penalty)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-orange-400" : "text-orange-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.penalty, "debit")}`}>
+            {formatCurrency(item.penalty)}
+          </span>
+        </div>
       </td>
 
       {/* Penal Interest */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.penalInterest, "debit")}`}>
-          {formatCurrency(item.penalInterest)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-orange-400" : "text-orange-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.penalInterest, "debit")}`}>
+            {formatCurrency(item.penalInterest)}
+          </span>
+        </div>
       </td>
 
       {/* Penal GST */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.penalGst, "debit")}`}>
-          {formatCurrency(item.penalGst)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-orange-400" : "text-orange-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.penalGst, "debit")}`}>
+            {formatCurrency(item.penalGst)}
+          </span>
+        </div>
       </td>
 
       {/* Bounce Charge */}
-      <td className="px-4 py-4">
-        <span className={`text-sm font-semibold ${getAmountColor(item.bounceCharge, "debit")}`}>
-          {formatCurrency(item.bounceCharge)}
-        </span>
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-red-400" : "text-red-600"
+          }`} />
+          <span className={`text-sm font-semibold ${getAmountColor(item.bounceCharge, "debit")}`}>
+            {formatCurrency(item.bounceCharge)}
+          </span>
+        </div>
       </td>
 
       {/* Balance */}
       <td className="px-4 py-4">
         <div className="flex items-center space-x-2">
+          <IndianRupee className={`w-4 h-4 ${
+            isDark ? "text-blue-400" : "text-blue-600"
+          }`} />
           <span className={`text-sm font-bold ${getAmountColor(item.balance, "balance")}`}>
-            ₹{formatCurrency(item.balance)}
+            {formatCurrency(item.balance)}
           </span>
         </div>
       </td>

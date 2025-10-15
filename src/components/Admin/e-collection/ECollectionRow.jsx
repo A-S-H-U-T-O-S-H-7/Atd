@@ -78,18 +78,18 @@ const ECollectionRow = ({ item, index, isDark }) => {
       }`}
     >
       {/* SN */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
           isDark
-            ? " text-white"
-            : " text-black"
+            ? "text-white"
+            : "text-black"
         }`}>
           {item.sn}
         </div>
       </td>
 
       {/* Collection Date */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -103,7 +103,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* CRN No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-medium ${
           isDark ? "text-blue-400" : "text-blue-600"
         }`}>
@@ -112,7 +112,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Loan No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-semibold ${
           isDark ? "text-emerald-400" : "text-emerald-600"
         }`}>
@@ -121,9 +121,8 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Name */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-         
           <span className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
           }`}>
@@ -133,7 +132,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Transaction Mode */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
           getTransactionModeColor(item.transactionMode)
         }`}>
@@ -143,7 +142,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Transaction UTR */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <CreditCard className={`w-4 h-4 ${
             isDark ? "text-gray-400" : "text-gray-600"
@@ -157,7 +156,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Transaction Remarks */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm ${
           isDark ? "text-gray-300" : "text-gray-700"
         }`}>
@@ -166,7 +165,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Client A/c No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -175,7 +174,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Collection Amount */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-bold ${
           isDark ? "text-green-400" : "text-green-600"
         }`}>
@@ -184,9 +183,8 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Payer Name */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
           }`}>
@@ -196,7 +194,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Payer A/C No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -205,7 +203,7 @@ const ECollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Payer Bank IFSC */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Building2 className={`w-4 h-4 ${
             isDark ? "text-gray-400" : "text-gray-600"
@@ -218,9 +216,8 @@ const ECollectionRow = ({ item, index, isDark }) => {
         </div>
       </td>
 
-
-         {/* Bank Transaction No */}
-      <td className="px-4 py-4">
+      {/* Bank Transaction No */}
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono ${
           isDark ? "text-gray-200" : "text-gray-800"
         }`}>
@@ -228,17 +225,19 @@ const ECollectionRow = ({ item, index, isDark }) => {
         </span>
       </td>
 
-      {/* Bank Transaction No */}
+      {/* Status */}
       <td className="px-4 py-4">
-        <span className={`text-sm cursor-pointer ${
-          isDark ?
-           "text-teal-800  font-semibold border px-4 py-2 bg-teal-200 border-teal-500 rounded-md" :
-            "text-gray-800"
+        <div className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold border ${
+          getStatusColor(item.status)
         }`}>
-          {item.status}
-        </span>
+          {item.status.toLowerCase() === 'updated' && (
+            <CheckCircle className="w-3 h-3 mr-1" />
+          )}
+          <span className="capitalize">{item.status}</span>
+        </div>
       </td>
-      </tr>
-  )}
+    </tr>
+  );
+};
 
-  export default ECollectionRow
+export default ECollectionRow;

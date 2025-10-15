@@ -28,108 +28,108 @@ const CollectionTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "50px" }}>
                   SN
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "160px" }}>
                   Collection Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   CRN No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Loan No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "200px" }}>
                   Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Admin Fee
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   GST
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Sanction Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Disburse Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Transaction Date
                 </th>
-                <th className={`px-4 py-6 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-6 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "240px" }}>
                   Due Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Interest
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Penalty
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   GST
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Penal Interest
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "110px" }}>
                   Renewal Charge
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "110px" }}>
                   Bounce Charge
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Collection Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "110px" }}>
                   Total Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Agent
                 </th>
                 <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   User By
                 </th>
@@ -191,7 +191,7 @@ const CollectionTable = ({
         )}
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

@@ -28,68 +28,73 @@ const ExpensesTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+                }`} style={{ minWidth: "60px" }}>
+                  Sr No
+                </th>
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Month
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Year
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Salary
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Mobile Expenses
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "110px" }}>
                   Convence
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Interest
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "110px" }}>
                   Electricity
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Rent
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "160px" }}>
                   Promotion/Advertisement
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Cibil
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   Others
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Total
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold  ${
+                 isDark ? "text-gray-100" : "text-gray-700"
                 }`} style={{ minWidth: "80px" }}>
                   Action
                 </th>
@@ -112,7 +117,7 @@ const ExpensesTable = ({
         
         {/* Empty State */}
         {paginatedExpenses.length === 0 && (
-          <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          <div className={`text-center py-12 ${isDark ? "text-gray-800" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <Calculator className="w-16 h-16 opacity-50" />
               <p className="text-lg font-medium">No expenses found</p>
@@ -122,7 +127,7 @@ const ExpensesTable = ({
         )}
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

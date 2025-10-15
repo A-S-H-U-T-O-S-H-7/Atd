@@ -28,33 +28,33 @@ const CashTable = ({
                 : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   S.No.
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   Bank Name
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   Deposit Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   Amount
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   User
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`}>
                   Action
                 </th>
@@ -85,7 +85,7 @@ const CashTable = ({
           </div>
         )}
         {totalPages > 0 && (
-        <div className="mt-8">
+        <div >
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

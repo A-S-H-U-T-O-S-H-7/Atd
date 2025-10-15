@@ -44,8 +44,19 @@ const BankLedgerRow = ({ entry, index, isDark }) => {
           : ""
       }`}
     >
+      {/* SR No */}
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+          isDark
+            ? "bg-blue-900/50 text-blue-300"
+            : "bg-blue-100 text-blue-700"
+        }`}>
+          {index + 1}
+        </div>
+      </td>
+
       {/* Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
@@ -59,7 +70,7 @@ const BankLedgerRow = ({ entry, index, isDark }) => {
       </td>
 
       {/* Particulars */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <FileText className={`w-4 h-4 ${
             isDark ? "text-purple-400" : "text-purple-600"
@@ -73,7 +84,7 @@ const BankLedgerRow = ({ entry, index, isDark }) => {
       </td>
 
       {/* Debit */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           {entry.debit > 0 && (
             <TrendingDown className={`w-4 h-4 ${
@@ -91,7 +102,7 @@ const BankLedgerRow = ({ entry, index, isDark }) => {
       </td>
 
       {/* Credit */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           {entry.credit > 0 && (
             <TrendingUp className={`w-4 h-4 ${
@@ -111,7 +122,6 @@ const BankLedgerRow = ({ entry, index, isDark }) => {
       {/* Balance */}
       <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
-          <DollarSign className={`w-4 h-4 ${getBalanceColor(entry.balance)}`} />
           <span className={`font-bold text-lg ${getBalanceColor(entry.balance)}`}>
             {formatAmount(entry.balance)}
           </span>

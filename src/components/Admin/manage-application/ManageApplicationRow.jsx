@@ -250,7 +250,7 @@ const handleDisburseApproval = () => {
         : ""}`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -261,7 +261,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={handleCall}
           className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${isDark
@@ -273,7 +273,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Loan No. */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -282,7 +282,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -293,7 +293,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -302,7 +302,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* application Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -320,7 +320,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Disburse Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -337,7 +337,7 @@ const handleDisburseApproval = () => {
         </div>
       </td>
       {/* Due Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -355,7 +355,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-100"
@@ -366,7 +366,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Current Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -375,7 +375,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Current State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -384,7 +384,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Current City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -393,7 +393,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -402,7 +402,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -411,7 +411,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -420,7 +420,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -431,7 +431,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
           <span
@@ -443,7 +443,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Approved Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span
             className={`text-sm  font-semibold ${isDark
@@ -456,7 +456,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Admin Fee */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -465,7 +465,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -474,7 +474,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -483,7 +483,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Renewal Sanction Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -501,7 +501,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Renewal Tenure*/}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -510,7 +510,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Renewal Maturity Date*/}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -528,7 +528,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Renewal Outstanding Balance */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -537,7 +537,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Renewal Remarks */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -545,7 +545,7 @@ const handleDisburseApproval = () => {
         </span>
       </td>
       {/* Renewal Sanction Letter */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <SanctionLetterIcon
           hasFile={application.renewalSanctionLetter}
           fileName={application.renewalSanctionLetter}
@@ -554,7 +554,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPhoto}
           fileName={application.photoFileName}
@@ -564,7 +564,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPanCard}
           fileName={application.panCardFileName}
@@ -574,7 +574,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAddressProof}
           fileName={application.addressProofFileName}
@@ -584,7 +584,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasIdProof}
           fileName={application.idProofFileName}
@@ -594,7 +594,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Salary Proof - Multiple Files */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex space-x-2">
           <DocumentIcon
             hasFile={application.hasSalaryProof}
@@ -618,7 +618,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankStatement}
           fileName={application.bankStatementFileName}
@@ -628,7 +628,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Video KYC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <VideoKycIcon
           hasFile={application.hasVideoKyc}
           fileName={application.videoKycFileName}
@@ -637,7 +637,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Approval Note */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -646,7 +646,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Application Source */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -655,7 +655,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Bank Verification Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankVerificationReport}
           fileName={application.bankVerificationFileName}
@@ -665,7 +665,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Social Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasSocialScoreReport}
           fileName={application.socialScoreFileName}
@@ -675,7 +675,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* CIBIL Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasCibilScoreReport}
           fileName={application.cibilScoreFileName}
@@ -685,7 +685,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* NACH Form */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <NachPdcCell
           hasNach={application.hasNachForm}
           hasNachFile={application.hasNachForm}
@@ -694,7 +694,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/*  PDC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <NachPdcCell
           hasPdc={application.hasPdc}
           hasPdcFile={application.hasPdc}
@@ -703,7 +703,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Agreement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAgreement}
           fileName={application.agreementFileName}
@@ -712,7 +712,7 @@ const handleDisburseApproval = () => {
         />
       </td>
       {/* Cheque */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex  items-center space-x-2">
           {chequeNumber
             ? <div className="flex  items-center space-x-2">
@@ -745,7 +745,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Send To Courier */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.sendToCourier === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -762,7 +762,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Courier Picked */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.courierPicked === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -779,7 +779,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Original Documents */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.originalDocuments === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -796,7 +796,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Disburse Behalf of E-mandate */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.receivedDisburse === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -820,7 +820,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -829,7 +829,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Disbursal Account */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -838,7 +838,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Customer A/c Verified */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.customerAcVerified === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -852,7 +852,7 @@ const handleDisburseApproval = () => {
         </div>
       </td>
       {/* Sanction Letter */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <PdfIcon
           hasFile={application.sanctionLetter}
           fileName={application.sanctionLetterFileName}
@@ -862,7 +862,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Emandate Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -873,7 +873,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* ICICI Emandate Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -884,7 +884,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Ready For Approve Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <button
         onClick={handleReadyForApprove}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -905,7 +905,7 @@ const handleDisburseApproval = () => {
     </td>
 
      {/* Bank A/c Verification Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <button
         onClick={handleBankVerification}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -926,7 +926,7 @@ const handleDisburseApproval = () => {
     </td>
 
     {/* Disburse Approval Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <button
         onClick={handleDisburseApproval}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -947,7 +947,7 @@ const handleDisburseApproval = () => {
     </td>
 
       {/* Loan Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-orange-400"
@@ -958,7 +958,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Change Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onChangeStatusClick(application, "change-status")}
@@ -972,7 +972,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onActionClick(application)}
@@ -986,7 +986,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Remarks */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onRemarksClick(application)}
           className={`text-sm underline cursor-pointer transition-colors duration-200 ${isDark
@@ -998,7 +998,7 @@ const handleDisburseApproval = () => {
       </td>
 
        {/* Document Status  */}
-       <td className="px-6 py-4">
+       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onDocumentStatusClick(application)}
@@ -1017,7 +1017,7 @@ const handleDisburseApproval = () => {
 
 
       {/* Refund PDC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onRefundPDCClick(application)}
@@ -1040,7 +1040,7 @@ const handleDisburseApproval = () => {
      
 
       {/* Appraisal Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.finalReportStatus === "Recommended"
           ? <button
               onClick={() =>
@@ -1064,7 +1064,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Eligibility */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onLoanEligibilityClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -1076,7 +1076,7 @@ const handleDisburseApproval = () => {
       </td>
 
       {/* Replace KYC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onReplaceKYCClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -1087,23 +1087,23 @@ const handleDisburseApproval = () => {
         </button>
       </td>
       {/* Settled */} 
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.settled || "-"}
       </td>
        
 
     {/* Disburse Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <span className="text-sm text-gray-500">-</span>
     </td>
 
     {/* Collection Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <span className="text-sm text-gray-500">-</span>
     </td>
 
     {/* NOC Column */}
-    <td className="px-6 py-4 text-center">
+    <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <span className="text-sm text-gray-500">-</span>
     </td>
 

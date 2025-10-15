@@ -245,7 +245,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
         : ""}`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -256,7 +256,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={handleCall}
           className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${isDark
@@ -268,7 +268,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Loan No. */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -277,7 +277,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -288,7 +288,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -297,7 +297,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* application Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -317,7 +317,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
      
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-100"
@@ -328,7 +328,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Current Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -337,7 +337,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Current State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -346,7 +346,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Current City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -355,7 +355,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -364,7 +364,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -373,7 +373,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -382,7 +382,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -393,7 +393,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
           <span
@@ -405,7 +405,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Approved Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span
             className={`text-sm  font-semibold ${isDark
@@ -418,7 +418,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Admin Fee */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -427,7 +427,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -436,7 +436,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -445,7 +445,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPhoto}
           fileName={application.photoFileName}
@@ -455,7 +455,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPanCard}
           fileName={application.panCardFileName}
@@ -465,7 +465,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAddressProof}
           fileName={application.addressProofFileName}
@@ -475,7 +475,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasIdProof}
           fileName={application.idProofFileName}
@@ -485,7 +485,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Salary Proof - Multiple Files */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex space-x-2">
           <DocumentIcon
             hasFile={application.hasSalaryProof}
@@ -509,7 +509,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankStatement}
           fileName={application.bankStatementFileName}
@@ -519,7 +519,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Video KYC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <VideoKycIcon
           hasFile={application.hasVideoKyc}
           fileName={application.videoKycFileName}
@@ -528,7 +528,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Approval Note */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -537,7 +537,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Application Source */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -546,7 +546,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Bank Verification Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankVerificationReport}
           fileName={application.bankVerificationFileName}
@@ -556,7 +556,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Social Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasSocialScoreReport}
           fileName={application.socialScoreFileName}
@@ -566,7 +566,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* CIBIL Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasCibilScoreReport}
           fileName={application.cibilScoreFileName}
@@ -576,7 +576,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* NACH Form */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <NachPdcCell
           hasNach={application.hasNachForm}
           hasNachFile={application.hasNachForm}
@@ -585,7 +585,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/*  PDC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <NachPdcCell
           hasPdc={application.hasPdc}
           hasPdcFile={application.hasPdc}
@@ -594,7 +594,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Agreement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAgreement}
           fileName={application.agreementFileName}
@@ -603,7 +603,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
         />
       </td>
       {/* Cheque */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex  items-center space-x-2">
           {chequeNumber
             ? <div className="flex  items-center space-x-2">
@@ -636,7 +636,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Send To Courier */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.sendToCourier === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -653,7 +653,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Courier Picked */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.courierPicked === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -670,7 +670,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Original Documents */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.originalDocuments === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -687,7 +687,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Disburse Behalf of E-mandate */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.receivedDisburse === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -711,7 +711,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -720,7 +720,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Disbursal Account */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -729,7 +729,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Customer A/c Verified */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           {application.customerAcVerified === "Yes"
             ? <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -743,7 +743,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
         </div>
       </td>
       {/* Sanction Letter */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <PdfIcon
           hasFile={application.sanctionLetter}
           fileName={application.sanctionLetterFileName}
@@ -753,7 +753,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Emandate Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -764,7 +764,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* ICICI Emandate Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -775,7 +775,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Ready For Approve Column */}
-    <td className="px-6 py-4 text-center">
+          <td className={`px-6 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <button
         onClick={handleReadyForApprove}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -796,7 +796,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
     </td>
 
      {/* Bank A/c Verification Column */}
-    <td className="px-6 py-4 text-center">
+      <td className={`px-6 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
       <button
         onClick={handleBankVerification}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -817,7 +817,8 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
     </td>
 
     {/* Disburse Approval Column */}
-    <td className="px-6 py-4 text-center">
+          <td className={`px-6 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+
       <button
         onClick={handleDisburseApproval}
         className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
@@ -838,7 +839,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
     </td>
 
       {/* Loan Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-orange-400"
@@ -849,7 +850,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Change Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onChangeStatusClick(application, "change-status")}
@@ -863,7 +864,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onActionClick(application)}
@@ -877,7 +878,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Appraisal Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.finalReportStatus === "Recommended"
           ? <button
               onClick={() =>
@@ -901,7 +902,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Eligibility */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onLoanEligibilityClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -913,7 +914,7 @@ const [disburseApproval, setDisburseApproval] = useState(application.disburseApp
       </td>
 
       {/* Replace KYC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onReplaceKYCClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark

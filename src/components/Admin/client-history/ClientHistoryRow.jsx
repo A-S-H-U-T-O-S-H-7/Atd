@@ -27,7 +27,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       }`}
     >
       {/* SN */}
-      <td className="px-4 py-4 text-center">
+      <td className={`px-4 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
           isDark
             ? "bg-emerald-600/20 text-emerald-400"
@@ -38,9 +38,8 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Name */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
-          
           <div>
             <span className={`text-sm font-semibold ${
               isDark ? "text-white" : "text-gray-900"
@@ -52,7 +51,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Loan No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono ${
           isDark ? "text-emerald-400" : "text-emerald-600"
         }`}>
@@ -61,7 +60,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Father Name */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm ${
           isDark ? "text-gray-300" : "text-gray-700"
         }`}>
@@ -70,7 +69,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* CRN No */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono px-2 py-1 rounded ${
           isDark 
             ? "bg-purple-600/20 text-purple-400" 
@@ -81,7 +80,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Account ID */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`text-sm font-mono ${
           isDark ? "text-gray-300" : "text-gray-700"
         }`}>
@@ -90,9 +89,8 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Phone */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span className={`text-sm font-medium ${
             isDark ? "text-white" : "text-gray-900"
           }`}>
@@ -102,7 +100,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
       </td>
 
       {/* Email */}
-      <td className="px-4 py-4">
+      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"

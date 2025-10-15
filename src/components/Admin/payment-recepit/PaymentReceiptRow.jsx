@@ -16,13 +16,13 @@ const PaymentReceiptRow = ({
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
-        ? "border-gray-700 hover:bg-gray-700/50"
-        : "border-gray-100 hover:bg-emerald-50/50"} ${index % 2 === 0
+        ? "border-emerald-700 hover:bg-gray-700/50"
+        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
         ? isDark ? "bg-gray-700/30" : "bg-gray-50"
         : ""}`}
     >
       {/* SN */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -33,7 +33,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -51,7 +51,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Loan No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -62,7 +62,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
           <div>
             <p
@@ -77,7 +77,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Email */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail
             className={`w-4 h-4 ${isDark
@@ -95,7 +95,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Phone */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Phone
             className={`w-4 h-4 ${isDark
@@ -113,7 +113,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Outstanding Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-yellow-400"
@@ -124,7 +124,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Payable Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-blue-400"
@@ -135,7 +135,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Received Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${
             payment.receivedAmount 
@@ -148,7 +148,7 @@ const PaymentReceiptRow = ({
       </td>
 
       {/* Commission */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >

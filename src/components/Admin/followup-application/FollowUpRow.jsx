@@ -71,7 +71,7 @@ const FollowUpRow = ({
         : ""}`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -82,7 +82,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={handleCall}
           className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${isDark
@@ -94,7 +94,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Application Source */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -103,7 +103,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Account Activation */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -112,7 +112,7 @@ const FollowUpRow = ({
       </td>
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -123,7 +123,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -132,7 +132,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Enquiry Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -150,7 +150,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-100"
@@ -161,7 +161,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Current Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -170,7 +170,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Current State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -179,7 +179,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Current City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -188,7 +188,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -197,7 +197,7 @@ const FollowUpRow = ({
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -206,7 +206,7 @@ const FollowUpRow = ({
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -215,7 +215,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -226,7 +226,7 @@ const FollowUpRow = ({
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
           <span
@@ -238,7 +238,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Applied Loan */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -249,7 +249,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Approved Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span
             className={`text-sm  font-semibold ${isDark
@@ -262,7 +262,7 @@ const FollowUpRow = ({
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -271,7 +271,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -280,7 +280,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -289,7 +289,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPhoto}
           fileName={application.photoFileName}
@@ -299,7 +299,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPanCard}
           fileName={application.panCardFileName}
@@ -309,7 +309,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAddressProof}
           fileName={application.addressProofFileName}
@@ -319,7 +319,7 @@ const FollowUpRow = ({
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasIdProof}
           fileName={application.idProofFileName}
@@ -329,7 +329,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Salary Proof - Multiple Files */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex space-x-2">
           <DocumentIcon
             hasFile={application.hasSalaryProof}
@@ -353,7 +353,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankStatement}
           fileName={application.bankStatementFileName}
@@ -363,7 +363,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Bank Verification Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankVerificationReport}
           fileName={application.bankVerificationFileName}
@@ -373,7 +373,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Social Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasSocialScoreReport}
           fileName={application.socialScoreFileName}
@@ -383,7 +383,7 @@ const FollowUpRow = ({
       </td>
 
       {/* CIBIL Score Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasCibilScoreReport}
           fileName={application.cibilScoreFileName}
@@ -393,7 +393,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Approval Note */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -402,7 +402,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-orange-400"
@@ -413,7 +413,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onActionClick(application, "edit")}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -425,7 +425,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Appraisal Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.finalReportStatus === "Recommended"
           ? <button
               onClick={() =>
@@ -449,7 +449,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Eligibility */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onLoanEligibilityClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -461,7 +461,7 @@ const FollowUpRow = ({
       </td>
 
       {/* Replace KYC */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onReplaceKYCClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -473,7 +473,7 @@ const FollowUpRow = ({
       </td>
 
       {/* BlackList */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${isDark
             ? " underline text-gray-300"

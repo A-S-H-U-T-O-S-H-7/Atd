@@ -27,78 +27,78 @@ const ECollectionTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "50px" }}>
                   SN
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Collection Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
                   CRN No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Loan No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "180px" }}>
                   Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Transaction Mode
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "150px" }}>
                   Transaction UTR
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "150px" }}>
                   Transaction Remarks
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Client A/c No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Collection Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "150px" }}>
                   Payer Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "140px" }}>
                   Payer A/C No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
                   Payer Bank IFSC
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "150px" }}>
                   Bank Transaction No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold  ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>
                   Status
                 </th>
@@ -130,7 +130,7 @@ const ECollectionTable = ({
 
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div>
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

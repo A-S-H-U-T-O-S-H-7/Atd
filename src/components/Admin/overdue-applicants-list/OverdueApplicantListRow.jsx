@@ -30,12 +30,12 @@ const OverdueApplicantListRow = ({
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
         ? "border-emerald-700 hover:bg-gray-700/50"
-        : "border-emerald-100 hover:bg-emerald-50/50"} ${index % 2 === 0
+        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
         ? isDark ? "bg-gray-700/30" : "bg-gray-50"
         : ""}`}
     >
       {/* SN */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -46,7 +46,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onCall(applicant)}
           className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
@@ -61,7 +61,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Loan No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-semibold ${isDark
@@ -74,7 +74,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Due Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-medium ${isDark
@@ -87,7 +87,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
           <p
             className={`font-medium text-sm ${isDark
@@ -100,7 +100,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-medium ${isDark
@@ -113,7 +113,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail
             className={`w-4 h-4 ${isDark
@@ -131,7 +131,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Adjustment */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onAdjustment(applicant)}
           className={`px-3 py-1 cursor-pointer rounded-lg font-medium transition-all duration-200 text-sm ${
@@ -145,7 +145,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Balance */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-bold ${isDark
@@ -158,7 +158,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Overdue Amt */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {(() => {
           const today = new Date();
           
@@ -204,7 +204,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* View */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onView(applicant)}
           className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
@@ -218,7 +218,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Charge Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onChargeICICI(applicant)}
           className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
@@ -232,7 +232,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* SRE Assign */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onSREAssign(applicant)}
           className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${

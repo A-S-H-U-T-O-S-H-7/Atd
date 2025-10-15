@@ -2,6 +2,35 @@ import React from "react";
 import { Calendar, CreditCard, User, Building2 } from "lucide-react";
 
 const CollectionRow = ({ item, index, isDark }) => {
+  // Common cell styling classes
+  const cellClasses = {
+    base: `px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`,
+    text: {
+      normal: `text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`,
+      semibold: `text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-800"}`,
+      bold: `text-sm font-bold ${isDark ? "text-gray-200" : "text-gray-800"}`,
+      muted: `text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`,
+    },
+    colors: {
+      emerald: `text-sm font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`,
+      blue: `text-sm font-medium ${isDark ? "text-blue-400" : "text-blue-600"}`,
+      green: `text-sm font-semibold ${isDark ? "text-green-400" : "text-green-600"}`,
+      red: `text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"}`,
+      orange: `text-sm font-medium ${isDark ? "text-orange-400" : "text-orange-600"}`,
+    },
+    badges: {
+      emerald: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        isDark ? "bg-emerald-900/50 text-emerald-300 border border-emerald-700" : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+      }`,
+      blue: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+        isDark ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-blue-100 text-blue-800 border border-blue-200"
+      }`,
+      orange: `px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+        isDark ? "bg-orange-900/50 text-orange-300 border-orange-700" : "bg-orange-100 text-orange-800 border-orange-200"
+      }`,
+    }
+  };
+
   const getDueDateStatus = (dueDate) => {
     const today = new Date();
     const due = new Date(dueDate.split('-').reverse().join('-'));
@@ -51,115 +80,88 @@ const CollectionRow = ({ item, index, isDark }) => {
       }`}
     >
       {/* SN */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-          isDark
-            ? " text-white"
-            : " text-black"
+          isDark ? "text-white" : "text-black"
         }`}>
           {item.sn}
         </div>
       </td>
 
       {/* Collection Date */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className="flex items-center space-x-2">
-          <Calendar className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
+          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={cellClasses.text.normal}>
             {item.collectionDate}
           </span>
         </div>
       </td>
 
       {/* CRN No */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className="flex items-center space-x-2">
-          
-          <span className={`text-sm font-medium ${
-            isDark ? "text-blue-400" : "text-blue-600"
-          }`}>
+          <span className={cellClasses.colors.blue}>
             {item.crnNo}
           </span>
         </div>
       </td>
 
       {/* Loan No */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className="flex items-center space-x-2">
-          
-          <span className={`text-sm font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
+          <span className={cellClasses.colors.emerald}>
             {item.loanNo}
           </span>
         </div>
       </td>
 
       {/* Name */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className="flex items-center space-x-2">
-          
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
+          <span className={cellClasses.text.normal}>
             {item.name}
           </span>
         </div>
       </td>
 
       {/* Admin Fee */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.text.normal}>
           ₹{item.adminFee.toFixed(2)}
         </span>
       </td>
 
       {/* GST */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.text.normal}>
           ₹{item.gst.toFixed(2)}
         </span>
       </td>
 
       {/* Sanction Amount */}
-      <td className="px-4 py-3">
-        <span className={`px-3 py-2  rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-      isDark
-        ? "bg-orange-900/50 text-orange-300 border-orange-700 "
-        : "bg-orange-100 text-orange-800 border-orange-200 "
-    }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.badges.orange}>
           ₹{item.sanctionAmount.toFixed(2)}
         </span>
       </td>
 
       {/* Disburse Date */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.text.normal}>
           {item.disburseDate}
         </span>
       </td>
 
       {/* Transaction Date */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.text.normal}>
           {item.transactionDate}
         </span>
       </td>
 
       {/* Due Date */}
-      <td className="px-4 py-3">
+      <td className={cellClasses.base}>
         <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
           getDueDateColor(dueDateStatus.status)
         }`}>
@@ -174,103 +176,71 @@ const CollectionRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Interest */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.text.normal}>
           ₹{item.interest.toFixed(2)}
         </span>
       </td>
 
       {/* Penalty */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          item.penalty > 0 
-            ? (isDark ? "text-red-400" : "text-red-600")
-            : (isDark ? "text-gray-200" : "text-gray-800")
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={item.penalty > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
           {item.penalty > 0 ? `₹${item.penalty.toFixed(2)}` : '-'}
         </span>
       </td>
 
       {/* GST Penalty */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          item.gstPenalty > 0 
-            ? (isDark ? "text-red-400" : "text-red-600")
-            : (isDark ? "text-gray-200" : "text-gray-800")
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={item.gstPenalty > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
           {item.gstPenalty > 0 ? `₹${item.gstPenalty.toFixed(2)}` : '-'}
         </span>
       </td>
 
       {/* Penal Interest */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          item.penalInterest > 0 
-            ? (isDark ? "text-red-400" : "text-red-600")
-            : (isDark ? "text-gray-200" : "text-gray-800")
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={item.penalInterest > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
           {item.penalInterest > 0 ? `₹${item.penalInterest.toFixed(2)}` : '-'}
         </span>
       </td>
 
       {/* Renewal Charge */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          item.renewalCharge > 0 
-            ? (isDark ? "text-orange-400" : "text-orange-600")
-            : (isDark ? "text-gray-200" : "text-gray-800")
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={item.renewalCharge > 0 ? cellClasses.colors.orange : cellClasses.text.normal}>
           {item.renewalCharge > 0 ? `₹${item.renewalCharge.toFixed(2)}` : '-'}
         </span>
       </td>
 
       {/* Bounce Charge */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          item.bounceCharge > 0 
-            ? (isDark ? "text-red-400" : "text-red-600")
-            : (isDark ? "text-gray-200" : "text-gray-800")
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={item.bounceCharge > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
           {item.bounceCharge > 0 ? `₹${item.bounceCharge.toFixed(2)}` : '-'}
         </span>
       </td>
 
       {/* Collection Amount */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-green-400" : "text-green-600"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.colors.green}>
           ₹{item.collectionAmount.toFixed(2)}
         </span>
       </td>
 
       {/* Total Amount */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-bold ${
-          isDark ? "text-emerald-400" : "text-emerald-600"
-        }`}>
+      <td className={cellClasses.base}>
+        <span className={cellClasses.colors.emerald}>
           ₹{item.totalAmount.toFixed(2)}
         </span>
       </td>
 
       {/* Agent */}
-      <td className="px-4 py-3">
-        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-          isDark
-            ? "bg-blue-900/50 text-blue-300 border border-blue-700"
-            : "bg-blue-100 text-blue-800 border border-blue-200"
-        }`}>
+      <td className={cellClasses.base}>
+        <div className={cellClasses.badges.blue}>
           {item.agent}
         </div>
       </td>
 
       {/* User By */}
-      <td className="px-4 py-3">
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-400" : "text-gray-600"
-        }`}>
+      <td className={`px-4 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <span className={cellClasses.text.muted}>
           {item.userBy}
         </span>
       </td>

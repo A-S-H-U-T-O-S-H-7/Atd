@@ -28,48 +28,48 @@ const ClientHistoryTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "60px" }}>
                   SN
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "180px" }}>
                   Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "130px" }}>
                   Loan No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "180px" }}>
                   Father Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   CRN No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "180px" }}>
                   Account ID
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "130px" }}>
                   Phone
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "220px" }}>
                   Email
                 </th>
-                <th className={`px-4 py-4 text-center text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-center text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "100px" }}>
                   View
                 </th>
@@ -101,7 +101,7 @@ const ClientHistoryTable = ({
         )}
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div className="mt-2">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

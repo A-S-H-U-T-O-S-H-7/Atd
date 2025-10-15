@@ -41,8 +41,19 @@ const ChequeDepositRow = ({
         ? isDark ? "bg-gray-700/30" : "bg-gray-50"
         : ""}`}
     >
+      {/* SR No */}
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <span
+          className={`font-medium ${isDark
+            ? "text-gray-100"
+            : "text-gray-900"}`}
+        >
+          {index + 1}
+        </span>
+      </td>
+
       {/* Loan No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-semibold text-sm ${isDark
             ? "text-emerald-400"
@@ -53,7 +64,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Cheque No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-200"
@@ -64,7 +75,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Bank Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Building2
             className={`w-4 h-4 ${isDark
@@ -82,7 +93,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Deposit Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -100,7 +111,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <IndianRupee
             className={`w-4 h-4 ${isDark
@@ -118,7 +129,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* User */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <User
             className={`w-4 h-4 ${isDark
@@ -136,7 +147,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getStatusColor(
             deposit.status

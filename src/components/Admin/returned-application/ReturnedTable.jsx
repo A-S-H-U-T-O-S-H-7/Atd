@@ -21,8 +21,8 @@ const ReturnedTable = ({
    
 }) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold ${
-    isDark ? "text-gray-100" : "text-gray-700"
+    const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
   // Table headers configuration with their respective widths
@@ -120,7 +120,7 @@ const ReturnedTable = ({
         )}
         
         {totalPages > 0 && (
-          <div className="mt-8">
+          <div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

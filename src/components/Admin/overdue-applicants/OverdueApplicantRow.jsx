@@ -1,6 +1,5 @@
 import { Phone, Mail } from "lucide-react";
 
-
 const OverdueApplicantRow = ({
   applicant,
   index,
@@ -12,23 +11,18 @@ const OverdueApplicantRow = ({
   onOverdueAmountClick
 }) => {
 
+  const handleCall = (item) => {
+    onCall(applicant); 
+  };
 
+  const handleAdjustment = (applicant) => {
+    onAdjustment(applicant);  
+  };
 
-const handleCall = (item) => {
-  onCall(applicant); 
-};
-
- const handleAdjustment = (applicant) => {
-  onAdjustment(applicant);  
-};
-
-const handleOverdueAmountClick = () => {
-  onOverdueAmountClick(applicant);  
-};
+  const handleOverdueAmountClick = () => {
+    onOverdueAmountClick(applicant);  
+  };
     
- 
-
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -41,12 +35,12 @@ const handleOverdueAmountClick = () => {
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
         ? "border-emerald-700 hover:bg-gray-700/50"
-        : "border-emerald-100 hover:bg-emerald-50/50"} ${index % 2 === 0
+        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
         ? isDark ? "bg-gray-700/30" : "bg-gray-50"
         : ""}`}
     >
       {/* SN */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -57,9 +51,9 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
-        onClick={handleCall}
+          onClick={handleCall}
           className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
             isDark
               ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300 border border-blue-700"
@@ -72,9 +66,8 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Loan No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-        
           <span
             className={`text-sm font-semibold ${isDark
               ? "text-emerald-400"
@@ -86,9 +79,8 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Due Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-medium ${isDark
               ? "text-gray-200"
@@ -100,9 +92,8 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
-         
           <p
             className={`font-medium text-sm ${isDark
               ? "text-gray-100"
@@ -114,9 +105,8 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-medium ${isDark
               ? "text-gray-200"
@@ -128,7 +118,7 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail
             className={`w-4 h-4 ${isDark
@@ -146,7 +136,7 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Adjustment */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => handleAdjustment(applicant)}
           className={`px-3 py-1 cursor-pointer rounded-lg font-medium transition-all duration-200 text-sm ${
@@ -160,9 +150,8 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Balance */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-bold ${isDark
               ? "text-gray-100"
@@ -173,54 +162,54 @@ const handleOverdueAmountClick = () => {
         </div>
       </td>
 
-    {/* Overdue Amt */}
-<td className="px-6 py-4">
-  {(() => {
-    const today = new Date();
-    
-    const dateParts = applicant.dueDate.split('-');
-    const formattedDate = `${dateParts[1]}/${dateParts[0]}/${dateParts[2]}`;
-    const dueDate = new Date(formattedDate);
-    
-    const daysDiff = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
-    
-    if (daysDiff >= 0 && daysDiff <= 3) {
-      return (
-        <button
-          onClick={() => onRenew(applicant)}
-          className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
-            isDark
-              ? "bg-green-900/50 hover:bg-green-800 text-green-300 border border-green-700"
-              : "bg-green-100 hover:bg-green-200 text-green-700 border border-green-200"
-          }`}
-        >
-          Renew
-        </button>
-      );
-    }
-    else {
-      return (
-        <button
-          onClick={handleOverdueAmountClick}
-          className={`px-2 py-1 rounded-lg text-sm font-bold cursor-pointer transition-all duration-200 hover:opacity-80 ${
-            applicant.overdueAmt > applicant.balance
-              ? isDark
-                ? "bg-red-900/50 text-red-300 hover:bg-red-800"
-                : "bg-red-100 text-red-800 hover:bg-red-200"
-              : isDark
-              ? "bg-orange-900/50 text-orange-300 hover:bg-orange-800"
-              : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-          }`}
-        >
-          {formatCurrency(applicant.overdueAmt)}
-        </button>
-      );
-    }
-  })()}
-</td>
+      {/* Overdue Amt */}
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        {(() => {
+          const today = new Date();
+          
+          const dateParts = applicant.dueDate.split('-');
+          const formattedDate = `${dateParts[1]}/${dateParts[0]}/${dateParts[2]}`;
+          const dueDate = new Date(formattedDate);
+          
+          const daysDiff = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+          
+          if (daysDiff >= 0 && daysDiff <= 3) {
+            return (
+              <button
+                onClick={() => onRenew(applicant)}
+                className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
+                  isDark
+                    ? "bg-green-900/50 hover:bg-green-800 text-green-300 border border-green-700"
+                    : "bg-green-100 hover:bg-green-200 text-green-700 border border-green-200"
+                }`}
+              >
+                Renew
+              </button>
+            );
+          }
+          else {
+            return (
+              <button
+                onClick={handleOverdueAmountClick}
+                className={`px-2 py-1 rounded-lg text-sm font-bold cursor-pointer transition-all duration-200 hover:opacity-80 ${
+                  applicant.overdueAmt > applicant.balance
+                    ? isDark
+                      ? "bg-red-900/50 text-red-300 hover:bg-red-800"
+                      : "bg-red-100 text-red-800 hover:bg-red-200"
+                    : isDark
+                    ? "bg-orange-900/50 text-orange-300 hover:bg-orange-800"
+                    : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                }`}
+              >
+                {formatCurrency(applicant.overdueAmt)}
+              </button>
+            );
+          }
+        })()}
+      </td>
 
       {/* UPI Payments */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-green-400"
@@ -231,7 +220,7 @@ const handleOverdueAmountClick = () => {
       </td>
 
       {/* Demand Notice */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onSendNotice(applicant)}
@@ -246,9 +235,8 @@ const handleOverdueAmountClick = () => {
         </div>
       </td>
 
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-medium ${isDark
               ? "text-gray-100"
@@ -261,7 +249,6 @@ const handleOverdueAmountClick = () => {
 
       <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-medium ${isDark
               ? "text-gray-100"
@@ -271,7 +258,6 @@ const handleOverdueAmountClick = () => {
           </span>
         </div>
       </td>
-
     </tr>
   );
 };

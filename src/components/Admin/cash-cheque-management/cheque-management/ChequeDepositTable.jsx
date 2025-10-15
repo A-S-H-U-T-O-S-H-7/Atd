@@ -28,43 +28,55 @@ const ChequeDepositTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                }`} style={{ minWidth: "120px" }}>
+                  Sr No
+                </th>
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Loan No
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "120px" }}>
                   Cheque No
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "150px" }}>
                   Bank Name
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "140px" }}>
                   Deposit Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "120px" }}>
                   Amount
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "100px" }}>
                   User
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "120px" }}>
                   Status
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "100px" }}>
                   Edit
                 </th>
@@ -96,7 +108,7 @@ const ChequeDepositTable = ({
         )}
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div >
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

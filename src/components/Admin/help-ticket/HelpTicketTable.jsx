@@ -28,39 +28,40 @@ const HelpTicketTable = ({
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
-              <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+              <tr> 
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Issue Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "100px" }}>
                   Ticket ID
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "200px" }}>
                   Subject
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Message
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   User
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "100px" }}>
                   Status
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Action
                 </th>

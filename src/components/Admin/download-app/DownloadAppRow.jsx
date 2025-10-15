@@ -22,7 +22,7 @@ const DownloadedAppRow = ({ item, index, isDark }) => {
       }`}
     >
       {/* SN */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
           isDark
             ? "bg-emerald-900/50 text-emerald-300 border border-emerald-700"
@@ -33,7 +33,7 @@ const DownloadedAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Mobile Number */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Phone className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -47,7 +47,7 @@ const DownloadedAppRow = ({ item, index, isDark }) => {
       </td>
 
       {/* Download Date */}
-      <td className="px-4 py-3">
+      <td className={`px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"

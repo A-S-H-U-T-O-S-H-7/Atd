@@ -71,7 +71,7 @@ const RejectedRow = ({
         : ""}`}
     >
       {/* SR No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -82,7 +82,7 @@ const RejectedRow = ({
       </td>
 
       {/* Call */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={handleCall}
           className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${isDark
@@ -94,7 +94,7 @@ const RejectedRow = ({
       </td>
 
       {/* Application Source */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -105,7 +105,7 @@ const RejectedRow = ({
       
 
       {/* CRN No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-emerald-400"
@@ -116,7 +116,7 @@ const RejectedRow = ({
       </td>
 
       {/* Account ID */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -125,7 +125,7 @@ const RejectedRow = ({
       </td>
 
       {/* Enquiry Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -143,7 +143,7 @@ const RejectedRow = ({
       </td>
 
       {/* Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-100"
@@ -155,7 +155,7 @@ const RejectedRow = ({
 
 
       {/* Address */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -164,7 +164,7 @@ const RejectedRow = ({
       </td>
 
       {/* State */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -173,7 +173,7 @@ const RejectedRow = ({
       </td>
 
       {/* City */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -182,7 +182,7 @@ const RejectedRow = ({
       </td>
 
       {/* Phone No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
@@ -193,7 +193,7 @@ const RejectedRow = ({
       </td>
 
       {/* E-mail */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
           <span
@@ -208,7 +208,7 @@ const RejectedRow = ({
       
 
       {/* Approved Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span
             className={`text-sm  font-semibold ${isDark
@@ -221,7 +221,7 @@ const RejectedRow = ({
       </td>
 
       {/* ROI */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -230,7 +230,7 @@ const RejectedRow = ({
       </td>
 
       {/* Tenure */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -239,7 +239,7 @@ const RejectedRow = ({
       </td>
 
       {/* Loan Term */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -248,7 +248,7 @@ const RejectedRow = ({
       </td>
 
       {/* Photo */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPhoto}
           fileName={application.photoFileName}
@@ -258,7 +258,7 @@ const RejectedRow = ({
       </td>
 
       {/* Pan Card */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasPanCard}
           fileName={application.panCardFileName}
@@ -268,7 +268,7 @@ const RejectedRow = ({
       </td>
 
       {/* Address Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasAddressProof}
           fileName={application.addressProofFileName}
@@ -278,7 +278,7 @@ const RejectedRow = ({
       </td>
 
       {/* ID Proof */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasIdProof}
           fileName={application.idProofFileName}
@@ -288,7 +288,7 @@ const RejectedRow = ({
       </td>
 
       {/* Salary Proof - Multiple Files */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex space-x-2">
           <DocumentIcon
             hasFile={application.hasSalaryProof}
@@ -312,7 +312,7 @@ const RejectedRow = ({
       </td>
 
       {/* Bank Statement */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <DocumentIcon
           hasFile={application.hasBankStatement}
           fileName={application.bankStatementFileName}
@@ -326,7 +326,7 @@ const RejectedRow = ({
       
 
       {/* Remark */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -335,7 +335,7 @@ const RejectedRow = ({
       </td>
 
       {/* Status */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm font-semibold ${isDark
             ? "text-orange-400"
@@ -346,7 +346,7 @@ const RejectedRow = ({
       </td>
 
       {/* user by */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
@@ -355,7 +355,7 @@ const RejectedRow = ({
       </td>
 
       {/* Restore Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onActionClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -370,7 +370,7 @@ const RejectedRow = ({
       
 
       {/* Appraisal Report */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         {application.finalReportStatus === "Recommended"
           ? <button
               onClick={() =>
@@ -394,7 +394,7 @@ const RejectedRow = ({
       </td>
 
       {/* Eligibility */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onLoanEligibilityClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
@@ -407,7 +407,7 @@ const RejectedRow = ({
 
 
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onActionClick(application, "edit")}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark

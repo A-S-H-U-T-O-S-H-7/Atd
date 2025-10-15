@@ -29,49 +29,59 @@ const LegalTable = ({
                 : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "80px" }}>
                   S.No.
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "280px" }}>
                   Customer Details
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "300px" }}>
                   Address Information
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "280px" }}>
                   Financial Details
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "200px" }}>
                   Bank Information
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "200px" }}>
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "200px" }}>
       Loan Details
     </th>
-    <th className={`px-4 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`} style={{ minWidth: "250px" }}>
+    <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+}`} style={{ minWidth: "250px" }}>
       Cheque Details
     </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "200px" }}>
                   Important Dates
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "200px" }}>
                   Legal Status
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+
                 }`} style={{ minWidth: "300px" }}>
                   Actions
                 </th>

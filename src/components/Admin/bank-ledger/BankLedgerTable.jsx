@@ -30,28 +30,33 @@ const BankLedgerTable = ({
                 : "bg-gradient-to-r from-gray-50 to-emerald-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+                }`}>
+                  Sr No
+                </th>
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`}>
                   Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`}>
                   Particulars
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`}>
                   Debit
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`}>
                   Credit
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`}>
                   Balance
                 </th>

@@ -7,7 +7,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric' 
     });
   };
 
@@ -24,8 +24,8 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
         isDark
-          ? "border-gray-700 hover:bg-gray-700/50"
-          : "border-gray-100 hover:bg-blue-50/50"
+          ? "border-emerald-700 hover:bg-gray-700/50"
+          : "border-emerald-300 hover:bg-blue-50/50"
       } ${
         index % 2 === 0
           ? isDark
@@ -35,7 +35,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       }`}
     >
       {/* S.No */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`font-medium ${
           isDark ? "text-gray-100" : "text-gray-900"
         }`}>
@@ -44,7 +44,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       </td>
 
       {/* Bank Name */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Building2 className={`w-4 h-4 ${
             isDark ? "text-blue-400" : "text-blue-600"
@@ -58,7 +58,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       </td>
 
       {/* Deposit Date */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar className={`w-4 h-4 ${
             isDark ? "text-green-400" : "text-green-600"
@@ -72,7 +72,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       </td>
 
       {/* Amount */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <CreditCard className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -86,7 +86,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       </td>
 
       {/* User */}
-      <td className="px-6 py-4">
+      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <User className={`w-4 h-4 ${
             isDark ? "text-purple-400" : "text-purple-600"

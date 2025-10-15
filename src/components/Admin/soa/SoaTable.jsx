@@ -19,63 +19,63 @@ const SoaTable = ({ transactionData, isDark }) => {
               : "bg-gradient-to-r from-emerald-50 to-indigo-50 border-emerald-300"
           }`}>
             <tr>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "60px" }}>
                 SN
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "150px" }}>
                 Particular
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
-              }`} style={{ minWidth: "120px" }}>
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+              }`} style={{ minWidth: "150px" }}>
                 Date
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "130px" }}>
                 Principal Amount
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "100px" }}>
                 Interest
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "120px" }}>
                 Due Amount
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "130px" }}>
                 Receipt Amount
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "100px" }}>
                 Penalty
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "120px" }}>
                 Penal Interest
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "110px" }}>
                 Penal GST
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "120px" }}>
                 Bounce Charge
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider ${
-                isDark ? "text-gray-100" : "text-gray-700"
+              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
               }`} style={{ minWidth: "120px" }}>
                 Balance
               </th>

@@ -27,23 +27,23 @@ const DownloadedAppTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "50px" }}>
                   SN
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "200px" }}>
                   Mobile Number
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Download Date
-                </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100" : "text-gray-700"
+                </th> 
+                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
                   Download Time
                 </th>

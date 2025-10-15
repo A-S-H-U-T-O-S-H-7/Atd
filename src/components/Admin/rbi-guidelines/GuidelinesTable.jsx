@@ -42,97 +42,92 @@ const RbiGuidelinesTable = ({
               >
                 <tr>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r 
+                      ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                      }`}
                     style={{ minWidth: "60px" }}
                   >
                     SR. No.
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${
+                      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "140px" }}
                   >
                     RBI Guideline Date
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "200px" }}
                   >
                     Reference No.
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "300px" }}
                   >
                     Subject
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "120px" }}
                   >
                     Caution advice No
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "150px" }}
                   >
                     Remarks
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "140px" }}
                   >
                     Last Modify
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "100px" }}
                   >
                     Status
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "120px" }}
                   >
                     Added By
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "140px" }}
                   >
                     Upload Documents
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "140px" }}
                   >
                     Created Date
                   </th>
                   <th
-                    className={`px-4 py-4 text-left text-sm font-bold ${isDark
-                      ? "text-gray-100"
-                      : "text-gray-700"}`}
+                    className={`px-4 py-4 text-left text-sm font-bold border-r ${isDark
+                      ? "text-gray-100 border-gray-600/40"
+                      : "text-gray-700 border-gray-300/40"}`}
                     style={{ minWidth: "120px" }}
                   >
                     Action
