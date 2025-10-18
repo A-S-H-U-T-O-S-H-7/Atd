@@ -1,155 +1,370 @@
-import React from 'react';
-import { Phone, MessageSquare, Save } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Phone, MessageSquare } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import * as Yup from 'yup';
+import { alternateNumbersService, personalInfoService } from '@/lib/services/appraisal';
 
-const AlternativeNumberRemark = ({ formik, onSectionSave, isDark, saving }) => {
-  const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
+const AlternativeNumberRemark = ({ formik, isDark }) => {
+  const [saving, setSaving] = useState(false);
+  const [remarkSaving, setRemarkSaving] = useState(false);
+  const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.remark || '');
+  const timeoutRef = useRef(null);
+  const formikUpdateTimeoutRef = useRef(null);
+
+  // Yup validation schema
+  const phoneValidationSchema = Yup.string()
+    .matches(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number starting with 6-9')
+    .required('Phone number is required');
+
+  // Consistent styling with other components
+  const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
     isDark
-      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
-
-  const textareaClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm resize-none ${
-    isDark
-      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
-
-  const labelClassName = `block text-xs font-semibold mb-2 ${
-    isDark ? "text-gray-200" : "text-gray-700"
+      ? "bg-gray-800/60 border-gray-600 hover:border-emerald-500/40 shadow-lg"
+      : "bg-emerald-50/80 border-emerald-200 hover:border-emerald-300 shadow-sm"
   }`;
 
-  const valueClassName = `w-full px-3 py-2 rounded-lg border text-sm ${
-    isDark
-      ? "bg-gray-600/50 border-gray-500 text-gray-300"
-      : "bg-gray-100 border-gray-300 text-gray-600"
+  const labelClassName = `text-xs font-semibold mb-1 flex items-center space-x-2 ${
+    isDark ? "text-gray-300" : "text-emerald-700"
   }`;
 
-  const buttonClassName = `px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
-    isDark
-      ? "bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-gray-700"
-      : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
-  } disabled:cursor-not-allowed`;
+  const inputClassName = `w-full bg-transparent border-none outline-none text-sm font-medium ${
+    isDark ? "text-white placeholder-gray-400" : "text-gray-800 placeholder-gray-500"
+  }`;
+
+  const textareaClassName = `w-full bg-transparent border-none outline-none text-sm font-medium resize-none ${
+    isDark ? "text-white placeholder-gray-400" : "text-gray-800 placeholder-gray-500"
+  }`;
+
+  const errorClassName = `text-xs mt-1 ${
+    isDark ? "text-red-400" : "text-red-600"
+  }`;
+
+  const successClassName = `text-xs mt-1 ${
+    isDark ? "text-emerald-400" : "text-emerald-600"
+  }`;
+
+  const IconWrapper = ({ icon: Icon, className = "" }) => (
+    <Icon className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"} ${className}`} />
+  );
+
+  // Sync external changes to local state
+  useEffect(() => {
+    setLocalRemarkValue(formik.values.remark || '');
+  }, [formik.values.remark]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (formikUpdateTimeoutRef.current) {
+        clearTimeout(formikUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced save function for numbers
+  const debouncedSaveNumber = useCallback(async (fieldName, value) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        // Validate the number
+        await phoneValidationSchema.validate(value);
+        
+        if (!formik.values.applicationId) {
+          return;
+        }
+        
+        setSaving(true);
+        const data = {
+          application_id: parseInt(formik.values.applicationId),
+          [fieldName === 'alternateMobileNo1' ? 'alternate_no1' : 'alternate_no2']: value
+        };
+
+        const response = fieldName === 'alternateMobileNo1' 
+          ? await alternateNumbersService.saveAlternateNumber1(data)
+          : await alternateNumbersService.saveAlternateNumber2(data);
+        
+        toast.success(`${fieldName === 'alternateMobileNo1' ? 'Primary' : 'Secondary'} number saved successfully!`);
+        
+        // Clear any existing errors
+        formik.setFieldError(fieldName, undefined);
+      } catch (error) {
+        if (error instanceof Yup.ValidationError) {
+          formik.setFieldError(fieldName, error.message);
+        } else {
+          
+          // More specific error messages
+          if (error.response?.status === 422) {
+            const errorMessage = error.response?.data?.message || 'Invalid phone number format or missing required fields';
+            toast.error(errorMessage);
+          } else if (error.response?.status === 400) {
+            toast.error('Bad request - please check the phone number');
+          } else {
+            toast.error('Failed to save number');
+          }
+        }
+      } finally {
+        setSaving(false);
+      }
+    }, 500);
+  }, []);
+
+  // Debounced save function for remarks
+  const debouncedSaveRemark = useCallback((value) => {
+    // Clear existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set timeout for API call
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        // Only save if there's actually a remark to save
+        if (!value || value.trim().length === 0) {
+          return;
+        }
+
+        if (!formik.values.applicationId) {
+          return;
+        }
+
+        setRemarkSaving(true);
+        
+        const remarkData = {
+          application_id: parseInt(formik.values.applicationId),
+          remarks: value.trim()
+        };
+        
+        const response = await personalInfoService.savePersonalRemarks(remarkData);
+        toast.success('Remark saved successfully!');
+      } catch (error) {
+        
+        // More specific error messages
+        if (error.response?.status === 422) {
+          const errorMessage = error.response?.data?.message || 'Invalid remark data or missing required fields';
+          toast.error(errorMessage);
+        } else if (error.response?.status === 400) {
+          toast.error('Bad request - please check the remark data');
+        } else {
+          toast.error('Failed to save remark');
+        }
+      } finally {
+        setRemarkSaving(false);
+      }
+    }, 3000);
+  }, []);
+
+  // Handle phone number input change
+  const handlePhoneChange = (fieldName, value) => {
+    // Only allow numbers and limit to 10 digits
+    const numbersOnly = value.replace(/\D/g, '').slice(0, 10);
+    
+    
+    // Update formik value immediately
+    formik.setFieldValue(fieldName, numbersOnly);
+    
+    // Clear existing error when user starts typing
+    if (formik.errors[fieldName] && numbersOnly.length > 0) {
+      formik.setFieldError(fieldName, undefined);
+    }
+
+    // Only trigger save if we have exactly 10 digits
+    if (numbersOnly.length === 10) {
+      debouncedSaveNumber(fieldName, numbersOnly);
+    }
+  };
+
+  // Optimized remark change handler to prevent typing lag
+  const handleRemarkChange = (value) => {
+    // 1. Update local state immediately (no re-render lag)
+    setLocalRemarkValue(value);
+    
+    // 2. Debounce formik update to prevent excessive re-renders
+    if (formikUpdateTimeoutRef.current) {
+      clearTimeout(formikUpdateTimeoutRef.current);
+    }
+    formikUpdateTimeoutRef.current = setTimeout(() => {
+      formik.setFieldValue('remark', value);
+    }, 500);
+    
+    // 3. Debounce the API call (longer delay)
+    debouncedSaveRemark(value);
+  };
+
+  // Check if number is valid
+  const isNumberValid = (number) => {
+    return number && number.length === 10 && /^[6-9]\d{9}$/.test(number);
+  };
 
   return (
-    <div className={`rounded-xl shadow-lg border transition-all duration-300 overflow-hidden ${
+    <div className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
       isDark
-        ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
-        : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
+        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-emerald-500/20 shadow-2xl shadow-emerald-900/10"
+        : "bg-gradient-to-br from-gray-100 border-emerald-200 shadow-lg shadow-emerald-500/10"
     }`}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className={`p-4 border-b ${
-        isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
+        isDark 
+          ? "border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900" 
+          : "border-emerald-200 bg-gradient-to-r from-emerald-100 to-teal-100"
       }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${
+            isDark ? "bg-emerald-500/20" : "bg-emerald-500/10"
+          }`}>
             <Phone className={`w-5 h-5 ${
               isDark ? "text-emerald-400" : "text-emerald-600"
             }`} />
-            <h3 className={`text-lg font-semibold ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
+          </div>
+          <div>
+            <h3 className={`text-lg font-bold ${
+              isDark ? "text-emerald-400" : "text-emerald-700"
             }`}>
               Additional Information
             </h3>
+            <p className={`text-xs ${
+              isDark ? "text-gray-400" : "text-emerald-600"
+            }`}>
+              Alternative contacts and remarks
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={onSectionSave}
-            disabled={saving}
-            className={buttonClassName}
-          >
-            {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            <span>{saving ? 'Saving...' : 'Save'}</span>
-          </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Compact Content Grid */}
       <div className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Column - Alternative Numbers */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-4">
-            <div>
-              <label className={labelClassName}>
-                <Phone className="w-4 h-4 inline mr-1" />
-                Primary Alternative Mobile No
-              </label>
-              <input
-                type="tel"
-                value={formik.values.alternateMobileNo1}
-                onChange={(e) => formik.setFieldValue('alternateMobileNo1', e.target.value)}
-                className={inputClassName}
-                placeholder="Enter primary alternative number"
-              />
-              {formik.values.alternateMobileNo1 && (
-                <div className="mt-1 text-xs text-emerald-600">
-                  ✓ Number added
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClassName}>
-                <Phone className="w-4 h-4 inline mr-1" />
-                Secondary Alternative Mobile No
-              </label>
-              <input
-                type="tel"
-                value={formik.values.alternateMobileNo2}
-                onChange={(e) => formik.setFieldValue('alternateMobileNo2', e.target.value)}
-                className={inputClassName}
-                placeholder="Enter secondary alternative number"
-              />
-              {formik.values.alternateMobileNo2 && (
-                <div className="mt-1 text-xs text-emerald-600">
-                  ✓ Number added
-                </div>
-              )}
-            </div>
-
-            {/* Display current numbers */}
-            {(formik.values.alternateMobileNo1 || formik.values.alternateMobileNo2) && (
-              <div className={`p-3 rounded-lg border ${
-                isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-              }`}>
-                <h4 className={`text-xs font-semibold mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  Current Alternative Numbers
-                </h4>
-                <div className="space-y-1 text-sm">
-                  {formik.values.alternateMobileNo1 && (
-                    <div className={valueClassName}>{formik.values.alternateMobileNo1}</div>
-                  )}
-                  {formik.values.alternateMobileNo2 && (
-                    <div className={valueClassName}>{formik.values.alternateMobileNo2}</div>
-                  )}
-                </div>
+            {/* Primary Alternative Number */}
+            <div className={`${fieldClassName} group hover:scale-[1.02] transition-all duration-200 ${
+              formik.errors.alternateMobileNo1 ? 'border-red-500' : 
+              isNumberValid(formik.values.alternateMobileNo1) ? 'border-emerald-500' : ''
+            }`}>
+              <div className={labelClassName}>
+                <IconWrapper icon={Phone} />
+                <span>Primary Alternative No</span>
+                {saving && formik.values.alternateMobileNo1?.length === 10 && (
+                  <div className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                )}
               </div>
-            )}
+              <input
+                type="tel"
+                value={formik.values.alternateMobileNo1 || ''}
+                onChange={(e) => handlePhoneChange('alternateMobileNo1', e.target.value)}
+                className={inputClassName}
+                placeholder="Enter 10-digit number"
+                maxLength={10}
+                pattern="[0-9]*"
+                inputMode="numeric"
+              />
+              {formik.errors.alternateMobileNo1 ? (
+                <div className={errorClassName}>
+                  ⚠ {formik.errors.alternateMobileNo1}
+                </div>
+              ) : isNumberValid(formik.values.alternateMobileNo1) ? (
+                <div className={successClassName}>
+                  ✓ Number Added Successfully
+                </div>
+              ) : formik.values.alternateMobileNo1 ? (
+                <div className={`text-xs mt-1 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>
+                  ⚠ {10 - (formik.values.alternateMobileNo1.length || 0)} digits remaining
+                </div>
+              ) : null}
+            </div>
+
+            {/* Secondary Alternative Number */}
+            <div className={`${fieldClassName} group hover:scale-[1.02] transition-all duration-200 ${
+              formik.errors.alternateMobileNo2 ? 'border-red-500' : 
+              isNumberValid(formik.values.alternateMobileNo2) ? 'border-emerald-500' : ''
+            }`}>
+              <div className={labelClassName}>
+                <IconWrapper icon={Phone} />
+                <span>Secondary Alternative No</span>
+                {saving && formik.values.alternateMobileNo2?.length === 10 && (
+                  <div className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                )}
+              </div>
+              <input
+                type="tel"
+                value={formik.values.alternateMobileNo2 || ''}
+                onChange={(e) => handlePhoneChange('alternateMobileNo2', e.target.value)}
+                className={inputClassName}
+                placeholder="Enter 10-digit number"
+                maxLength={10}
+                pattern="[0-9]*"
+                inputMode="numeric"
+              />
+              {formik.errors.alternateMobileNo2 ? (
+                <div className={errorClassName}>
+                  ⚠ {formik.errors.alternateMobileNo2}
+                </div>
+              ) : isNumberValid(formik.values.alternateMobileNo2) ? (
+                <div className={successClassName}>
+                  ✓ Number Added Successfully
+                </div>
+              ) : formik.values.alternateMobileNo2 ? (
+                <div className={`text-xs mt-1 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>
+                  ⚠ {10 - (formik.values.alternateMobileNo2.length || 0)} digits remaining
+                </div>
+              ) : null}
+            </div>
           </div>
 
-          {/* Right Column - Remark */}
-          <div>
-            <label className={labelClassName}>
-              <MessageSquare className="w-4 h-4 inline mr-1" />
-              Remarks & Notes
-            </label>
+          {/* Remarks */}
+          <div className={`${fieldClassName} group hover:scale-[1.02] transition-all duration-200`}>
+            <div className={labelClassName}>
+              <IconWrapper icon={MessageSquare} />
+              <span>Remarks & Notes</span>
+              {remarkSaving && (
+                <div className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              )}
+            </div>
             <textarea
-              rows="6"
-              value={formik.values.remark}
-              onChange={(e) => formik.setFieldValue('remark', e.target.value)}
+              rows="5"
+              value={localRemarkValue}
+              onChange={(e) => handleRemarkChange(e.target.value)}
               className={textareaClassName}
-              placeholder="Enter any additional remarks, notes, or observations about the customer..."
+              placeholder="Additional remarks or observations..."
             />
-            <div className={`text-xs mt-1 ${
+            <div className={`text-xs mt-2 ${
               isDark ? "text-gray-400" : "text-gray-500"
             }`}>
-              Character count: {formik.values.remark?.length || 0}
+              {localRemarkValue?.length || 0} characters
+              {remarkSaving && ' • Saving...'}
             </div>
+          </div>
+        </div>
+
+        {/* Auto-save Status */}
+        <div className="mt-4 flex justify-between items-center">
+          <div className={`text-xs px-3 py-1 rounded-full ${
+            isDark 
+              ? "bg-gray-700 text-gray-300 border border-gray-600" 
+              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+          }`}>
+            💾 Auto-saves after 1 second
+          </div>
+          
+          <div className="flex space-x-3 text-xs">
+            <span className={
+              isNumberValid(formik.values.alternateMobileNo1) 
+                ? (isDark ? "text-emerald-400" : "text-emerald-600") 
+                : (isDark ? "text-gray-400" : "text-gray-500")
+            }>
+              Primary: {isNumberValid(formik.values.alternateMobileNo1) ? '✓ Valid' : '✗ Invalid'}
+            </span>
+            <span className={
+              isNumberValid(formik.values.alternateMobileNo2) 
+                ? (isDark ? "text-emerald-400" : "text-emerald-600") 
+                : (isDark ? "text-gray-400" : "text-gray-500")
+            }>
+              Secondary: {isNumberValid(formik.values.alternateMobileNo2) ? '✓ Valid' : '✗ Invalid'}
+            </span>
           </div>
         </div>
       </div>

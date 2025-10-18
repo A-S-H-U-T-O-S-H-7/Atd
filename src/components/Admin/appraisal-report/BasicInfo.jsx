@@ -1,165 +1,200 @@
 import React from 'react';
-import { FileText, User, Phone, Building, CreditCard } from 'lucide-react';
+import { User, CreditCard, Building, MapPin, House } from 'lucide-react';
 
 const BasicInformation = ({ formik, isDark }) => {
+  // Enhanced field styling with better visibility
   const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
     isDark
-      ? "bg-gray-700/50 border-gray-600 hover:border-emerald-500/50"
-      : "bg-gray-50 border-gray-200 hover:border-emerald-300"
+      ? "bg-gray-800/60 border-gray-600 hover:border-emerald-500/40 shadow-lg"
+      : "bg-emerald-50/80 border-emerald-200 hover:border-emerald-300 shadow-sm"
   }`;
 
-  const labelClassName = `text-xs font-semibold mb-1 flex items-center space-x-1 ${
-    isDark ? "text-gray-300" : "text-gray-600"
+  const labelClassName = `text-xs font-semibold mb-1 flex items-center space-x-2 ${
+    isDark ? "text-gray-300" : "text-emerald-700"
   }`;
 
-  const valueClassName = `text-sm font-medium mt-1 ${
-    isDark ? "text-white" : "text-gray-900"
+  const valueClassName = `text-sm font-medium truncate ${
+    isDark ? "text-white" : "text-gray-800"
   }`;
 
+  const unavailableClassName = `text-xs italic ${
+    isDark ? "text-gray-400" : "text-gray-500"
+  }`;
+
+  // Icon wrapper component
   const IconWrapper = ({ icon: Icon, className = "" }) => (
-    <Icon className={`w-3 h-3 ${className}`} />
+    <Icon className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"} ${className}`} />
+  );
+
+  // Format account details properly
+  const formatAccountDetails = (accountNo, bankName, branchName) => {
+    const accountNumber = accountNo || 'N/A';
+    const bank = bankName || 'N/A';
+    const branch = branchName || 'N/A';
+    
+    return `${accountNumber}, ${bank}, ${branch}`;
+  };
+
+  // Get data with N/A fallback
+  const getFieldValue = (value) => value || 'N/A';
+
+  const data = {
+    name: getFieldValue(formik.values?.name),
+    crnNo: getFieldValue(formik.values?.crnNo),
+    organizationName: getFieldValue(formik.values?.organizationName),
+    loanAccountNo: getFieldValue(formik.values?.loanAccountNo),
+    state: getFieldValue(formik.values?.state),
+    city: getFieldValue(formik.values?.city),
+    ifscCode: getFieldValue(formik.values?.ifscCode),
+    accountNumber: getFieldValue(formik.values?.accountNumber),
+    bankName: getFieldValue(formik.values?.bankName),
+    branchName: getFieldValue(formik.values?.branchName),
+  };
+
+  // Format complete account details
+  const completeAccountDetails = formatAccountDetails(
+    data.accountNumber,
+    data.bankName,
+    data.branchName
   );
 
   return (
-    <div className={`rounded-xl shadow-lg border transition-all duration-300 overflow-hidden ${
+    <div className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
       isDark
-        ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
-        : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
+        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-emerald-500/20 shadow-2xl shadow-emerald-900/10"
+        : "bg-gradient-to-br from-gray-100  border-emerald-200 shadow-lg shadow-emerald-500/10"
     }`}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className={`p-4 border-b ${
-        isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
+        isDark 
+          ? "border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900" 
+          : "border-emerald-200 bg-gradient-to-r from-emerald-100 to-teal-100"
       }`}>
-        <div className="flex items-center space-x-2">
-          <FileText className={`w-5 h-5 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <h3 className={`text-lg font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${
+            isDark ? "bg-emerald-500/20" : "bg-emerald-500/10"
           }`}>
-            Basic Information
-          </h3>
+            <User className={`w-5 h-5 ${
+              isDark ? "text-emerald-400" : "text-emerald-600"
+            }`} />
+          </div>
+          <div>
+            <h3 className={`text-lg font-bold ${
+              isDark ? "text-emerald-400" : "text-emerald-700"
+            }`}>
+              Basic Information
+            </h3>
+            
+          </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Enhanced Content Grid */}
       <div className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          
           {/* Name */}
-          <div className={fieldClassName}>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
               <IconWrapper icon={User} />
               <span>Full Name</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.name || 'Not available'}
+            <div className={valueClassName} title={data.name}>
+              {data.name}
             </div>
           </div>
 
           {/* CRN */}
-          <div className={fieldClassName}>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
               <IconWrapper icon={CreditCard} />
               <span>CRN Number</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.crnNo || 'Not available'}
+            <div className={valueClassName} title={data.crnNo}>
+              {data.crnNo}
             </div>
           </div>
 
           {/* Organization */}
-          <div className="md:col-span-2">
-            <div className={fieldClassName}>
-              <div className={labelClassName}>
-                <IconWrapper icon={Building} />
-                <span>Organization</span>
-              </div>
-              <div className={valueClassName}>
-                {formik.values?.organizationName || 'Not available'}
-              </div>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
+            <div className={labelClassName}>
+              <IconWrapper icon={Building} />
+              <span>Organization</span>
+            </div>
+            <div className={valueClassName} title={data.organizationName}>
+              {data.organizationName}
             </div>
           </div>
 
           {/* Loan Account */}
-          <div className={fieldClassName}>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
-              <IconWrapper icon={FileText} />
+              <IconWrapper icon={CreditCard} />
               <span>Loan Account No.</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.loanAccountNo || 'Not available'}
+            <div className={data.loanAccountNo === 'N/A' ? unavailableClassName : valueClassName}>
+              {data.loanAccountNo}
             </div>
           </div>
 
-          {/* Phone */}
-          <div className={fieldClassName}>
+          {/* State */}
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
-              <IconWrapper icon={Phone} />
-              <span>Phone Number</span>
+              <IconWrapper icon={MapPin} />
+              <span>State</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.phoneNo || 'Not available'}
+            <div className={valueClassName} title={data.state}>
+              {data.state}
             </div>
           </div>
 
-          {/* Father Name */}
-          <div className={fieldClassName}>
+          {/* City */}
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
-              <IconWrapper icon={User} />
-              <span>Father's Name</span>
+              <IconWrapper icon={MapPin} />
+              <span>City</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.fatherName || 'Not available'}
+            <div className={valueClassName} title={data.city}>
+              {data.city}
             </div>
           </div>
 
           {/* IFSC Code */}
-          <div className={fieldClassName}>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
             <div className={labelClassName}>
-              <IconWrapper icon={CreditCard} />
+              <IconWrapper icon={House} />
               <span>IFSC Code</span>
             </div>
-            <div className={valueClassName}>
-              {formik.values?.ifscCode || 'Not available'}
+            <div className={valueClassName} title={data.ifscCode}>
+              {data.ifscCode}
             </div>
           </div>
 
           {/* Account Details */}
-          <div className={fieldClassName}>
-            <div className={labelClassName}>
-              <IconWrapper icon={CreditCard} />
-              <span>Account Number</span>
-            </div>
-            <div className={valueClassName}>
-              {formik.values?.accountDetails || 'Not available'}
-            </div>
-          </div>
+<div className={`${fieldClassName} group hover:scale-[1.02] lg:col-span-1`}>
+  <div className={labelClassName}>
+    <IconWrapper icon={CreditCard} />
+    <span>Account Details</span>
+  </div>
+  <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+    <div className={`text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+      {data.accountNumber}
+    </div>
+    <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>•</span>
+    <div className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+      {data.bankName}
+    </div>
+    <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>•</span>
+    <div className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+      {data.branchName}
+    </div>
+  </div>
+</div>
+
         </div>
 
-        {/* Document Numbers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-          {/* PAN */}
-          <div className={fieldClassName}>
-            <div className={labelClassName}>
-              <IconWrapper icon={CreditCard} />
-              <span>PAN Number</span>
-            </div>
-            <div className={valueClassName}>
-              {formik.values?.panNo || 'Not available'}
-            </div>
-          </div>
-
-          {/* Aadhar */}
-          <div className={fieldClassName}>
-            <div className={labelClassName}>
-              <IconWrapper icon={CreditCard} />
-              <span>Aadhar Number</span>
-            </div>
-            <div className={valueClassName}>
-              {formik.values?.aadharNo || 'Not available'}
-            </div>
-          </div>
-        </div>
+        
+        
       </div>
     </div>
   );

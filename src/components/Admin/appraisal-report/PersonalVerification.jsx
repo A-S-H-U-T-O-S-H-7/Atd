@@ -1,126 +1,181 @@
-import React from 'react';
-import { UserCheck, Save, User, MapPin, Home } from 'lucide-react';
+import React, { useState } from 'react';
+import { UserCheck, Save, User, MapPin, Home, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const PersonalVerification = ({ formik, onSectionSave, isDark, saving }) => {
-  const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-    isDark
-      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
+  const [submittingPersonal, setSubmittingPersonal] = useState(false);
 
-  const textareaClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm resize-none ${
-    isDark
-      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400"
-      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
+  const handleSavePersonalInfo = async () => {
+    // Basic validation
+    if (!formik.values.fatherName || formik.values.fatherName.trim().length === 0) {
+      toast.error('Please enter father\'s name');
+      return;
+    }
 
-  const labelClassName = `block text-xs font-semibold mb-2 flex items-center space-x-1 ${
-    isDark ? "text-gray-200" : "text-gray-700"
+    if (!formik.values.currentAddress || formik.values.currentAddress.trim().length === 0) {
+      toast.error('Please enter current address');
+      return;
+    }
+
+    if (!formik.values.permanentAddress || formik.values.permanentAddress.trim().length === 0) {
+      toast.error('Please enter permanent address');
+      return;
+    }
+
+    try {
+      setSubmittingPersonal(true);
+      await onSectionSave();
+    } catch (error) {
+      console.error('Error saving personal info:', error);
+      // Don't show additional toast as onSectionSave will handle it
+    } finally {
+      setSubmittingPersonal(false);
+    }
+  };
+  // Consistent styling with BasicInformation
+  const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
+    isDark
+      ? "bg-gray-800/60 border-gray-600 hover:border-emerald-500/40 shadow-lg"
+      : "bg-emerald-50/80 border-emerald-200 hover:border-emerald-300 shadow-sm"
   }`;
+
+  const labelClassName = `text-sm font-semibold mb-1 flex items-center space-x-2 ${
+    isDark ? "text-gray-300" : "text-emerald-700"
+  }`;
+
+  const inputClassName = `w-full bg-transparent border-none outline-none text-sm font-medium ${
+    isDark ? "text-white placeholder-gray-400" : "text-gray-800 placeholder-gray-500"
+  }`;
+
+  
 
   const buttonClassName = `px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
     isDark
-      ? "bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-gray-700"
-      : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
-  } disabled:cursor-not-allowed`;
+      ? "bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-gray-700 shadow-lg shadow-emerald-900/20"
+      : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300 shadow-lg shadow-emerald-500/20"
+  } disabled:cursor-not-allowed hover:scale-105`;
 
   const IconWrapper = ({ icon: Icon, className = "" }) => (
-    <Icon className={`w-4 h-4 ${className}`} />
+    <Icon className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"} ${className}`} />
   );
 
   return (
-    <div className={`rounded-xl shadow-lg border transition-all duration-300 overflow-hidden ${
+    <div className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
       isDark
-        ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
-        : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
+        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-emerald-500/20 shadow-2xl shadow-emerald-900/10"
+        : "bg-gradient-to-br from-gray-100 border-emerald-200 shadow-lg shadow-emerald-500/10"
     }`}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className={`p-4 border-b ${
-        isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
+        isDark 
+          ? "border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900" 
+          : "border-emerald-200 bg-gradient-to-r from-emerald-100 to-teal-100"
       }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${
+            isDark ? "bg-emerald-500/20" : "bg-emerald-500/10"
+          }`}>
             <UserCheck className={`w-5 h-5 ${
               isDark ? "text-emerald-400" : "text-emerald-600"
             }`} />
-            <h3 className={`text-lg font-semibold ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
+          </div>
+          <div>
+            <h3 className={`text-lg font-bold ${
+              isDark ? "text-emerald-400" : "text-emerald-700"
             }`}>
               Personal Verification
             </h3>
+            <p className={`text-xs ${
+              isDark ? "text-gray-400" : "text-emerald-600"
+            }`}>
+              Father details and address information
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={onSectionSave}
-            disabled={saving}
-            className={buttonClassName}
-          >
-            {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            <span>{saving ? 'Saving...' : 'Save'}</span>
-          </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Compact Content Grid */}
       <div className="p-4">
-        <div className="space-y-4">
+        <div>
+          
           {/* Father Name */}
-          <div>
-            <label className={labelClassName}>
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
+            <div className={labelClassName}>
               <IconWrapper icon={User} />
               <span>Father's Name</span>
-            </label>
+            </div>
             <input
               type="text"
               value={formik.values.fatherName}
               onChange={(e) => formik.setFieldValue('fatherName', e.target.value)}
               className={inputClassName}
-              placeholder="Enter father's full name"
+              placeholder="Enter father's name"
             />
           </div>
 
-          {/* Current Address */}
-          <div>
-            <label className={labelClassName}>
-              <IconWrapper icon={MapPin} />
-              <span>Current Address</span>
-            </label>
-            <textarea
-              rows="3"
-              value={formik.values.currentAddress}
-              onChange={(e) => formik.setFieldValue('currentAddress', e.target.value)}
-              className={textareaClassName}
-              placeholder="Enter current residential address"
-            />
-          </div>
-
-          {/* Permanent Address */}
-          <div>
-            <label className={labelClassName}>
-              <IconWrapper icon={Home} />
-              <span>Permanent Address</span>
-            </label>
-            <textarea
-              rows="3"
-              value={formik.values.permanentAddress}
-              onChange={(e) => formik.setFieldValue('permanentAddress', e.target.value)}
-              className={textareaClassName}
-              placeholder="Enter permanent address"
-            />
-          </div>
         </div>
 
-        {/* Auto-save indicator */}
-        <div className="mt-4 flex justify-end">
-          <div className={`text-xs px-2 py-1 rounded ${
-            isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"
-          }`}>
-            Changes auto-save when you click Save
+        {/* Additional Information Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          
+          {/* Current Address Details */}
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
+            <div className={labelClassName}>
+              <IconWrapper icon={MapPin} />
+              <span>Current Address Details</span>
+            </div>
+            <textarea
+              rows="3"
+              value={formik.values.currentAddress || ''}
+              onChange={(e) => formik.setFieldValue('currentAddress', e.target.value)}
+              className={`w-full bg-transparent border-none outline-none text-sm font-medium resize-none ${
+                isDark ? "text-white placeholder-gray-400" : "text-gray-800 placeholder-gray-500"
+              }`}
+              placeholder="Enter current address details..."
+            />
           </div>
+
+          {/* Permanent Address Details */}
+          <div className={`${fieldClassName} group hover:scale-[1.02]`}>
+            <div className={labelClassName}>
+              <IconWrapper icon={Home} />
+              <span>Permanent Address Details</span>
+            </div>
+            <textarea
+              rows="3"
+              value={formik.values.permanentAddress || ''}
+              onChange={(e) => formik.setFieldValue('permanentAddress', e.target.value)}
+              className={`w-full bg-transparent border-none outline-none text-sm font-medium resize-none ${
+                isDark ? "text-white placeholder-gray-400" : "text-gray-800 placeholder-gray-500"
+              }`}
+              placeholder="Enter permanent address details..."
+            />
+          </div>
+
+        </div>
+
+        {/* Submit Button at Bottom Right */}
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSavePersonalInfo}
+            disabled={submittingPersonal || saving}
+            className={buttonClassName}
+          >
+            {(submittingPersonal || saving) ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            <span>
+              {submittingPersonal 
+                ? 'Submitting Personal Info...' 
+                : saving 
+                ? 'Submitting...' 
+                : 'Submit'
+              }
+            </span>
+          </button>
         </div>
       </div>
     </div>

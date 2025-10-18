@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { CreditCard, Save, AlertCircle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { cibilService, appraisalCoreService } from '@/lib/services/appraisal';
 
 const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
+  const [remarkSaving, setRemarkSaving] = useState(false);
+  const [submittingCibil, setSubmittingCibil] = useState(false);
+  const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.cibilRemark || '');
+  const [customerData, setCustomerData] = useState(null);
+  const [loadingCustomer, setLoadingCustomer] = useState(false);
+  const timeoutRef = useRef(null);
+  const formikUpdateTimeoutRef = useRef(null);
   const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400"
@@ -30,6 +39,164 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
       : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
   } disabled:cursor-not-allowed`;
 
+  // Sync external changes to local state
+  useEffect(() => {
+    setLocalRemarkValue(formik.values.cibilRemark || '');
+  }, [formik.values.cibilRemark]);
+
+  // Use customer data from formik values (already loaded in parent component)
+  useEffect(() => {
+    // Extract customer data from formik values using correct field names
+    const extractedData = {
+      fname: formik.values.name?.split(' ')[0] || '',
+      lname: formik.values.name?.split(' ').slice(1).join(' ') || '',
+      phone: formik.values.phoneNo || '',
+      email: formik.values.email || '',
+      crnno: formik.values.crnNo || '',
+      applied_amount: formik.values.appliedAmount || '',
+      pan_no: formik.values.panNo || '',
+      aadhar_no: formik.values.aadharNo || '',
+      dob: formik.values.dob || '',
+      organization_name: formik.values.organizationName || ''
+    };
+    
+    setCustomerData(extractedData);
+  }, [formik.values.name, formik.values.phoneNo, formik.values.email, formik.values.dob, formik.values.appliedAmount, formik.values.crnNo, formik.values.organizationName, formik.values.panNo, formik.values.aadharNo]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (formikUpdateTimeoutRef.current) {
+        clearTimeout(formikUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced save function for CIBIL remarks
+  const debouncedSaveRemark = useCallback((value) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        if (!value || value.trim().length === 0) {
+          return;
+        }
+
+        if (!formik.values.applicationId) {
+          return;
+        }
+
+        setRemarkSaving(true);
+        
+        const remarkData = {
+          application_id: parseInt(formik.values.applicationId),
+          remarks: value.trim()
+        };
+        
+        const response = await cibilService.saveCibilRemarks(remarkData);
+        toast.success('CIBIL remark saved successfully!');
+      } catch (error) {
+        if (error.response?.status === 422) {
+          const errorMessage = error.response?.data?.message || 'Invalid remark data';
+          toast.error(errorMessage);
+        } else {
+          toast.error('Failed to save CIBIL remark');
+        }
+      } finally {
+        setRemarkSaving(false);
+      }
+    }, 3000);
+  }, []);
+
+  // Optimized remark change handler
+  const handleRemarkChange = (value) => {
+    // 1. Update local state immediately (no re-render lag)
+    setLocalRemarkValue(value);
+    
+    // 2. Debounce formik update
+    if (formikUpdateTimeoutRef.current) {
+      clearTimeout(formikUpdateTimeoutRef.current);
+    }
+    formikUpdateTimeoutRef.current = setTimeout(() => {
+      formik.setFieldValue('cibilRemark', value);
+    }, 500);
+    
+    // 3. Debounce the API call
+    debouncedSaveRemark(value);
+  };
+
+  // Save CIBIL verification
+  const handleSaveCibilVerification = async () => {
+    try {
+      setSubmittingCibil(true);
+      
+      // Validate application ID
+      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
+        toast.error('Invalid application ID. Please refresh the page.');
+        return;
+      }
+      
+      const cibilData = {
+        application_id: parseInt(formik.values.applicationId),
+        cibil_score: parseInt(formik.values.cibilScore) || 0,
+        score_status: formik.values.cibilScoreStatus || '',
+        total_active_amount: parseInt(formik.values.totalActiveLoans) || 0,
+        total_active_amount_status: formik.values.activeLoanStatus || '',
+        total_closed_amount: parseInt(formik.values.totalClosedLoans) || 0,
+        total_closed_amount_status: formik.values.closedLoanStatus || '',
+        write_off_settled: parseInt(formik.values.writeOffSettled) || 0,
+        write_off_settled_status: formik.values.writeOffStatus || '',
+        overdue: parseInt(formik.values.noOfOverdue) || 0,
+        overdue_status: formik.values.overdueStatus || '',
+        total_emi_cibil: parseInt(formik.values.totalEmiAsCibil) || 0,
+        comment: formik.values.cibilComment || '',
+        dpd: formik.values.dpd || '',
+        dpd_status: formik.values.dpdStatus || '',
+        cibil_final_report: formik.values.cibilFinalReport || ''
+      };
+      
+      const response = await cibilService.saveCibilVerification(cibilData);
+      toast.success('CIBIL verification completed successfully!');
+      
+      // Also call the section save callback if provided
+      if (onSectionSave) {
+        onSectionSave();
+      }
+    } catch (error) {
+      if (error.response?.status === 422) {
+        const errorMessage = error.response?.data?.message || 'Invalid CIBIL data. Please check all fields.';
+        toast.error(errorMessage);
+      } else {
+        toast.error('Failed to save CIBIL verification');
+      }
+    } finally {
+      setSubmittingCibil(false);
+    }
+  };
+
+  // Auto-calculate final report based on score and other factors
+  useEffect(() => {
+    const score = parseInt(formik.values.cibilScore) || 0;
+    const isScoreGood = score >= 600; // Lowered threshold for more flexibility
+    const isScoreStatusPositive = formik.values.cibilScoreStatus === 'Positive';
+    const isDPDGood = formik.values.dpd === 'Nil' || (formik.values.dpdStatus === 'Positive');
+    const hasLowWriteOffs = parseInt(formik.values.writeOffSettled || 0) <= 0;
+    
+    // Auto-set to Positive if main conditions are good (more flexible)
+    if (isScoreGood && isScoreStatusPositive && formik.values.cibilFinalReport !== 'Positive') {
+      formik.setFieldValue('cibilFinalReport', 'Positive');
+    }
+    // Auto-set to Negative if score is really bad
+    else if (score > 0 && score < 500 && formik.values.cibilScoreStatus === 'Negative' && formik.values.cibilFinalReport !== 'Negative') {
+      formik.setFieldValue('cibilFinalReport', 'Negative');
+    }
+  }, [formik.values.cibilScore, formik.values.cibilScoreStatus, formik.values.dpd, formik.values.dpdStatus, formik.values.writeOffSettled, formik.values.activeLoanStatus]);
+
   const statusBadge = (status, value) => {
     const isPositive = status === 'Positive';
     const hasValue = value && value > 0;
@@ -46,64 +213,272 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
     );
   };
 
-  const ScoreInput = ({ label, value, onChange, placeholder, status, onStatusChange }) => (
-    <div>
-      <label className={labelClassName}>{label}</label>
-      <div className="space-y-2">
-        <input
-          type="number"
-          value={value}
-          onChange={onChange}
-          className={inputClassName}
-          placeholder={placeholder}
-        />
-        <select
-          value={status}
-          onChange={onStatusChange}
-          className={selectClassName}
-        >
-          <option value="">Select Status</option>
-          <option value="Positive">Positive</option>
-          <option value="Negative">Negative</option>
-        </select>
-      </div>
-    </div>
-  );
-
-  const CibilField = ({ label, value, status, onValueChange, onStatusChange, placeholder, icon: Icon }) => (
-    <div className={`p-3 rounded-lg border transition-all duration-200 ${
-      isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-    }`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-2">
-          {Icon && <Icon className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />}
-          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-            {label}
-          </span>
+  const CibilField = ({ label, value, status, onValueChange, onStatusChange, placeholder, icon: Icon }) => {
+    const [localValue, setLocalValue] = useState(value || 0);
+    const [localStatus, setLocalStatus] = useState(status || '');
+    
+    // Sync with formik values when they change externally
+    useEffect(() => {
+      setLocalValue(value || 0);
+    }, [value]);
+    
+    useEffect(() => {
+      setLocalStatus(status || '');
+    }, [status]);
+    
+    const handleValueChange = (e) => {
+      const newValue = e.target.value;
+      setLocalValue(newValue); // Update local state immediately for smooth typing
+    };
+    
+    const handleStatusChange = (e) => {
+      const newStatus = e.target.value;
+      setLocalStatus(newStatus); // Update local state immediately
+      onStatusChange(e); // Still update formik for status changes
+    };
+    
+    // Update formik only when input loses focus (onBlur)
+    const handleBlur = () => {
+      onValueChange({ target: { value: localValue } });
+    };
+    
+    return (
+      <div className={`p-3 rounded-lg border transition-all duration-200 ${
+        isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
+      }`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            {Icon && <Icon className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />}
+            <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+              {label}
+            </span>
+          </div>
+          {statusBadge(localStatus, localValue)}
         </div>
-        {statusBadge(status, value)}
+        
+        <div className="space-y-2">
+          <input
+            type="number"
+            value={localValue}
+            onChange={handleValueChange}
+            onBlur={handleBlur}
+            className={inputClassName}
+            placeholder={placeholder}
+          />
+          <select
+            value={localStatus}
+            onChange={handleStatusChange}
+            className={selectClassName}
+          >
+            <option value="">Select Status</option>
+            <option value="Positive">Positive</option>
+            <option value="Negative">Negative</option>
+          </select>
+        </div>
       </div>
-      
-      <div className="space-y-2">
-        <input
-          type="number"
-          value={value}
-          onChange={onValueChange}
-          className={inputClassName}
-          placeholder={placeholder}
-        />
+    );
+  };
+  
+  // CIBIL Score Field Component with local state
+  const CibilScoreField = () => {
+    const [localScore, setLocalScore] = useState(formik.values.cibilScore || '');
+    const [localStatus, setLocalStatus] = useState(formik.values.cibilScoreStatus || '');
+    
+    // Sync with formik values when they change externally
+    useEffect(() => {
+      setLocalScore(formik.values.cibilScore || '');
+    }, [formik.values.cibilScore]);
+    
+    useEffect(() => {
+      setLocalStatus(formik.values.cibilScoreStatus || '');
+    }, [formik.values.cibilScoreStatus]);
+    
+    const handleScoreChange = (e) => {
+      setLocalScore(e.target.value); // Update local state immediately
+    };
+    
+    const handleStatusChange = (e) => {
+      const newStatus = e.target.value;
+      setLocalStatus(newStatus);
+      formik.setFieldValue('cibilScoreStatus', newStatus); // Update formik immediately for status
+    };
+    
+    const handleScoreBlur = () => {
+      formik.setFieldValue('cibilScore', localScore); // Update formik only on blur
+    };
+    
+    return (
+      <div>
+        <label className={labelClassName}>CIBIL Score (500)</label>
+        <div className="space-y-2">
+          <input
+            type="number"
+            value={localScore}
+            onChange={handleScoreChange}
+            onBlur={handleScoreBlur}
+            className={inputClassName}
+            placeholder="746"
+          />
+          <select
+            value={localStatus}
+            onChange={handleStatusChange}
+            className={selectClassName}
+          >
+            <option value="">Select Status</option>
+            <option value="Positive">Positive</option>
+            <option value="Negative">Negative</option>
+          </select>
+        </div>
+      </div>
+    );
+  };
+  
+  // EMI & Comments Field Component with local state
+  const EmiCommentsField = () => {
+    const [localEmi, setLocalEmi] = useState(formik.values.totalEmiAsCibil || '');
+    const [localComments, setLocalComments] = useState(formik.values.cibilComment || '');
+    
+    // Sync with formik values when they change externally
+    useEffect(() => {
+      setLocalEmi(formik.values.totalEmiAsCibil || '');
+    }, [formik.values.totalEmiAsCibil]);
+    
+    useEffect(() => {
+      setLocalComments(formik.values.cibilComment || '');
+    }, [formik.values.cibilComment]);
+    
+    const handleEmiChange = (e) => {
+      setLocalEmi(e.target.value);
+    };
+    
+    const handleCommentsChange = (e) => {
+      setLocalComments(e.target.value);
+    };
+    
+    const handleEmiBlur = () => {
+      formik.setFieldValue('totalEmiAsCibil', localEmi);
+    };
+    
+    const handleCommentsBlur = () => {
+      formik.setFieldValue('cibilComment', localComments);
+    };
+    
+    return (
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className={labelClassName}>Total EMI as per CIBIL (₹)</label>
+          <input
+            type="number"
+            value={localEmi}
+            onChange={handleEmiChange}
+            onBlur={handleEmiBlur}
+            className={inputClassName}
+            placeholder="60000"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className={labelClassName}>Comments</label>
+          <textarea
+            rows="3"
+            value={localComments}
+            onChange={handleCommentsChange}
+            onBlur={handleCommentsBlur}
+            className={textareaClassName}
+            placeholder="Enter detailed comments about CIBIL analysis and EMI observations..."
+          />
+        </div>
+      </div>
+    );
+  };
+  
+  // DPD Status Field Component with local state
+  const DpdStatusField = () => {
+    const [localDpd, setLocalDpd] = useState(formik.values.dpd || '');
+    const [localDpdStatus, setLocalDpdStatus] = useState(formik.values.dpdStatus || '');
+    
+    // Sync with formik values when they change externally
+    useEffect(() => {
+      setLocalDpd(formik.values.dpd || '');
+    }, [formik.values.dpd]);
+    
+    useEffect(() => {
+      setLocalDpdStatus(formik.values.dpdStatus || '');
+    }, [formik.values.dpdStatus]);
+    
+    const handleDpdChange = (e) => {
+      const newValue = e.target.value;
+      setLocalDpd(newValue);
+      formik.setFieldValue('dpd', newValue); // Update formik immediately for selects
+    };
+    
+    const handleDpdStatusChange = (e) => {
+      const newValue = e.target.value;
+      setLocalDpdStatus(newValue);
+      formik.setFieldValue('dpdStatus', newValue); // Update formik immediately for selects
+    };
+    
+    return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClassName}>DPD Status</label>
+            <select
+              value={localDpd}
+              onChange={handleDpdChange}
+              className={selectClassName}
+            >
+              <option value="">Select DPD</option>
+              <option value="Nil">Nil</option>
+              <option value="Irregular">Irregular</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClassName}>DPD Verification</label>
+            <select
+              value={localDpdStatus}
+              onChange={handleDpdStatusChange}
+              className={selectClassName}
+            >
+              <option value="">Select Status</option>
+              <option value="Positive">Positive</option>
+              <option value="Negative">Negative</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Final Report Field Component with local state
+  const FinalReportField = () => {
+    const [localFinalReport, setLocalFinalReport] = useState(formik.values.cibilFinalReport || '');
+    
+    // Sync with formik values when they change externally
+    useEffect(() => {
+      setLocalFinalReport(formik.values.cibilFinalReport || '');
+    }, [formik.values.cibilFinalReport]);
+    
+    const handleFinalReportChange = (e) => {
+      const newValue = e.target.value;
+      setLocalFinalReport(newValue);
+      formik.setFieldValue('cibilFinalReport', newValue); // Update formik immediately for selects
+    };
+    
+    return (
+      <div className="flex-1 max-w-xs">
+        <label className={labelClassName}>Final Report</label>
         <select
-          value={status}
-          onChange={onStatusChange}
+          value={localFinalReport}
+          onChange={handleFinalReportChange}
           className={selectClassName}
         >
-          <option value="">Select Status</option>
+          <option value="">Select Final Report</option>
           <option value="Positive">Positive</option>
           <option value="Negative">Negative</option>
         </select>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className={`rounded-xl shadow-lg border transition-all duration-300 overflow-hidden ${
@@ -115,36 +490,21 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
       <div className={`p-4 border-b ${
         isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
       }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CreditCard className={`w-5 h-5 ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
-            }`} />
-            <h3 className={`text-lg font-semibold ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
-            }`}>
-              CIBIL Verification
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={onSectionSave}
-            disabled={saving}
-            className={buttonClassName}
-          >
-            {saving ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            <span>{saving ? 'Saving...' : 'Save'}</span>
-          </button>
+        <div className="flex items-center space-x-2">
+          <CreditCard className={`w-5 h-5 ${
+            isDark ? "text-emerald-400" : "text-emerald-600"
+          }`} />
+          <h3 className={`text-lg font-semibold ${
+            isDark ? "text-emerald-400" : "text-emerald-600"
+          }`}>
+            CIBIL Verification
+          </h3>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-4">
-        {/* Customer Information */}
+        {/* Customer Information - Single Line */}
         <div className={`mb-6 p-4 rounded-lg border ${
           isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
         }`}>
@@ -153,66 +513,111 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
           }`}>
             <BarChart3 className="w-4 h-4" />
             <span>Customer CIBIL Information</span>
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <div>
-              <div className={isDark ? "text-gray-400" : "text-gray-600"}>Name</div>
-              <div className={isDark ? "text-white" : "text-gray-900"}>Harikiran B M</div>
-            </div>
-            <div>
-              <div className={isDark ? "text-gray-400" : "text-gray-600"}>Mobile</div>
-              <div className={isDark ? "text-white" : "text-gray-900"}>7259298095</div>
-            </div>
-            <div>
-              <div className={isDark ? "text-gray-400" : "text-gray-600"}>PAN</div>
-              <div className={isDark ? "text-white" : "text-gray-900"}>ANJPH8452R</div>
-            </div>
-            <div>
-              <div className={isDark ? "text-gray-400" : "text-gray-600"}>DoB</div>
-              <div className={isDark ? "text-white" : "text-gray-900"}>9-1-1993</div>
-            </div>
-          </div>
-        </div>
-
-        {/* CIBIL Score Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <ScoreInput
-            label="CIBIL Score (>500)"
-            value={formik.values.cibilScore}
-            onChange={(e) => formik.setFieldValue('cibilScore', e.target.value)}
-            placeholder="746"
-            status={formik.values.cibilScoreStatus}
-            onStatusChange={(e) => formik.setFieldValue('cibilScoreStatus', e.target.value)}
-          />
-
-          {/* Score Visualization */}
-          {formik.values.cibilScore && (
-            <div className="md:col-span-2">
-              <label className={labelClassName}>Score Analysis</label>
-              <div className={`p-3 rounded-lg border ${
-                isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
+            {loadingCustomer && (
+              <div className={`text-xs flex items-center space-x-1 ${
+                isDark ? "text-emerald-400" : "text-emerald-600"
               }`}>
-                <div className="flex justify-between text-xs mb-2">
-                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>300</span>
-                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>900</span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span>Loading...</span>
+              </div>
+            )}
+          </h4>
+          
+          {customerData ? (
+            <div className="space-y-4">
+              {/* First Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>Name</div>
+                  <div className={`font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`} title={`${customerData.fname} ${customerData.lname}`}>
+                    {customerData.fname} {customerData.lname}
+                  </div>
                 </div>
-                <div className={`w-full h-3 rounded-full ${
-                  isDark ? "bg-gray-600" : "bg-gray-200"
-                }`}>
-                  <div 
-                    className="h-3 rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
-                    style={{ width: `${((parseInt(formik.values.cibilScore) - 300) / 600) * 100}%` }}
-                  ></div>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>Mobile</div>
+                  <div className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                    {customerData.phone || 'N/A'}
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs mt-1">
-                  <span className={parseInt(formik.values.cibilScore) < 550 ? (isDark ? "text-red-400" : "text-red-600") : (isDark ? "text-gray-400" : "text-gray-600")}>Poor</span>
-                  <span className={parseInt(formik.values.cibilScore) >= 550 && parseInt(formik.values.cibilScore) < 700 ? (isDark ? "text-yellow-400" : "text-yellow-600") : (isDark ? "text-gray-400" : "text-gray-600")}>Fair</span>
-                  <span className={parseInt(formik.values.cibilScore) >= 700 && parseInt(formik.values.cibilScore) < 750 ? (isDark ? "text-green-400" : "text-green-600") : (isDark ? "text-gray-400" : "text-gray-600")}>Good</span>
-                  <span className={parseInt(formik.values.cibilScore) >= 750 ? (isDark ? "text-emerald-400" : "text-emerald-600") : (isDark ? "text-gray-400" : "text-gray-600")}>Excellent</span>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>Email</div>
+                  <div className={`font-medium text-xs truncate ${isDark ? "text-white" : "text-gray-900"}`} title={customerData.email}>
+                    {customerData.email || 'N/A'}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>CRN</div>
+                  <div className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                    {customerData.crnno || 'N/A'}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Second Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>Applied Amount</div>
+                  <div className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                    ₹{customerData.applied_amount || 'N/A'}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>PAN</div>
+                  <div className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                    {customerData.pan_no || 'N/A'}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>Aadhar</div>
+                  <div className={`font-medium text-xs ${isDark ? "text-white" : "text-gray-900"}`}>
+                    {customerData.aadhar_no || 'N/A'}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className={isDark ? "text-gray-400" : "text-gray-600"}>DoB</div>
+                  <div className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                    {customerData.dob || 'N/A'}
+                  </div>
                 </div>
               </div>
             </div>
+          ) : (
+            <div className={`text-center py-4 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              {loadingCustomer ? 'Loading customer information...' : 'Customer information not available'}
+            </div>
           )}
+        </div>
+
+        {/* Remarks and CIBIL Score in One Line */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className={labelClassName}>CIBIL Remarks</label>
+              {remarkSaving && (
+                <div className={`text-xs flex items-center space-x-1 ${
+                  isDark ? "text-emerald-400" : "text-emerald-600"
+                }`}>
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span>Saving...</span>
+                </div>
+              )}
+            </div>
+            <textarea
+              rows="3"
+              value={localRemarkValue}
+              onChange={(e) => handleRemarkChange(e.target.value)}
+              className={textareaClassName}
+              placeholder="Enter CIBIL verification remarks..."
+            />
+            <div className={`flex justify-between items-center mt-2 text-xs ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}>
+              <span>{(localRemarkValue?.length || 0)} characters</span>
+              <span>💾 Auto-saves after 2 seconds</span>
+            </div>
+          </div>
+
+          <CibilScoreField />
         </div>
 
         {/* Loan Details */}
@@ -258,155 +663,30 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
           />
         </div>
 
-        {/* EMI and DPD Details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div>
-            <label className={labelClassName}>Total EMI (₹)</label>
-            <input
-              type="number"
-              value={formik.values.totalEmiAsCibil}
-              onChange={(e) => formik.setFieldValue('totalEmiAsCibil', e.target.value)}
-              className={inputClassName}
-              placeholder="60000"
-            />
-          </div>
-
-          <div>
-            <label className={labelClassName}>DPD Status</label>
-            <select
-              value={formik.values.dpd}
-              onChange={(e) => formik.setFieldValue('dpd', e.target.value)}
-              className={selectClassName}
-            >
-              <option value="">Select DPD</option>
-              <option value="Regular">Regular (0-30 days)</option>
-              <option value="Irregular">Irregular (31-90 days)</option>
-              <option value="Default">Default (90+ days)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className={labelClassName}>DPD Status</label>
-            <select
-              value={formik.values.dpdStatus}
-              onChange={(e) => formik.setFieldValue('dpdStatus', e.target.value)}
-              className={selectClassName}
-            >
-              <option value="">Select Status</option>
-              <option value="Positive">Positive</option>
-              <option value="Negative">Negative</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Comments and Remarks */}
+        {/* EMI & Comments and DPD Status in One Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className={labelClassName}>Comments</label>
-            <textarea
-              rows="3"
-              value={formik.values.cibilComment}
-              onChange={(e) => formik.setFieldValue('cibilComment', e.target.value)}
-              className={textareaClassName}
-              placeholder="Enter detailed comments about CIBIL analysis..."
-            />
-          </div>
+          <EmiCommentsField />
 
-          <div>
-            <label className={labelClassName}>Remarks</label>
-            <textarea
-              rows="3"
-              value={formik.values.cibilRemark}
-              onChange={(e) => formik.setFieldValue('cibilRemark', e.target.value)}
-              className={textareaClassName}
-              placeholder="Enter final remarks and recommendations..."
-            />
-          </div>
+          <DpdStatusField />
         </div>
 
-        {/* Final Report and Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClassName}>Final Report</label>
-            <select
-              value={formik.values.cibilFinalReport}
-              onChange={(e) => formik.setFieldValue('cibilFinalReport', e.target.value)}
-              className={selectClassName}
-            >
-              <option value="">Select Final Report</option>
-              <option value="Positive">Positive</option>
-              <option value="Negative">Negative</option>
-            </select>
-          </div>
-
-          {/* Summary */}
-          <div className={`p-4 rounded-lg border ${
-            isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-          }`}>
-            <h4 className={`font-medium mb-3 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-              CIBIL Summary
-            </h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className={isDark ? "text-gray-400" : "text-gray-600"}>Score</div>
-                <div className={`font-bold text-lg ${
-                  formik.values.cibilScore >= 750 ? 'text-emerald-600' :
-                  formik.values.cibilScore >= 650 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {formik.values.cibilScore || 'N/A'}
-                </div>
-              </div>
-              <div>
-                <div className={isDark ? "text-gray-400" : "text-gray-600"}>Risk Level</div>
-                <div className={`font-semibold ${
-                  formik.values.cibilScore >= 750 ? 'text-emerald-600' :
-                  formik.values.cibilScore >= 650 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {formik.values.cibilScore >= 750 ? 'Low' :
-                   formik.values.cibilScore >= 650 ? 'Medium' : 'High'}
-                </div>
-              </div>
-              <div>
-                <div className={isDark ? "text-gray-400" : "text-gray-600"}>Active Loans</div>
-                <div className="font-semibold">{formik.values.totalActiveLoans || '0'}</div>
-              </div>
-              <div>
-                <div className={isDark ? "text-gray-400" : "text-gray-600"}>Final Status</div>
-                <div className={`font-semibold ${
-                  formik.values.cibilFinalReport === 'Positive' ? 'text-emerald-600' : 
-                  formik.values.cibilFinalReport === 'Negative' ? 'text-red-600' : 'text-gray-600'
-                }`}>
-                  {formik.values.cibilFinalReport || 'Pending'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CIBIL Guidelines */}
-        <div className={`mt-4 p-3 rounded-lg border ${
-          isDark ? "bg-purple-900/20 border-purple-800" : "bg-purple-50 border-purple-200"
-        }`}>
-          <h5 className={`font-medium mb-2 flex items-center space-x-1 ${
-            isDark ? "text-purple-400" : "text-purple-600"
-          }`}>
-            <AlertCircle className="w-4 h-4" />
-            <span>CIBIL Score Guidelines</span>
-          </h5>
-          <div className="text-xs space-y-1">
-            <div className={isDark ? "text-purple-300" : "text-purple-700"}>
-              • <strong>750-900:</strong> Excellent - High approval probability
-            </div>
-            <div className={isDark ? "text-purple-300" : "text-purple-700"}>
-              • <strong>650-749:</strong> Good - Standard approval
-            </div>
-            <div className={isDark ? "text-purple-300" : "text-purple-700"}>
-              • <strong>550-649:</strong> Fair - Additional verification needed
-            </div>
-            <div className={isDark ? "text-purple-300" : "text-purple-700"}>
-              • <strong>300-549:</strong> Poor - High risk, review required
-            </div>
-          </div>
+        {/* Final Report and Submit */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <FinalReportField />
+          
+          <button
+            type="button"
+            onClick={handleSaveCibilVerification}
+            disabled={submittingCibil || saving}
+            className={buttonClassName}
+          >
+            {(submittingCibil || saving) ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            <span>{submittingCibil ? 'Saving...' : saving ? 'Submitting...' : 'Submit'}</span>
+          </button>
         </div>
       </div>
     </div>
