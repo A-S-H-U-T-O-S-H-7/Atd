@@ -1,27 +1,42 @@
+import React from "react";
+
 const ActionButton = ({ 
   enquiry, 
   isDark, 
-  onVerifyClick 
+  onVerifyClick,  // Changed from onActionClick to onVerifyClick
+  loading = false,
+  disabled = false,
+  className = ""
 }) => {
-  const buttonBase = "px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 border";
-  const buttonBlue = isDark
-    ? "bg-blue-800/50 hover:bg-blue-800 text-blue-200"
-    : "bg-blue-200 hover:bg-blue-300 text-blue-800";
+  const handleClick = () => {
+    if (!disabled && !loading && onVerifyClick && enquiry) {
+      onVerifyClick(enquiry);  // Changed to onVerifyClick
+    }
+  };
 
-  if (enquiry.isFinalStage) {
+  if (!enquiry) {
     return (
-      <span className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs">
-        Final Stage
+      <span className={`px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs ${className}`}>
+        N/A
       </span>
     );
   }
 
   return (
     <button
-      onClick={() => onVerifyClick(enquiry)}
-      className={`${buttonBase} ${buttonBlue}`}
+      onClick={handleClick}
+      disabled={disabled || loading}
+      className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border ${
+        disabled || loading
+          ? "opacity-50 cursor-not-allowed"
+          : "cursor-pointer hover:scale-105"
+      } ${
+        isDark
+          ? "bg-blue-900/50 border-blue-700 text-blue-300 hover:bg-blue-800"
+          : "bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200"
+      } ${className}`}
     >
-      Verify
+      {loading ? "Processing..." : "Verify"}
     </button>
   );
 };

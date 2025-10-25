@@ -3,7 +3,7 @@ import { FileText, ExternalLink, Loader } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
-import salaryService from '@/lib/services/appraisal/salaryService';
+import { salaryVerificationService } from '@/lib/services/appraisal/salaryVerificationService';
 import { appraisalCoreService } from '@/lib/services/appraisal';
 
 const SalarySlipVerification = ({ formik, isDark }) => {
@@ -97,30 +97,30 @@ const SalarySlipVerification = ({ formik, isDark }) => {
 
   // Debounced save function for salary remarks
   const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
 
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        if (!value || value.trim().length === 0 || !formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        await salaryService.saveSalaryRemark({
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        });
-        toast.success('Salary remark saved successfully!');
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to save salary remark');
-      } finally {
-        setRemarkSaving(false);
+  timeoutRef.current = setTimeout(async () => {
+    try {
+      if (!value || value.trim().length === 0 || !formik.values.applicationId) {
+        return;
       }
-    }, 2000);
-  }, [formik.values.applicationId]);
+
+      setRemarkSaving(true);
+      
+      await salaryVerificationService.saveSalarySlipRemark({
+        application_id: parseInt(formik.values.applicationId),
+        remarks: value.trim()
+      });
+      // toast is handled in service
+    } catch (error) {
+      // Error handled in service
+    } finally {
+      setRemarkSaving(false);
+    }
+  }, 2000);
+}, [formik.values.applicationId])
 
   const handleRemarkChange = (value) => {
     setLocalRemarkValue(value);

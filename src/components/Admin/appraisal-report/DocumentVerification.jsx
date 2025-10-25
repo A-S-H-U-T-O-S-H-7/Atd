@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, Phone, IdCard, CreditCard, Download, ExternalLink, User, Mail, Users, Save, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { documentVerificationService, personalInfoService } from '@/lib/services/appraisal';
+import { Shield, Phone, IdCard, CreditCard, Download, ExternalLink, User, Mail, Users, Save, Loader2 } from 'lucide-react';
+import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
+import { documentVerificationSchema } from '@/lib/schema/documentVerificationSchema';
+import toast from 'react-hot-toast';
+import DocumentReportModal from './ReportModal';
 
 const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [panVerifying, setPanVerifying] = useState(false);
   const [aadharVerifying, setAadharVerifying] = useState(false);
-  const [submittingFinalVerification, setSubmittingFinalVerification] = useState(false);
-  // Consistent styling with blue theme
+  const [submittingDocument, setSubmittingDocument] = useState(false);
+  const [reportModal, setReportModal] = useState({
+  isOpen: false,
+  type: null, 
+  data: null,
+  loading: false
+});
+
+  // Styling classes
   const fieldClassName = `p-4 rounded-lg border transition-all duration-200 ${
     isDark
       ? "bg-gray-800/60 border-gray-600 hover:border-emerald-500/40 shadow-lg"
@@ -55,49 +64,56 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
   // Auto-update final report based on all verifications
   useEffect(() => {
     const allVerified = 
-      formik.values.phoneVerified === 'Yes' &&
-      formik.values.phoneStatus === 'Positive' &&
-      formik.values.panVerified === 'Yes' &&
-      formik.values.panStatus === 'Positive' &&
-      formik.values.aadharVerified === 'Yes' &&
-      formik.values.aadharStatus === 'Positive' &&
-      formik.values.refNameVerified === 'Yes' &&
-      formik.values.refPhoneVerified === 'Yes' &&
-      formik.values.refEmailVerified === 'Yes' &&
-      formik.values.refRelationVerified === 'Yes';
+      formik.values.personal_phone === 'Yes' &&
+      formik.values.phone_status === 'Positive' &&
+      formik.values.personal_pan === 'Yes' &&
+      formik.values.pan_status === 'Positive' &&
+      formik.values.personal_aadhar === 'Yes' &&
+      formik.values.aadhar_status === 'Positive' &&
+      formik.values.personal_ref_name === 'Yes' &&
+      formik.values.personal_ref_mobile === 'Yes' &&
+      formik.values.personal_ref_email === 'Yes' &&
+      formik.values.personal_ref_relation === 'Yes';
 
-    // Auto-set to Positive if all fields are positive, or keep user's manual selection
-    if (allVerified && formik.values.finalReport !== 'Positive') {
-      formik.setFieldValue('finalReport', 'Positive');
+    if (allVerified && formik.values.personal_final_report !== 'Positive') {
+      formik.setFieldValue('personal_final_report', 'Positive');
     }
-    
+
     // Auto-set to Negative if any critical verification is negative
     const hasCriticalNegative = 
-      formik.values.phoneStatus === 'Negative' ||
-      formik.values.panStatus === 'Negative' ||
-      formik.values.aadharStatus === 'Negative';
+      formik.values.phone_status === 'Negative' ||
+      formik.values.pan_status === 'Negative' ||
+      formik.values.aadhar_status === 'Negative';
       
-    if (hasCriticalNegative && formik.values.finalReport !== 'Negative') {
-      formik.setFieldValue('finalReport', 'Negative');
+    if (hasCriticalNegative && formik.values.personal_final_report !== 'Negative') {
+      formik.setFieldValue('personal_final_report', 'Negative');
     }
   }, [formik.values]);
 
-  // API integration functions
+  const getVerificationScore = () => {
+    const verifications = [
+      formik.values.personal_phone === 'Yes' && formik.values.phone_status === 'Positive',
+      formik.values.personal_pan === 'Yes' && formik.values.pan_status === 'Positive',
+      formik.values.personal_aadhar === 'Yes' && formik.values.aadhar_status === 'Positive',
+      formik.values.personal_ref_name === 'Yes',
+      formik.values.personal_ref_mobile === 'Yes',
+      formik.values.personal_ref_email === 'Yes',
+      formik.values.personal_ref_relation === 'Yes'
+    ];
+    
+    const passed = verifications.filter(Boolean).length;
+    return Math.round((passed / verifications.length) * 100);
+  };
+
+  // API integration functions using new service
   const handlePanVerification = async () => {
     if (!formik.values.panNo) {
-      toast.error('PAN number is required for verification');
+      toast.error('PAN number is required');
       return;
     }
 
     if (!formik.values.applicationId) {
       toast.error('Application ID is required');
-      return;
-    }
-
-    // Basic PAN format validation
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    if (!panPattern.test(formik.values.panNo.toUpperCase())) {
-      toast.error('Invalid PAN format. Expected format: ABCDE1234F');
       return;
     }
 
@@ -110,40 +126,19 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
         pan_no: formik.values.panNo.toUpperCase().trim()
       };
 
+      const response = await personalVerificationService.verifyPAN(panData);
       
-      try {
-        const response = await documentVerificationService.verifyPAN(panData);
-        
-        // Auto-update verification status based on response
-        if (response.data?.success) {
-          formik.setFieldValue('panVerified', 'Yes');
-          formik.setFieldValue('panStatus', response.data.status || 'Positive');
-          toast.success('PAN verification completed successfully!');
-        } else {
-          formik.setFieldValue('panVerified', 'Yes'); // Manual verification
-          formik.setFieldValue('panStatus', 'Positive'); // Assume positive for now
-          toast.success('PAN format validated - please verify manually');
-        }
-      } catch (apiError) {
-        // If API doesn't exist, do manual verification
-        formik.setFieldValue('panVerified', 'Yes');
-        formik.setFieldValue('panStatus', 'Positive');
-        toast.success('PAN format validated - manual verification completed');
+      // Auto-update verification status based on response
+      if (response?.success) {
+        formik.setFieldValue('personal_pan', 'Yes');
+        formik.setFieldValue('pan_status', response.status || 'Positive');
+        toast.success('PAN verification completed successfully');
+      } else {
+        toast.error(response?.message || 'PAN verification failed');
       }
     } catch (error) {
-      
-      // More specific error messages
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid PAN format or missing required fields';
-        toast.error(errorMessage);
-      } else if (error.response?.status === 404) {
-        // API endpoint doesn't exist - do basic validation
-        formik.setFieldValue('panVerified', 'Yes');
-        formik.setFieldValue('panStatus', 'Positive');
-        toast.success('PAN format validated - manual verification completed');
-      } else {
-        toast.error('PAN verification failed - please verify manually');
-      }
+      console.error('PAN verification error:', error);
+      toast.error(error?.response?.data?.message || 'PAN verification failed');
     } finally {
       setPanVerifying(false);
     }
@@ -151,19 +146,12 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
 
   const handleAadharVerification = async () => {
     if (!formik.values.aadharNo) {
-      toast.error('Aadhar number is required for verification');
+      toast.error('Aadhar number is required');
       return;
     }
 
     if (!formik.values.applicationId) {
       toast.error('Application ID is required');
-      return;
-    }
-
-    // Basic Aadhar format validation (12 digits)
-    const cleanAadhar = formik.values.aadharNo.replace(/\D/g, '');
-    if (cleanAadhar.length !== 12) {
-      toast.error('Invalid Aadhar format. Expected 12 digits.');
       return;
     }
 
@@ -173,113 +161,199 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
       const aadharData = {
         application_id: parseInt(formik.values.applicationId),
         crnno: formik.values.crnNo || '',
-        aadhar_no: cleanAadhar
+        aadhar_no: formik.values.aadharNo
       };
 
+      const response = await personalVerificationService.verifyAadhar(aadharData);
       
-      try {
-        const response = await documentVerificationService.verifyAadhar(aadharData);
-        
-        // Auto-update verification status based on response
-        if (response.data?.success) {
-          formik.setFieldValue('aadharVerified', 'Yes');
-          formik.setFieldValue('aadharStatus', response.data.status || 'Positive');
-          toast.success('Aadhar verification completed successfully!');
-        } else {
-          formik.setFieldValue('aadharVerified', 'Yes'); // Manual verification
-          formik.setFieldValue('aadharStatus', 'Positive'); // Assume positive for now
-          toast.success('Aadhar format validated - please verify manually');
-        }
-      } catch (apiError) {
-        // If API doesn't exist, do manual verification
-        formik.setFieldValue('aadharVerified', 'Yes');
-        formik.setFieldValue('aadharStatus', 'Positive');
-        toast.success('Aadhar format validated - manual verification completed');
+      // Auto-update verification status based on response
+      if (response?.success) {
+        formik.setFieldValue('personal_aadhar', 'Yes');
+        formik.setFieldValue('aadhar_status', response.status || 'Positive');
+        toast.success('Aadhar verification completed successfully');
+      } else {
+        toast.error(response?.message || 'Aadhar verification failed');
       }
     } catch (error) {
-      
-      // More specific error messages
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid Aadhar format or missing required fields';
-        toast.error(errorMessage);
-      } else if (error.response?.status === 404) {
-        // API endpoint doesn't exist - do basic validation
-        formik.setFieldValue('aadharVerified', 'Yes');
-        formik.setFieldValue('aadharStatus', 'Positive');
-        toast.success('Aadhar format validated - manual verification completed');
-      } else {
-        toast.error('Aadhar verification failed - please verify manually');
-      }
+      console.error('Aadhar verification error:', error);
+      toast.error(error?.response?.data?.message || 'Aadhar verification failed');
     } finally {
       setAadharVerifying(false);
     }
   };
 
+const handleReportClick = async (type) => {
+  console.log('=== REPORT BUTTON CLICKED ===');
+  console.log('Button type:', type);
+  console.log('Form values:', {
+    applicationId: formik.values.applicationId,
+    crnNo: formik.values.crnNo,
+    panNo: formik.values.panNo,
+    aadharNo: formik.values.aadharNo
+  });
 
-  const downloadPanReport = () => {
-    toast.success('PAN report downloaded');
-  };
+  // Validate required fields
+  if (!formik.values.applicationId) {
+    console.error('❌ Validation failed: Application ID missing');
+    toast.error('Application ID is required');
+    return;
+  }
 
-  const downloadAadharReport = () => {
-    toast.success('Aadhar report downloaded');
-  };
+  if (type === 'pan' && !formik.values.panNo) {
+    console.error('❌ Validation failed: PAN number missing');
+    toast.error('PAN number is required');
+    return;
+  }
 
-  const getVerificationScore = () => {
-    const verifications = [
-      formik.values.phoneVerified === 'Yes' && formik.values.phoneStatus === 'Positive',
-      formik.values.panVerified === 'Yes' && formik.values.panStatus === 'Positive',
-      formik.values.aadharVerified === 'Yes' && formik.values.aadharStatus === 'Positive',
-      formik.values.refNameVerified === 'Yes',
-      formik.values.refPhoneVerified === 'Yes',
-      formik.values.refEmailVerified === 'Yes',
-      formik.values.refRelationVerified === 'Yes'
-    ];
+  if (type === 'aadhar' && !formik.values.aadharNo) {
+    console.error('❌ Validation failed: Aadhar number missing');
+    toast.error('Aadhar number is required');
+    return;
+  }
+
+  console.log('✅ All validations passed');
+
+  // Open modal immediately
+  setReportModal({
+    isOpen: true,
+    type: type,
+    data: null,
+    loading: true
+  });
+
+  try {
+    console.log(`🚀 Starting ${type} verification API call...`);
     
-    const passed = verifications.filter(Boolean).length;
-    return Math.round((passed / verifications.length) * 100);
+    let response;
+    const requestData = {
+      application_id: parseInt(formik.values.applicationId),
+      crnno: formik.values.crnNo || '',
+    };
+
+    if (type === 'pan') {
+      requestData.pan_no = formik.values.panNo.toUpperCase().trim();
+      console.log('📤 PAN API Request Data:', requestData);
+      console.log('🔗 Calling personalVerificationService.verifyPAN...');
+      
+      response = await personalVerificationService.verifyPAN(requestData);
+      console.log('📥 PAN API Response:', response);
+      
+    } else if (type === 'aadhar') {
+      requestData.aadhar_no = formik.values.aadharNo;
+      console.log('📤 Aadhar API Request Data:', requestData);
+      console.log('🔗 Calling personalVerificationService.verifyAadhar...');
+      
+      response = await personalVerificationService.verifyAadhar(requestData);
+      console.log('📥 Aadhar API Response:', response);
+    }
+
+    console.log('🎯 Final processed response:', response);
+    
+    // Update modal with response data
+    setReportModal(prev => ({
+      ...prev,
+      data: response,
+      loading: false
+    }));
+    
+    // Auto-update verification status based on response
+    if (response?.success) {
+      console.log('✅ Verification successful, updating form...');
+      if (type === 'pan') {
+        formik.setFieldValue('personal_pan', 'Yes');
+        formik.setFieldValue('pan_status', 'Positive');
+        toast.success('PAN verification completed successfully');
+      } else if (type === 'aadhar') {
+        formik.setFieldValue('personal_aadhar', 'Yes');
+        formik.setFieldValue('aadhar_status', 'Positive');
+        toast.success('Aadhar verification completed successfully');
+      }
+    } else {
+      console.warn('⚠️ Verification failed:', response?.message);
+      toast.error(response?.message || `${type.toUpperCase()} verification failed`);
+    }
+  } catch (error) {
+    console.error('💥 API Call Error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      response: error.response,
+      request: error.request
+    });
+    
+    const errorResponse = {
+      success: false,
+      message: error?.message || `${type.toUpperCase()} verification failed. Please try again.`,
+      data: null
+    };
+    
+    setReportModal(prev => ({
+      ...prev,
+      data: errorResponse,
+      loading: false
+    }));
+    
+    toast.error(errorResponse.message);
+  }
+};
+
+// Close modal handler
+const handleCloseModal = () => {
+  setReportModal({
+    isOpen: false,
+    type: null,
+    data: null,
+    loading: false
+  });
+};
+
+  // Save document verification
+  const handleSaveDocumentVerification = async () => {
+    try {
+      setSubmittingDocument(true);
+      
+      // Validate form data
+      try {
+        await documentVerificationSchema.validate(formik.values, { abortEarly: false });
+      } catch (validationError) {
+        const firstError = validationError.inner?.[0]?.message || validationError.message;
+        toast.error(firstError);
+        return; 
+      }
+
+      // Check if final report is selected
+      if (!formik.values.personal_final_report) {
+        toast.error('Please select a final verification report status');
+        return;
+      }
+
+      // Service handles formatting internally
+      const documentData = {
+        application_id: formik.values.applicationId,
+        ...formik.values
+      };
+      
+      const result = await personalVerificationService.saveDocumentVerificationData(documentData);
+      
+      if (result?.success) {
+        toast.success('Document verification saved successfully');
+        if (onSectionSave) {
+          await onSectionSave();
+        }
+      } else {
+        toast.error(result?.message || 'Failed to save document verification');
+      }
+      
+    } catch (error) {
+      console.error('Error in document verification:', error);
+      toast.error(error?.response?.data?.message || 'Error saving document verification');
+    } finally {
+      setSubmittingDocument(false);
+    }
   };
 
   const score = getVerificationScore();
-
-  // Handle final verification submission
-  const handleFinalVerificationSubmit = async () => {
-    if (!formik.values.finalReport) {
-      toast.error('Please select a final verification status');
-      return;
-    }
-
-    try {
-      setSubmittingFinalVerification(true);
-      
-      // Use the same structure as the personal verification API example
-      const finalVerificationData = {
-        application_id: parseInt(formik.values.applicationId),
-        personal_phone: formik.values.phoneVerified,
-        phone_status: formik.values.phoneStatus,
-        personal_pan: formik.values.panVerified,
-        pan_status: formik.values.panStatus,
-        personal_aadhar: formik.values.aadharVerified,
-        aadhar_status: formik.values.aadharStatus,
-        personal_ref_name: formik.values.refNameVerified,
-        personal_ref_mobile: formik.values.refPhoneVerified,
-        personal_ref_email: formik.values.refEmailVerified,
-        personal_ref_relation: formik.values.refRelationVerified,
-        personal_final_report: formik.values.finalReport
-      };
-
-      const response = await personalInfoService.savePersonalFinalVerification(finalVerificationData);
-      toast.success('Final verification submitted successfully!');
-      
-      // Also call the section save callback if provided
-      if (onSectionSave) {
-        onSectionSave();
-      }
-    } catch (error) {
-      toast.error('Failed to submit final verification');
-    } finally {
-      setSubmittingFinalVerification(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -310,7 +384,6 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 }`}>
                   Document Verification
                 </h3>
-                
               </div>
             </div>
             <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -340,8 +413,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.phoneNo || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.phoneVerified}
-                    onChange={(e) => formik.setFieldValue('phoneVerified', e.target.value)}
+                    value={formik.values.personal_phone}
+                    onChange={(e) => formik.setFieldValue('personal_phone', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -349,8 +422,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     <option value="No">No</option>
                   </select>
                   <select
-                    value={formik.values.phoneStatus}
-                    onChange={(e) => formik.setFieldValue('phoneStatus', e.target.value)}
+                    value={formik.values.phone_status}
+                    onChange={(e) => formik.setFieldValue('phone_status', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Status</option>
@@ -371,8 +444,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.panNo || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.panVerified}
-                    onChange={(e) => formik.setFieldValue('panVerified', e.target.value)}
+                    value={formik.values.personal_pan}
+                    onChange={(e) => formik.setFieldValue('personal_pan', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -380,8 +453,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     <option value="No">No</option>
                   </select>
                   <select
-                    value={formik.values.panStatus}
-                    onChange={(e) => formik.setFieldValue('panStatus', e.target.value)}
+                    value={formik.values.pan_status}
+                    onChange={(e) => formik.setFieldValue('pan_status', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Status</option>
@@ -390,29 +463,17 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   </select>
                 </div>
                 <div className="flex space-x-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={handlePanVerification}
-                    disabled={panVerifying || !formik.values.panNo}
-                    className={`${buttonClassName} ${!formik.values.panNo ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {panVerifying ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <ExternalLink className="w-3 h-3" />
-                    )}
-                    <span>{panVerifying ? 'Verifying...' : 'Verify PAN'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadPanReport}
-                    className={reportButtonClassName}
-                  >
-                    <Download className="w-3 h-3" />
-                    <span>Report</span>
-                  </button>
-                </div>
+  <button
+    type="button"
+    onClick={() => handleReportClick('pan')}
+    className={reportButtonClassName}
+  >
+    <Download className="w-3 h-3" />
+    <span>Report</span>
+  </button>
+</div>
               </div>
+
               {/* Aadhar Verification */}
               <div className={`${fieldClassName}`}>
                 <label className={labelClassName}>
@@ -424,8 +485,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.aadharNo || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.aadharVerified}
-                    onChange={(e) => formik.setFieldValue('aadharVerified', e.target.value)}
+                    value={formik.values.personal_aadhar}
+                    onChange={(e) => formik.setFieldValue('personal_aadhar', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -433,8 +494,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     <option value="No">No</option>
                   </select>
                   <select
-                    value={formik.values.aadharStatus}
-                    onChange={(e) => formik.setFieldValue('aadharStatus', e.target.value)}
+                    value={formik.values.aadhar_status}
+                    onChange={(e) => formik.setFieldValue('aadhar_status', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Status</option>
@@ -443,50 +504,37 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   </select>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={handleAadharVerification}
-                    disabled={aadharVerifying || !formik.values.aadharNo}
-                    className={`${buttonClassName} ${!formik.values.aadharNo ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {aadharVerifying ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <ExternalLink className="w-3 h-3" />
-                    )}
-                    <span>{aadharVerifying ? 'Verifying...' : 'Verify Aadhar'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadAadharReport}
-                    className={reportButtonClassName}
-                  >
-                    <Download className="w-3 h-3" />
-                    <span>Report</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.open('https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status', '_blank')}
-                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-xs ${
-                      isDark
-                        ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    }`}
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    <span>PAN Link Status</span>
-                  </button>
-                </div>
+  <button
+    type="button"
+    onClick={() => handleReportClick('aadhar')}
+    className={reportButtonClassName}
+  >
+    <Download className="w-3 h-3" />
+    <span>Report</span>
+  </button>
+
+  {/* link */}
+  <button
+    type="button"
+    onClick={() => window.open('https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status', '_blank')}
+    className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-xs ${
+      isDark
+        ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+    }`}
+  >
+    <ExternalLink className="w-3 h-3" />
+    <span>Aadhar-PAN Link Status</span>
+  </button>
+</div>
               </div>
             </div>  
 
-            
-
-            {/* Reference Verification */}
+            {/* Relation Reference Verification */}
             <div className={`${fieldClassName}`}>
               <label className={labelClassName}>
                 <Users className="w-4 h-4 inline mr-2" />
-                Reference Verification
+                Relation Reference Verification
               </label>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -500,8 +548,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.apiReferenceData?.name || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.refNameVerified}
-                    onChange={(e) => formik.setFieldValue('refNameVerified', e.target.value)}
+                    value={formik.values.personal_ref_name}
+                    onChange={(e) => formik.setFieldValue('personal_ref_name', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -520,8 +568,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.apiReferenceData?.phone || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.refPhoneVerified}
-                    onChange={(e) => formik.setFieldValue('refPhoneVerified', e.target.value)}
+                    value={formik.values.personal_ref_mobile}
+                    onChange={(e) => formik.setFieldValue('personal_ref_mobile', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -540,8 +588,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.apiReferenceData?.email || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.refEmailVerified}
-                    onChange={(e) => formik.setFieldValue('refEmailVerified', e.target.value)}
+                    value={formik.values.personal_ref_email}
+                    onChange={(e) => formik.setFieldValue('personal_ref_email', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -560,8 +608,8 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     {formik.values.apiReferenceData?.relation || 'N/A'}
                   </div>
                   <select
-                    value={formik.values.refRelationVerified}
-                    onChange={(e) => formik.setFieldValue('refRelationVerified', e.target.value)}
+                    value={formik.values.personal_ref_relation}
+                    onChange={(e) => formik.setFieldValue('personal_ref_relation', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -575,15 +623,15 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
         </div>
       </div>
 
-      {/* Final Report Section - Outside the main box */}
+      {/* Final Report Section */}
       <div className={`rounded-xl border-2 p-6 transition-all duration-300 ${
         isDark
           ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30 shadow-2xl shadow-blue-900/10"
           : "bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300 shadow-lg shadow-blue-500/10"
       }`}>
-        <div className="flex flex-col  lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+        <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6">
           {/* Final Report Selection */}
-          <div className=" w-50">
+          <div className="w-50">
             <label className={`block text-sm font-semibold mb-3 ${
               isDark ? "text-blue-400" : "text-blue-700"
             }`}>
@@ -592,36 +640,32 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
             </label>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <select
-                value={formik.values.finalReport}
-                onChange={(e) => formik.setFieldValue('finalReport', e.target.value)}
+                value={formik.values.personal_final_report}
+                onChange={(e) => formik.setFieldValue('personal_final_report', e.target.value)}
                 className={finalReportSelectClassName}
               >
                 <option value="">Select Final Verification Status</option>
                 <option value="Positive">Positive</option>
                 <option value="Negative">Negative</option>
               </select>
-            
-              
             </div>
           </div>
 
-          {/* Save Button */}
+          {/* Save Button - ALWAYS ENABLED */}
           <div className="w-full lg:w-auto">
             <button
               type="button"
-              onClick={handleFinalVerificationSubmit}
-              disabled={submittingFinalVerification || saving || !formik.values.finalReport}
-              className={`${submitButtonClassName} w-full lg:w-auto ${
-                !formik.values.finalReport ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              onClick={handleSaveDocumentVerification}
+              disabled={submittingDocument || saving}
+              className={submitButtonClassName}
             >
-              {(submittingFinalVerification || saving) ? (
+              {(submittingDocument || saving) ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Save className="w-4 h-4" />
               )}
               <span>
-                {submittingFinalVerification 
+                {submittingDocument 
                   ? 'Submitting...' 
                   : saving 
                   ? 'Saving...' 
@@ -629,10 +673,22 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 }
               </span>
             </button>
-           
           </div>
         </div>
       </div>
+      <DocumentReportModal
+  isOpen={reportModal.isOpen}
+  onClose={handleCloseModal}
+  reportType={reportModal.type}
+  reportData={reportModal.data}
+  loadingReport={reportModal.loading}
+  isDark={isDark}
+  documentNumber={
+    reportModal.type === 'pan' 
+      ? formik.values.panNo 
+      : formik.values.aadharNo
+  }
+/>
     </div>
   );
 };

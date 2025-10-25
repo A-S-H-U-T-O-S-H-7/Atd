@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TrendingUp, Save } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { socialScoreService } from '@/lib/services/appraisal';
+import { socialScoreVerificationService } from '@/lib/services/appraisal';
+import { socialScoreVerificationSchema } from '@/lib/schema/socialScoreValidationSchemas';
 
 const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [remarkSaving, setRemarkSaving] = useState(false);
@@ -57,41 +58,30 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
 
   // Debounced save function for social remarks
   const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
 
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        if (!value || value.trim().length === 0) {
-          return;
-        }
-
-        if (!formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        const remarkData = {
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        };
-        
-        await socialScoreService.saveSocialRemarks(remarkData);
-        toast.success('Social remark saved successfully!');
-      } catch (error) {
-        if (error.response?.status === 422) {
-          const errorMessage = error.response?.data?.message || 'Invalid remark data';
-          toast.error(errorMessage);
-        } else {
-          toast.error('Failed to save social remark');
-        }
-      } finally {
-        setRemarkSaving(false);
+  timeoutRef.current = setTimeout(async () => {
+    try {
+      if (!value || value.trim().length === 0 || !formik.values.applicationId) {
+        return;
       }
-    }, 3000);
-  }, []);
+
+      setRemarkSaving(true);
+      
+      await socialScoreVerificationService.saveSocialScoreRemark({
+        application_id: parseInt(formik.values.applicationId),
+        remarks: value.trim()
+      });
+    } catch (error) {
+      // Error handled in service
+    } finally {
+      setRemarkSaving(false);
+    }
+  }, 3000);
+}, [formik.values.applicationId]);
+  
 
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
@@ -108,68 +98,39 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
   };
 
   // Save social score verification
-  const handleSaveSocialVerification = async () => {
+ const handleSaveSocialVerification = async () => {
+  try {
+    setSubmittingSocial(true);
+    
+    const socialData = socialScoreVerificationService.formatSocialScoreVerificationData(
+      formik.values.applicationId,
+      formik.values
+    );
+    
     try {
-      setSubmittingSocial(true);
-      
-      // Validate application ID
-      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
-        toast.error('Invalid application ID. Please refresh the page.');
-        return;
-      }
-      
-      const socialData = {
-        application_id: parseInt(formik.values.applicationId),
-        social_score: parseInt(formik.values.socialScore) || 0,
-        social_score_status: formik.values.socialScoreRange || '',
-        social_score_suggestion: formik.values.socialScoreRecommendation || '',
-        socialscore_final_report: formik.values.socialScoreFinalReport || ''
-      };
-      
-      console.log('🚀 Saving social verification:', socialData);
-      const response = await socialScoreService.saveSocialVerification(socialData);
-      console.log('✅ Social verification saved successfully!');
-      console.log('📄 Full API response:', response);
-      console.log('📊 Response data:', response.data);
-      toast.success('Social verification completed successfully!');
-      
-      // Also call the section save callback if provided
-      if (onSectionSave) {
-        onSectionSave();
-      }
-    } catch (error) {
-      console.error('❌ Error saving social verification:', error);
-      console.error('📊 Error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.response?.data?.message
-      });
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid social data. Please check all fields.';
-        console.error('🔴 422 Error Message:', errorMessage);
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save social verification');
-      }
-    } finally {
-      setSubmittingSocial(false);
+      await socialScoreVerificationSchema.validate(socialData, { abortEarly: false });
+    } catch (validationError) {
+      // Show first validation error
+      const firstError = validationError.errors[0] || validationError.message;
+      toast.error(firstError);
+      return;
     }
-  };
+    
+    await socialScoreVerificationService.saveSocialScoreVerificationData(socialData);
+    
+    // Don't call onSectionSave - it would trigger duplicate save
+    // Component handles save directly
+  } catch (error) {
+    // API errors handled in service
+  } finally {
+    setSubmittingSocial(false);
+  }
+};
+ 
 
   // Auto-calculate final report when score and status are positive
-  useEffect(() => {
-    const score = parseInt(formik.values.socialScore) || 0;
-    const isScoreGood = score > 500;
-    const isStatusPositive = formik.values.socialScoreRange === 'Positive';
-    const isRecommended = formik.values.socialScoreRecommendation === 'Recommended';
-    
-    // Auto-set to Positive if all conditions are met
-    if (isScoreGood && isStatusPositive && isRecommended && formik.values.socialScoreFinalReport !== 'Positive') {
-      formik.setFieldValue('socialScoreFinalReport', 'Positive');
-      console.log('✅ Auto-set social final report to Positive');
-    }
-  }, [formik.values.socialScore, formik.values.socialScoreRange, formik.values.socialScoreRecommendation]);
+  
+
 
   return <div className={`rounded-xl mt-5 shadow-lg border transition-all duration-300 overflow-hidden ${
     isDark

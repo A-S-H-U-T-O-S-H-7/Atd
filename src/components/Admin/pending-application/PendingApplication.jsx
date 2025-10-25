@@ -13,7 +13,7 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 import Swal from 'sweetalert2';
 
-const PendingApplication = () => {
+const PendingApplication = () => { 
   
   const { theme } = useThemeStore();
   const isDark = theme === "dark";

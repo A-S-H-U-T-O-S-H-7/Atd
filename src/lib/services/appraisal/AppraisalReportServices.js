@@ -9,11 +9,16 @@ export const appraisalCoreService = {
     getAppraisalPDF: (applicationId) =>
         api.get(`/crm/appraisal/pdf/${applicationId}`),
 
-    // Save final verification
     saveFinalVerification: (data) =>
-        api.post("/crm/appraisal/final-verification", data),
+    api.post("/crm/appraisal/final-verification", {
+      application_id: data.applicationId || data.application_id,
+      total_final_report: data.finalReport || "Recommended"
+    }),
 
-    // Reject application
-    rejectApplication: (data) =>
-        api.post("/crm/appraisal/reject", data)
+  // Reject application
+  rejectApplication: (data) =>
+    api.post("/crm/appraisal/reject", {
+      application_id: data.applicationId || data.application_id,
+      remark: data.remark || "Application rejected"
+    })
 };

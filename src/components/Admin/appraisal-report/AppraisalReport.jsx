@@ -6,9 +6,11 @@ import { toast } from 'react-hot-toast';
 import { useThemeStore } from '@/lib/store/useThemeStore';
 
 // Import services
-import {appraisalCoreService, referenceService, alternateNumbersService, personalInfoService } from '@/lib/services/appraisal';
+import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
+import { appraisalCoreService } from '@/lib/services/appraisal';
 import { documentVerificationSchema } from '@/lib/schema/documentVerificationSchema';
-import salaryService from '@/lib/services/appraisal/salaryService';
+import { salaryVerificationService } from '@/lib/services/appraisal';
+import { bankVerificationService } from '@/lib/services/appraisal';
 
 
 
@@ -24,6 +26,10 @@ import IncomeVerification from './IncomeVerification';
 import CibilVerification from './CibilVerification';
 import SalarySlipVerification from './SalarySlipVerification';
 import BankVerification from './BankVerification';
+import { cibilVerificationService } from '@/lib/services/appraisal/cibilVerificationService';
+import { organizationVerificationService } from '@/lib/services/appraisal/organizationVerificationService';
+import { socialScoreVerificationService } from '@/lib/services/appraisal/socialScoreVerification';
+import FinalReportSection from './FinalReportSection';
 
 const AppraisalReport = ({ enquiry, onBack }) => {
   const { theme } = useThemeStore();
@@ -50,31 +56,27 @@ const AppraisalReport = ({ enquiry, onBack }) => {
     accountType: '',
     
     // Personal Verification
+    userId: '',
+    addressId: '',
     fatherName: '',
     currentAddress: '',
     permanentAddress: '',
     
     // Document Verification
-    phoneNoVerified: false,
-    phoneNoStatus: '',
-    aadharCardVerified: false,
-    aadharCardStatus: '',
-    aadharNo: '',
-    panCardVerified: false,
-    panCardStatus: '',
-    panNo: '',
-    phoneVerified: '',
-  phoneStatus: '',
-  panVerified: '',
-  panStatus: '',
-  aadharVerified: '',
-  aadharStatus: '',
-  aadharPanLinked: '',
-  refNameVerified: '',
-  refPhoneVerified: '',
-  refEmailVerified: '',
-  refRelationVerified: '',
-  finalReport: '',
+    phoneNo: '', 
+  aadharNo: '', 
+  panNo: '', 
+  personal_phone: '', 
+  phone_status: '',   
+  personal_pan: '',   
+  pan_status: '',     
+  personal_aadhar: '', 
+  aadhar_status: '',  
+  personal_ref_name: '',
+  personal_ref_mobile: '',
+  personal_ref_email: '',
+  personal_ref_relation: '',
+  personal_final_report: '',
     
     // Bank Verification fields
     bankVerificationRemark: '',
@@ -129,21 +131,22 @@ const AppraisalReport = ({ enquiry, onBack }) => {
     selfReportedMonthlyIncome: '',
     averageMonthlyIncome: '',
     incomeVerificationFinalReport: '',
+
+    // Bank Verification Fields
+  bankAutoVerification: '',
+  bankAutoVerificationStatus: '',
+  bankIsSalaryAccount: '',
+  bankIsSalaryAccountStatus: '',
+  bankSalaryCreditedRegular: '',
+  bankSalaryCreditedRegularStatus: '',
+  bankSalaryDate: '',
+  bankAnyEmiDebited: '',
+  bankEmiAmountInStatement: 0,
+  bankIsEmiWithBankStatement: '',
+  bankVerificationRemark: '',
+  bankVerificationFinalReport: '', 
+  bankSalaryCreditRemark: '',  
     
-    // Salary Verification fields
-    salaryAutoVerification: '',
-    salaryAutoVerificationStatus: '',
-    salaryCreditedRegular: '',
-    salaryCreditedRegularStatus: '',
-    salaryInterval: '',
-    anyEmiDebited: '',
-    isEmiWithBankStatement: '',
-    isSalaryAccount: '',
-    isSalaryAccountStatus: '',
-    salaryAccountRemark: '',
-    salaryAmount: '',
-    salaryVerificationRemark: '',
-    salaryVerificationFinalReport: '',
     
     // CIBIL Verification fields
     cibilScore: '',
@@ -156,7 +159,7 @@ const AppraisalReport = ({ enquiry, onBack }) => {
     writeOffStatus: '',
     noOfOverdue: 0,
     overdueStatus: '',
-    totalEmiAsCibil: '',
+    totalEmiAsCibil: 0,
     dpd: '',
     dpdStatus: '',
     emiStatus: '',
@@ -190,9 +193,42 @@ const AppraisalReport = ({ enquiry, onBack }) => {
   };
 
   // Helper function to format API data
-  const formatAppraisalData = (application, appraisal) => {
+  const formatAppraisalData = (application, appraisal, references, householdincome) => {
+    let familyMembers = [];
     
-    // THE FIX: Use the correct field names from your debug output
+    // householdincome is passed as a separate parameter from the response root level
+    const householdData = householdincome;
+    
+    if (householdData && householdData.length > 0) {
+      familyMembers = householdData.map(income => ({
+        unit: income.house_holder_family || '',
+        natureOfWork: income.nature_of_work || '',
+        contactNo: income.contact_no || '',
+        annualIncome: income.annual_income || ''
+      }));
+    }
+
+  // Load references from the nested references object in the API response
+  const referencesData = references || application.references || appraisal.references || {};
+  
+  const savedReferences = Array(5).fill().map((_, index) => {
+    const num = index + 1;
+    // API returns refName1, refEmail1, refPhone1, etc. (without underscore)
+    const name = referencesData[`refName${num}`] || '';
+    const email = referencesData[`refEmail${num}`] || '';
+    const phone = referencesData[`refPhone${num}`] || '';
+    const relation = referencesData[`refRelation${num}`] || '';
+    const verified = referencesData[`refVerify${num}`] === 1 || referencesData[`refVerify${num}`] === true;
+    
+    return {
+      name: name || '',
+      email: email || '',
+      phone: phone || '',
+      relation: relation || '',
+      verified: verified || false
+    };
+  });
+    
     const formattedData = {
       // Basic Information
       name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
@@ -218,30 +254,30 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       aadharNo: application.aadhar_no || 'N/A',
       panNo: application.pan_no || 'N/A',
       
-      // Personal Verification
+      // Personal Verification - store IDs needed for save
+      userId: application.user_id || application.id || '',
+      addressId: application.address_id || '',
       currentAddress: application.current_address || application.address || 'N/A',
       permanentAddress: application.permanent_address || application.address || 'N/A',
       
       // Document Verification
-      phoneNoVerified: appraisal.personal_phone === "Yes",
-      phoneNoStatus: appraisal.phone_status || '',
-      aadharCardVerified: appraisal.personal_aadhar === "Yes",
-      aadharCardStatus: appraisal.aadhar_status || '',
-      panCardVerified: appraisal.personal_pan === "Yes",
-      panCardStatus: appraisal.pan_status || '',
-      phoneVerified: appraisal.personal_phone || '',
-  phoneStatus: appraisal.phone_status || '',
-  panVerified: appraisal.personal_pan || '',
-  panStatus: appraisal.pan_status || '',
-  aadharVerified: appraisal.personal_aadhar || '',
-  aadharStatus: appraisal.aadhar_status || '',
-  aadharPanLinked: appraisal.aadhar_pan_linked || '',
-  // Reference Verification
-  refNameVerified: appraisal.personal_ref_name === 'Yes' ? 'Yes' : '',
-  refPhoneVerified: appraisal.personal_ref_mobile === 'Yes' ? 'Yes' : '',
-  refEmailVerified: appraisal.personal_ref_email === 'Yes' ? 'Yes' : '',
-  refRelationVerified: appraisal.personal_ref_relation === 'Yes' ? 'Yes' : '',
-  finalReport: appraisal.personal_final_report || '',
+      phoneNo: application.phone || 'N/A',
+    aadharNo: application.aadhar_no || 'N/A',
+    panNo: application.pan_no || 'N/A',
+    
+    // Verification status - USE CORRECT FIELD NAMES:
+    personal_phone: appraisal.personal_phone || '',
+    phone_status: appraisal.phone_status || '',
+    personal_pan: appraisal.personal_pan || '',
+    pan_status: appraisal.pan_status || '',
+    personal_aadhar: appraisal.personal_aadhar || '',
+aadhar_status: appraisal.aadhar_status !== null && appraisal.aadhar_status !== undefined ? appraisal.aadhar_status : '',    
+    // Reference verification - KEEP AS IS:
+    personal_ref_name: appraisal.personal_ref_name === 'Yes' ? 'Yes' : '',
+    personal_ref_mobile: appraisal.personal_ref_mobile === 'Yes' ? 'Yes' : '',
+    personal_ref_email: appraisal.personal_ref_email === 'Yes' ? 'Yes' : '',
+    personal_ref_relation: appraisal.personal_ref_relation === 'Yes' ? 'Yes' : '',
+    personal_final_report: appraisal.personal_final_report || '',
       
       // Organization fields
       organizationSameAsApplied: appraisal.organization_applied || '',
@@ -253,7 +289,7 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       companyWebsiteStatus: appraisal.website_status || '',
       hrPhoneVerificationStatus: appraisal.company_mobile || '',
       hrPhoneVerificationMethod: appraisal.company_mobile_status || '',
-      hrContactStatus: appraisal.contact_status || '',
+       hrContactVerificationStatus: appraisal.contact_status || '',
       hrEmailVerificationStatus: appraisal.hr_mail || '',
       hrEmailVerificationMethod: appraisal.hr_mail_status || '',
       organizationFinalReport: appraisal.organization_final_report || '',
@@ -267,6 +303,8 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       contactPerson: application.contact_person || '',
       
       // Income/Salary fields - use appraisal data first, fallback to application data
+      grossSalaryAmount: application.gross_monthly_salary || '',
+      netSalaryAmount: application.net_monthly_salary || '',
       grossAmountSalary: appraisal.gross_amount_salary || application.gross_monthly_salary || '',
       grossAmountSalaryStatus: appraisal.gross_amount_salary_status || '',
       netAmountSalary: appraisal.net_amount_salary || application.net_monthly_salary || '',
@@ -284,18 +322,19 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       incomeVerificationRemark: appraisal.SalaryRemark || '',
       
       // Bank fields
-      salaryAutoVerification: appraisal.auto_verification || '',
-      salaryAutoVerificationStatus: appraisal.auto_verification_status || '',
-      isSalaryAccount: appraisal.is_salary_account || '',
-      isSalaryAccountStatus: appraisal.is_salary_account_status || '',
-      salaryCreditedRegular: appraisal.regural_interval || '',
-      salaryCreditedRegularStatus: appraisal.regural_interval_status || '',
-      salaryAccountRemark: appraisal.salary_remark || '',
-      anyEmiDebited: appraisal.emi_debit || '',
-      salaryAmount: appraisal.emi_amount || '',
-      isEmiWithBankStatement: appraisal.emi_with_bank_statement || '',
-      bankVerificationFinalReport: appraisal.bankstatement_final_report || '',
-      bankVerificationRemark: appraisal.BankRemark || '',
+      bankAutoVerification: appraisal.auto_verification || '',
+    bankAutoVerificationStatus: appraisal.auto_verification_status || '',
+    bankIsSalaryAccount: appraisal.is_salary_account || '',
+    bankIsSalaryAccountStatus: appraisal.is_salary_account_status || '',
+    bankSalaryCreditedRegular: appraisal.regural_interval || '',
+    bankSalaryCreditedRegularStatus: appraisal.regural_interval_status || '',
+    bankSalaryDate: appraisal.salary_date || '',
+    bankAnyEmiDebited: appraisal.emi_debit || '',
+    bankEmiAmountInStatement: parseFloat(appraisal.emi_amount) || 0,
+    bankIsEmiWithBankStatement: appraisal.emi_with_bank_statement || '',
+    bankVerificationRemark: appraisal.BankRemark || '',
+    bankSalaryCreditRemark: appraisal.salary_remark || '',
+    bankVerificationFinalReport: appraisal.bankstatement_final_report || '',
       
       // Social Score fields
       socialScore: appraisal.social_score || '',
@@ -322,15 +361,16 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       cibilFinalReport: appraisal.cibil_final_report || '',
       cibilRemark: appraisal.CibilRemark || '',
       
-      // Other fields
-      alternateMobileNo1: appraisal.alternate_no1 || '',
-      alternateMobileNo2: appraisal.alternate_no2 || '',
+      // Other fields - ensure alternative numbers are strings (no padding for mobile numbers)
+      alternateMobileNo1: appraisal.alternate_no1 ? String(appraisal.alternate_no1) : '',
+      alternateMobileNo2: appraisal.alternate_no2 ? String(appraisal.alternate_no2) : '',
       remark: appraisal.PerRemark || '',
       salarySlipRemark: appraisal.SalaryRemark || '',
-      finalReport: appraisal.personal_final_report || '',
+      // Final report should come from total_final_report, NOT personal_final_report
+      finalReport: appraisal.total_final_report || '',
 
       // Additional data
-      familyMembers: [],
+      familyMembers: familyMembers,
       netHouseHoldIncome: application.net_house_hold_income || '',
       
       // Reference data for DocumentVerification display (from API)
@@ -342,14 +382,11 @@ const AppraisalReport = ({ enquiry, onBack }) => {
       },
       
       // References for ReferenceVerification form (always empty - form only)
-      additionalRefs: Array(5).fill().map(() => ({
-        name: '',
-        email: '',
-        phone: '',
-        relation: '',
-        verified: false
-      }))
+          additionalRefs: savedReferences,
+
     };
+
+
 
 
 
@@ -358,43 +395,46 @@ const AppraisalReport = ({ enquiry, onBack }) => {
 
   // Single data loading function
   const loadAppraisalData = useCallback(async () => {
-    if (!enquiry?.id) {
-      console.error('❌ No enquiry ID provided');
-      return null;
+  if (!enquiry?.id) {
+    console.error('❌ No enquiry ID provided');
+    return null;
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+    
+    const response = await appraisalCoreService.getAppraisalReport(enquiry.id);
+    
+    if (!response?.success) {
+      throw new Error(response?.message || 'Failed to fetch appraisal data');
     }
 
-    try {
-      setLoading(true);
-      setError(null);
-      
-      console.log('🚀 Fetching appraisal data for enquiry:', enquiry.id);
-      const response = await appraisalCoreService.getAppraisalReport(enquiry.id);
-      
-      if (!response?.success) {
-        throw new Error(response?.message || 'Failed to fetch appraisal data');
-      }
+    const formattedData = formatAppraisalData(
+      response.application || response.data?.application || {},
+      response.appraisal || response.data?.appraisal || {},
+      response.references || response.data?.references || {},
+      response.householdincome || response.data?.householdincome || []
+    );
+    
+    return formattedData;
 
-      console.log('✅ Appraisal data loaded successfully');
-      return formatAppraisalData(response.application, response.appraisal);
-
-    } catch (error) {
-      console.error('❌ Error loading appraisal data:', error);
-      
-      // Fallback to enquiry data
-      const fallbackData = {
-        ...initialValues,
-        name: `${enquiry.firstName || ''} ${enquiry.lastName || ''}`.trim() || 'N/A',
-        crnNo: enquiry.crnNo || 'N/A',
-        organizationName: enquiry.organizationName || 'N/A',
-        loanAccountNo: enquiry.accountId || 'N/A',
-      };
-      
-      toast.success('Loaded basic information from enquiry data');
-      return fallbackData;
-    } finally {
-      setLoading(false);
-    }
-  }, [enquiry]);
+  } catch (error) {
+    // Fallback to enquiry data
+    const fallbackData = {
+      ...initialValues,
+      name: `${enquiry.firstName || ''} ${enquiry.lastName || ''}`.trim() || 'N/A',
+      crnNo: enquiry.crnNo || 'N/A',
+      organizationName: enquiry.organizationName || 'N/A',
+      loanAccountNo: enquiry.accountId || 'N/A',
+    };
+    
+    toast.success('Loaded basic information from enquiry data');
+    return fallbackData;
+  } finally {
+    setLoading(false);
+  }
+}, [enquiry]);
 
   // Load data when component mounts
   useEffect(() => {
@@ -441,233 +481,93 @@ const AppraisalReport = ({ enquiry, onBack }) => {
     }
   };
 
-  const handleSectionSave = async (saveFunction, values, additionalData) => {
+const handleSectionSave = async (saveFunction, values, additionalData) => {
   try {
-    await saveFunction(values, additionalData);
+    const result = await saveFunction(values, additionalData);
+    return result;
   } catch (error) {
     console.error('Error saving section:', error);
+    return Promise.resolve();
   }
 };
 
   const saveReferenceVerification = async (values) => {
-  try {
-    setSaving(true);
-    
-    const referencesData = {
-      application_id: enquiry.id,
-      crnno: values.crnNo,
-    };
-
-    // Add up to 5 references
-    values.additionalRefs.slice(0, 5).forEach((ref, index) => {
-      const num = index + 1;
-      if (ref.name || ref.email || ref.phone) {
-        referencesData[`add_ref_name_${num}`] = ref.name;
-        referencesData[`add_ref_email_${num}`] = ref.email;
-        referencesData[`add_ref_phone_${num}`] = ref.phone;
-        referencesData[`add_ref_relation_${num}`] = ref.relation;
-        referencesData[`add_ref_verify_${num}`] = ref.verified;
-      }
-    });
-
-    console.log('🚀 Saving references data:', referencesData);
-    
-    // Call the API
-    const response = await referenceService.saveAdditionalReferences(referencesData);
-    
-    console.log('✅ References saved successfully:', response);
-    toast.success('References saved successfully!');
-  } catch (error) {
-    console.error('Error saving references:', error);
-    toast.error('Failed to save references');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+    return personalVerificationService.saveReferences(values);
 };
 
 const saveDocumentVerification = async (values) => {
-  try {
-    setSaving(true);
-    
-    const documentData = {
-      application_id: enquiry.id,
-      personal_phone: values.phoneVerified,
-      phone_status: values.phoneStatus,
-      personal_pan: values.panVerified,
-      pan_status: values.panStatus,
-      personal_aadhar: values.aadharVerified,
-      aadhar_status: values.aadharStatus,
-      aadhar_pan_linked: values.aadharPanLinked,
-      personal_ref_name: values.refNameVerified,
-      personal_ref_mobile: values.refPhoneVerified,
-      personal_ref_email: values.refEmailVerified,
-      personal_ref_relation: values.refRelationVerified,
-      personal_final_report: values.finalReport
-    };
-
-    console.log('🚀 Saving document verification:', documentData);
-    
-    // Use personalInfoService for final verification
-    const response = await personalInfoService.savePersonalFinalVerification(documentData);
-    
-    console.log('✅ Document verification saved successfully:', response);
-    toast.success('Document verification saved successfully!');
-  } catch (error) {
-    console.error('Error saving document verification:', error);
-    toast.error('Failed to save document verification');
-    throw error;
-  } finally {
-    setSaving(false);
+  if (!values.applicationId) {
+    toast.error('Application ID is required for document verification');
+    return Promise.resolve();
   }
+
+  const documentData = {
+    application_id: values.applicationId,
+    ...values
+  };
+
+  return personalVerificationService.saveDocumentVerificationData(documentData);
 };
 
 // Save personal verification (father name, addresses)
 const savePersonalVerification = async (values) => {
-  try {
-    setSaving(true);
-    
-    // Validate required fields
-    if (!values.fatherName || values.fatherName.trim().length === 0) {
-      toast.error('Father\'s name is required');
-      return;
-    }
-    if (!values.currentAddress || values.currentAddress.trim().length === 0) {
-      toast.error('Current address is required');
-      return;
-    }
-    if (!values.permanentAddress || values.permanentAddress.trim().length === 0) {
-      toast.error('Permanent address is required');
-      return;
-    }
-    
-    // Try to get user_id from application data
-    const possibleUserId = values.applicationId || enquiry.user_id || enquiry.id || 176;
-    const possibleAddressId = enquiry.address_id || enquiry.id || 89;
-    
-    console.log('📋 Personal verification debug info:', {
-      enquiry,
-      possibleUserId,
-      possibleAddressId,
-      values: {
-        fatherName: values.fatherName,
-        currentAddress: values.currentAddress?.substring(0, 50) + '...',
-        permanentAddress: values.permanentAddress?.substring(0, 50) + '...'
-      }
-    });
-    
-    // Use the exact structure from API documentation
-    const personalData = {
-      user_id: parseInt(possibleUserId),
-      address_id: parseInt(possibleAddressId),
-      father_name: values.fatherName.trim(),
-      current_address: values.currentAddress.trim(),
-      permanent_address: values.permanentAddress.trim()
-    };
-    
-    console.log('🚀 Sending personal verification data:', personalData);
-    
-    try {
-      const response = await personalInfoService.updatePersonalInfo(personalData);
-      console.log('✅ Personal verification saved successfully:', response);
-      toast.success('Personal verification saved successfully!');
-    } catch (apiError) {
-      console.error('❌ First attempt failed, trying with fallback IDs:', apiError);
-      
-      // If the current IDs fail, try with the working example values
-      const fallbackData = {
-        user_id: 176,
-        address_id: 89,
-        father_name: values.fatherName.trim(),
-        current_address: values.currentAddress.trim(),
-        permanent_address: values.permanentAddress.trim()
-      };
-      
-      console.log('🚀 Retrying with fallback data:', fallbackData);
-      const response = await personalInfoService.updatePersonalInfo(fallbackData);
-      console.log('✅ Personal verification saved with fallback IDs:', response);
-      toast.success('Personal verification saved successfully!');
-    }
-  } catch (error) {
-    console.error('❌ Error saving personal verification:', error);
-    console.error('📊 Error details:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.response?.data?.message
-    });
-    
-    if (error.response?.status === 422) {
-      const errorMessage = error.response?.data?.message || 'Invalid personal data. Please check all fields.';
-      console.error('🔴 422 Error Message:', errorMessage);
-      toast.error(errorMessage);
-    } else {
-      toast.error('Failed to save personal verification');
-    }
-    throw error;
-  } finally {
-    setSaving(false);
+  if (!values.applicationId) {
+    toast.error('Application ID is required');
+    return Promise.resolve();
   }
-};
-
-const saveSalaryRemark = async (values) => {
-  try {
-    setSaving(true);
-    
-    const remarkData = {
-      application_id: enquiry.id,
-      remarks: values.incomeVerificationRemark || "Salary transfer on time"
-    };
-
-    const response = await salaryService.saveSalaryRemark(remarkData);
-    toast.success('Salary remark saved successfully!');
-  } catch (error) {
-    console.error('Error saving salary remark:', error);
-    toast.error('Failed to save salary remark');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+  
+  const personalData = {
+    user_id: values.userId,
+    address_id: values.addressId,
+    father_name: values.fatherName,
+    current_address: values.currentAddress,
+    permanent_address: values.permanentAddress
+  };
+  
+  return personalVerificationService.savePersonalInfo(personalData);
 };
 
 // Save household income (multiple family members)
 const saveHouseholdIncome = async (familyMembers) => {
-  try {
-    setSaving(true);
-    
-    // Save each family member individually
-    const savePromises = familyMembers.map(async (member) => {
-      if (member.unit && member.annualIncome) {
-        const householdData = {
-          application_id: enquiry.id,
-          house_holder_family: member.unit,
-          nature_of_work: member.natureOfWork,
-          contact_no: member.contactNo,
-          annual_income: parseFloat(member.annualIncome) || 0
-        };
+   return salaryVerificationService.saveHouseholdIncomes(enquiry.id, familyMembers);
+};
 
-        return await salaryService.addHouseholdIncome(householdData);
-      }
-    });
 
-    await Promise.all(savePromises);
-    toast.success('Household income saved successfully!');
-  } catch (error) {
-    console.error('Error saving household income:', error);
-    toast.error('Failed to save household income');
-    throw error;
-  } finally {
-    setSaving(false);
+// Save salary slip verification (for SalarySlipVerification component)
+const saveSalarySlipVerification = async (values) => {
+  if (values.salarySlipRemark) {
+    const remarkData = {
+      application_id: enquiry.id,
+      remarks: values.salarySlipRemark
+    };
+    return salaryVerificationService.saveSalarySlipRemark(remarkData);
   }
 };
 
-// Save salary verification
-const saveSalaryVerification = async (values) => {
+//salary verification
+const saveIncomeVerification = async (values, familyMembers) => {
   try {
     setSaving(true);
     
+    // Save household income first
+    if (familyMembers && familyMembers.length > 0) {
+      const validMembers = familyMembers.filter(member => 
+        member.unit && member.annualIncome && parseFloat(member.annualIncome) > 0
+      );
+      
+      if (validMembers.length > 0) {
+        await salaryVerificationService.saveHouseholdIncomes(enquiry.id, validMembers);
+      }
+    }
+    
+    // Calculate average monthly income
+    const monthsEmployed = parseFloat(values.monthsOfEmployment) || 0;
+    const selfReportedIncome = parseFloat(values.selfReportedMonthlyIncome) || 0;
+    const averageMonthlyIncome = monthsEmployed > 0 ? (selfReportedIncome * monthsEmployed) / 12 : 0;
+    
+    // Save salary verification data
     const salaryVerificationData = {
-      application_id: enquiry.id,
+      application_id: parseInt(enquiry.id),
       organization_applied: values.organizationSameAsApplied,
       organization_applied_status: values.organizationSameAsAppliedStatus,
       gross_amount_salary: values.grossAmountSalary,
@@ -675,120 +575,60 @@ const saveSalaryVerification = async (values) => {
       net_amount_salary: values.netAmountSalary,
       net_amount_salary_status: values.netAmountSalaryStatus,
       monthly_salary_date: values.salaryDate,
-      avail_amenities: values.availabilityOfBasicAmenities,
-      ava_assets: values.availabilityOfOtherAssets,
-      primary_income: values.primarySourceOfIncome,
-      nature_of_work: values.natureOfWork,
-      frequency_income: values.frequencyOfIncome,
-      month_employment_last_one_year: values.monthsOfEmployment,
+      avail_amenities: values.availabilityOfBasicAmenities || '',
+      ava_assets: values.availabilityOfOtherAssets || '',
+      primary_income: values.primarySourceOfIncome || '',
+      nature_of_work: values.natureOfWork || '',
+      frequency_income: values.frequencyOfIncome || '',
+      month_employment_last_one_year: values.monthsOfEmployment || '0',
       self_reported_monthly_income: parseFloat(values.selfReportedMonthlyIncome) || 0,
-      average_monthly_income: parseFloat(values.averageMonthlyIncome) || 0,
+      average_monthly_income: parseFloat(averageMonthlyIncome) || 0,
       salaryslip_final_report: values.incomeVerificationFinalReport
     };
 
-    const response = await salaryService.saveSalaryVerification(salaryVerificationData);
-    toast.success('Salary verification saved successfully!');
+    await salaryVerificationService.saveSalaryVerificationData(salaryVerificationData);
+    
   } catch (error) {
-    console.error('Error saving salary verification:', error);
-    toast.error('Failed to save salary verification');
     throw error;
   } finally {
     setSaving(false);
   }
 };
 
-// Save salary slip verification (for SalarySlipVerification component)
-const saveSalarySlipVerification = async (values) => {
-  try {
-    setSaving(true);
-    
-    // Save salary slip remark using the same salary remark API
-    if (values.salarySlipRemark) {
-      const remarkData = {
-        application_id: enquiry.id,
-        remarks: values.salarySlipRemark
-      };
-      
-      await salaryService.saveSalaryRemark(remarkData);
-    }
-    
-    toast.success('Salary slip verification saved successfully!');
-  } catch (error) {
-    console.error('Error saving salary slip verification:', error);
-    toast.error('Failed to save salary slip verification');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+const saveOrganizationVerification = async (values) => {
+  const organizationData = organizationVerificationService.formatOrganizationVerificationData(
+    enquiry.id,
+    values
+  );
+  
+  return organizationVerificationService.saveOrganizationVerificationData(organizationData);
 };
-
-// Combined function for income verification section (no remark handling - remarks are in SalarySlipVerification)
-// Note: IncomeVerification component now handles its own saving, this function is not used
-const saveIncomeVerification = async (values, familyMembers) => {
-  try {
-    setSaving(true);
-    
-    // Note: Remarks are handled in SalarySlipVerification component, not here
-    
-    // Save household income for each family member
-    if (familyMembers && familyMembers.length > 0) {
-      await saveHouseholdIncome(familyMembers);
-    }
-    
-    // Save salary verification
-    await saveSalaryVerification(values);
-    
-    // Note: Toast is handled by the component itself, not here
-  } catch (error) {
-    console.error('Error in income verification:', error);
-    throw error;
-  } finally {
-    setSaving(false);
-  }
-};
-
-// Organization verification is now handled by the component itself
 
 const saveBankVerification = async (values) => {
-  try {
-    setSaving(true);
-    console.log('🚀 Bank verification would be saved here:', values);
-    toast.success('Bank verification saved successfully!');
-  } catch (error) {
-    console.error('Error saving bank verification:', error);
-    toast.error('Failed to save bank verification');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+  const bankVerificationData = bankVerificationService.formatBankVerificationData(
+    enquiry.id,
+    values
+  );
+  
+  return bankVerificationService.saveBankVerificationData(bankVerificationData);
 };
 
 const saveSocialScoreVerification = async (values) => {
-  try {
-    setSaving(true);
-    console.log('🚀 Social score verification would be saved here:', values);
-    toast.success('Social score verification saved successfully!');
-  } catch (error) {
-    console.error('Error saving social score verification:', error);
-    toast.error('Failed to save social score verification');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+  const socialData = socialScoreVerificationService.formatSocialScoreVerificationData(
+    enquiry.id,
+    values
+  );
+  
+  return socialScoreVerificationService.saveSocialScoreVerificationData(socialData);
 };
 
 const saveCibilVerification = async (values) => {
-  try {
-    setSaving(true);
-    console.log('🚀 CIBIL verification would be saved here:', values);
-    toast.success('CIBIL verification saved successfully!');
-  } catch (error) {
-    console.error('Error saving CIBIL verification:', error);
-    toast.error('Failed to save CIBIL verification');
-    throw error;
-  } finally {
-    setSaving(false);
-  }
+  const cibilData = cibilVerificationService.formatCibilVerificationData(
+    enquiry.id,
+    values
+  );
+  
+  return cibilVerificationService.saveCibilVerificationData(cibilData);
 };
 
   // Render states
@@ -871,24 +711,7 @@ const saveCibilVerification = async (values) => {
                     </h1>
                   </div>
 
-                  <div className="flex space-x-3">
-                    <button 
-                      onClick={() => handleFinalSubmit(formik.values)}
-                      disabled={submitting || saving}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm"
-                    >
-                      {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check size={16} />}
-                      <span>{submitting ? 'Submitting...' : 'Submit'}</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleRejectCase(formik.values)}
-                      disabled={submitting || saving}
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl text-sm"
-                    >
-                      <span>Reject</span>
-                    </button>
-                  </div>
+                 
                 </div>
               </div>
 
@@ -906,6 +729,7 @@ const saveCibilVerification = async (values) => {
                   <AlternativeNumberRemark formik={formik} isDark={isDark} />
 
                 </div>
+                    
                 <ReferenceVerification 
                   formik={formik} 
                   onSectionSave={() => handleSectionSave(saveReferenceVerification, formik.values)} 
@@ -926,16 +750,17 @@ const saveCibilVerification = async (values) => {
                   saving={saving}
                 />
                 <IncomeVerification 
-                  formik={formik} 
-                  onSectionSave={() => handleSectionSave(saveIncomeVerification, formik.values)} 
-                  isDark={isDark} 
-                  saving={saving}
+                formik={formik} 
+                onSectionSave={(values, familyMembers) => handleSectionSave(saveIncomeVerification, values, familyMembers)} 
+                isDark={isDark} 
+                saving={saving}
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <OrganizationVerification 
                       formik={formik} 
+                      onSectionSave={() => handleSectionSave(saveOrganizationVerification, formik.values)} 
                       isDark={isDark} 
                       saving={saving}
                     />
@@ -964,6 +789,16 @@ const saveCibilVerification = async (values) => {
                   isDark={isDark} 
                   saving={saving}
                 />
+                {/* Final Report Section */}
+              <FinalReportSection 
+                formik={formik}
+                onSubmit={handleFinalSubmit}
+                onReject={handleRejectCase}
+                isDark={isDark}
+                submitting={submitting}
+                saving={saving}
+                applicationId={enquiry.id}
+              />
               </div>
             </div>
           );

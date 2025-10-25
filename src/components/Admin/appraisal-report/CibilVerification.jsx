@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { CreditCard, Save, AlertCircle, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { cibilService, appraisalCoreService } from '@/lib/services/appraisal';
+import { cibilVerificationService } from '@/lib/services/appraisal/cibilVerificationService';
+import { cibilVerificationSchema } from '@/lib/schema/cibilValidationSchemas';
 
 const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [remarkSaving, setRemarkSaving] = useState(false);
@@ -39,6 +41,31 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
       : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
   } disabled:cursor-not-allowed`;
 
+  const debouncedSaveRemark = useCallback((value) => {
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
+
+  timeoutRef.current = setTimeout(async () => {
+    try {
+      if (!value || value.trim().length === 0 || !formik.values.applicationId) {
+        return;
+      }
+
+      setRemarkSaving(true);
+      
+      await cibilVerificationService.saveCibilRemark({
+        application_id: parseInt(formik.values.applicationId),
+        remarks: value.trim()
+      });
+    } catch (error) {
+      // Error handled in service
+    } finally {
+      setRemarkSaving(false);
+    }
+  }, 3000);
+}, [formik.values.applicationId]);
+
   // Sync external changes to local state
   useEffect(() => {
     setLocalRemarkValue(formik.values.cibilRemark || '');
@@ -47,18 +74,8 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
   // Use customer data from formik values (already loaded in parent component)
   useEffect(() => {
     // Extract customer data from formik values using correct field names
-    const extractedData = {
-      fname: formik.values.name?.split(' ')[0] || '',
-      lname: formik.values.name?.split(' ').slice(1).join(' ') || '',
-      phone: formik.values.phoneNo || '',
-      email: formik.values.email || '',
-      crnno: formik.values.crnNo || '',
-      applied_amount: formik.values.appliedAmount || '',
-      pan_no: formik.values.panNo || '',
-      aadhar_no: formik.values.aadharNo || '',
-      dob: formik.values.dob || '',
-      organization_name: formik.values.organizationName || ''
-    };
+    const extractedData = cibilVerificationService.extractCustomerData(formik.values);
+
     
     setCustomerData(extractedData);
   }, [formik.values.name, formik.values.phoneNo, formik.values.email, formik.values.dob, formik.values.appliedAmount, formik.values.crnNo, formik.values.organizationName, formik.values.panNo, formik.values.aadharNo]);
@@ -75,43 +92,7 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
     };
   }, []);
 
-  // Debounced save function for CIBIL remarks
-  const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        if (!value || value.trim().length === 0) {
-          return;
-        }
-
-        if (!formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        const remarkData = {
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        };
-        
-        const response = await cibilService.saveCibilRemarks(remarkData);
-        toast.success('CIBIL remark saved successfully!');
-      } catch (error) {
-        if (error.response?.status === 422) {
-          const errorMessage = error.response?.data?.message || 'Invalid remark data';
-          toast.error(errorMessage);
-        } else {
-          toast.error('Failed to save CIBIL remark');
-        }
-      } finally {
-        setRemarkSaving(false);
-      }
-    }, 3000);
-  }, []);
+  
 
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
@@ -130,73 +111,36 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
     debouncedSaveRemark(value);
   };
 
-  // Save CIBIL verification
-  const handleSaveCibilVerification = async () => {
-    try {
-      setSubmittingCibil(true);
-      
-      // Validate application ID
-      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
-        toast.error('Invalid application ID. Please refresh the page.');
-        return;
-      }
-      
-      const cibilData = {
-        application_id: parseInt(formik.values.applicationId),
-        cibil_score: parseInt(formik.values.cibilScore) || 0,
-        score_status: formik.values.cibilScoreStatus || '',
-        total_active_amount: parseInt(formik.values.totalActiveLoans) || 0,
-        total_active_amount_status: formik.values.activeLoanStatus || '',
-        total_closed_amount: parseInt(formik.values.totalClosedLoans) || 0,
-        total_closed_amount_status: formik.values.closedLoanStatus || '',
-        write_off_settled: parseInt(formik.values.writeOffSettled) || 0,
-        write_off_settled_status: formik.values.writeOffStatus || '',
-        overdue: parseInt(formik.values.noOfOverdue) || 0,
-        overdue_status: formik.values.overdueStatus || '',
-        total_emi_cibil: parseInt(formik.values.totalEmiAsCibil) || 0,
-        comment: formik.values.cibilComment || '',
-        dpd: formik.values.dpd || '',
-        dpd_status: formik.values.dpdStatus || '',
-        cibil_final_report: formik.values.cibilFinalReport || ''
-      };
-      
-      const response = await cibilService.saveCibilVerification(cibilData);
-      toast.success('CIBIL verification completed successfully!');
-      
-      // Also call the section save callback if provided
-      if (onSectionSave) {
-        onSectionSave();
-      }
-    } catch (error) {
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid CIBIL data. Please check all fields.';
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save CIBIL verification');
-      }
-    } finally {
-      setSubmittingCibil(false);
-    }
-  };
-
-  // Auto-calculate final report based on score and other factors
-  useEffect(() => {
-    const score = parseInt(formik.values.cibilScore) || 0;
-    const isScoreGood = score >= 600; // Lowered threshold for more flexibility
-    const isScoreStatusPositive = formik.values.cibilScoreStatus === 'Positive';
-    const isDPDGood = formik.values.dpd === 'Nil' || (formik.values.dpdStatus === 'Positive');
-    const hasLowWriteOffs = parseInt(formik.values.writeOffSettled || 0) <= 0;
+const handleSaveCibilVerification = async () => {
+  try {
+    setSubmittingCibil(true);
     
-    // Auto-set to Positive if main conditions are good (more flexible)
-    if (isScoreGood && isScoreStatusPositive && formik.values.cibilFinalReport !== 'Positive') {
-      formik.setFieldValue('cibilFinalReport', 'Positive');
+    const cibilData = cibilVerificationService.formatCibilVerificationData(
+      formik.values.applicationId,
+      formik.values
+    );
+    
+    // ✅ Use Yup schema for validation in component
+    try {
+      await cibilVerificationSchema.validate(cibilData, { abortEarly: false });
+    } catch (validationError) {
+      const firstError = validationError.errors[0] || validationError.message;
+      toast.error(firstError);
+      return;
     }
-    // Auto-set to Negative if score is really bad
-    else if (score > 0 && score < 500 && formik.values.cibilScoreStatus === 'Negative' && formik.values.cibilFinalReport !== 'Negative') {
-      formik.setFieldValue('cibilFinalReport', 'Negative');
-    }
-  }, [formik.values.cibilScore, formik.values.cibilScoreStatus, formik.values.dpd, formik.values.dpdStatus, formik.values.writeOffSettled, formik.values.activeLoanStatus]);
-
+    
+    await cibilVerificationService.saveCibilVerificationData(cibilData);
+    
+    // Don't call onSectionSave - it would trigger duplicate save
+    // Component handles save directly
+  } catch (error) {
+    // Errors are handled in service
+  } finally {
+    setSubmittingCibil(false);
+  }
+};
+  
+  
   const statusBadge = (status, value) => {
     const isPositive = status === 'Positive';
     const hasValue = value && value > 0;

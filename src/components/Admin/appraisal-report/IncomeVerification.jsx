@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Save, Users, Plus, Trash2, Home, Building } from 'lucide-react';
+import { Save, Users, Plus, Trash2, Home, Building } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import salaryService from '@/lib/services/appraisal/salaryService';
+import { salaryVerificationService } from '@/lib/services/appraisal/salaryVerificationService';
+import { incomeVerificationSchema } from '@/lib/schema/salaryValidationSchemas';
 
 const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
-  const [familyMembers, setFamilyMembers] = useState([
-    { unit: 'Unmarrid Son', natureOfWork: 'Self-employed', contactNo: '', annualIncome: '' }
-  ]);
+  const [localFamilyMembers, setLocalFamilyMembers] = useState([]);
   const [submittingSalary, setSubmittingSalary] = useState(false);
+
+  // Sync with formik values when component mounts or familyMembers changes from parent
+  useEffect(() => {
+    if (formik.values.familyMembers && formik.values.familyMembers.length > 0) {
+      setLocalFamilyMembers(formik.values.familyMembers);
+    }
+  }, [formik.values.familyMembers]);
 
   // Initialize formik values
   useEffect(() => {
     const fields = [
       'organizationSameAsApplied', 'organizationSameAsAppliedStatus', 
-      'grossAmountSalary', 'grossAmountSalaryStatus', 
-      'netAmountSalary', 'netAmountSalaryStatus', 'salaryDate',
+      'grossAmountSalary', 'grossAmountSalaryStatus', 'grossSalaryAmount',
+      'netAmountSalary', 'netAmountSalaryStatus', 'netSalaryAmount',
+      'salaryDate', 'incomeVerificationFinalReport',
       'availabilityOfBasicAmenities', 'availabilityOfOtherAssets', 'primarySourceOfIncome', 'natureOfWork',
-      'frequencyOfIncome', 'monthsOfEmployment', 'selfReportedMonthlyIncome', 'averageMonthlyIncome', 'incomeVerificationFinalReport'
+      'frequencyOfIncome', 'monthsOfEmployment', 'selfReportedMonthlyIncome', 'averageMonthlyIncome'
     ];
     
     fields.forEach(field => {
@@ -41,6 +48,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const labelClassName = `block text-base font-semibold mb-2 ${
     isDark ? "text-emerald-400" : "text-gray-700"
   }`;
+  const requiredLabelClassName = `block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"} after:content-['*'] after:ml-0.5 after:text-red-500`;
 
   const subLabelClassName = `text-sm font-medium mb-2 block ${
     isDark ? "text-gray-300" : "text-gray-700"
@@ -64,102 +72,101 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       : "bg-emerald-50/80 border-emerald-200 hover:border-emerald-300 shadow-sm"
   }`;
 
+  const readOnlyInputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
+    isDark
+      ? "bg-gray-600 border-gray-500 text-gray-100 cursor-not-allowed"
+      : "bg-gray-200 border-gray-300 text-gray-800 cursor-not-allowed"
+  }`;
+
   const familyUnits = ['Self', 'Spouse', 'Father', 'Mother', 'Unmarrid Son', 'Unmarrid Daughter'];
   const natureOfWorkOptions = ['Self-employed', 'Salaried', 'Business', 'Agriculture', 'Professional', 'Other'];
 
   const addFamilyMember = () => {
-    setFamilyMembers([...familyMembers, { unit: '', natureOfWork: '', contactNo: '', annualIncome: '' }]);
+    const newMember = { unit: '', natureOfWork: '', contactNo: '', annualIncome: '' };
+    const updated = [...localFamilyMembers, newMember];
+    setLocalFamilyMembers(updated);
+    // Also update formik to keep in sync
+    formik.setFieldValue('familyMembers', updated);
   };
 
   const removeFamilyMember = (index) => {
-    const updated = familyMembers.filter((_, i) => i !== index);
-    setFamilyMembers(updated);
+    const updated = localFamilyMembers.filter((_, i) => i !== index);
+    setLocalFamilyMembers(updated);
+    // Also update formik to keep in sync
+    formik.setFieldValue('familyMembers', updated);
   };
 
   const updateFamilyMember = (index, field, value) => {
-    const updated = familyMembers.map((member, i) => 
+    // Validation for contact number - exactly 10 digits
+    if (field === 'contactNo') {
+      // Remove any non-digit characters
+      const digitsOnly = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      value = digitsOnly.slice(0, 10);
+    }
+    
+    // Validation for annual income - ensure it's a valid number
+    if (field === 'annualIncome') {
+      // Remove any non-digit characters except decimal point
+      const sanitized = value.replace(/[^0-9.]/g, '');
+      // Ensure only one decimal point
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      } else {
+        value = sanitized;
+      }
+    }
+    
+    const updated = localFamilyMembers.map((member, i) => 
       i === index ? { ...member, [field]: value } : member
     );
-    setFamilyMembers(updated);
+    setLocalFamilyMembers(updated);
   };
 
-  const totalAnnualIncome = familyMembers.reduce((total, member) => {
+  const totalAnnualIncome = localFamilyMembers.reduce((total, member) => {
     return total + (parseFloat(member.annualIncome) || 0);
   }, 0);
 
   const monthsEmployed = parseFloat(formik.values.monthsOfEmployment) || 0;
   const selfReportedIncome = parseFloat(formik.values.selfReportedMonthlyIncome) || 0;
-  const averageMonthlyIncome = monthsEmployed > 0 ? (selfReportedIncome * monthsEmployed) / 12 : 0;
+  const averageMonthlyIncome = monthsEmployed > 0 ? (selfReportedIncome * monthsEmployed) / 12 : 0;  
 
-  // No remark handling here - remarks are handled in SalarySlipVerification component
-  
-
-  // Save all family members' household income
+  // Save all data by calling parent's onSectionSave
   const saveAllHouseholdIncomes = async () => {
     try {
       setSubmittingSalary(true);
       
-      // Validate application ID first
-      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
-        toast.error('Invalid application ID. Please refresh the page.');
+      // Validate using Yup schema
+      try {
+        await incomeVerificationSchema.validate(formik.values, { abortEarly: true });
+      } catch (validationError) {
+        const firstError = validationError.errors?.[0] || validationError.message;
+        toast.error(firstError);
         return;
       }
       
-      // Filter out empty family members
-      const validMembers = familyMembers.filter(member => 
-        member.unit && member.annualIncome && parseFloat(member.annualIncome) > 0
+      // Validate contact numbers before saving
+      const invalidContacts = localFamilyMembers.filter(member => 
+        member.contactNo && member.contactNo.length !== 10
       );
       
-      // Save household income for each valid family member (if any)
-      if (validMembers.length > 0) {
-        // Save each family member individually
-        const savePromises = validMembers.map(async (member) => {
-          const householdData = {
-            application_id: parseInt(formik.values.applicationId),
-            house_holder_family: member.unit,
-            nature_of_work: member.natureOfWork || 'Self-employed',
-            contact_no: member.contactNo || '',
-            annual_income: parseFloat(member.annualIncome) || 0
-          };
-          
-          return await salaryService.addHouseholdIncome(householdData);
-        });
-        
-        await Promise.all(savePromises);
+      if (invalidContacts.length > 0) {
+        toast.error('Contact number must be exactly 10 digits');
+        return;
       }
       
-      // Now save the salary verification data
-      const salaryVerificationData = {
-        application_id: parseInt(formik.values.applicationId),
-        organization_applied: formik.values.organizationSameAsApplied || '',
-        organization_applied_status: formik.values.organizationSameAsAppliedStatus || '',
-        gross_amount_salary: formik.values.grossAmountSalary && formik.values.grossAmountSalary.trim() !== '' ? 'Yes' : 'No',
-        gross_amount_salary_status: formik.values.grossAmountSalaryStatus || '',
-        net_amount_salary: formik.values.netAmountSalary && formik.values.netAmountSalary.trim() !== '' ? 'Yes' : 'No',
-        net_amount_salary_status: formik.values.netAmountSalaryStatus || '',
-        monthly_salary_date: formik.values.salaryDate && formik.values.salaryDate.trim() !== '' ? formik.values.salaryDate : null,
-        avail_amenities: formik.values.availabilityOfBasicAmenities || '',
-        ava_assets: formik.values.availabilityOfOtherAssets || '',
-        primary_income: formik.values.primarySourceOfIncome || '',
-        nature_of_work: formik.values.natureOfWork || '',
-        frequency_income: formik.values.frequencyOfIncome || '',
-        month_employment_last_one_year: formik.values.monthsOfEmployment ? formik.values.monthsOfEmployment.toString() : '0',
-        self_reported_monthly_income: parseFloat(formik.values.selfReportedMonthlyIncome) || 0,
-        average_monthly_income: parseFloat(averageMonthlyIncome) || 0,
-        salaryslip_final_report: formik.values.incomeVerificationFinalReport || ''
-      };
+      // Update formik with current family members before saving
+      await formik.setFieldValue('familyMembers', localFamilyMembers);
       
-      await salaryService.saveSalaryVerification(salaryVerificationData);
+      // Just call onSectionSave - let parent component handle the saving
+      if (onSectionSave) {
+        await onSectionSave(formik.values, localFamilyMembers);
+      }
       
-      // Success message
-      toast.success('Income verification completed successfully!');
     } catch (error) {
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Validation failed. Please check all required fields.';
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save income verification');
-      }
+      console.error('Error saving income verification:', error);
+      toast.error('Failed to save income verification data');
     } finally {
       setSubmittingSalary(false);
     }
@@ -211,69 +218,77 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
 
                 {/* Gross Salary */}
                 <div>
-                  <label className={subLabelClassName}>Gross Salary</label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      value={formik.values.grossAmountSalary || ''}
-                      onChange={(e) => formik.setFieldValue('grossAmountSalary', e.target.value)}
-                      className={inputClassName}
-                      placeholder="₹"
-                    />
-                    <select
-                      value={formik.values.grossAmountSalary ? 'Yes' : ''}
-                      onChange={(e) => {
-                        // This is auto-set based on whether value exists
-                      }}
-                      className={selectClassName}
-                    >
-                      <option value="">Verified</option>
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                    </select>
-                    <select
-                      value={formik.values.grossAmountSalaryStatus || ''}
-                      onChange={(e) => formik.setFieldValue('grossAmountSalaryStatus', e.target.value)}
-                      className={selectClassName}
-                    >
-                      <option value="">Status</option>
-                      <option value="Positive">Positive</option>
-                      <option value="Negative">Negative</option>
-                    </select>
+                  <label className={requiredLabelClassName}>Gross Salary</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <input
+                        type="number"
+                        value={formik.values.grossSalaryAmount || ''}
+                        readOnly
+                        className={readOnlyInputClassName}
+                        placeholder="₹ Amount"
+                      />
+                    </div>
+                    <div>
+                      <select
+                        value={formik.values.grossAmountSalary || ''}
+                        onChange={(e) => formik.setFieldValue('grossAmountSalary', e.target.value)}
+                        className={selectClassName}
+                      >
+                        <option value="">Verified</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    <div>
+                      <select
+                        value={formik.values.grossAmountSalaryStatus || ''}
+                        onChange={(e) => formik.setFieldValue('grossAmountSalaryStatus', e.target.value)}
+                        className={selectClassName}
+                      >
+                        <option value="">Status</option>
+                        <option value="Positive">Positive</option>
+                        <option value="Negative">Negative</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
                 {/* Net Salary */}
                 <div>
-                  <label className={subLabelClassName}>Net Salary</label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      value={formik.values.netAmountSalary || ''}
-                      onChange={(e) => formik.setFieldValue('netAmountSalary', e.target.value)}
-                      className={inputClassName}
-                      placeholder="₹"
-                    />
-                    <select
-                      value={formik.values.netAmountSalary ? 'Yes' : ''}
-                      onChange={(e) => {
-                        // This is auto-set based on whether value exists
-                      }}
-                      className={selectClassName}
-                    >
-                      <option value="">Verified</option>
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                    </select>
-                    <select
-                      value={formik.values.netAmountSalaryStatus || ''}
-                      onChange={(e) => formik.setFieldValue('netAmountSalaryStatus', e.target.value)}
-                      className={selectClassName}
-                    >
-                      <option value="">Status</option>
-                      <option value="Positive">Positive</option>
-                      <option value="Negative">Negative</option>
-                    </select>
+                  <label className={requiredLabelClassName}>Net Salary</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <input
+                        type="number"
+                        value={formik.values.netSalaryAmount || ''}
+                        readOnly
+                        className={readOnlyInputClassName}
+                        placeholder="₹ Amount"
+                      />
+                    </div>
+                    <div>
+                      <select
+                        value={formik.values.netAmountSalary || ''}
+                        onChange={(e) => formik.setFieldValue('netAmountSalary', e.target.value)}
+                        className={selectClassName}
+                      >
+                        <option value="">Verified</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                    <div>
+                      <select
+                        value={formik.values.netAmountSalaryStatus || ''}
+                        onChange={(e) => formik.setFieldValue('netAmountSalaryStatus', e.target.value)}
+                        className={selectClassName}
+                      >
+                        <option value="">Status</option>
+                        <option value="Positive">Positive</option>
+                        <option value="Negative">Negative</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -282,9 +297,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
             {/* Salary Date and Net Household Income - Same Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={`text-sm font-medium mb-2 block ${isDark ? "text-emerald-300" : "text-gray-700"}`}>
-                  Salary Date
-                </label>
+                <label className={requiredLabelClassName}>Salary Date</label>
                 <input
                   type="date"
                   value={formik.values.salaryDate || ''}
@@ -331,7 +344,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
               </div>
 
               <div className="space-y-3">
-                {familyMembers.map((member, index) => (
+                {localFamilyMembers.map((member, index) => (
                   <div key={index} className={`p-3 rounded border ${
                     isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
                   }`}>
@@ -371,14 +384,20 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
                           value={member.contactNo}
                           onChange={(e) => updateFamilyMember(index, 'contactNo', e.target.value)}
                           className={inputClassName}
-                          placeholder="Contact number"
+                          placeholder="10 digit number"
+                          maxLength={10}
+                          pattern="[0-9]{10}"
                         />
+                        {member.contactNo && member.contactNo.length !== 10 && (
+                          <p className="text-xs text-red-500 mt-1">Must be exactly 10 digits</p>
+                        )}
                       </div>
 
                       <div className="md:col-span-2">
                         <label className={subLabelClassName}>Annual Income</label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={member.annualIncome}
                           onChange={(e) => updateFamilyMember(index, 'annualIncome', e.target.value)}
                           className={inputClassName}
@@ -407,16 +426,16 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <div className={`mt-4 p-3 rounded border ${
                 isDark ? "bg-gray-700 border-gray-600" : "bg-emerald-50 border-emerald-200"
               }`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-base font-semibold ${isDark ? "text-gray-300" : "text-emerald-700"}`}>
-                  Total Annual Income (Family)
-                </span>
-                <span className={`text-lg font-bold ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`}>
-                  {totalAnnualIncome > 0 ? `₹${totalAnnualIncome.toLocaleString()}` : 'No family income added'}
-                </span>
-              </div>
+                <div className="flex justify-between items-center">
+                  <span className={`text-base font-semibold ${isDark ? "text-gray-300" : "text-emerald-700"}`}>
+                    Total Annual Income (Family)
+                  </span>
+                  <span className={`text-lg font-bold ${
+                    isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                    {totalAnnualIncome > 0 ? `₹${totalAnnualIncome.toLocaleString()}` : 'No family income added'}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -508,26 +527,27 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <label className={labelClassName}>Employment Details</label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className={subLabelClassName}>Months of employment over last one year</label>
+                  <label className={requiredLabelClassName}>Months of employment over last one year</label>
                   <input
                     type="number"
                     value={formik.values.monthsOfEmployment || ''}
                     onChange={(e) => formik.setFieldValue('monthsOfEmployment', e.target.value)}
                     className={inputClassName}
                     placeholder="Enter months"
-                    min="0"
+                    min="1"
                     max="12"
                   />
                 </div>
 
                 <div>
-                  <label className={subLabelClassName}>Self-reported monthly income</label>
+                  <label className={requiredLabelClassName}>Self-reported monthly income</label>
                   <input
                     type="number"
                     value={formik.values.selfReportedMonthlyIncome || ''}
                     onChange={(e) => formik.setFieldValue('selfReportedMonthlyIncome', e.target.value)}
                     className={inputClassName}
                     placeholder="₹"
+                    min="1"
                   />
                 </div>
 

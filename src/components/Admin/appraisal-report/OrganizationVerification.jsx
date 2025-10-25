@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Building, Save, Phone, Mail, Globe, CheckCircle, XCircle, ExternalLink, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { organizationVerificationService } from '@/lib/services/appraisal';
 import Swal from 'sweetalert2';
+import { organizationVerificationService } from '@/lib/services/appraisal/organizationVerificationService';
+import { organizationFormValidationSchema } from '@/lib/schema/organizationValidationSchemas';
 
 const OrganizationVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [remarkSaving, setRemarkSaving] = useState(false);
@@ -10,6 +11,7 @@ const OrganizationVerification = ({ formik, onSectionSave, isDark, saving }) => 
   const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.organizationRemark || '');
   const timeoutRef = useRef(null);
   const formikUpdateTimeoutRef = useRef(null);
+
   const selectClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -49,42 +51,32 @@ const OrganizationVerification = ({ formik, onSectionSave, isDark, saving }) => 
 
   // Debounced save function for organization remarks
   const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
 
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        if (!value || value.trim().length === 0) {
-          return;
-        }
-
-        if (!formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        const remarkData = {
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        };
-        
-        await organizationVerificationService.saveOrganizationRemarks(remarkData);
-        toast.success('Organization remark saved successfully!');
-      } catch (error) {
-        if (error.response?.status === 422) {
-          const errorMessage = error.response?.data?.message || 'Invalid remark data';
-          toast.error(errorMessage);
-        } else {
-          toast.error('Failed to save organization remark');
-        }
-      } finally {
-        setRemarkSaving(false);
+  timeoutRef.current = setTimeout(async () => {
+    try {
+      if (!value || value.trim().length === 0 || !formik.values.applicationId) {
+        return;
       }
-    }, 3000);
-  }, []);
 
+      setRemarkSaving(true);
+      
+      await organizationVerificationService.saveOrganizationRemark({
+        application_id: parseInt(formik.values.applicationId),
+        remarks: value.trim()
+      });
+    } catch (error) {
+      // Error handled in service
+    } finally {
+      setRemarkSaving(false);
+    }
+  }, 3000);
+}, [formik.values.applicationId]);
+
+
+  
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
     setLocalRemarkValue(value);
@@ -99,54 +91,43 @@ const OrganizationVerification = ({ formik, onSectionSave, isDark, saving }) => 
     debouncedSaveRemark(value);
   };
 
-  // Save organization verification
-  const handleSaveOrganizationVerification = async () => {
+// Save organization verification
+const handleSaveOrganizationVerification = async () => {
+  try {
+    setSubmittingOrganization(true);
+    
+    // Validate form fields
     try {
-      setSubmittingOrganization(true);
-      
-      // Validate application ID
-      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
-        toast.error('Invalid application ID. Please refresh the page.');
-        return;
-      }
-      
-      const organizationData = {
-        application_id: parseInt(formik.values.applicationId),
-        online_verification: formik.values.organizationVerificationStatus || '',
-        online_verification_status: formik.values.organizationVerificationMethod || '',
-        company_phone: formik.values.companyPhoneVerificationStatus || '',
-        company_phone_status: formik.values.companyPhoneVerificationMethod || '',
-        company_mobile: formik.values.hrPhoneVerificationStatus || '',
-        company_mobile_status: formik.values.hrPhoneVerificationMethod || '',
-        contact_status: formik.values.hrContactVerificationStatus || '',
-        hr_mail: formik.values.hrEmailVerificationStatus || '',
-        hr_mail_status: formik.values.hrEmailVerificationMethod || '',
-        organization_final_report: formik.values.organizationFinalReport || ''
-      };
-      
-      await organizationVerificationService.saveOrganizationVerification(organizationData);
-      toast.success('Organization verification completed successfully!');
-      
-      // Also call the section save callback if provided
-      if (onSectionSave) {
-        onSectionSave();
-      }
-    } catch (error) {
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid organization data. Please check all fields.';
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save organization verification');
-      }
-    } finally {
-      setSubmittingOrganization(false);
+      await organizationFormValidationSchema.validate(formik.values, { 
+        abortEarly: true
+      });
+    } catch (validationError) {
+      toast.error(validationError.message);
+      return;
     }
-  };
+    
+    const organizationData = organizationVerificationService.formatOrganizationVerificationData(
+      formik.values.applicationId,
+      formik.values
+    );
+    
+    await organizationVerificationService.saveOrganizationVerificationData(organizationData);
+    
+    // Don't call onSectionSave - it would trigger duplicate save
+    // Service already shows success toast
+    
+  } catch (error) {
+    // Error handling is done in the service
+  } finally {
+    setSubmittingOrganization(false);
+  }
+};
 
+  
   // Handle sending mail to HR with confirmation
 const handleSendMailToHR = async () => {
   const hrEmail = formik.values.hrMail;
-  if (!hrEmail) {
+  if (!hrEmail || hrEmail === 'N/A') {
     toast.error('HR email is not available');
     return;
   }
@@ -171,18 +152,21 @@ const handleSendMailToHR = async () => {
   });
 
   if (result.isConfirmed) {
-    // Create mailto link
-    const subject = `Verification Request - ${formik.values.organizationName || 'Company'}`;
-    const body = `Dear HR Team,\n\nWe are conducting verification for employment details. Please verify the provided information.\n\nThank you.`;
-    
-    const mailtoLink = `mailto:${hrEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    // Open default email client
-    window.open(mailtoLink, '_blank');
-    
-    toast.success('Email client opened for HR');
+    try {
+      const mailtoLink = await organizationVerificationService.handleSendMailToHR(
+        hrEmail, 
+        formik.values.organizationName
+      );
+      
+      window.open(mailtoLink, '_blank');
+      toast.success('Email client opened for HR');
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 };
+
+
   const statusIndicator = (status) => {
     const isPositive = status === 'Positive' || status === 'Yes';
     return (
@@ -260,40 +244,7 @@ const handleSendMailToHR = async () => {
   );
 
   // Auto-calculate final report when all inputs are Yes and Positive
-  useEffect(() => {
-    // Check if all verification statuses are "Yes"
-    const allVerifiedYes = [
-      formik.values.organizationVerificationStatus,
-      formik.values.companyPhoneVerificationStatus,
-      formik.values.hrPhoneVerificationStatus,
-      formik.values.hrContactVerificationStatus,
-      formik.values.hrEmailVerificationStatus
-    ].every(status => status === 'Yes');
-    
-    // Check if all status fields are "Positive"
-    const allStatusPositive = [
-      formik.values.organizationVerificationMethod,
-      formik.values.companyPhoneVerificationMethod,
-      formik.values.hrPhoneVerificationMethod,
-      formik.values.hrEmailVerificationMethod
-    ].every(status => status === 'Positive');
-
-    // Auto-set to Positive if all are Yes and Positive
-    if (allVerifiedYes && allStatusPositive && formik.values.organizationFinalReport !== 'Positive') {
-      formik.setFieldValue('organizationFinalReport', 'Positive');
-      console.log('✅ Auto-set organization final report to Positive');
-    }
-  }, [
-    formik.values.organizationVerificationStatus,
-    formik.values.organizationVerificationMethod,
-    formik.values.companyPhoneVerificationStatus,
-    formik.values.companyPhoneVerificationMethod,
-    formik.values.hrPhoneVerificationStatus,
-    formik.values.hrPhoneVerificationMethod,
-    formik.values.hrContactVerificationStatus,
-    formik.values.hrEmailVerificationStatus,
-    formik.values.hrEmailVerificationMethod
-  ]);
+ 
 
   return (
     <div className={`rounded-xl shadow-lg border transition-all duration-300 overflow-hidden ${
@@ -469,7 +420,7 @@ const handleSendMailToHR = async () => {
     <div className={valueClassName}>
       {formik.values.website && formik.values.website !== "N/A" ? (
         <a
-          href={formik.values.website.startsWith('http') ? formik.values.website : `https://${formik.values.website}`}
+        href={organizationVerificationService.formatWebsiteUrl(formik.values.website)}
           target="_blank"
           rel="noopener noreferrer"
           className={`block font-medium w-full truncate ${

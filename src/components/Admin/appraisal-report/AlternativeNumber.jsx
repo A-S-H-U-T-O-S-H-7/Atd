@@ -1,8 +1,7 @@
+// components/appraisal/AlternativeNumberRemark.js
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Phone, MessageSquare } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import * as Yup from 'yup';
-import { alternateNumbersService, personalInfoService } from '@/lib/services/appraisal';
+import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
 
 const AlternativeNumberRemark = ({ formik, isDark }) => {
   const [saving, setSaving] = useState(false);
@@ -10,11 +9,6 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
   const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.remark || '');
   const timeoutRef = useRef(null);
   const formikUpdateTimeoutRef = useRef(null);
-
-  // Yup validation schema
-  const phoneValidationSchema = Yup.string()
-    .matches(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number starting with 6-9')
-    .required('Phone number is required');
 
   // Consistent styling with other components
   const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
@@ -64,106 +58,53 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
     };
   }, []);
 
-  // Debounced save function for numbers
-  const debouncedSaveNumber = useCallback(async (fieldName, value) => {
+  // Debounced save function for numbers and remarks
+  const debouncedSaveData = useCallback(async (fieldName, value) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
     timeoutRef.current = setTimeout(async () => {
       try {
-        // Validate the number
-        await phoneValidationSchema.validate(value);
-        
-        if (!formik.values.applicationId) {
-          return;
-        }
-        
         setSaving(true);
+        
         const data = {
           application_id: parseInt(formik.values.applicationId),
-          [fieldName === 'alternateMobileNo1' ? 'alternate_no1' : 'alternate_no2']: value
         };
 
-        const response = fieldName === 'alternateMobileNo1' 
-          ? await alternateNumbersService.saveAlternateNumber1(data)
-          : await alternateNumbersService.saveAlternateNumber2(data);
-        
-        toast.success(`${fieldName === 'alternateMobileNo1' ? 'Primary' : 'Secondary'} number saved successfully!`);
+        if (fieldName === 'alternateMobileNo1' || fieldName === 'alternateMobileNo2') {
+          // Save BOTH numbers together (backend expects both)
+          // Ensure we send current values as strings
+          data.alternate_no1 = formik.values.alternateMobileNo1 || '';
+          data.alternate_no2 = formik.values.alternateMobileNo2 || '';
+          await personalVerificationService.saveAlternativeNumbers(data);
+        } else if (fieldName === 'remark') {
+          // Save remark
+          data.remarks = value;
+          await personalVerificationService.savePersonalRemark(data);
+        }
         
         // Clear any existing errors
         formik.setFieldError(fieldName, undefined);
       } catch (error) {
-        if (error instanceof Yup.ValidationError) {
-          formik.setFieldError(fieldName, error.message);
-        } else {
-          
-          // More specific error messages
-          if (error.response?.status === 422) {
-            const errorMessage = error.response?.data?.message || 'Invalid phone number format or missing required fields';
-            toast.error(errorMessage);
-          } else if (error.response?.status === 400) {
-            toast.error('Bad request - please check the phone number');
-          } else {
-            toast.error('Failed to save number');
-          }
-        }
+        // Error handling is done in the service
+        console.error('Error saving data:', error);
       } finally {
         setSaving(false);
       }
     }, 500);
-  }, []);
-
-  // Debounced save function for remarks
-  const debouncedSaveRemark = useCallback((value) => {
-    // Clear existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Set timeout for API call
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        // Only save if there's actually a remark to save
-        if (!value || value.trim().length === 0) {
-          return;
-        }
-
-        if (!formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        const remarkData = {
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        };
-        
-        const response = await personalInfoService.savePersonalRemarks(remarkData);
-        toast.success('Remark saved successfully!');
-      } catch (error) {
-        
-        // More specific error messages
-        if (error.response?.status === 422) {
-          const errorMessage = error.response?.data?.message || 'Invalid remark data or missing required fields';
-          toast.error(errorMessage);
-        } else if (error.response?.status === 400) {
-          toast.error('Bad request - please check the remark data');
-        } else {
-          toast.error('Failed to save remark');
-        }
-      } finally {
-        setRemarkSaving(false);
-      }
-    }, 3000);
-  }, []);
+  }, [formik.values.applicationId, formik.values.alternateMobileNo1, formik.values.alternateMobileNo2]);
 
   // Handle phone number input change
   const handlePhoneChange = (fieldName, value) => {
     // Only allow numbers and limit to 10 digits
     const numbersOnly = value.replace(/\D/g, '').slice(0, 10);
     
+    // Validate first digit (must be 6, 7, 8, or 9)
+    if (numbersOnly.length > 0 && !/^[6-9]/.test(numbersOnly)) {
+      formik.setFieldError(fieldName, 'Mobile number must start with 6, 7, 8, or 9');
+      return;
+    }
     
     // Update formik value immediately
     formik.setFieldValue(fieldName, numbersOnly);
@@ -173,18 +114,18 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
       formik.setFieldError(fieldName, undefined);
     }
 
-    // Only trigger save if we have exactly 10 digits
-    if (numbersOnly.length === 10) {
-      debouncedSaveNumber(fieldName, numbersOnly);
+    // Trigger save if we have exactly 10 digits and valid
+    if (numbersOnly.length === 10 && /^[6-9]\d{9}$/.test(numbersOnly)) {
+      debouncedSaveData(fieldName, numbersOnly);
     }
   };
 
-  // Optimized remark change handler to prevent typing lag
+  // Optimized remark change handler
   const handleRemarkChange = (value) => {
-    // 1. Update local state immediately (no re-render lag)
+    // Update local state immediately
     setLocalRemarkValue(value);
     
-    // 2. Debounce formik update to prevent excessive re-renders
+    // Debounce formik update to prevent excessive re-renders
     if (formikUpdateTimeoutRef.current) {
       clearTimeout(formikUpdateTimeoutRef.current);
     }
@@ -192,13 +133,21 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
       formik.setFieldValue('remark', value);
     }, 500);
     
-    // 3. Debounce the API call (longer delay)
-    debouncedSaveRemark(value);
+    // Debounce the API call (longer delay)
+    debouncedSaveData('remark', value);
   };
 
-  // Check if number is valid
+  // Check if number is valid (must start with 6, 7, 8, or 9 and be exactly 10 digits)
   const isNumberValid = (number) => {
     return number && number.length === 10 && /^[6-9]\d{9}$/.test(number);
+  };
+  
+  // Validate number starts with 6-9
+  const validateIndianMobile = (number) => {
+    if (number.length > 0 && !/^[6-9]/.test(number)) {
+      return 'Mobile number must start with 6, 7, 8, or 9';
+    }
+    return null;
   };
 
   return (

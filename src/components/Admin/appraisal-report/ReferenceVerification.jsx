@@ -1,10 +1,12 @@
+// components/appraisal/ReferenceVerification.js
 import React, { useState } from 'react';
 import { Users, Save, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { referenceService } from '@/lib/services/appraisal';
+import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
 
 const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [submittingReferences, setSubmittingReferences] = useState(false);
+  
   // Consistent styling with other components
   const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
     isDark
@@ -44,7 +46,6 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
     isDark ? "text-gray-300 bg-gray-700/30" : "text-gray-600 bg-emerald-50"
   }`;
 
-
   const relationOptions = [
     { value: '', label: 'Select Relation' },
     { value: 'father', label: 'Father' },
@@ -59,11 +60,14 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
     { value: 'other', label: 'Other' }
   ];
 
-  // Check if a reference is complete (has name, phone, and email)
-  const isReferenceComplete = (ref) => {
-    return ref.name && ref.name.trim().length > 0 && 
-           ref.phone && ref.phone.trim().length > 0 &&
-           ref.email && ref.email.trim().length > 0;
+  // Check if a reference has minimum required data (name and phone)
+  const hasMinimumData = (ref) => {
+    // Phone must be exactly 10 digits
+    const isValidPhone = ref.phone && ref.phone.trim().length === 10 && /^\d{10}$/.test(ref.phone.trim());
+    // Email validation if provided (must contain @ and .)
+    const isValidEmail = !ref.email || !ref.email.trim() || (ref.email.includes('@') && ref.email.includes('.'));
+    
+    return ref.name && ref.name.trim().length > 0 && isValidPhone && isValidEmail;
   };
 
   // Check if a reference has any data at all
@@ -75,84 +79,112 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
            ref.verified;
   };
 
-  // Handle save references with flexible validation
-  const handleSaveReferences = async () => {
-    try {
-      setSubmittingReferences(true);
-      
-      // Get complete references (no minimum required - can be 0, 1, 2, 3, 4, or 5)
-      const completeRefs = formik.values.additionalRefs.filter(isReferenceComplete);
-      
-      // Validate that all filled references are either complete or empty
-      const incompleteRefs = formik.values.additionalRefs.filter((ref) => {
-        return hasAnyData(ref) && !isReferenceComplete(ref);
-      });
+  // Check if a reference is partially filled (has some data but not minimum)
+  const isPartiallyFilled = (ref) => {
+    return hasAnyData(ref) && !hasMinimumData(ref);
+  };
 
-      if (incompleteRefs.length > 0) {
-        toast.error('Please complete all fields (name, phone, email) for partially filled references, or clear them');
-        return;
-      }
+// In handleSaveReferences function, add this:
+const handleSaveReferences = async () => {
+  try {
+    setSubmittingReferences(true);
+    
+    // Validate all references before saving
+    const refs = formik.values.additionalRefs || [];
+    const invalidRefs = [];
+    
+    refs.forEach((ref, index) => {
+      // Check if reference has any data
+      const hasAnyData = (ref.name && ref.name.trim()) || 
+                        (ref.email && ref.email.trim()) || 
+                        (ref.phone && ref.phone.trim()) || 
+                        ref.relation;
       
-      const referencesData = {
-        application_id: parseInt(formik.values.applicationId),
-        crnno: formik.values.crnNo || '',
-      };
-
-      // Add all 5 references (API expects all 5 slots, empty or filled)
-      for (let i = 0; i < 5; i++) {
-        const ref = formik.values.additionalRefs[i] || {};
-        const num = i + 1;
+      if (hasAnyData) {
+        // Validate phone if provided
+        if (ref.phone && ref.phone.trim()) {
+          if (ref.phone.trim().length !== 10 || !/^\d{10}$/.test(ref.phone.trim())) {
+            invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
+          }
+        }
         
-        // Send data only if reference is complete, otherwise send empty
-        if (isReferenceComplete(ref)) {
-          referencesData[`add_ref_name_${num}`] = ref.name.trim();
-          referencesData[`add_ref_email_${num}`] = ref.email.trim();
-          referencesData[`add_ref_phone_${num}`] = parseInt(ref.phone.trim()) || 0;
-          referencesData[`add_ref_relation_${num}`] = ref.relation || '';
-          referencesData[`add_ref_verify_${num}`] = ref.verified || false;
-        } else {
-          // Send empty data for unused/incomplete slots
-          referencesData[`add_ref_name_${num}`] = '';
-          referencesData[`add_ref_email_${num}`] = '';
-          referencesData[`add_ref_phone_${num}`] = 0;
-          referencesData[`add_ref_relation_${num}`] = '';
-          referencesData[`add_ref_verify_${num}`] = false;
+        // Validate email if provided
+        if (ref.email && ref.email.trim()) {
+          if (!ref.email.includes('@') || !ref.email.includes('.')) {
+            invalidRefs.push(`Reference ${index + 1}: Email must contain @ and .`);
+          }
+        }
+        
+        // Check if minimum data (name and phone) is present
+        if (!ref.name || !ref.name.trim() || !ref.phone || !ref.phone.trim()) {
+          invalidRefs.push(`Reference ${index + 1}: Both name and phone are required`);
         }
       }
-
-      await referenceService.saveAdditionalReferences(referencesData);
-      
-      const savedCount = completeRefs.length;
-      if (savedCount === 0) {
-        toast.success('Reference data cleared successfully!');
-      } else {
-        toast.success(`${savedCount} reference${savedCount > 1 ? 's' : ''} saved successfully!`);
-      }
-      
-      // Also call the section save callback if provided
-      if (onSectionSave) {
-        onSectionSave();
-      }
-    } catch (error) {
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid reference data. Please check all fields.';
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save references. Please try again.');
-      }
-    } finally {
-      setSubmittingReferences(false);
+    });
+    
+    // Show all validation errors
+    if (invalidRefs.length > 0) {
+      invalidRefs.forEach(error => toast.error(error));
+      return;
     }
-  };
+    
+    // Final check for applicationId before sending
+    const applicationId = formik.values.applicationId;
+    if (!applicationId) {
+      toast.error('Application ID is required. Please refresh the page.');
+      return;
+    }
+    
+    const referencesData = {
+      application_id: parseInt(applicationId),
+      crnno: formik.values.crnNo || '',
+      additionalRefs: formik.values.additionalRefs
+    };
+    
+    await personalVerificationService.saveReferences(referencesData);
+    
+    // Don't call onSectionSave - it would trigger a duplicate save
+    // The service call above already saves the data
+  } catch (error) {
+    // Error handling is done in the service layer
+  } finally {
+    setSubmittingReferences(false);
+  }
+};
 
   const updateAdditionalRef = (index, field, value) => {
     const updatedRefs = [...formik.values.additionalRefs];
-    updatedRefs[index] = {
-      ...updatedRefs[index],
-      [field]: value
-    };
+    
+    // Validation for phone field - only allow exactly 10 digits
+    if (field === 'phone') {
+      // Remove all non-digit characters
+      const digitsOnly = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      const limitedValue = digitsOnly.slice(0, 10);
+      updatedRefs[index] = {
+        ...updatedRefs[index],
+        [field]: limitedValue
+      };
+    } 
+    // Validation for email field - basic validation
+    else if (field === 'email') {
+      updatedRefs[index] = {
+        ...updatedRefs[index],
+        [field]: value
+      };
+    }
+    else {
+      updatedRefs[index] = {
+        ...updatedRefs[index],
+        [field]: value
+      };
+    }
+    
     formik.setFieldValue('additionalRefs', updatedRefs);
   };
+
+  // Count how many references have minimum data
+  const validReferencesCount = formik.values.additionalRefs.filter(hasMinimumData).length;
 
   return (
     <div className={`rounded-xl border-2 transition-all duration-300 overflow-hidden ${
@@ -184,9 +216,16 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <p className={`text-xs ${
                 isDark ? "text-gray-400" : "text-emerald-600"
               }`}>
-                Up to 5 reference contacts (flexible - can submit with any number)
+                Up to 5 reference contacts (Optional - fill any number, email is optional)
               </p>
             </div>
+          </div>
+          <div className={`text-xs px-3 py-1 rounded-full ${
+            isDark 
+              ? "bg-emerald-500/20 text-emerald-300" 
+              : "bg-emerald-500/10 text-emerald-700"
+          }`}>
+            {validReferencesCount} reference{validReferencesCount !== 1 ? 's' : ''} filled
           </div>
         </div>
       </div>
@@ -199,13 +238,13 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
             Sr No
           </div>
           <div className={`${headerClassName} col-span-3`}>
-            Ref Name
+            Ref Name *
           </div>
           <div className={`${headerClassName} col-span-3`}>
             Ref Email
           </div>
           <div className={`${headerClassName} col-span-2`}>
-            Ref Phone
+            Ref Phone *
           </div>
           <div className={`${headerClassName} col-span-2`}>
             Relation
@@ -217,10 +256,10 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
 
         {/* Reference Rows */}
         <div className="space-y-3">
-        {formik.values.additionalRefs.slice(0, 5).map((ref, index) => {
+          {formik.values.additionalRefs.slice(0, 5).map((ref, index) => {
             const hasData = hasAnyData(ref);
-            const isComplete = isReferenceComplete(ref);
-            const isIncomplete = hasData && !isComplete;
+            const hasMinData = hasMinimumData(ref);
+            const isIncomplete = isPartiallyFilled(ref);
             
             return (
               <div 
@@ -232,7 +271,7 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 } ${
                   ref.verified ? 'border-emerald-500 ring-1 ring-emerald-500/20' : 
                   isIncomplete ? 'border-red-500 ring-1 ring-red-500/20' :
-                  isComplete ? 'border-blue-500 ring-1 ring-blue-500/20' : ''
+                  hasMinData ? 'border-blue-500 ring-1 ring-blue-500/20' : ''
                 }`}
               >
                 {/* Serial Number */}
@@ -242,37 +281,60 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   </span>
                 </div>
 
-                {/* Name */}
+                {/* Name - Required */}
                 <div className="col-span-3">
                   <input
                     type="text"
                     value={ref.name || ''}
                     onChange={(e) => updateAdditionalRef(index, 'name', e.target.value)}
                     className={inputClassName}
-                    placeholder="Enter name"
+                    placeholder="Enter name *"
                   />
                 </div>
 
-                {/* Email */}
+                {/* Email - Optional */}
                 <div className="col-span-3">
                   <input
                     type="email"
                     value={ref.email || ''}
                     onChange={(e) => updateAdditionalRef(index, 'email', e.target.value)}
-                    className={inputClassName}
-                    placeholder="email@example.com"
+                    className={`${inputClassName} ${
+                      ref.email && ref.email.trim() && (!ref.email.includes('@') || !ref.email.includes('.'))
+                        ? isDark
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-red-500 focus:border-red-500'
+                        : ''
+                    }`}
+                    placeholder="email@example.com (optional)"
                   />
+                  {ref.email && ref.email.trim() && (!ref.email.includes('@') || !ref.email.includes('.')) && (
+                    <p className="text-xs text-red-500 mt-1 text-center">
+                      Must contain @ and .
+                    </p>
+                  )}
                 </div>
 
-                {/* Phone */}
+                {/* Phone - Required */}
                 <div className="col-span-2">
                   <input
                     type="tel"
                     value={ref.phone || ''}
                     onChange={(e) => updateAdditionalRef(index, 'phone', e.target.value)}
-                    className={inputClassName}
-                    placeholder="Phone number"
+                    className={`${inputClassName} ${
+                      ref.phone && ref.phone.length > 0 && ref.phone.length !== 10
+                        ? isDark
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-red-500 focus:border-red-500'
+                        : ''
+                    }`}
+                    placeholder="10 digits *"
+                    maxLength={10}
                   />
+                  {ref.phone && ref.phone.length > 0 && ref.phone.length !== 10 && (
+                    <p className="text-xs text-red-500 mt-1 text-center">
+                      {ref.phone.length}/10
+                    </p>
+                  )}
                 </div>
 
                 {/* Relation */}
@@ -305,8 +367,6 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
             );
           })}
         </div>
-
-       
 
         {/* Save Button at Bottom Right */}
         <div className="mt-6 flex justify-end">

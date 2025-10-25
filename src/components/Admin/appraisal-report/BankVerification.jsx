@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Building2, Save, Upload, CheckCircle, XCircle, FileText, ExternalLink } from 'lucide-react';
+import { Building2, Save, CheckCircle, XCircle, FileText, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { bankVerificationService, appraisalCoreService } from '@/lib/services/appraisal';
+import { bankFormValidationSchema } from '@/lib/schema/bankVerificationSchema';
 
 const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [remarkSaving, setRemarkSaving] = useState(false);
@@ -12,7 +13,14 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [bankData, setBankData] = useState(null);
   const [loadingBankData, setLoadingBankData] = useState(false);
   const timeoutRef = useRef(null);
-  const formikUpdateTimeoutRef = useRef(null);
+
+  // CSS Classes
+  const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
+    isDark
+      ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
+      : "bg-white border-gray-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
+  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
+
   const selectClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -25,61 +33,30 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500"
   } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
 
-  const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-    isDark
-      ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
-      : "bg-white border-gray-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
-
   const labelClassName = `block text-xs font-semibold mb-2 ${
     isDark ? "text-gray-200" : "text-gray-700"
   }`;
 
-  const buttonClassName = `px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
+  const buttonClassName = `px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
     isDark
       ? "bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-gray-700"
       : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
   } disabled:cursor-not-allowed`;
 
-  const submitButtonClassName = `px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 ${
-    isDark
-      ? "bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-gray-700"
-      : "bg-emerald-500 hover:bg-emerald-600 text-white disabled:bg-gray-300"
-  } disabled:cursor-not-allowed`;
-
-  // Sync external changes to local state
+  // Effects
   useEffect(() => {
     setLocalRemarkValue(formik.values.bankVerificationRemark || '');
   }, [formik.values.bankVerificationRemark]);
 
-  // Load bank data from API
   useEffect(() => {
     const loadBankData = async () => {
       if (!formik.values.applicationId) return;
       
       try {
         setLoadingBankData(true);
-        if (!formik.values.applicationId) {
-          toast.error('No application ID found');
-          return;
-        }
-        
         const response = await appraisalCoreService.getAppraisalReport(formik.values.applicationId);
-        
         const applicationData = response?.data?.application || response?.application || response?.data;
-        
-        if (applicationData && applicationData.account_no) {
-          const bankInfo = {
-            bankName: applicationData.bank_name || '',
-            accountNumber: applicationData.account_no || '',
-            accountType: applicationData.account_type || '',
-            ifscCode: applicationData.ifsc_code || '',
-            branchName: applicationData.branch_name || '',
-            existingEmi: parseFloat(applicationData.existing_emi) || 0,
-            bankStatement: applicationData.bank_statement || ''
-          };
-          setBankData(bankInfo);
-        }
+        setBankData(bankVerificationService.extractBankData(applicationData));
       } catch (error) {
         toast.error('Failed to load bank information');
         setBankData(null);
@@ -91,115 +68,71 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
     loadBankData();
   }, [formik.values.applicationId]);
 
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (formikUpdateTimeoutRef.current) {
-        clearTimeout(formikUpdateTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Debounced save function for bank remarks
+  // Debounced remark save
   const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(async () => {
       try {
-        if (!value || value.trim().length === 0) {
-          return;
-        }
-
-        if (!formik.values.applicationId) {
-          return;
-        }
+        if (!value || value.trim().length === 0 || !formik.values.applicationId) return;
 
         setRemarkSaving(true);
-        
-        const remarkData = {
+        await bankVerificationService.saveBankRemark({
           application_id: parseInt(formik.values.applicationId),
           remarks: value.trim()
-        };
-        
-        await bankVerificationService.saveBankRemarks(remarkData);
-        toast.success('Bank remark saved successfully!');
+        });
       } catch (error) {
-        if (error.response?.status === 422) {
-          const errorMessage = error.response?.data?.message || 'Invalid remark data';
-          toast.error(errorMessage);
-        } else {
-          toast.error('Failed to save bank remark');
-        }
+        // Error handled in service
       } finally {
         setRemarkSaving(false);
       }
     }, 3000);
+  }, [formik.values.applicationId]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
-  // Optimized remark change handler
+  // Handlers
   const handleRemarkChange = (value) => {
     setLocalRemarkValue(value);
-    
-    if (formikUpdateTimeoutRef.current) {
-      clearTimeout(formikUpdateTimeoutRef.current);
-    }
-    formikUpdateTimeoutRef.current = setTimeout(() => {
-      formik.setFieldValue('bankVerificationRemark', value);
-    }, 500);
-    
     debouncedSaveRemark(value);
+    formik.setFieldValue('bankVerificationRemark', value);
   };
 
-  // Save bank verification
   const handleSaveBankVerification = async () => {
     try {
       setSubmittingBank(true);
       
-      if (!formik.values.applicationId || isNaN(parseInt(formik.values.applicationId))) {
-        toast.error('Invalid application ID. Please refresh the page.');
+      // Validate form fields
+      try {
+        await bankFormValidationSchema.validate(formik.values, { abortEarly: false });
+      } catch (validationError) {
+        const firstError = validationError.errors[0] || validationError.message;
+        toast.error(firstError);
         return;
       }
       
-      const bankVerificationData = {
-        application_id: parseInt(formik.values.applicationId),
-        auto_verification: formik.values.salaryAutoVerification || '',
-        auto_verification_status: formik.values.salaryAutoVerificationStatus || '',
-        is_salary_account: formik.values.isSalaryAccount || '',
-        is_salary_account_status: formik.values.isSalaryAccountStatus || '',
-        regural_interval: formik.values.salaryCreditedRegular || '',
-        regural_interval_status: formik.values.salaryCreditedRegularStatus || '',
-        salary_date: formik.values.salaryDate || '',
-        salary_remark: formik.values.bankVerificationRemark || '',
-        emi_debit: formik.values.anyEmiDebited || '',
-        emi_amount: parseInt(formik.values.salaryAmount) || 0,
-        emi_with_bank_statement: formik.values.isEmiWithBankStatement || '',
-        bankstatement_final_report: formik.values.bankVerificationFinalReport || ''
-      };
+      const bankVerificationData = bankVerificationService.formatBankVerificationData(
+        formik.values.applicationId,
+        formik.values,
+        bankData?.existingEmi || 0
+      );
       
-      await bankVerificationService.saveBankVerification(bankVerificationData);
-      toast.success('Bank verification completed successfully!');
+      await bankVerificationService.saveBankVerificationData(bankVerificationData);
       
-      if (onSectionSave) {
-        onSectionSave();
-      }
+      // Don't call onSectionSave - it would trigger duplicate save
+      // Component handles save directly
     } catch (error) {
-      if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 'Invalid bank data. Please check all fields.';
-        toast.error(errorMessage);
-      } else {
-        toast.error('Failed to save bank verification');
-      }
+      // Error handling is done in the service
     } finally {
       setSubmittingBank(false);
     }
   };
 
-  // Function to open bank statement PDF in new tab using Firebase
   const openBankStatement = async () => {
     if (!bankData?.bankStatement) {
       toast.error('No bank statement available');
@@ -212,39 +145,13 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       const url = await getDownloadURL(fileRef);
       
       const newWindow = window.open(url, '_blank');
-      
       if (!newWindow) {
         toast.error('Popup blocked! Please allow popups for this site.');
-      } else {
-        toast.success('Bank statement opened successfully!');
       }
     } catch (error) {
-      toast.error(`Failed to open bank statement: ${bankData.bankStatement}`);
+      toast.error('Failed to open bank statement');
     }
   };
-
-  const bankOptions = [
-    { value: '', label: '--Select Bank--' },
-    { value: 'SBI', label: 'State Bank of India' },
-    { value: 'HDFC', label: 'HDFC Bank' },
-    { value: 'ICICI', label: 'ICICI Bank' },
-    { value: 'AXIS', label: 'Axis Bank' },
-    { value: 'KOTAK', label: 'Kotak Mahindra Bank' },
-    { value: 'CANARA', label: 'Canara Bank' },
-    { value: 'PNB', label: 'Punjab National Bank' },
-    { value: 'BOB', label: 'Bank of Baroda' },
-    { value: 'UNION', label: 'Union Bank of India' },
-    { value: 'INDUSIND', label: 'IndusInd Bank' },
-  ];
-
-  const salaryDateOptions = [
-    { value: '', label: '--Select Date--' },
-    { value: '1st', label: '1st of Month' },
-    { value: '7th', label: '7th of Month' },
-    { value: '15th', label: '15th of Month' },
-    { value: '30th', label: '30th of Month' },
-  ];
-
 
   const statusIndicator = (status) => {
     const isPositive = status === 'Verified' || status === 'Yes' || status === 'Positive';
@@ -260,69 +167,6 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
     );
   };
 
-  const BankStatementBlock = ({ title, bankName, onBankChange, onFileUpload, onSubmit }) => (
-    <div className={`p-4 rounded-lg border transition-all duration-200 ${
-      isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-    }`}>
-      <h4 className={`font-medium mb-3 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-        {title}
-      </h4>
-      
-      <div className="space-y-3">
-        <div>
-          <label className={labelClassName}>Choose Bank</label>
-          <select
-            value={bankName}
-            onChange={onBankChange}
-            className={selectClassName}
-          >
-            {bankOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClassName}>Upload Statement</label>
-          <div className="flex space-x-2">
-            <input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={onFileUpload}
-              className="hidden"
-              id={`file-${title.toLowerCase().replace(' ', '-')}`}
-            />
-            <label
-              htmlFor={`file-${title.toLowerCase().replace(' ', '-')}`}
-              className={`flex-1 px-3 py-2 rounded-lg border transition-all duration-200 text-sm cursor-pointer text-center ${
-                isDark
-                  ? "bg-gray-600 border-gray-500 text-gray-300 hover:bg-gray-500 hover:border-emerald-500"
-                  : "bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200 hover:border-emerald-400"
-              }`}
-            >
-              <Upload className="w-4 h-4 inline mr-1" />
-              Choose File
-            </label>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onSubmit}
-          className={`w-full px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 text-sm ${
-            isDark
-              ? "bg-blue-600 hover:bg-blue-500 text-white"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
-          }`}
-        >
-          <span>Submit</span>
-        </button>
-      </div>
-    </div>
-  );
-
   const VerificationField = ({ label, verified, status, onVerifiedChange, onStatusChange, accountNumber }) => (
     <div className={`p-3 rounded-lg border transition-all duration-200 ${
       isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
@@ -337,26 +181,18 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       {accountNumber && (
         <div className="mb-2">
           <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            Account Number: <span className="font-medium">{accountNumber}</span>
+            Account: <span className="font-medium">{accountNumber}</span>
           </span>
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        <select
-          value={verified}
-          onChange={(e) => onVerifiedChange(e.target.value)}
-          className={selectClassName}
-        >
+        <select value={verified} onChange={(e) => onVerifiedChange(e.target.value)} className={selectClassName}>
           <option value="">Verified</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
-        <select
-          value={status}
-          onChange={(e) => onStatusChange(e.target.value)}
-          className={selectClassName}
-        >
+        <select value={status} onChange={(e) => onStatusChange(e.target.value)} className={selectClassName}>
           <option value="">Status</option>
           <option value="Positive">Positive</option>
           <option value="Negative">Negative</option>
@@ -371,17 +207,14 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
         ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
         : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
     }`}>
+      
       {/* Header */}
       <div className={`p-4 border-b ${
         isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
       }`}>
         <div className="flex items-center space-x-2">
-          <Building2 className={`w-5 h-5 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <h3 className={`text-lg font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
+          <Building2 className={`w-5 h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <h3 className={`text-lg font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
             Bank Verification
           </h3>
         </div>
@@ -390,15 +223,12 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       {/* Content */}
       <div className="p-4">
         
-
-        {/* Remarks Input - Auto-save */}
+        {/* Remarks */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <label className={labelClassName}>Bank Verification Remarks</label>
             {remarkSaving && (
-              <div className={`text-xs flex items-center space-x-1 ${
-                isDark ? "text-emerald-400" : "text-emerald-600"
-              }`}>
+              <div className={`text-xs flex items-center space-x-1 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 <span>Saving...</span>
               </div>
@@ -409,31 +239,23 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
             value={localRemarkValue}
             onChange={(e) => handleRemarkChange(e.target.value)}
             className={textareaClassName}
-            placeholder="Enter bank verification remarks and observations..."
+            placeholder="Enter bank verification remarks..."
           />
-          <div className={`flex justify-between items-center mt-2 text-xs ${
-            isDark ? "text-gray-400" : "text-gray-500"
-          }`}>
+          <div className={`flex justify-between items-center mt-2 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <span>{(localRemarkValue?.length || 0)} characters</span>
             <span>💾 Auto-saves after 2 seconds</span>
           </div>
         </div>
 
-        {/* Bank Statements Section */}
+        {/* Bank Statement */}
         <div className="mb-6">
-          <h4 className={`font-medium mb-4 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-            Bank Statements
-          </h4>
-          
+          <h4 className={`font-medium mb-4 ${isDark ? "text-gray-200" : "text-gray-700"}`}>Bank Statements</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 1st Bank Statement with PDF Viewer */}
             <div className={`p-2 rounded-md border transition-all duration-200 ${
               isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
             }`}>
-              <div className="flex items-center justify-between ">
-                <h5 className={`font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-                  1st Bank Statement
-                </h5>
+              <div className="flex items-center justify-between">
+                <h5 className={`font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>1st Bank Statement</h5>
                 <button
                   type="button"
                   onClick={openBankStatement}
@@ -445,62 +267,37 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                       ? "bg-blue-600 hover:bg-blue-500 text-white"
                       : "bg-blue-500 hover:bg-blue-600 text-white"
                   }`}
-                  title={bankData?.bankStatement ? "Open bank statement in new tab" : "No bank statement available"}
                 >
                   <FileText className="w-3 h-3" />
                   <span>{bankData?.bankStatement ? 'View PDF' : 'No PDF'}</span>
                   {bankData?.bankStatement && <ExternalLink className="w-3 h-3" />}
                 </button>
               </div>
-              
-              
             </div>
-
-           
           </div>
         </div>
 
-        {/* Bank Statement - Single block */}
-        <div className="mb-6">
-          <BankStatementBlock
-            title="2nd Bank Statement"
-            bankName={formik.values.bankName}
-            onBankChange={(e) => formik.setFieldValue('bankName', e.target.value)}
-            onFileUpload={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                formik.setFieldValue('bankStatement', file);
-                // Handle file upload logic here
-              }
-            }}
-            onSubmit={() => {
-              // Handle submit logic here
-              console.log('Submitting bank statement...');
-            }}
-          />
-        </div>
-
-        {/* Bank Verification Details */}
+        {/* Verification Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="space-y-4">
             <VerificationField
               label="Auto Verification"
-              verified={formik.values.salaryAutoVerified}
-              status={formik.values.salaryAutoStatus}
-              onVerifiedChange={(value) => formik.setFieldValue('salaryAutoVerified', value)}
-              onStatusChange={(value) => formik.setFieldValue('salaryAutoStatus', value)}
+              verified={formik.values.bankAutoVerification}
+              status={formik.values.bankAutoVerificationStatus}
+              onVerifiedChange={(value) => formik.setFieldValue('bankAutoVerification', value)}
+              onStatusChange={(value) => formik.setFieldValue('bankAutoVerificationStatus', value)}
             />
 
             <VerificationField
               label="Is salary account?"
-              verified={formik.values.isSalaryAccountVerified}
-              status={formik.values.isSalaryAccountStatus}
-              onVerifiedChange={(value) => formik.setFieldValue('isSalaryAccountVerified', value)}
-              onStatusChange={(value) => formik.setFieldValue('isSalaryAccountStatus', value)}
+              verified={formik.values.bankIsSalaryAccount}
+              status={formik.values.bankIsSalaryAccountStatus}
+              onVerifiedChange={(value) => formik.setFieldValue('bankIsSalaryAccount', value)}
+              onStatusChange={(value) => formik.setFieldValue('bankIsSalaryAccountStatus', value)}
               accountNumber={bankData?.accountNumber}
             />
 
-            {/* Regular Salary Credits with conditional fields */}
+            {/* Regular Salary Credits with conditional fields - FIXED */}
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
             }`}>
@@ -508,13 +305,13 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
                   Regular Salary Credits?
                 </span>
-                {statusIndicator(formik.values.salaryCreditedRegular)}
+                {statusIndicator(formik.values.bankSalaryCreditedRegular)}
               </div>
 
               <div className="space-y-2">
                 <select
-                  value={formik.values.salaryCreditedRegular}
-                  onChange={(e) => formik.setFieldValue('salaryCreditedRegular', e.target.value)}
+                  value={formik.values.bankSalaryCreditedRegular}
+                  onChange={(e) => formik.setFieldValue('bankSalaryCreditedRegular', e.target.value)}
                   className={selectClassName}
                 >
                   <option value="">Select</option>
@@ -522,30 +319,41 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   <option value="No">No</option>
                 </select>
 
-                {formik.values.salaryCreditedRegular === 'Yes' && (
+                <select
+                  value={formik.values.bankSalaryCreditedRegularStatus}
+                  onChange={(e) => formik.setFieldValue('bankSalaryCreditedRegularStatus', e.target.value)}
+                  className={selectClassName}
+                >
+                  <option value="">Select Status</option>
+                  <option value="Positive">Positive</option>
+                  <option value="Negative">Negative</option>
+                </select>
+
+                {/* ✅ Fixed conditional fields with new field names */}
+                {formik.values.bankSalaryCreditedRegular === 'Yes' && (
                   <div>
                     <label className={labelClassName}>Salary Credit Date</label>
                     <select
-                      value={formik.values.salaryCreditDate}
-                      onChange={(e) => formik.setFieldValue('salaryCreditDate', e.target.value)}
+                      value={formik.values.bankSalaryDate}
+                      onChange={(e) => formik.setFieldValue('bankSalaryDate', e.target.value)}
                       className={selectClassName}
                     >
-                      {salaryDateOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
+                      <option value="">Select Date</option>
+                      <option value="1st">1st of Month</option>
+                      <option value="7th">7th of Month</option>
+                      <option value="15th">15th of Month</option>
+                      <option value="30th">30th of Month</option>
                     </select>
                   </div>
                 )}
 
-                {formik.values.salaryCreditedRegular === 'No' && (
+                {formik.values.bankSalaryCreditedRegular === 'No' && (
                   <div>
                     <label className={labelClassName}>Remark</label>
                     <textarea
                       rows="2"
-                      value={formik.values.salaryCreditRemark}
-                      onChange={(e) => formik.setFieldValue('salaryCreditRemark', e.target.value)}
+                      value={formik.values.bankSalaryCreditRemark}
+                      onChange={(e) => formik.setFieldValue('bankSalaryCreditRemark', e.target.value)}
                       className={textareaClassName}
                       placeholder="Enter reason for irregular salary credits..."
                     />
@@ -555,79 +363,70 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
             </div>
           </div>
 
-         <div className="space-y-4">
-  {/* EMI Debited section with API data */}
-  <div className={`p-3 rounded-lg border transition-all duration-200 ${
-    isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-  }`}>
-    <div className="flex items-center justify-between mb-2">
-      <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-        Any EMI Debited?
-      </span>
-      {statusIndicator(formik.values.anyEmiDebited)}
-    </div>
+          <div className="space-y-4">
+            {/* EMI Section - FIXED */}
+            <div className={`p-3 rounded-lg border transition-all duration-200 ${
+              isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+                  Any EMI Debited?
+                </span>
+                {statusIndicator(formik.values.bankAnyEmiDebited)} 
+              </div>
 
-    <div className="space-y-3">
-      {/* EMI Amount from API */}
-      <div>
-        <h4 className={`text-sm font-medium mb-2 ${isDark ? "text-blue-500" : "text-blue-800"}`}>
-          <span>Existing EMI Amount - ₹{bankData?.existingEmi || 0}</span>
-        </h4>
-        {bankData?.existingEmi > 0 && (
-          <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            As per application data
-          </p>
-        )}
-      </div>
+              <div className="space-y-3">
+                <div>
+                  <h4 className={`text-sm font-medium mb-2 ${isDark ? "text-blue-500" : "text-blue-800"}`}>
+                    Existing EMI Amount - ₹{bankData?.existingEmi || 0}
+                  </h4>
+                </div>
 
-      {/* EMI Debited Dropdown */}
-      <div>
-        <label className={labelClassName}>Is EMI Debited in Bank Statement?</label>
-        <select
-          value={formik.values.anyEmiDebited}
-          onChange={(e) => formik.setFieldValue('anyEmiDebited', e.target.value)}
-          className={selectClassName}
-        >
-          <option value="">Select</option>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
+                <div>
+                  <label className={labelClassName}>Is EMI Debited in Bank Statement?</label>
+                  <select
+                    value={formik.values.bankAnyEmiDebited} 
+                    onChange={(e) => formik.setFieldValue('bankAnyEmiDebited', e.target.value)} 
+                    className={selectClassName}
+                  >
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
 
-      {/* Conditional Fields when EMI Debited is Yes */}
-      {formik.values.anyEmiDebited === 'Yes' && (
-        <>
-          <div>
-            <label className={labelClassName}>EMI Amount in Statement</label>
-            <input
-              type="number"
-              value={formik.values.emiAmountInStatement}
-              onChange={(e) => formik.setFieldValue('emiAmountInStatement', e.target.value)}
-              className={inputClassName}
-              placeholder="Enter EMI amount as per bank statement"
-            />
+                
+                  <>
+                    <div>
+                      <label className={labelClassName}>EMI Amount in Statement</label> {/* ✅ Added label */}
+                      <input
+                        type="number"
+                        value={formik.values.bankEmiAmountInStatement}
+                        onChange={(e) => formik.setFieldValue('bankEmiAmountInStatement', e.target.value)}
+                        className={inputClassName}
+                        placeholder="Enter EMI amount"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClassName}>Is this EMI with bank statement?</label>
+                      <select
+                        value={formik.values.bankIsEmiWithBankStatement}
+                        onChange={(e) => formik.setFieldValue('bankIsEmiWithBankStatement', e.target.value)}
+                        className={selectClassName}
+                      >
+                      <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                  </>
+                
+              </div>
+            </div>
           </div>
-
-          <div>
-            <label className={labelClassName}>Is this EMI with bank statement?</label>
-            <select
-              value={formik.values.isEmiWithBankStatement}
-              onChange={(e) => formik.setFieldValue('isEmiWithBankStatement', e.target.value)}
-              className={selectClassName}
-            >
-              <option value="">Select</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-        </>
-      )}
-    </div>
-  </div>
-</div>
         </div>
 
-        {/* Submit Button and Final Report - Side by side */}
+        {/* Submit Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="w-full md:w-auto">
             <label className={labelClassName}>Final Report</label>
@@ -645,16 +444,16 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
           
           <button
             type="button"
-            onClick={onSectionSave}
-            disabled={saving}
-            className={submitButtonClassName}
+            onClick={handleSaveBankVerification}
+            disabled={submittingBank || saving}
+            className={buttonClassName}
           >
-            {saving ? (
+            {submittingBank ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
               <Save className="w-4 h-4" />
             )}
-            <span>{saving ? 'Submitting...' : 'Submit'}</span>
+            <span>{submittingBank ? 'Saving...' : 'Submit'}</span>
           </button>
         </div>
       </div>
