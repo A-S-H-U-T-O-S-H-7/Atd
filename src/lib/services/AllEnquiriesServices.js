@@ -43,6 +43,16 @@ export const locationAPI = {
     }
 };
 
+// Get appraisal PDF
+   export const AppraisalPDF = {
+    getAppraisalPDF: (applicationId) => {
+        return api.get(`/crm/appraisal/pdf/${applicationId}`, {
+            responseType: 'blob' 
+        });
+    },
+};
+
+
 export const formatEnquiryForUI = (enquiry) => {
     return {
         // Basic identifiers

@@ -294,17 +294,15 @@ const AllEnquiries = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleFileView = async (fileName, documentCategory) => {
-  console.log('File viewing started:', { fileName, documentCategory });
+ const handleFileView = async (fileName, documentCategory, enquiry = null) => {
+  console.log('File viewing started:', { fileName, documentCategory, enquiry });
   
+  // Firebase file handling for document types
   if (!fileName) {
     alert('No file available');
     return;
   }
-  
-  // Set loading state
-  
-  
+
   try {
     // Define folder mappings
     const folderMappings = {
@@ -345,9 +343,7 @@ const AllEnquiries = () => {
     }
   } catch (error) {
     console.error("Failed to load file:", error);
-    alert(`Failed to load file: ${fileName}. Please check if file exists in ${folder} folder.`);
-  } finally {
-   
+    alert(`Failed to load file: ${fileName}. Please check if file exists.`);
   }
 };
 
@@ -362,9 +358,9 @@ const AllEnquiries = () => {
   };
 
   const handleCheckClick = (enquiry) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
-    router.push(`/crm/appraisal-report/${enquiry.id}`);
-  };
+  localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
+  router.push(`/crm/appraisal-report/${enquiry.id}`);
+};
 
   if (loading && enquiries.length === 0) {
     return (

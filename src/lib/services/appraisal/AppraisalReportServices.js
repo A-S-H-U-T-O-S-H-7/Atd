@@ -5,10 +5,7 @@ export const appraisalCoreService = {
     getAppraisalReport: (applicationId) =>
         api.get(`/crm/appraisal/edit/${applicationId}`),
 
-    // Get appraisal PDF
-    getAppraisalPDF: (applicationId) =>
-        api.get(`/crm/appraisal/pdf/${applicationId}`),
-
+    
     saveFinalVerification: (data) =>
     api.post("/crm/appraisal/final-verification", {
       application_id: data.applicationId || data.application_id,

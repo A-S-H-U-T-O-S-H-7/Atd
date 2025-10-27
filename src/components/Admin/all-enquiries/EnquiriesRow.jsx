@@ -352,13 +352,13 @@ const EnquiriesRow = ({
 
       {/* Appraisal Report */}
       <td className={cellStyle}>
-        <AppraisalReportButton 
-          enquiry={enquiry}
-          isDark={isDark}
-          onFileView={onFileView}
-          onCheckClick={onCheckClick}
-        />
-      </td>
+  <AppraisalReportButton 
+    enquiry={enquiry}
+    isDark={isDark}
+    onFileView={onFileView}
+    onCheckClick={onCheckClick}
+  />
+</td>
 
       {/* Eligibility - Last column, no border-r */}
       <td className={cellBase}>
