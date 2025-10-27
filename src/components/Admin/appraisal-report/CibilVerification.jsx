@@ -432,19 +432,31 @@ const handleSaveCibilVerification = async () => {
     }`}>
       {/* Header */}
       <div className={`p-4 border-b ${
-        isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
+  isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
+}`}>
+  <div className="flex items-center gap-4">
+    <div className="flex items-center space-x-2">
+      <CreditCard className={`w-5 h-5 ${
+        isDark ? "text-emerald-400" : "text-emerald-600"
+      }`} />
+      <h3 className={`text-lg font-semibold ${
+        isDark ? "text-emerald-400" : "text-emerald-600"
       }`}>
-        <div className="flex items-center space-x-2">
-          <CreditCard className={`w-5 h-5 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <h3 className={`text-lg font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
-            CIBIL Verification
-          </h3>
-        </div>
-      </div>
+        CIBIL Verification
+      </h3>
+    </div>
+    <button
+      onClick={() => window.open('https://dc.cibil.com/DE/ccir/Login.aspx', '_blank')}
+      className={`px-4 py-2 cursor-pointer rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${
+        isDark 
+          ? "bg-orange-600 hover:bg-orange-500 text-white border border-orange-500" 
+          : "bg-orange-500 hover:bg-orange-600 text-white border border-orange-400"
+      }`}
+    >
+      Verification Link
+    </button>
+  </div>
+</div>
 
       {/* Content */}
       <div className="p-4">
