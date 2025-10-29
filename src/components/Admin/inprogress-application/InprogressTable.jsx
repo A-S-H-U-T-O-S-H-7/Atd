@@ -1,9 +1,8 @@
 import React from "react";
 import { FileText } from "lucide-react";
 import Pagination from "../Pagination";
-import InprogressRow from "./InprogressRow";
-
-const InprogressTable = ({ 
+import InProgressRow from "./InprogressRow";
+const InProgressTable = ({ 
     paginatedApplications, 
     filteredApplications,
   currentPage,
@@ -13,11 +12,12 @@ const InprogressTable = ({
   onPageChange,
   onFileView,
   onActionClick,
-  onCall,
+    onCall, 
   onLoanEligibilityClick,  
    onCheckClick, 
-   onReplaceKYCClick,   
-   
+   onReplaceKYCClick,
+   fileLoading,
+   loadingFileName,
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -27,7 +27,7 @@ const InprogressTable = ({
   // Table headers configuration with their respective widths
   const tableHeaders = [
     { label: "SR. No", width: "100px" },
-    { label: "Call", width: "100px" }, 
+    { label: "Call", width: "100px" },
     { label: "Loan No.", width: "120px" },
     { label: "CRN No.", width: "140px" },
     { label: "Account ID", width: "140px" },
@@ -100,19 +100,20 @@ const InprogressTable = ({
             </thead>
             <tbody>
               {paginatedApplications.map((application, index) => (
-                <InprogressRow
+                <InProgressRow
                   key={application.id}
                   application={application}
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
                   onActionClick={onActionClick}
-                                    onCall={onCall}
-
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
-                  />
+                  onReplaceKYCClick={onReplaceKYCClick}
+                  onCall={onCall}
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                />
               ))}
             </tbody>
           </table>
@@ -145,4 +146,4 @@ const InprogressTable = ({
   );
 };
 
-export default InprogressTable;
+export default InProgressTable;

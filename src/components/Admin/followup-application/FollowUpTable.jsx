@@ -4,8 +4,8 @@ import Pagination from "../Pagination";
 import FollowUpRow from "./FollowUpRow";
 
 const FollowUpTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
   itemsPerPage,
@@ -15,12 +15,16 @@ const FollowUpTable = ({
   onActionClick,
   onCall,
   onLoanEligibilityClick,  
-   onCheckClick, 
-   onReplaceKYCClick,   
-   
+  onCheckClick, 
+  onReplaceKYCClick,
+  fileLoading,
+  loadingFileName,
+  onStatusUpdate,
+  onBlacklist,
+  onActivateAccount
 }) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
@@ -30,12 +34,9 @@ const FollowUpTable = ({
     { label: "Call", width: "100px" },
     { label: "Enquiry Source", width: "140px" },
     { label: "Account Activation", width: "140px" },
-
-
     { label: "CRN No.", width: "140px" },
     { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "160px" },
-    
     { label: "Name", width: "200px" },
     { label: "Current Address", width: "180px" },
     { label: "Current State", width: "140px" },
@@ -45,34 +46,27 @@ const FollowUpTable = ({
     { label: "City", width: "100px" },
     { label: "Phone No.", width: "140px" },
     { label: "E-mail", width: "200px" },
-
     { label: "Applied Loan", width: "120px" },
     { label: "Loan Amount", width: "120px" },
-
     { label: "ROI", width: "80px" },
     { label: "Tenure", width: "100px" },
     { label: "Loan Term", width: "120px" },
-
-   
     { label: "Photo", width: "80px" },
     { label: "Pan Proof", width: "100px" },
     { label: "Address Proof", width: "120px" },
     { label: "ID Proof", width: "100px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
-
     { label: "Bank Verification Report", width: "180px" },
     { label: "Social Score Report", width: "160px" },
     { label: "Cibil Score Report", width: "160px" },
     { label: "Approval Note", width: "180px" },
-    
     { label: "Status", width: "120px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Replace KYC", width: "160px" },
     { label: "BlackList", width: "160px" },
-
   ];
 
   return (
@@ -110,14 +104,19 @@ const FollowUpTable = ({
                   isDark={isDark}
                   onFileView={onFileView}
                   onActionClick={onActionClick}
-                  onCall={onCall}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
-                  />
+                  onReplaceKYCClick={onReplaceKYCClick}
+                  onCall={onCall}
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                  onStatusUpdate={onStatusUpdate}
+                  onBlacklist={onBlacklist}
+                  onActivateAccount={onActivateAccount}
+                />
               ))}
             </tbody>
-          </table> 
+          </table>
         </div>
         
         {/* Empty State */}

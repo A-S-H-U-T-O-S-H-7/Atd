@@ -1,6 +1,17 @@
-import { FileText, Calendar, Mail, X, Clock } from "lucide-react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import React from "react";
+import { Calendar, Mail, Clock } from "lucide-react";
+import PhotoDocument from "../documents/PhotoDocument";
+import PanCardDocument from "../documents/PanCardDocument";
+import AddressProofDocument from "../documents/AddressProofDocument";
+import IdProofDocument from "../documents/IdProofDocument";
+import SalaryProofDocument from "../documents/SalaryProofDocument";
+import BankStatementDocument from "../documents/BankStatementDocument";
+import BankVerificationDocument from "../documents/BankVerificationDocument";
+import SocialScoreDocument from "../documents/SocialScoreDocument";
+import CibilScoreDocument from "../documents/CibilScoreDocument";
+import ActionButton from "../action-buttons/ActionButton";
+import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
+import EligibilityButton from "../action-buttons/EligibilityButton";
 
 const CompletedRow = ({
   application,
@@ -11,541 +22,477 @@ const CompletedRow = ({
   onReplaceKYCClick,
   onCall,
   onActionClick,
-  
+  onFileView,
+  fileLoading,
+  loadingFileName,
+  onStatusUpdate,
+  onBlacklist,
+  onActivateAccount
 }) => {
+  // Common cell styles
+  const cellBase = "px-6 py-4 border-r";
+  const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
+  const cellStyle = `${cellBase} ${cellBorder}`;
+  
+  // Text styles
+  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
+  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
+  
+  // Icon styles
+  const iconAccent = `w-4 h-4 ${textAccent}`;
+
   const formatCurrency = amount => {
-    return `₹${parseFloat(amount).toLocaleString("en-IN", {
+    return `${parseFloat(amount).toLocaleString("en-IN", {
       minimumFractionDigits: 2
     })}`;
   };
 
-  const handleCallSubmit = callData => {
-    // Handle call submission logic
-    console.log("Call submitted:", callData);
+  const handleCall = () => {
+    onCall(application);
   };
 
-  const handleCall = (item) => {
-  onCall(application); 
-};
-
-
-  // Handle file opening with Firebase
-  const handleFileClick = async (fileName, fileType) => {
-    if (!fileName) return;
-
-    try {
-      const fileRef = ref(storage, `${fileType}/${fileName}`);
-      const url = await getDownloadURL(fileRef);
-      window.open(url, "_blank");
-    } catch (error) {
-      console.error("Failed to get file URL:", error);
-      alert("Failed to load file");
+  const handleActivateAccount = () => {
+    if (onActivateAccount && application.id) {
+      onActivateAccount(application.id);
     }
   };
 
-  const DocumentIcon = ({ hasFile, fileName, fileType, title, isDisabled }) =>
-    <div className="flex items-center justify-center">
-      {hasFile
-        ? <button
-            onClick={() => handleFileClick(fileName, fileType)}
-            disabled={isDisabled}
-            className={`p-2 rounded-lg transition-colors duration-200 ${isDisabled
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 cursor-pointer"}`}
-            title={title}
-          >
-            <FileText className="text-lg" />
-          </button>
-        : <div
-            className="p-1 rounded-lg bg-red-100 text-red-600"
-            title="Document Missing"
-          >
-            <X size={16} />
-          </div>}
-    </div>;
+  const handleBlacklist = () => {
+    if (onBlacklist && application.id) {
+      onBlacklist(application.id);
+    }
+  };
+
+  // Ensure application has the required properties for button components
+  const applicationWithDefaults = {
+    ...application,
+    showActionButton: application.showActionButton !== false,
+    showAppraisalButton: application.showAppraisalButton !== false,
+    showEligibilityButton: application.showEligibilityButton !== false,
+    isFinalStage: application.isFinalStage || false,
+    finalReportStatus: application.finalReportStatus || null,
+    hasAppraisalReport: application.hasAppraisalReport || false
+  };
 
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
-        ? "border-emerald-700 hover:bg-gray-700/50"
-        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
-        ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-        : ""}`}
+      className={`border-b transition-all duration-200 hover:shadow-lg ${
+        isDark
+          ? "border-emerald-700 hover:bg-gray-700/50"
+          : "border-emerald-300 hover:bg-emerald-50/50"
+      } ${
+        index % 2 === 0
+          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+          : ""
+      }`}
     >
       {/* SR No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`font-medium ${isDark
-            ? "text-gray-100"
-            : "text-gray-900"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`font-medium ${textPrimary}`}>
           {application.srNo}
         </span>
       </td>
 
       {/* Call */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <button
           onClick={handleCall}
-          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${isDark
-            ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-            : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"}`}
+          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+            isDark
+              ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
+              : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
+          }`}
         >
           call
         </button>
       </td>
 
       {/* Application Source */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.enquirySource || "N/A"}
         </span>
       </td>
 
       {/* Account Activation */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
+      <td className={cellStyle}>
+        <button
+          onClick={handleActivateAccount}
+          disabled={application.accountActivation}
+          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
+            application.accountActivation
+              ? "bg-green-100 text-green-800 cursor-not-allowed"
+              : isDark
+                ? "bg-orange-900/50 border hover:bg-orange-800 text-orange-300"
+                : "bg-orange-100 border hover:bg-orange-200 text-orange-700"
+          }`}
         >
-          {application.activation || "N/A"}
-        </span>
+          {application.accountActivation ? "Activated" : "Activate"}
+        </button>
       </td>
 
       {/* CRN No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm font-semibold ${isDark
-            ? "text-emerald-400"
-            : "text-emerald-600"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${textAccent}`}>
           {application.crnNo}
         </span>
       </td>
 
       {/* Account ID */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.accountId}
         </span>
       </td>
 
       {/* Enquiry Date */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar
-            className={`w-4 h-4 ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          />
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-800"}`}
-          >
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {application.enquiryDate}
           </span>
         </div>
       </td>
+
       {/* Enquiry Time */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Clock
-            className={`w-4 h-4 ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          />
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-800"}`}
-          >
+          <Clock className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {application.enquiryTime}
           </span>
         </div>
       </td>
 
       {/* Completed Date */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar
-            className={`w-4 h-4 ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          />
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-800"}`}
-          >
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {application.completedDate}
           </span>
         </div>
       </td>
 
-      {/* Enquiry Time */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* Completed Time */}
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Clock
-            className={`w-4 h-4 ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          />
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-800"}`}
-          >
+          <Clock className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {application.completedTime}
           </span>
         </div>
       </td>
 
-
       {/* Name */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`font-medium text-sm ${isDark
-            ? "text-gray-100"
-            : "text-gray-900"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`font-medium text-sm ${textPrimary}`}>
           {application.name}
         </span>
       </td>
 
       {/* Current Address */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.currentAddress}
         </span>
       </td>
 
       {/* Current State */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.currentState}
         </span>
       </td>
 
       {/* Current City */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.currentCity}
         </span>
       </td>
 
-      {/* Address */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      {/* Permanent Address */}
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.permanentAddress}
         </span>
       </td>
 
       {/* State */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.state}
         </span>
       </td>
 
       {/* City */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.city}
         </span>
       </td>
 
       {/* Phone No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <span
-            className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-          >
-            {application.phoneNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
+          {application.phoneNo}
+        </span>
       </td>
 
       {/* E-mail */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Mail className={`w-4 h-4 text-emerald-400 flex-shrink-0`} />
-          <span
-            className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-          >
+          <Mail className={iconAccent} />
+          <span className={`text-sm ${textSecondary}`}>
             {application.email}
           </span>
         </div>
       </td>
 
       {/* Applied Loan */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <span
-            className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-          >
-            {application.appliedLoan}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className="text-sm font-semibold text-green-500 px-1 py-0.5 rounded">₹</span>
+        <span className={`text-sm font-semibold ${isDark ? "text-green-500" : "text-green-700"}`}>
+          {application.appliedLoan}
+        </span>
       </td>
 
       {/* Approved Amount */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="bg-gradient-to-r px-2 py-1 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
-          <span
-            className={`text-sm  font-semibold ${isDark
-              ? "text-orange-900"
-              : "text-orange-800"}`}
-          >
+      <td className={cellStyle}>
+        <div className="flex bg-orange-500 rounded-md p-1 items-center space-x-1">
+          <span className="text-xs text-white px-1 py-0.5 rounded">₹</span>
+          <span className="text-sm font-medium text-gray-100">
             {formatCurrency(application.approvedAmount)}
           </span>
         </div>
       </td>
 
       {/* ROI */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.roi}%
         </span>
       </td>
 
       {/* Tenure */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.tenure} days
         </span>
       </td>
 
       {/* Loan Term */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.loanTerm}
         </span>
       </td>
 
       {/* Photo */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasPhoto}
+      <td className={cellStyle}>
+        <PhotoDocument
           fileName={application.photoFileName}
-          fileType="photo"
-          title="View Photo"
+          hasDoc={application.hasPhoto}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* Pan Card */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasPanCard}
+      <td className={cellStyle}>
+        <PanCardDocument
           fileName={application.panCardFileName}
-          fileType="pancard"
-          title="View Pan Card"
+          hasDoc={application.hasPanCard}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* Address Proof */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasAddressProof}
+      <td className={cellStyle}>
+        <AddressProofDocument
           fileName={application.addressProofFileName}
-          fileType="addressproof"
-          title="View Address Proof"
+          hasDoc={application.hasAddressProof}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* ID Proof */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasIdProof}
+      <td className={cellStyle}>
+        <IdProofDocument
           fileName={application.idProofFileName}
-          fileType="idproof"
-          title="View ID Proof"
+          hasDoc={application.hasIdProof}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
-      {/* Salary Proof - Multiple Files */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex space-x-2">
-          <DocumentIcon
-            hasFile={application.hasSalaryProof}
-            fileName={application.salarySlip1}
-            fileType="salary"
-            title="View First Salary Slip"
-          />
-          <DocumentIcon
-            hasFile={application.hasSecondSalaryProof}
-            fileName={application.salarySlip2}
-            fileType="salary"
-            title="View Second Salary Slip"
-          />
-          <DocumentIcon
-            hasFile={application.hasThirdSalaryProof}
-            fileName={application.salarySlip3}
-            fileType="salary"
-            title="View Third Salary Slip"
-          />
-        </div>
+      {/* Salary Proof */}
+      <td className={cellStyle}>
+        <SalaryProofDocument
+          fileName={application.salarySlip1}
+          hasDoc={application.hasSalaryProof}
+          secondFileName={application.salarySlip2}
+          hasSecondDoc={application.hasSecondSalaryProof}
+          thirdFileName={application.salarySlip3}
+          hasThirdDoc={application.hasThirdSalaryProof}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
+        />
       </td>
 
       {/* Bank Statement */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasBankStatement}
+      <td className={cellStyle}>
+        <BankStatementDocument
           fileName={application.bankStatementFileName}
-          fileType="bankstatement"
-          title="View Bank Statement"
+          hasDoc={application.hasBankStatement}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* Bank Verification Report */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasBankVerificationReport}
+      <td className={cellStyle}>
+        <BankVerificationDocument
           fileName={application.bankVerificationFileName}
-          fileType="bankstatement"
-          title="View Bank Verification Report"
+          hasDoc={application.hasBankVerificationReport}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* Social Score Report */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon
-          hasFile={application.hasSocialScoreReport}
+      <td className={cellStyle}>
+        <SocialScoreDocument
           fileName={application.socialScoreFileName}
-          fileType="cibil"
-          title="View Social Score Report"
+          hasDoc={application.hasSocialScoreReport}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* CIBIL Score Report */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <DocumentIcon 
-          hasFile={application.hasCibilScoreReport}
+      <td className={cellStyle}>
+        <CibilScoreDocument
           fileName={application.cibilScoreFileName}
-          fileType="cibil"
-          title="View CIBIL Score Report"
+          hasDoc={application.hasCibilScoreReport}
+          onFileView={onFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </td>
 
       {/* Approval Note */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
-        >
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {application.approvalNote || "N/A"}
         </span>
       </td>
 
       {/* Status */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <span
-          className={`text-sm font-semibold ${isDark
-            ? "text-orange-400"
-            : "text-orange-600"}`}
+          className={`text-sm font-semibold ${
+            isDark ? "text-orange-400" : "text-orange-600"
+          }`}
         >
           {application.loanStatus}
         </span>
       </td>
 
       {/* Action */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={() => onActionClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
-            ? "bg-blue-900/50 border hover:bg-blue-800 text-blue-300"
-            : "bg-blue-100 border hover:bg-blue-200 text-blue-700"}`}
-        >
-          Verify
-        </button>
+      <td className={cellStyle}>
+        {applicationWithDefaults.showActionButton ? (
+          <ActionButton
+            enquiry={applicationWithDefaults}
+            isDark={isDark}
+            onVerifyClick={onActionClick}
+          />
+        ) : (
+          <span className="text-sm text-gray-500">N/A</span>
+        )}
       </td>
 
       {/* Appraisal Report */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        {application.finalReportStatus === "Recommended"
-          ? <button
-              onClick={() =>
-                onFileView(application, application.finalReportFile)}
-              className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs"
-            >
-              Recomended
-            </button>
-          : application.isFinalStage
-            ? <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                Locked
-              </span>
-            : <button
-                onClick={() => onCheckClick(application)}
-                className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
-                  ? "bg-pink-900/50 border hover:bg-pink-800 text-pink-300"
-                  : "bg-pink-100 border hover:bg-pink-200 text-pink-700"}`}
-              >
-                Check
-              </button>}
+      <td className={cellStyle}>
+        {applicationWithDefaults.showAppraisalButton ? (
+          <AppraisalReportButton
+            enquiry={applicationWithDefaults}
+            isDark={isDark}
+            onFileView={onFileView}
+            onCheckClick={onCheckClick}
+          />
+        ) : (
+          <span className="text-sm text-gray-500">N/A</span>
+        )}
       </td>
 
       {/* Eligibility */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={() => onLoanEligibilityClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
-            ? "bg-teal-900/50 border hover:bg-teal-800 text-teal-300"
-            : "bg-teal-100 border hover:bg-teal-200 text-teal-700"}`}
-        >
-          Eligibility
-        </button>
+      <td className={cellStyle}>
+        {applicationWithDefaults.showEligibilityButton ? (
+          <EligibilityButton
+            enquiry={applicationWithDefaults}
+            isDark={isDark}
+            onLoanEligibilityClick={onLoanEligibilityClick}
+          />
+        ) : (
+          <span className="text-sm text-gray-500">N/A</span>
+        )}
       </td>
 
       {/* Replace KYC */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <button
           onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${isDark
-            ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-            : "bg-purple-100 border hover:bg-purple-200 text-purple-700"}`}
+          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
+            isDark
+              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
+              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
+          }`}
         >
           Replace KYC
         </button>
       </td>
+
       {/* Link With Last Loan */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* <td className={cellStyle}>
         <button
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${isDark
-            ? " underline text-blue-300"
-            : " underline text-blue-700"}`}
+          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
+            isDark
+              ? " underline text-blue-300"
+              : " underline text-blue-700"
+          }`}
         >
           Link With Last Loan
         </button>
-      </td>
+      </td> */}
 
       {/* BlackList */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <button
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${isDark
-            ? " underline text-gray-300"
-            : " underline text-gray-700"}`}
+          onClick={handleBlacklist}
+          disabled={application.isBlacklisted}
+          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
+            application.isBlacklisted
+              ? "bg-red-100 text-red-800 cursor-not-allowed"
+              : isDark
+                ? "bg-red-900/50 border hover:bg-red-800 text-red-300"
+                : "bg-red-100 border hover:bg-red-200 text-red-700"
+          }`}
         >
-          BlackList
+          {application.isBlacklisted ? "Blacklisted" : "BlackList"}
         </button>
       </td>
     </tr>

@@ -2,6 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import ReplaceKYC from "@/components/Admin/all-enquiries/replace-kyc/ReplaceKYC";
+import kycService from "@/lib/services/replaceKycSevice";
 
 export default function ReplaceKYCPage() {
   const params = useParams();
@@ -9,184 +10,165 @@ export default function ReplaceKYCPage() {
   const enquiryId = params.id;
   const [enquiry, setEnquiry] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Function to load enquiry data
+  const loadEnquiryData = async () => {
+    try {
+      setError(null);
+      
+      // Validate enquiryId
+      if (!enquiryId || isNaN(parseInt(enquiryId))) {
+        throw new Error("Invalid enquiry ID");
+      }
+
+      const enquiryIdNum = parseInt(enquiryId);
+
+      // Try to get from localStorage first
+      const storedEnquiry = localStorage.getItem('selectedEnquiry');
+      
+      if (storedEnquiry) {
+        try {
+          const parsedEnquiry = JSON.parse(storedEnquiry);
+          if (parsedEnquiry.id === enquiryIdNum) {
+            // Fetch latest KYC data from API
+            const kycData = await kycService.getKYCDetails(enquiryIdNum);
+            setEnquiry({
+              ...parsedEnquiry,
+              kycDocuments: kycData.kycDocuments,
+              documentId: kycData.documentId
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (parseError) {
+          console.warn('Error parsing stored enquiry:', parseError);
+          // Continue to API call
+        }
+      }
+
+      // Fetch KYC data directly from API
+      const kycData = await kycService.getKYCDetails(enquiryIdNum);
+      
+      // Create minimal enquiry object from KYC data
+      const minimalEnquiry = {
+        id: enquiryIdNum,
+        name: kycData.fullName,
+        crnNo: kycData.crnNo,
+        kycDocuments: kycData.kycDocuments,
+        documentId: kycData.documentId
+      };
+      
+      setEnquiry(minimalEnquiry);
+    } catch (err) {
+      console.error('Error loading KYC data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Try to get enquiry data from localStorage first
-    const storedEnquiry = localStorage.getItem('selectedEnquiry');
-    
-    if (storedEnquiry) {
-      try {
-        const parsedEnquiry = JSON.parse(storedEnquiry);
-        if (parsedEnquiry.id === parseInt(enquiryId)) {
-          setEnquiry(parsedEnquiry);
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Error parsing stored enquiry:', error);
-      }
-    }
-
-    // Fallback: Define the same enquiries data as in AllEnquiries component
-    const sampleEnquiries = [
-      {
-        id: 1,
-        srNo: 1,
-        enquirySource: "Website",
-        crnNo: "CRN001234",
-        accountId: "ACC001",
-        enquiryDate: "2024-06-20",
-        enquiryTime: "10:30 AM",
-        name: "RAJESH KUMAR SHARMA",
-        firstName: "RAJESH",
-        lastName: "SHARMA",
-        currentAddress: "123 MG Road, Bangalore",
-        currentState: "Karnataka",
-        currentCity: "Bangalore",
-        address: "456 Park Street, Delhi",
-        state: "Delhi",
-        city: "New Delhi",
-        phoneNo: "9876543210",
-        email: "rajesh.sharma@gmail.com",
-        appliedLoan: "4000",
-        loanAmount: "5,00,000",
-        roi: "12.5%",
-        tenure: "24 months",
-        loanTerm: "Short Term",
-        grossSalary: "80000",
-        netSalary: "65000",
-        hasPhoto: true,
-        hasPanCard: true,
-        hasAddressProof: true,
-        hasIdProof: true,
-        hasSalaryProof: false,
-        hasBankStatement: true,
-        hasBankVerificationReport: true,
-        hasSocialScoreReport: false,
-        hasCibilScoreReport: true,
-        approvalNote: "Pending verification",
-        status: "Pending",
-        hasAppraisalReport: false,
-        eligibility: "Eligible",
-        // KYC Document availability
-        kycDocuments: {
-          photo: { available: true, fileName: "photo.jpg" },
-          panCard: { available: true, fileName: "pan_card.pdf" },
-          addressProof: { available: true, fileName: "address_proof.pdf" },
-          idProof: { available: true, fileName: "id_proof.pdf" },
-          salarySlip1: { available: false, fileName: null },
-          salarySlip2: { available: false, fileName: null },
-          salarySlip3: { available: false, fileName: null },
-          bankStatement: { available: true, fileName: "bank_statement.pdf" },
-          bankVerificationReport: { available: true, fileName: "bank_verification.pdf" },
-          camSheet: { available: false, fileName: null },
-          nachForm: { available: false, fileName: null },
-          socialScoreReport: { available: false, fileName: null },
-          cibilScoreReport: { available: true, fileName: "cibil_report.pdf" },
-          pdc: { available: false, fileName: null },
-          agreement: { available: false, fileName: null },
-          video: { available: false, fileName: null }
-        }
-      },
-      {
-        id: 2,
-        srNo: 2,
-        enquirySource: "Mobile App",
-        crnNo: "CRN001235",
-        accountId: "ACC002",
-        enquiryDate: "2024-06-21",
-        enquiryTime: "02:15 PM",
-        name: "PRIYA SINGH PATEL",
-        firstName: "PRIYA",
-        lastName: "PATEL",
-        currentAddress: "789 Brigade Road, Bangalore",
-        currentState: "Karnataka",
-        currentCity: "Bangalore",
-        address: "321 Sector 15, Noida",
-        state: "Uttar Pradesh",
-        city: "Noida",
-        phoneNo: "9765432109",
-        email: "priya.patel@gmail.com",
-        appliedLoan: "10000",
-        loanAmount: "25,00,000",
-        roi: "8.75%",
-        tenure: "240 months",
-        loanTerm: "Long Term",
-        grossSalary: "120000",
-        netSalary: "95000",
-        hasPhoto: true,
-        hasPanCard: true,
-        hasAddressProof: true,
-        hasIdProof: true,
-        hasSalaryProof: true,
-        hasBankStatement: true,
-        hasBankVerificationReport: true,
-        hasSocialScoreReport: true,
-        hasCibilScoreReport: true,
-        approvalNote: "Documents verified",
-        status: "Approved",
-        hasAppraisalReport: true,
-        eligibility: "Eligible",
-        // KYC Document availability
-        kycDocuments: {
-          photo: { available: true, fileName: "photo.jpg" },
-          panCard: { available: true, fileName: "pan_card.pdf" },
-          addressProof: { available: true, fileName: "address_proof.pdf" },
-          idProof: { available: true, fileName: "id_proof.pdf" },
-          salarySlip1: { available: true, fileName: "salary_slip_1.pdf" },
-          salarySlip2: { available: true, fileName: "salary_slip_2.pdf" },
-          salarySlip3: { available: true, fileName: "salary_slip_3.pdf" },
-          bankStatement: { available: true, fileName: "bank_statement.pdf" },
-          bankVerificationReport: { available: true, fileName: "bank_verification.pdf" },
-          camSheet: { available: true, fileName: "cam_sheet.pdf" },
-          nachForm: { available: true, fileName: "nach_form.pdf" },
-          socialScoreReport: { available: true, fileName: "social_score.pdf" },
-          cibilScoreReport: { available: true, fileName: "cibil_report.pdf" },
-          pdc: { available: true, fileName: "pdc.pdf" },
-          agreement: { available: true, fileName: "agreement.pdf" },
-          video: { available: true, fileName: "video.mp4" }
-        }
-      }
-    ];
-    
-    const foundEnquiry = sampleEnquiries.find(enq => enq.id === parseInt(enquiryId));
-    setEnquiry(foundEnquiry);
-    setLoading(false);
+    loadEnquiryData();
   }, [enquiryId]);
 
   const handleBack = () => {
-    // Clean up localStorage when going back
     localStorage.removeItem('selectedEnquiry');
-    router.back()
+    router.back();
   };
 
+  const handleRetry = async () => {
+    setLoading(true);
+    setError(null);
+    await loadEnquiryData(); // Use the same load function for consistency
+  };
+
+  // Loading State
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading enquiry data...</p>
+          <p className="text-sm text-gray-500 mt-1">CRN: {enquiryId}</p>
         </div>
       </div>
     );
   }
 
+  // Error State
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+        <div className="text-center max-w-md mx-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            {error.includes('Invalid') ? 'Invalid Enquiry ID' : 'Enquiry Not Found'}
+          </h2>
+          <p className="text-gray-600 mb-2">{error}</p>
+          <p className="text-sm text-gray-500 mb-6">
+            {error.includes('Invalid') 
+              ? 'The enquiry ID format is incorrect.' 
+              : 'The enquiry you\'re looking for doesn\'t exist or may have been removed.'
+            }
+          </p>
+          <div className="flex gap-3 justify-center">
+            {!error.includes('Invalid') && (
+              <button 
+                onClick={handleRetry}
+                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium"
+              >
+                Try Again
+              </button>
+            )}
+            <button 
+              onClick={handleBack}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No Enquiry Found State
   if (!enquiry) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
         <div className="text-center">
-          <p className="text-red-600 text-lg font-medium">Enquiry not found</p>
-          <button 
-            onClick={handleBack}
-            className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-          >
-            Go Back
-          </button>
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No Enquiry Data</h2>
+          <p className="text-gray-600 mb-6">Unable to load enquiry information.</p>
+          <div className="flex gap-3 justify-center">
+            <button 
+              onClick={handleRetry}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={handleBack}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+            >
+              Go Back
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Success State - Render ReplaceKYC Component
   return (
     <ReplaceKYC 
       enquiry={enquiry}

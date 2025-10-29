@@ -16,8 +16,12 @@ const CompletedTable = ({
     onCall, 
   onLoanEligibilityClick,  
    onCheckClick, 
-   onReplaceKYCClick,   
-   
+   onReplaceKYCClick,
+   fileLoading,
+   loadingFileName,
+   onStatusUpdate,
+   onBlacklist,
+   onActivateAccount,
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -75,7 +79,7 @@ const CompletedTable = ({
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Replace KYC", width: "160px" },
-    { label: "Link", width: "160px" },
+    // { label: "Link", width: "160px" },
     { label: "BlackList", width: "160px" },
 
   ];
@@ -108,19 +112,24 @@ const CompletedTable = ({
             </thead>
             <tbody>
               {paginatedApplications.map((application, index) => (
-                <CompletedRow
-                  key={application.id}
-                  application={application}
-                  index={index}
-                  isDark={isDark}
-                  onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
-                  onCall={onCall}
-                  />
+                // In CompletedTable component, update the CompletedRow usage:
+<CompletedRow
+  key={application.id}
+  application={application}
+  index={index}
+  isDark={isDark}
+  onFileView={onFileView}
+  onActionClick={onActionClick}
+  onLoanEligibilityClick={onLoanEligibilityClick}  
+  onCheckClick={onCheckClick}
+  onReplaceKYCClick={onReplaceKYCClick}
+  onCall={onCall}
+  fileLoading={fileLoading}
+  loadingFileName={loadingFileName}
+  onStatusUpdate={onStatusUpdate}
+  onBlacklist={onBlacklist}
+  onActivateAccount={onActivateAccount}
+/>
               ))}
             </tbody>
           </table>

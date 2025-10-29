@@ -4,8 +4,8 @@ import Pagination from "../Pagination";
 import RejectedRow from "./RejectedRow";
 
 const RejectedTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
   itemsPerPage,
@@ -14,13 +14,15 @@ const RejectedTable = ({
   onFileView,
   onActionClick,
   onLoanEligibilityClick,  
-   onCheckClick, 
-   onCall,   
-   
+  onCheckClick, 
+  onCall,
+  fileLoading,
+  loadingFileName,
+  onRestoreApplication
 }) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
-        isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
   // Table headers configuration with their respective widths
@@ -28,42 +30,32 @@ const RejectedTable = ({
     { label: "SR. No", width: "100px" },
     { label: "Call", width: "100px" },
     { label: "Enquiry Source", width: "140px" },
-
-
     { label: "CRN No.", width: "140px" },
     { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "160px" },
-    
     { label: "Name", width: "200px" },
     { label: "Permanent Address", width: "180px" },
     { label: "State", width: "100px" },
     { label: "City", width: "100px" },
     { label: "Phone No.", width: "140px" },
     { label: "E-mail", width: "200px" },
-
     { label: "Loan Amount", width: "120px" },
-
     { label: "ROI", width: "80px" },
     { label: "Tenure", width: "100px" },
     { label: "Loan Term", width: "120px" },
-
-   
     { label: "Photo", width: "80px" },
     { label: "Pan Proof", width: "100px" },
     { label: "Address Proof", width: "120px" },
     { label: "ID Proof", width: "100px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
-
     { label: "Remark", width: "130px" },
-        { label: "Status", width: "120px" },
+    { label: "Status", width: "120px" },
     { label: "User By", width: "130px" },
     { label: "Restore Action", width: "130px" },
-    
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Action", width: "140px" },
- 
   ];
 
   return (
@@ -94,17 +86,20 @@ const RejectedTable = ({
             </thead>
             <tbody>
               {paginatedApplications.map((application, index) => (
-                <RejectedRow
-                  key={application.id}
-                  application={application}
-                  index={index}
-                  isDark={isDark}
-                  onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onCall={onCall}
-                  />
+<RejectedRow
+  key={application.id}
+  application={application}
+  index={index}
+  isDark={isDark}
+  onFileView={onFileView}
+  onActionClick={onActionClick}
+  onLoanEligibilityClick={onLoanEligibilityClick}  
+  onCheckClick={onCheckClick}
+  onCall={onCall}
+  fileLoading={fileLoading}
+  loadingFileName={loadingFileName}
+  onRestoreApplication={onRestoreApplication}
+/>
               ))}
             </tbody>
           </table>
@@ -122,7 +117,7 @@ const RejectedTable = ({
         )}
         
         {totalPages > 0 && (
-          <div>
+          <div className="mt-8">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
