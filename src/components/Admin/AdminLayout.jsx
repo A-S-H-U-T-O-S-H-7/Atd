@@ -11,11 +11,12 @@ const AdminLayout = ({ children }) => {
   const { theme } = useThemeStore();
   const { isAuthenticated, loading } = useAdminAuthStore();
   const router = useRouter();
+  
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.replace("/crm");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, loading, router]); 
 
   if (loading) {
     return (

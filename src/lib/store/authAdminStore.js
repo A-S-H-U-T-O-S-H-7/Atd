@@ -12,7 +12,7 @@ export const useAdminAuthStore = create(
             token: null,
             user: null,
             isAuthenticated: false,
-            loading: false,
+            loading: true,
             error: null,
             login: async (credentials) => {
                 try {
@@ -82,6 +82,12 @@ export const useAdminAuthStore = create(
                 user: state.user,
                 isAuthenticated: state.isAuthenticated,
             }),
+            
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    state.loading = false;
+                }
+            },
         }
     )
 );
