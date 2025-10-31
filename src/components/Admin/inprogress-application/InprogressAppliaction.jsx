@@ -51,6 +51,7 @@ const InProgressApplication = () => {
 
   // Status options for in-progress applications - ADD THIS
   const statusOptions = [
+    { value: "Sanction", label: "Sanction" },
     { value: "Rejected", label: "Rejected" },
   ];
 

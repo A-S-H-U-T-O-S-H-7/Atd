@@ -52,7 +52,6 @@ const FollowUpApplication = () => {
   // Status options for follow-up applications - ADD THIS
   const statusOptions = [
   { value: "Processing", label: "Processing" },
-  { value: "Follow Up", label: "Follow Up" },
   { value: "Rejected", label: "Rejected" }
 ];
 

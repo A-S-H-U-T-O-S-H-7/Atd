@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 const StatusUpdateModal = ({
   isOpen,
@@ -25,13 +25,16 @@ const StatusUpdateModal = ({
     e.preventDefault();
     
     if (!selectedStatus) {
-      await Swal.fire({
-        title: 'Missing Status!',
-        text: 'Please select a status.',
-        icon: 'warning',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
+      toast.error('Please select a status.', {
+        style: {
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+        },
+        iconTheme: {
+          primary: '#ef4444',
+          secondary: '#f9fafb',
+        }
       });
       return;
     }
@@ -41,25 +44,31 @@ const StatusUpdateModal = ({
       
       await onStatusUpdate(application.id, selectedStatus, remark);
       
-      await Swal.fire({
-        title: 'Status Updated!',
-        text: 'Application status has been updated successfully.',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
+      toast.success('Application status has been updated successfully.', {
+        style: {
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+        },
+        iconTheme: {
+          primary: '#10b981',
+          secondary: '#f9fafb',
+        }
       });
 
       onClose();
     } catch (error) {
       console.error("Status update error:", error);
-      await Swal.fire({
-        title: 'Update Failed!',
-        text: 'Failed to update status. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
+      toast.error('Failed to update status. Please try again.', {
+        style: {
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+        },
+        iconTheme: {
+          primary: '#ef4444',
+          secondary: '#f9fafb',
+        }
       });
     } finally {
       setLoading(false);
