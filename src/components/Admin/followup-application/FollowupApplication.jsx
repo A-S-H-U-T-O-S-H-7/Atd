@@ -7,6 +7,7 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import FollowUpTable from "./FollowUpTable";
 import CallDetailsModal from "../CallDetailsModal";
+import StatusUpdateModal from "../StatusUpdateModal"; // Import the modal
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   followUpApplicationAPI, 
@@ -32,6 +33,10 @@ const FollowUpApplication = () => {
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
+  // Status Modal States - ADD THESE
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+
   // Advanced Search States
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,6 +48,13 @@ const FollowUpApplication = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
+
+  // Status options for follow-up applications - ADD THIS
+  const statusOptions = [
+  { value: "Processing", label: "Processing" },
+  { value: "Follow Up", label: "Follow Up" },
+  { value: "Rejected", label: "Rejected" }
+];
 
   const SearchOptions = [
     { value: 'accountId', label: 'Account ID' },
@@ -135,6 +147,30 @@ const FollowUpApplication = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [currentPage, searchField, searchTerm, dateFilter]);
+
+  // Handle Status Update - UPDATE THIS FUNCTION
+  const handleStatusUpdate = async (applicationId, status, remark = "") => {
+    try {
+      await followUpService.updateStatus(applicationId, status, remark);
+      // Refresh applications after status update
+      fetchApplications();
+    } catch (error) {
+      console.error("Status update error:", error);
+      throw error; // Re-throw to be handled by the modal
+    }
+  };
+
+  // Open Status Modal - ADD THIS FUNCTION
+  const handleOpenStatusModal = (application) => {
+    setSelectedApplication(application);
+    setShowStatusModal(true);
+  };
+
+  // Close Status Modal - ADD THIS FUNCTION
+  const handleCloseStatusModal = () => {
+    setShowStatusModal(false);
+    setSelectedApplication(null);
+  };
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -263,49 +299,7 @@ const FollowUpApplication = () => {
     }
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (applicationId, status, remark = "") => {
-    try {
-      const result = await Swal.fire({
-        title: 'Update Status?',
-        text: `Change status to ${status}?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, Update!',
-        cancelButtonText: 'Cancel',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-
-      if (!result.isConfirmed) return;
-
-      await followUpService.updateStatus(applicationId, status, remark);
-      
-      await Swal.fire({
-        title: 'Status Updated!',
-        text: 'Application status has been updated successfully.',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-
-      // Refresh applications
-      fetchApplications();
-    } catch (error) {
-      console.error("Status update error:", error);
-      await Swal.fire({
-        title: 'Update Failed!',
-        text: 'Failed to update status. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    }
-  };
+  // REMOVE the old handleStatusUpdate function since we updated it above
 
   // Handle blacklist
   const handleBlacklist = async (applicationId) => {
@@ -341,7 +335,7 @@ const FollowUpApplication = () => {
       console.error("Blacklist error:", error);
       await Swal.fire({
         title: 'Blacklist Failed!',
-        text: 'Failed to blacklist application. Please try again.',
+        text: error.response?.data?.message || 'Failed to blacklist application. Please try again.',
         icon: 'error',
         confirmButtonColor: '#ef4444',
         background: isDark ? "#1f2937" : "#ffffff",
@@ -384,7 +378,7 @@ const FollowUpApplication = () => {
       console.error("Activation error:", error);
       await Swal.fire({
         title: 'Activation Failed!',
-        text: 'Failed to activate account. Please try again.',
+        text: error.response?.data?.message || 'Failed to activate account. Please try again.',
         icon: 'error',
         confirmButtonColor: '#ef4444',
         background: isDark ? "#1f2937" : "#ffffff",
@@ -642,9 +636,11 @@ const FollowUpApplication = () => {
           onStatusUpdate={handleStatusUpdate}
           onBlacklist={handleBlacklist}
           onActivateAccount={handleActivateAccount}
+          onOpenStatusModal={handleOpenStatusModal} 
         />
       </div>
 
+      {/* Call Details Modal */}
       <CallDetailsModal 
         isOpen={showCallModal} 
         onClose={() => {
@@ -653,6 +649,16 @@ const FollowUpApplication = () => {
         }} 
         data={selectedApplicant} 
         isDark={isDark}  
+      />
+
+      {/* Status Update Modal - ADD THIS */}
+      <StatusUpdateModal
+        isOpen={showStatusModal}
+        onClose={handleCloseStatusModal}
+        application={selectedApplication}
+        statusOptions={statusOptions}
+        onStatusUpdate={handleStatusUpdate}
+        isDark={isDark}
       />
     </div>
   );

@@ -21,7 +21,8 @@ const FollowUpTable = ({
   loadingFileName,
   onStatusUpdate,
   onBlacklist,
-  onActivateAccount
+  onActivateAccount,
+  onOpenStatusModal // Add this prop
 }) => {
 
   const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -61,7 +62,7 @@ const FollowUpTable = ({
     { label: "Social Score Report", width: "160px" },
     { label: "Cibil Score Report", width: "160px" },
     { label: "Approval Note", width: "180px" },
-    { label: "Status", width: "120px" },
+    { label: "Status", width: "150px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
@@ -113,6 +114,7 @@ const FollowUpTable = ({
                   onStatusUpdate={onStatusUpdate}
                   onBlacklist={onBlacklist}
                   onActivateAccount={onActivateAccount}
+                  onOpenStatusModal={onOpenStatusModal} // Pass the modal opener
                 />
               ))}
             </tbody>

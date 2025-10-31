@@ -2,6 +2,7 @@ import React from "react";
 import { FileText } from "lucide-react";
 import Pagination from "../Pagination";
 import InProgressRow from "./InprogressRow";
+
 const InProgressTable = ({ 
     paginatedApplications, 
     filteredApplications,
@@ -18,6 +19,7 @@ const InProgressTable = ({
    onReplaceKYCClick,
    fileLoading,
    loadingFileName,
+   onOpenStatusModal // Add this prop
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -63,9 +65,9 @@ const InProgressTable = ({
     { label: "Cibil Score Report", width: "160px" },
     { label: "PDC", width: "80px" },
     { label: "Agreement", width: "120px" },
-    { label: "Approval Note", width: "180px" },
+    { label: "Approval Note", width: "170px" },
     
-    { label: "Loan Status", width: "120px" },
+    { label: "Loan Status", width: "130px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
@@ -113,6 +115,7 @@ const InProgressTable = ({
                   onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
+                  onOpenStatusModal={onOpenStatusModal} // Pass the modal opener
                 />
               ))}
             </tbody>

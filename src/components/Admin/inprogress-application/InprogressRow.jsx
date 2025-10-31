@@ -24,6 +24,7 @@ const InProgressRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
+  onOpenStatusModal // Add this prop
 }) => {
   // Common cell styles
   const cellBase = "px-6 py-4 border-r";
@@ -46,6 +47,13 @@ const InProgressRow = ({
 
   const handleCall = () => {
     onCall(application);
+  };
+
+  // ADD THIS FUNCTION
+  const handleOpenStatusModal = () => {
+    if (onOpenStatusModal) {
+      onOpenStatusModal(application);
+    }
   };
 
   // Ensure application has the required properties for button components
@@ -360,15 +368,18 @@ const InProgressRow = ({
         </span>
       </td>
 
-      {/* Loan Status */}
+      {/* Loan Status - UPDATED TO BE CLICKABLE */}
       <td className={cellStyle}>
-        <span
-          className={`text-sm font-semibold ${
-            isDark ? "text-orange-400" : "text-orange-600"
+        <button
+          onClick={handleOpenStatusModal}
+          className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 cursor-pointer ${
+            isDark
+              ? "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-800 text-cyan-900"
+              : "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-200 text-cyan-700"
           }`}
         >
           {application.loanStatus}
-        </span>
+        </button>
       </td>
 
       {/* Action */}
@@ -376,11 +387,14 @@ const InProgressRow = ({
         <div className="flex items-center justify-center">
           <button
             onClick={() => onActionClick(application)}
-            className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            title="Edit Application"
+            className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
+            isDark
+              ? "bg-blue-900/50 border hover:bg-blue-800 text-blue-300"
+              : "bg-blue-100 border hover:bg-blue-200 text-blue-700"
+          }`}
           >
-            <Edit className="w-4 h-4" />
-            <span>Edit</span>
+            
+            <span>Verify</span>
           </button>
         </div>
       </td>
@@ -390,7 +404,7 @@ const InProgressRow = ({
         {applicationWithDefaults.finalReportStatus === "Recommended"
           ? <button
               onClick={() => onFileView(application.finalReportFile, "reports")}
-              className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs"
+              className="px-3 py-1 cursor-pointer bg-gradient-to-r from-orange-100 via-orange-200 to-orange-300 text-orange-800 rounded text-sm"
             >
               Recommended
             </button>

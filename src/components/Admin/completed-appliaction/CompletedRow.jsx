@@ -27,7 +27,8 @@ const CompletedRow = ({
   loadingFileName,
   onStatusUpdate,
   onBlacklist,
-  onActivateAccount
+  onActivateAccount,
+  onOpenStatusModal // Add this prop
 }) => {
   // Common cell styles
   const cellBase = "px-6 py-4 border-r";
@@ -61,6 +62,12 @@ const CompletedRow = ({
   const handleBlacklist = () => {
     if (onBlacklist && application.id) {
       onBlacklist(application.id);
+    }
+  };
+
+  const handleOpenStatusModal = () => {
+    if (onOpenStatusModal) {
+      onOpenStatusModal(application);
     }
   };
 
@@ -403,13 +410,16 @@ const CompletedRow = ({
 
       {/* Status */}
       <td className={cellStyle}>
-        <span
-          className={`text-sm font-semibold ${
-            isDark ? "text-orange-400" : "text-orange-600"
+        <button
+          onClick={handleOpenStatusModal}
+          className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 cursor-pointer ${
+            isDark
+              ? "bg-gradient-to-r from-green-100 via-green-200 to-green-300 border border-green-800 hover:bg-gradient-to-br hover:bg-green-800 text-green-950"
+              : "bg-gradient-to-r from-green-100 via-green-200 to-green-300 border border-green-500 hover:bg-green-200 text-green-950"
           }`}
         >
           {application.loanStatus}
-        </span>
+        </button>
       </td>
 
       {/* Action */}
@@ -465,19 +475,6 @@ const CompletedRow = ({
           Replace KYC
         </button>
       </td>
-
-      {/* Link With Last Loan */}
-      {/* <td className={cellStyle}>
-        <button
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
-            isDark
-              ? " underline text-blue-300"
-              : " underline text-blue-700"
-          }`}
-        >
-          Link With Last Loan
-        </button>
-      </td> */}
 
       {/* BlackList */}
       <td className={cellStyle}>

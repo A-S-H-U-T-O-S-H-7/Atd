@@ -22,6 +22,7 @@ const CompletedTable = ({
    onStatusUpdate,
    onBlacklist,
    onActivateAccount,
+   onOpenStatusModal
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -129,6 +130,7 @@ const CompletedTable = ({
   onStatusUpdate={onStatusUpdate}
   onBlacklist={onBlacklist}
   onActivateAccount={onActivateAccount}
+  onOpenStatusModal={onOpenStatusModal}
 />
               ))}
             </tbody>

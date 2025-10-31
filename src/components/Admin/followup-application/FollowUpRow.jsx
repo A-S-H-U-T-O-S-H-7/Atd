@@ -27,7 +27,8 @@ const FollowUpRow = ({
   loadingFileName,
   onStatusUpdate,
   onBlacklist,
-  onActivateAccount
+  onActivateAccount,
+  onOpenStatusModal // Add this prop
 }) => {
   // Common cell styles
   const cellBase = "px-6 py-4 border-r";
@@ -61,6 +62,13 @@ const FollowUpRow = ({
   const handleBlacklist = () => {
     if (onBlacklist && application.id) {
       onBlacklist(application.id);
+    }
+  };
+
+  // ADD THIS FUNCTION
+  const handleOpenStatusModal = () => {
+    if (onOpenStatusModal) {
+      onOpenStatusModal(application);
     }
   };
 
@@ -389,15 +397,18 @@ const FollowUpRow = ({
         </span>
       </td>
 
-      {/* Status */}
+      {/* Status  */}
       <td className={cellStyle}>
-        <span
-          className={`text-sm font-semibold ${
-            isDark ? "text-orange-400" : "text-orange-600"
+        <button
+          onClick={handleOpenStatusModal}
+          className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 cursor-pointer ${
+            isDark
+              ? "bg-gradient-to-r from-rose-100 via-rose-200 to-rose-300 border border-red-700 hover:bg-rose-800 text-rose-900"
+              : "bg-gradient-to-r from-rose-100 via-rose-200 to-rose-300 border border-red-200 hover:bg-rose-200 text-rose-700"
           }`}
         >
           {application.loanStatus}
-        </span>
+        </button>
       </td>
 
       {/* Action */}

@@ -24,7 +24,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Update application status
+  // Update application status - FIXED ENDPOINT
   updateApplicationStatus: async (applicationId, statusData) => {
     try {
       const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
@@ -34,7 +34,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Blacklist application
+  // Blacklist application - FIXED ENDPOINT
   blacklistApplication: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/black-list/${applicationId}`);
@@ -44,7 +44,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Activate account
+  // Activate account - FIXED ENDPOINT
   activateAccount: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/activate/${applicationId}`);
@@ -55,13 +55,35 @@ export const completedApplicationAPI = {
   }
 };
 
+// Status mapping constants
+export const APPLICATION_STATUS = {
+  PENDING: { id: 1, name: "Pending" },
+  COMPLETED: { id: 2, name: "Completed" },
+  REJECTED: { id: 3, name: "Rejected" },
+  FOLLOW_UP: { id: 4, name: "Follow Up" },
+  PROCESSING: { id: 5, name: "Processing" },
+  SANCTION: { id: 6, name: "Sanction" },
+  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
+  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
+  DISBURSED: { id: 9, name: "Disbursed" },
+  TRANSACTION: { id: 10, name: "Transaction" },
+  COLLECTION: { id: 11, name: "Collection" },
+  RE_COLLECTION: { id: 12, name: "Re-Collection" },
+  CLOSED: { id: 13, name: "Closed" },
+  DEFAULTER: { id: 14, name: "Defaulter" },
+  CANCELLED: { id: 15, name: "Cancelled" },
+  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
+  RETURN: { id: 17, name: "Return" },
+  RENEWAL: { id: 18, name: "Renewal" },
+  EMI: { id: 19, name: "EMI" }
+};
+
 // Format application data for UI
 export const formatCompletedApplicationForUI = (application) => {
-  // Format dates
+  // ... keep your existing formatCompletedApplicationForUI function unchanged ...
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
   const completedDate = application.updated_at ? new Date(application.updated_at) : new Date();
   
-  // Create addresses
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
   
@@ -69,60 +91,43 @@ export const formatCompletedApplicationForUI = (application) => {
     `${application.current_house_no || ''}, ${application.current_city || ''}, ${application.current_state || ''} - ${application.current_pincode || ''}`.trim();
 
   return {
-    // Basic identifiers
     id: application.application_id,
     srNo: application.application_id,
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,
     accountId: application.accountId,
-
-    // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     completedDate: completedDate.toLocaleDateString('en-GB'),
     completedTime: completedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     createdAt: application.created_at,
     updatedAt: application.updated_at,
-
-    // Personal information
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
     firstName: application.fname || '',
     lastName: application.lname || '',
     dob: application.dob,
     gender: application.gender,
-
-    // Address information
     permanentAddress: permanentAddress,
     state: application.state,
     city: application.city,
     pincode: application.pincode,
     houseNo: application.house_no,
-    
-    // Current address information
     currentAddress: currentAddress,
     currentState: application.current_state,
     currentCity: application.current_city,
     currentPincode: application.current_pincode,
     currentHouseNo: application.current_house_no,
-
-    // Contact information
     phoneNo: application.phone,
     email: application.email || 'N/A',
-
-    // Loan information
     appliedLoan: application.applied_amount,
     approvedAmount: application.approved_amount,
     roi: application.roi,
     tenure: application.tenure,
     loanTerm: application.loan_term === 4 ? "One Time Payment" : "Daily",
-
-    // Account status
     accountActivation: application.accountActivation === 1,
     activateDate: application.activateDate,
     isBlacklisted: application.blacklist === 1,
     blacklistDate: application.blacklistdate,
-
-    // Document availability flags
     hasPhoto: !!application.selfie,
     hasPanCard: !!application.pan_proof,
     hasAddressProof: !!application.address_proof,
@@ -134,8 +139,6 @@ export const formatCompletedApplicationForUI = (application) => {
     hasBankVerificationReport: !!application.bank_verif_report,
     hasSocialScoreReport: !!application.social_score_report,
     hasCibilScoreReport: !!application.cibil_score_report,
-
-    // Document file names
     photoFileName: application.selfie,
     panCardFileName: application.pan_proof,
     addressProofFileName: application.address_proof,
@@ -147,65 +150,45 @@ export const formatCompletedApplicationForUI = (application) => {
     bankVerificationFileName: application.bank_verif_report,
     socialScoreFileName: application.social_score_report,
     cibilScoreFileName: application.cibil_score_report,
-
-    // Status and approval information
     approvalNote: application.approval_note,
-    status: getLoanStatusText(application.loan_status),
-    loanStatus: getLoanStatusText(application.loan_status),
-
-    // Application stage information
+    status: getStatusName(application.loan_status),
+    loanStatus: getStatusName(application.loan_status),
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,
     verifyStatus: application.verify,
     reportCheckStatus: application.report_check,
-
-    // Final report information
     hasAppraisalReport: !!application.totl_final_report,
     finalReportStatus: application.totl_final_report,
     isRecommended: application.totl_final_report === "Recommended",
-
-    // Mail information
     mailCounter: application.mail_counter,
     mailerDate: application.mailer_date,
-
-    // Button visibility flags
     showActionButton: true,
     showAppraisalButton: true,
     showEligibilityButton: true
   };
 };
 
-// Get loan status text
-const getLoanStatusText = (status) => {
-  switch (Number(status)) {
-    case 0: return "Pending";
-    case 1: return "In Progress";
-    case 2: return "Approved";
-    case 3: return "Rejected";
-    case 4: return "Disbursed";
-    default: return "Completed";
-  }
+// Get status name from ID
+const getStatusName = (statusId) => {
+  const status = Object.values(APPLICATION_STATUS).find(s => s.id === Number(statusId));
+  return status ? status.name : "Unknown";
 };
 
-// Get status number from text
-export const getStatusNumber = (status) => {
-  switch (String(status).toLowerCase()) {
-    case "pending": return 0;
-    case "in progress": return 1;
-    case "approved": return 2;
-    case "rejected": return 3;
-    case "disbursed": return 4;
-    default: return 2; // Default to Approved for completed applications
-  }
+// Get status ID from name
+export const getStatusId = (statusName) => {
+  const status = Object.values(APPLICATION_STATUS).find(s => 
+    s.name.toLowerCase() === statusName.toLowerCase()
+  );
+  return status ? status.id : 1; // Default to Pending
 };
 
 // Status update utility
 export const statusService = {
-  updateStatus: async (applicationId, status, remark = "") => {
+  updateStatus: async (applicationId, statusName, remark = "") => {
     try {
       const statusData = {
-        status: getStatusNumber(status),
+        status: getStatusId(statusName),
         remark: remark
       };
       const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
@@ -234,7 +217,7 @@ export const statusService = {
   }
 };
 
-// File view utility
+// File view utility (keep existing)
 export const fileService = {
   viewFile: async (fileName, documentCategory) => {
     if (!fileName) {

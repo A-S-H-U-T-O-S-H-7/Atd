@@ -7,9 +7,14 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import InProgressTable from "./InprogressTable";
 import CallDetailsModal from "../CallDetailsModal";
+import InProcessStatusModal from "../InProcessStatusModal"; // Import the modal
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { inProgressApplicationAPI,formatInProgressApplicationForUI,
-  fileService  } from "@/lib/services/InprocessApplicationServices";
+import { 
+  inProgressApplicationAPI,
+  formatInProgressApplicationForUI,
+  fileService,
+  inProgressService // Import the service
+} from "@/lib/services/InprocessApplicationServices";
 import Swal from 'sweetalert2';
 
 const InProgressApplication = () => {
@@ -28,6 +33,10 @@ const InProgressApplication = () => {
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
+  // Status Modal States - ADD THESE
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+
   // Advanced Search States
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,6 +48,11 @@ const InProgressApplication = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
+
+  // Status options for in-progress applications - ADD THIS
+  const statusOptions = [
+    { value: "Rejected", label: "Rejected" },
+  ];
 
   const SearchOptions = [
     { value: 'loanNo', label: 'Loan No.' },
@@ -132,6 +146,30 @@ const InProgressApplication = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [currentPage, searchField, searchTerm, dateFilter]);
+
+  // Handle Status Update - ADD THIS FUNCTION
+  const handleStatusUpdate = async (applicationId, updateData) => {
+    try {
+      await inProgressService.updateStatus(applicationId, updateData);
+      // Refresh applications after status update
+      fetchApplications();
+    } catch (error) {
+      console.error("Status update error:", error);
+      throw error; // Re-throw to be handled by the modal
+    }
+  };
+
+  // Open Status Modal - ADD THIS FUNCTION
+  const handleOpenStatusModal = (application) => {
+    setSelectedApplication(application);
+    setShowStatusModal(true);
+  };
+
+  // Close Status Modal - ADD THIS FUNCTION
+  const handleCloseStatusModal = () => {
+    setShowStatusModal(false);
+    setSelectedApplication(null);
+  };
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -508,9 +546,11 @@ const InProgressApplication = () => {
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
+          onOpenStatusModal={handleOpenStatusModal} // Pass the modal opener function
         />
       </div>
 
+      {/* Call Details Modal */}
       <CallDetailsModal 
         isOpen={showCallModal} 
         onClose={() => {
@@ -519,6 +559,16 @@ const InProgressApplication = () => {
         }} 
         data={selectedApplicant} 
         isDark={isDark}  
+      />
+
+      {/* In-Process Status Modal - ADD THIS */}
+      <InProcessStatusModal
+        isOpen={showStatusModal}
+        onClose={handleCloseStatusModal}
+        application={selectedApplication}
+        statusOptions={statusOptions}
+        onStatusUpdate={handleStatusUpdate}
+        isDark={isDark}
       />
     </div>
   );

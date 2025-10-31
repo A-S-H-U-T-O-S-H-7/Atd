@@ -35,6 +35,29 @@ export const inProgressApplicationAPI = {
   }
 };
 
+// Status mapping constants - ADD THIS
+export const APPLICATION_STATUS = {
+  PENDING: { id: 1, name: "Pending" },
+  COMPLETED: { id: 2, name: "Completed" },
+  REJECTED: { id: 3, name: "Rejected" },
+  FOLLOW_UP: { id: 4, name: "Follow Up" },
+  PROCESSING: { id: 5, name: "Processing" },
+  SANCTION: { id: 6, name: "Sanction" },
+  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
+  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
+  DISBURSED: { id: 9, name: "Disbursed" },
+  TRANSACTION: { id: 10, name: "Transaction" },
+  COLLECTION: { id: 11, name: "Collection" },
+  RE_COLLECTION: { id: 12, name: "Re-Collection" },
+  CLOSED: { id: 13, name: "Closed" },
+  DEFAULTER: { id: 14, name: "Defaulter" },
+  CANCELLED: { id: 15, name: "Cancelled" },
+  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
+  RETURN: { id: 17, name: "Return" },
+  RENEWAL: { id: 18, name: "Renewal" },
+  EMI: { id: 19, name: "EMI" }
+};
+
 // Format application data for UI
 export const formatInProgressApplicationForUI = (application) => {
   // Format dates
@@ -139,15 +162,36 @@ export const formatInProgressApplicationForUI = (application) => {
   };
 };
 
-// Get loan status text
+// Get loan status text - UPDATE THIS
 const getLoanStatusText = (status) => {
-  switch (Number(status)) {
-    case 0: return "Pending";
-    case 1: return "In Progress";
-    case 2: return "Approved";
-    case 3: return "Rejected";
-    case 4: return "Disbursed";
-    default: return "In Progress";
+  const statusObj = Object.values(APPLICATION_STATUS).find(s => s.id === Number(status));
+  return statusObj ? statusObj.name : "In Progress";
+};
+
+// Get status number from text - ADD THIS
+export const getStatusNumber = (status) => {
+  const statusObj = Object.values(APPLICATION_STATUS).find(s => 
+    s.name.toLowerCase() === String(status).toLowerCase()
+  );
+  return statusObj ? statusObj.id : 5; // Default to Processing (5)
+};
+
+// Status update utility - ADD THIS
+export const inProgressService = {
+  updateStatus: async (applicationId, updateData) => {
+    try {
+      const statusData = {
+        status: getStatusNumber(updateData.status),
+        remark: updateData.remark,
+        documents_received: updateData.documentsReceived,
+        bank_verified: updateData.bankVerified,
+        selected_bank: updateData.selectedBank
+      };
+      const response = await inProgressApplicationAPI.updateApplicationStatus(applicationId, statusData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
