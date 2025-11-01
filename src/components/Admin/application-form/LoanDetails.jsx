@@ -28,8 +28,8 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
 
   const disabledInputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
     isDark
-      ? "bg-gray-800 border-gray-700 text-gray-400"
-      : "bg-gray-100 border-gray-300 text-gray-500"
+      ? "bg-gray-800 border-gray-700 text-gray-200"
+      : "bg-gray-100 border-gray-300 text-gray-800"
   } cursor-not-allowed`;
 
   const labelClassName = `block text-xs font-medium mb-1 ${
