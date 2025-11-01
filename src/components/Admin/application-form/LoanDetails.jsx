@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CreditCard, AlertTriangle } from 'lucide-react';
 
 const LoanDetails = ({ formik, isDark, errors = {} }) => {
@@ -26,6 +26,12 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
       : "bg-red-50 border-red-400 text-gray-900 hover:border-red-400 focus:border-red-500"
   } focus:ring-2 focus:ring-red-500/20 focus:outline-none`;
 
+  const disabledInputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
+    isDark
+      ? "bg-gray-800 border-gray-700 text-gray-400"
+      : "bg-gray-100 border-gray-300 text-gray-500"
+  } cursor-not-allowed`;
+
   const labelClassName = `block text-xs font-medium mb-1 ${
     isDark ? "text-gray-200" : "text-gray-700"
   }`;
@@ -40,7 +46,6 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
 
   // Helper function to get field error
   const getFieldError = (fieldName) => {
-    // Check multiple possible field name variations
     const possibleNames = [
       fieldName,
       fieldName.replace(/([A-Z])/g, '_$1').toLowerCase(),
@@ -59,6 +64,79 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
   const hasError = (fieldName) => {
     return getFieldError(fieldName) !== null;
   };
+
+  
+  // Calculate Collection Amount
+const calculateCollectionAmount = () => {
+  const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
+  const tenure = parseInt(formik.values.tenure) || 0;
+  const roi = 0.067; 
+  
+  if (approvedAmount > 0 && tenure > 0) {
+    const interestAmount = approvedAmount * tenure * (roi / 100);
+    const totalAmount = approvedAmount + interestAmount;
+    return Math.round(totalAmount); 
+  }
+  return approvedAmount;
+};
+
+  // Calculate Administration Fee Amount
+  const calculateAdministrationFee = () => {
+    const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
+    const adminFeePercent = parseFloat(formik.values.administrationFeePercent) || 0;
+    
+    if (approvedAmount > 0 && adminFeePercent > 0) {
+      const adminFee = approvedAmount * (adminFeePercent / 100);
+      return Math.round(adminFee); // Round to nearest integer
+    }
+    return 0;
+  };
+
+  // Calculate GST (18% of Administration Fee)
+  const calculateGST = () => {
+    const adminFee = calculateAdministrationFee();
+    const gst = adminFee * 0.18;
+    return Math.round(gst); // Round to nearest integer
+  };
+
+  // Update calculated fields when dependencies change
+  useEffect(() => {
+    const collectionAmount = calculateCollectionAmount();
+    const adminFeeAmount = calculateAdministrationFee();
+    const gstAmount = calculateGST();
+
+    // Update formik values if they don't match calculated values
+    if (formik.values.collectionAmount !== collectionAmount.toString()) {
+      formik.setFieldValue('collectionAmount', collectionAmount);
+    }
+
+    if (formik.values.emiCollectionAmount !== collectionAmount.toString()) {
+      formik.setFieldValue('emiCollectionAmount', collectionAmount);
+    }
+
+    if (formik.values.administrationFeeAmount !== adminFeeAmount.toString()) {
+      formik.setFieldValue('administrationFeeAmount', adminFeeAmount);
+    }
+
+    if (formik.values.gst !== gstAmount.toString()) {
+      formik.setFieldValue('gst', gstAmount);
+    }
+  }, [
+    formik.values.amountApproved,
+    formik.values.tenure,
+    formik.values.administrationFeePercent,
+    formik.values.collectionAmount,
+    formik.values.emiCollectionAmount,
+    formik.values.administrationFeeAmount,
+    formik.values.gst
+  ]);
+
+  // Set default loan term to "One Time Payment" if empty
+  useEffect(() => {
+    if (!formik.values.loanTerm) {
+      formik.setFieldValue('loanTerm', '4');
+    }
+  }, [formik.values.loanTerm]);
 
   return (
     <div className={`rounded-xl shadow-lg border-2 overflow-hidden ${
@@ -98,7 +176,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* Amount Approved */}
+          {/* Amount Approved - Non-editable */}
           <div>
             <label className={hasError('amountApproved') ? errorLabelClassName : labelClassName}>
               Amount Approved
@@ -108,8 +186,9 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
               name="amountApproved"
               value={formik.values.amountApproved}
               onChange={formik.handleChange}
-              className={hasError('amountApproved') ? errorInputClassName : inputClassName}
-              placeholder="Enter approved amount"
+              className={disabledInputClassName}
+              placeholder="Approved amount"
+              readOnly
             />
             {hasError('amountApproved') && (
               <div className={errorTextClassName}>
@@ -119,7 +198,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* Loan Term */}
+          {/* Loan Term - Default to One Time Payment */}
           <div>
             <label className={hasError('loanTerm') ? errorLabelClassName : labelClassName}>
               Loan Term
@@ -130,8 +209,6 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
               onChange={formik.handleChange}
               className={hasError('loanTerm') ? errorSelectClassName : selectClassName}
             >
-              <option value="">Select Loan Term</option>
-              <option value="1">One Day</option>
               <option value="4">One Time Payment</option>
             </select>
             {hasError('loanTerm') && (
@@ -185,7 +262,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* Collection Amount */}
+          {/* Collection Amount - Non-editable and auto-calculated */}
           <div>
             <label className={hasError('collectionAmount') ? errorLabelClassName : labelClassName}>
               Collection Amount
@@ -193,10 +270,10 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             <input
               type="number"
               name="collectionAmount"
-              value={formik.values.collectionAmount}
-              onChange={formik.handleChange}
-              className={hasError('collectionAmount') ? errorInputClassName : inputClassName}
-              placeholder="Enter collection amount"
+              value={calculateCollectionAmount()}
+              className={disabledInputClassName}
+              placeholder="Auto-calculated"
+              readOnly
             />
             {hasError('collectionAmount') && (
               <div className={errorTextClassName}>
@@ -206,7 +283,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* EMI Collection Amount */}
+          {/* EMI Collection Amount - Non-editable and same as Collection Amount */}
           <div>
             <label className={hasError('emiCollectionAmount') ? errorLabelClassName : labelClassName}>
               EMI Collection Amount
@@ -214,10 +291,10 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             <input
               type="number"
               name="emiCollectionAmount"
-              value={formik.values.emiCollectionAmount}
-              onChange={formik.handleChange}
-              className={hasError('emiCollectionAmount') ? errorInputClassName : inputClassName}
-              placeholder="Enter EMI collection amount"
+              value={calculateCollectionAmount()}
+              className={disabledInputClassName}
+              placeholder="Same as collection amount"
+              readOnly
             />
             {hasError('emiCollectionAmount') && (
               <div className={errorTextClassName}>
@@ -248,7 +325,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* Administration Fee Percent */}
+          {/* Administration Fee Percent - Extended options 1% to 15% */}
           <div>
             <label className={hasError('administrationFeePercent') ? errorLabelClassName : labelClassName}>
               Administration Fee (%)
@@ -260,11 +337,11 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
               className={hasError('administrationFeePercent') ? errorSelectClassName : selectClassName}
             >
               <option value="">Please Select</option>
-              <option value="1">1%</option>
-              <option value="2">2%</option>
-              <option value="3">3%</option>
-              <option value="4">4%</option>
-              <option value="5">5%</option>
+              {Array.from({ length: 15 }, (_, i) => i + 1).map(percent => (
+                <option key={percent} value={percent}>
+                  {percent}%
+                </option>
+              ))}
             </select>
             {hasError('administrationFeePercent') && (
               <div className={errorTextClassName}>
@@ -274,7 +351,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* Administration Fee Amount */}
+          {/* Administration Fee Amount - Non-editable and auto-calculated */}
           <div>
             <label className={hasError('administrationFeeAmount') ? errorLabelClassName : labelClassName}>
               Administration Fee Amount
@@ -282,10 +359,10 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             <input
               type="number"
               name="administrationFeeAmount"
-              value={formik.values.administrationFeeAmount}
-              onChange={formik.handleChange}
-              className={hasError('administrationFeeAmount') ? errorInputClassName : inputClassName}
-              placeholder="Enter fee amount"
+              value={calculateAdministrationFee()}
+              className={disabledInputClassName}
+              placeholder="Auto-calculated"
+              readOnly
             />
             {hasError('administrationFeeAmount') && (
               <div className={errorTextClassName}>
@@ -295,7 +372,7 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             )}
           </div>
 
-          {/* GST */}
+          {/* GST - Non-editable and auto-calculated */}
           <div>
             <label className={hasError('gst') ? errorLabelClassName : labelClassName}>
               GST
@@ -303,10 +380,10 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
             <input
               type="number"
               name="gst"
-              value={formik.values.gst}
-              onChange={formik.handleChange}
-              className={hasError('gst') ? errorInputClassName : inputClassName}
-              placeholder="Enter GST amount"
+              value={calculateGST()}
+              className={disabledInputClassName}
+              placeholder="Auto-calculated"
+              readOnly
             />
             {hasError('gst') && (
               <div className={errorTextClassName}>
