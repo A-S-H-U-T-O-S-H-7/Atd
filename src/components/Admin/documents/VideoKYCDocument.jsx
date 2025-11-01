@@ -1,7 +1,7 @@
 import React from "react";
-import { FileText, X } from "lucide-react";
+import { Play, X } from "lucide-react";
 
-const AgreementDocument = ({
+const VideoKYCDocument = ({
   fileName,
   hasDoc,
   onFileView,
@@ -11,7 +11,7 @@ const AgreementDocument = ({
 }) => {
   const handleFileClick = () => {
     if (hasDoc && fileName) {
-      onFileView(fileName, "aggrement");
+      onFileView(fileName, "video");
     }
   };
 
@@ -24,20 +24,20 @@ const AgreementDocument = ({
           className={`p-2 rounded-lg transition-colors duration-200 ${
             fileLoading && loadingFileName === fileName
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-100 hover:bg-blue-200 text-blue-700 cursor-pointer"
+              : "bg-green-100 hover:bg-green-200 text-green-700 cursor-pointer"
           }`}
-          title="View Agreement"
+          title="View Video KYC"
         >
           {fileLoading && loadingFileName === fileName ? (
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            <FileText className="text-lg" />
+            <Play className="text-lg" />
           )}
         </button>
       ) : (
         <div
           className="p-1 rounded-lg bg-red-100 text-red-600"
-          title="Agreement Missing"
+          title="Video KYC Missing"
         >
           <X size={16} />
         </div>
@@ -46,4 +46,4 @@ const AgreementDocument = ({
   );
 };
 
-export default AgreementDocument;
+export default VideoKYCDocument;

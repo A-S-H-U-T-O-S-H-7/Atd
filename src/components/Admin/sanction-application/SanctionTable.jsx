@@ -24,9 +24,10 @@ const SanctionTable = ({
   onRemarksClick,
   onRefundPDCClick,
   onLoanEligibilityClick,  
-   onCheckClick, 
-   onReplaceKYCClick,   
-   
+  onCheckClick, 
+  onReplaceKYCClick,
+  fileLoading,
+  loadingFileName
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -84,8 +85,6 @@ const SanctionTable = ({
     { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
     { label: "Ready For Approve", width: "180px" },
-
-
     
     { label: "Loan Status", width: "120px" },
     { label: "Change Status", width: "200px" },
@@ -94,7 +93,6 @@ const SanctionTable = ({
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Replace KYC", width: "160px" },
-
   ];
  
   return (
@@ -142,9 +140,11 @@ const SanctionTable = ({
                   onRefundPDCClick={onRefundPDCClick}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
+                  onReplaceKYCClick={onReplaceKYCClick}
                   onCall={onCall}
-                  />
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                />
               ))}
             </tbody>
           </table>

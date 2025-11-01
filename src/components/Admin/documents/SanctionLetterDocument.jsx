@@ -1,7 +1,8 @@
 import React from "react";
-import { FileText, X } from "lucide-react";
+import { FaRegFilePdf} from "react-icons/fa";
+import x, { X } from "lucide-react";
 
-const AgreementDocument = ({
+const SanctionLetterDocument = ({
   fileName,
   hasDoc,
   onFileView,
@@ -11,7 +12,7 @@ const AgreementDocument = ({
 }) => {
   const handleFileClick = () => {
     if (hasDoc && fileName) {
-      onFileView(fileName, "aggrement");
+      onFileView(fileName, "sanction_letter");
     }
   };
 
@@ -21,23 +22,23 @@ const AgreementDocument = ({
         <button
           onClick={handleFileClick}
           disabled={fileLoading && loadingFileName === fileName}
-          className={`p-2 rounded-lg transition-colors duration-200 ${
+          className={`p-1 rounded-lg transition-colors duration-200 ${
             fileLoading && loadingFileName === fileName
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-100 hover:bg-blue-200 text-blue-700 cursor-pointer"
+              ? "text-gray-400 cursor-not-allowed"
+              : "text-red-500 cursor-pointer hover:text-red-600"
           }`}
-          title="View Agreement"
+          title="View Sanction Letter PDF"
         >
           {fileLoading && loadingFileName === fileName ? (
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            <FileText className="text-lg" />
+            <FaRegFilePdf size={25} />
           )}
         </button>
       ) : (
         <div
           className="p-1 rounded-lg bg-red-100 text-red-600"
-          title="Agreement Missing"
+          title="Sanction Letter Missing"
         >
           <X size={16} />
         </div>
@@ -46,4 +47,4 @@ const AgreementDocument = ({
   );
 };
 
-export default AgreementDocument;
+export default SanctionLetterDocument;

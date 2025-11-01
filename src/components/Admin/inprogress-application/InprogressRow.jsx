@@ -11,6 +11,9 @@ import SocialScoreDocument from "../documents/SocialScoreDocument";
 import CibilScoreDocument from "../documents/CibilScoreDocument";
 import PDCDocument from "../documents/PDCDocument";
 import AgreementDocument from "../documents/AgreementDocument";
+import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
+import EligibilityButton from "../action-buttons/EligibilityButton";
+import ActionButton from "../action-buttons/ActionButton";
 
 const InProgressRow = ({
   application,
@@ -384,59 +387,34 @@ const InProgressRow = ({
 
       {/* Action */}
       <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => onActionClick(application)}
-            className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-blue-900/50 border hover:bg-blue-800 text-blue-300"
-              : "bg-blue-100 border hover:bg-blue-200 text-blue-700"
-          }`}
-          >
-            
-            <span>Verify</span>
-          </button>
-        </div>
-      </td>
+  <ActionButton
+    enquiry={application}
+    isDark={isDark}
+    onVerifyClick={onActionClick} 
+    className="w-full flex justify-center"
+  />
+</td>
 
       {/* Appraisal Report */}
       <td className={cellStyle}>
-        {applicationWithDefaults.finalReportStatus === "Recommended"
-          ? <button
-              onClick={() => onFileView(application.finalReportFile, "reports")}
-              className="px-3 py-1 cursor-pointer bg-gradient-to-r from-orange-100 via-orange-200 to-orange-300 text-orange-800 rounded text-sm"
-            >
-              Recommended
-            </button>
-          : applicationWithDefaults.isFinalStage
-            ? <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                Locked
-              </span>
-            : <button
-                onClick={() => onCheckClick(application)}
-                className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-                  isDark
-                    ? "bg-pink-900/50 border hover:bg-pink-800 text-pink-300"
-                    : "bg-pink-100 border hover:bg-pink-200 text-pink-700"
-                }`}
-              >
-                Check
-              </button>}
-      </td>
+  <AppraisalReportButton
+    enquiry={application}
+    isDark={isDark}
+    onFileView={onFileView}
+    onCheckClick={onCheckClick}
+    className="w-full flex justify-center"
+  />
+</td>
 
       {/* Eligibility */}
-      <td className={cellStyle}>
-        <button
-          onClick={() => onLoanEligibilityClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-teal-900/50 border hover:bg-teal-800 text-teal-300"
-              : "bg-teal-100 border hover:bg-teal-200 text-teal-700"
-          }`}
-        >
-          Eligibility
-        </button>
-      </td>
+<td className={cellStyle}>
+  <EligibilityButton
+    enquiry={application}
+    isDark={isDark}
+    onLoanEligibilityClick={onLoanEligibilityClick}
+    className="w-full flex justify-center"
+  />
+</td>
 
       {/* Replace KYC */}
       <td className={cellStyle}>

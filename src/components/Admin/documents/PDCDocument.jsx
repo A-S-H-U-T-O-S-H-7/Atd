@@ -1,12 +1,25 @@
 import React from "react";
 import { FileText, X } from "lucide-react";
 
-const PDCDocument = ({ fileName, hasDoc, onFileView, fileLoading, loadingFileName }) => {
+const PDCDocument = ({
+  fileName,
+  hasDoc,
+  onFileView,
+  fileLoading,
+  loadingFileName,
+  isDark
+}) => {
+  const handleFileClick = () => {
+    if (hasDoc && fileName) {
+      onFileView(fileName, "pdc");
+    }
+  };
+
   return (
     <div className="flex items-center justify-center">
-      {hasDoc ? (
+      {hasDoc && fileName ? (
         <button
-          onClick={() => onFileView(fileName, 'pdc_file')}
+          onClick={handleFileClick}
           disabled={fileLoading && loadingFileName === fileName}
           className={`p-2 rounded-lg transition-colors duration-200 ${
             fileLoading && loadingFileName === fileName
@@ -15,7 +28,11 @@ const PDCDocument = ({ fileName, hasDoc, onFileView, fileLoading, loadingFileNam
           }`}
           title="View PDC"
         >
-          <FileText className="text-lg" />
+          {fileLoading && loadingFileName === fileName ? (
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <FileText className="text-lg" />
+          )}
         </button>
       ) : (
         <div

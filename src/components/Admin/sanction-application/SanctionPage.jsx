@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
-import { mockApplicationsData } from "@/lib/MockApplicationData";
+import DateRangeFilter from "../DateRangeFilter";
+import SanctionTable from "./SanctionTable";
+import CallDetailsModal from "../CallDetailsModal";
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";
@@ -11,279 +13,59 @@ import OriginalDocumentsModal from "../application-modals/OriginalDocumentsModal
 import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
 import ChangeStatusModal from "../application-modals/StatusModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
-import SanctionTable from "./SanctionTable";
-import CallDetailsModal from "../CallDetailsModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-
+import { 
+  sanctionApplicationAPI,
+  formatSanctionApplicationForUI,
+  fileService,
+  sanctionService
+} from "@/lib/services/SanctionApplicationServices";
+import { exportToExcel } from "@/components/utils/exportutil";
+import Swal from 'sweetalert2';
 
 const SanctionPage = () => {
   const { theme } = useThemeStore();
-      const isDark = theme === "dark";
+  const isDark = theme === "dark";
   const router = useRouter();
+  
+  // State management
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loanStatusFilter, setLoanStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [fileLoading, setFileLoading] = useState(false);
+  const [loadingFileName, setLoadingFileName] = useState('');
+
+  // Modal states
+  const [showCallModal, setShowCallModal] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
-const [currentApplication, setCurrentApplication] = useState(null);
-const [currentChequeNo, setCurrentChequeNo] = useState('');
-const [courierModalOpen, setCourierModalOpen] = useState(false);
-const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
-const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
-const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
-const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
-const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
+  const [currentApplication, setCurrentApplication] = useState(null);
+  const [currentChequeNo, setCurrentChequeNo] = useState('');
+  const [courierModalOpen, setCourierModalOpen] = useState(false);
+  const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
+  const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
+  const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
+  const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
+  const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
+  const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
+  const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
+  const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
+  const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
+  const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
+  const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
 
-const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
-const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
-const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
-const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
-
-const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
-const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
-const [showCallModal, setShowCallModal] = useState(false);
-      const [selectedApplicant, setSelectedApplicant] = useState(null);
-
-const handleChequeModalOpen = (application, chequeNumber) => {
-  setCurrentApplication(application);
-  setCurrentChequeNo(chequeNumber);
-  setChequeModalOpen(true);
-};
-
-const handleChequeModalClose = () => {
-  setChequeModalOpen(false);
-  setCurrentApplication(null);
-  setCurrentChequeNo('');
-};
-
-const handleChequeSubmit = async (newChequeNo) => {
-  try {
-    // Your API call here
-    console.log('Cheque number saved:', newChequeNo);
-    // Update the application data if needed
-  } catch (error) {
-    console.error('Error saving cheque number:', error);
-    throw error;
-  }
-};
-
-const handleOriginalDocumentsModalOpen = (application) => {
-  setCurrentOriginalDocumentsApplication(application);
-  setOriginalDocumentsModalOpen(true);
-};
-
-const handleOriginalDocumentsModalClose = () => {
-  setOriginalDocumentsModalOpen(false);
-  setCurrentOriginalDocumentsApplication(null);
-};
-
-const handleOriginalDocumentsSubmit = async (receivedDate) => {
-  try {
-    // Your API call here to save original documents received date
-    console.log('Original documents received date saved:', receivedDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentOriginalDocumentsApplication.id 
-          ? { ...app, originalDocuments: 'Yes', originalDocumentsDate: receivedDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving original documents received date:', error);
-    throw error;
-  }
-};
-
-
-const handleRefundPDCModalOpen = (application) => {
-  setCurrentRefundPDCApplication(application);
-  setRefundPDCModalOpen(true);
-};
-
-const handleRefundPDCModalClose = () => {
-  setRefundPDCModalOpen(false);
-  setCurrentRefundPDCApplication(null);
-};
-
-const handleRefundPDCSubmit = async (refundStatus) => {
-  try {
-    console.log('Refund PDC status saved:', refundStatus);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentRefundPDCApplication.id 
-          ? { ...app, refundPdc: refundStatus }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving refund PDC status:', error);
-    throw error;
-  }
-};
-
-// Add these handlers with your existing handlers
-const handleChangeStatusModalOpen = (application) => {
-  setCurrentChangeStatusApplication(application);
-  setChangeStatusModalOpen(true);
-};
-
-const handleChangeStatusModalClose = () => {
-  setChangeStatusModalOpen(false);
-  setCurrentChangeStatusApplication(null);
-};
-
-const handleChangeStatusSubmit = async (updateData) => {
-  try {
-    // Your API call here to save the status changes
-    console.log('Status changes saved:', updateData);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentChangeStatusApplication.id 
-          ? { 
-              ...app, 
-              ...(updateData.courierPickedDate && { courierPickedDate: updateData.courierPickedDate }),
-              ...(updateData.originalDocumentsReceived && { originalDocumentsReceived: updateData.originalDocumentsReceived })
-            }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving status changes:', error);
-    throw error;
-  }
-};
-// Add these handlers with your existing ones
-const handleDisburseEmandateModalOpen = (application) => {
-  setCurrentDisburseEmandateApplication(application);
-  setDisburseEmandateModalOpen(true);
-};
-
-const handleDisburseEmandateModalClose = () => {
-  setDisburseEmandateModalOpen(false);
-  setCurrentDisburseEmandateApplication(null);
-};
-
-const handleDisburseEmandateSubmit = async (selectedOption) => {
-  try {
-    // Your API call here to save disburse e-mandate option
-    console.log('Disburse e-mandate option saved:', selectedOption);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentDisburseEmandateApplication.id 
-          ? { ...app, receivedDisburse: selectedOption }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving disburse e-mandate option:', error);
-    throw error;
-  }
-};
-
-const handleCourierPickedModalOpen = (application) => {
-  setCurrentCourierPickedApplication(application);
-  setCourierPickedModalOpen(true);
-};
-
-const handleCourierPickedModalClose = () => {
-  setCourierPickedModalOpen(false);
-  setCurrentCourierPickedApplication(null);
-};
-
-const handleCourierPickedSubmit = async (pickedDate) => {
-  try {
-    // Your API call here to save courier picked date
-    console.log('Courier picked date saved:', pickedDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentCourierPickedApplication.id 
-          ? { ...app, courierPicked: 'Yes', courierPickedDate: pickedDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving courier picked date:', error);
-    throw error;
-  }
-};
-
-// Add courier modal handlers
-const handleCourierModalOpen = (application) => {
-  setCurrentCourierApplication(application);
-  setCourierModalOpen(true);
-};
-
-const handleCourierModalClose = () => {
-  setCourierModalOpen(false);
-  setCurrentCourierApplication(null);
-};
-
-const handleCourierSubmit = async (courierDate) => {
-  try {
-    // Your API call here to save courier date
-    console.log('Courier date saved:', courierDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentCourierApplication.id 
-          ? { ...app, sendToCourier: 'Yes', courierDate: courierDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving courier date:', error);
-    throw error;
-  }
-};
-
-const handleLoanEligibilityClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/loan-eligibility/${application.id}`);
-};
-
-const handleCheckClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/appraisal-report/${application.id}`);
-};
-
-const handleReplaceKYCClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/replace-kyc/${application.id}`);
-};
-
-const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
-
-  const handleCall = (applicant) => {
-  setSelectedApplicant(applicant);
-  setShowCallModal(true);
-};
-
-
-  // Advanced Search States
+  // Search and filter states
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
   
-  
-
   // Data states
-  const [applications, setApplications] = useState(mockApplicationsData);
-  const [totalCount, setTotalCount] = useState(mockApplicationsData.length);
+  const [applications, setApplications] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
@@ -299,7 +81,31 @@ const handleActionClick = (application) => {
     { value: 'approvedAmount', label: 'Approved Amount' },
   ];
 
-  // Simulate data fetching
+  // Build API parameters
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    // Add search parameters
+    if (searchField && searchTerm) {
+      params.search_by = searchField;
+      params.search_value = searchTerm;
+    }
+
+    // Add date filters
+    if (dateFilter.start) {
+      params.from_date = dateFilter.start;
+    }
+    if (dateFilter.end) {
+      params.to_date = dateFilter.end;
+    }
+
+    return params;
+  };
+
+  // Fetch applications
   const fetchApplications = async (isAutoRefresh = false) => {
     try {
       if (isAutoRefresh) {
@@ -309,28 +115,22 @@ const handleActionClick = (application) => {
       }
       setError(null);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const params = buildApiParams();
+      const response = await sanctionApplicationAPI.getSanctionApplications(params);
       
-      // Filter applications based on search and date filters
-      let filteredData = [...mockApplicationsData];
+      const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
-      // Apply search filter
-      if (searchField && searchTerm) {
-        filteredData = filteredData.filter(app => {
-          const fieldValue = app[searchField]?.toString().toLowerCase() || "";
-          return fieldValue.includes(searchTerm.toLowerCase());
-        });
+      if (actualResponse && actualResponse.success && actualResponse.data) {
+        const formattedApplications = actualResponse.data.map(formatSanctionApplicationForUI);
+        setApplications(formattedApplications);
+        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalPages(actualResponse.pagination?.total_pages || 1);
+      } else {
+        console.error("❌ Invalid API Response structure:", actualResponse);
+        setError("Failed to fetch applications - Invalid response");
       }
-      
-     
-      
-      setApplications(filteredData);
-      setTotalCount(filteredData.length);
-      setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-      
     } catch (err) {
-      console.error("Error fetching applications:", err);
+      console.error("❌ Error details:", err);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
@@ -341,7 +141,7 @@ const handleActionClick = (application) => {
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchApplications();
-  }, [searchField, searchTerm,]);
+  }, [currentPage, searchField, searchTerm, dateFilter]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -352,7 +152,7 @@ const handleActionClick = (application) => {
     }, 60000); // 1 minute
   
     return () => clearInterval(interval);
-  }, [searchField, searchTerm,]);
+  }, [currentPage, searchField, searchTerm, dateFilter]);
   
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -363,7 +163,257 @@ const handleActionClick = (application) => {
   
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+  }, [currentPage, searchField, searchTerm, dateFilter]);
+
+  // Modal handlers
+  const handleChequeModalOpen = (application, chequeNumber) => {
+    setCurrentApplication(application);
+    setCurrentChequeNo(chequeNumber);
+    setChequeModalOpen(true);
+  };
+
+  const handleChequeModalClose = () => {
+    setChequeModalOpen(false);
+    setCurrentApplication(null);
+    setCurrentChequeNo('');
+  };
+
+  const handleChequeSubmit = async (newChequeNo) => {
+    try {
+      await sanctionService.updateChequeNumber(currentApplication.id, newChequeNo);
+      // Refresh applications after update
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Cheque number updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving cheque number:', error);
+      throw error;
+    }
+  };
+
+  const handleOriginalDocumentsModalOpen = (application) => {
+    setCurrentOriginalDocumentsApplication(application);
+    setOriginalDocumentsModalOpen(true);
+  };
+
+  const handleOriginalDocumentsModalClose = () => {
+    setOriginalDocumentsModalOpen(false);
+    setCurrentOriginalDocumentsApplication(null);
+  };
+
+  const handleOriginalDocumentsSubmit = async (receivedDate) => {
+    try {
+      await sanctionService.updateOriginalDocuments(currentOriginalDocumentsApplication.id, {
+        original_documents: 1,
+        documents_received_date: receivedDate
+      });
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Original documents status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving original documents received date:', error);
+      throw error;
+    }
+  };
+
+  const handleRefundPDCModalOpen = (application) => {
+    setCurrentRefundPDCApplication(application);
+    setRefundPDCModalOpen(true);
+  };
+
+  const handleRefundPDCModalClose = () => {
+    setRefundPDCModalOpen(false);
+    setCurrentRefundPDCApplication(null);
+  };
+
+  const handleRefundPDCSubmit = async (refundStatus) => {
+    try {
+      // Implement refund PDC API call here
+      console.log('Refund PDC status saved:', refundStatus);
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Refund PDC status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving refund PDC status:', error);
+      throw error;
+    }
+  };
+
+  const handleChangeStatusModalOpen = (application) => {
+    setCurrentChangeStatusApplication(application);
+    setChangeStatusModalOpen(true);
+  };
+
+  const handleChangeStatusModalClose = () => {
+    setChangeStatusModalOpen(false);
+    setCurrentChangeStatusApplication(null);
+  };
+
+  const handleChangeStatusSubmit = async (updateData) => {
+    try {
+      await sanctionService.updateStatus(currentChangeStatusApplication.id, updateData);
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving status changes:', error);
+      throw error;
+    }
+  };
+
+  const handleDisburseEmandateModalOpen = (application) => {
+    setCurrentDisburseEmandateApplication(application);
+    setDisburseEmandateModalOpen(true);
+  };
+
+  const handleDisburseEmandateModalClose = () => {
+    setDisburseEmandateModalOpen(false);
+    setCurrentDisburseEmandateApplication(null);
+  };
+
+  const handleDisburseEmandateSubmit = async (selectedOption) => {
+    try {
+      await sanctionService.updateEmandateStatus(currentDisburseEmandateApplication.id, {
+        emandateverification: selectedOption
+      });
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'E-mandate status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving disburse e-mandate option:', error);
+      throw error;
+    }
+  };
+
+  const handleCourierPickedModalOpen = (application) => {
+    setCurrentCourierPickedApplication(application);
+    setCourierPickedModalOpen(true);
+  };
+
+  const handleCourierPickedModalClose = () => {
+    setCourierPickedModalOpen(false);
+    setCurrentCourierPickedApplication(null);
+  };
+
+  const handleCourierPickedSubmit = async (pickedDate) => {
+    try {
+      await sanctionService.updateCourierStatus(currentCourierPickedApplication.id, {
+        courier_picked: 1,
+        courier_picked_date: pickedDate
+      });
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Courier picked status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving courier picked date:', error);
+      throw error;
+    }
+  };
+
+  const handleCourierModalOpen = (application) => {
+    setCurrentCourierApplication(application);
+    setCourierModalOpen(true);
+  };
+
+  const handleCourierModalClose = () => {
+    setCourierModalOpen(false);
+    setCurrentCourierApplication(null);
+  };
+
+  const handleCourierSubmit = async (courierDate) => {
+    try {
+      await sanctionService.updateCourierStatus(currentCourierApplication.id, {
+        send_courier: 1,
+        courier_date: courierDate
+      });
+      fetchApplications();
+      Swal.fire({
+        title: 'Success!',
+        text: 'Courier status updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+      });
+    } catch (error) {
+      console.error('Error saving courier date:', error);
+      throw error;
+    }
+  };
+
+  // Navigation handlers
+  const handleLoanEligibilityClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/loan-eligibility/${application.id}`);
+  };
+
+  const handleCheckClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/appraisal-report/${application.id}`);
+  };
+
+  const handleReplaceKYCClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/replace-kyc/${application.id}`);
+  };
+
+  const handleActionClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/application-form/${application.id}`);
+  };
+
+  const handleCall = (applicant) => {
+    setSelectedApplicant(applicant);
+    setShowCallModal(true);
+  };
+
+  // Handle file view
+  const handleFileView = async (fileName, documentCategory) => {
+    if (!fileName) {
+      alert('No file available');
+      return;
+    }
+    
+    setFileLoading(true);
+    setLoadingFileName(fileName);
+    
+    try {
+      const url = await fileService.viewFile(fileName, documentCategory);
+      
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site.');
+      }
+    } catch (error) {
+      console.error("Failed to load file:", error);
+      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+    } finally {
+      setFileLoading(false);
+      setLoadingFileName('');
+    }
+  };
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -372,7 +422,108 @@ const handleActionClick = (application) => {
     setCurrentPage(1);
   };
 
-  
+  // Handle Date Filter Change
+  const handleDateFilterChange = (filterData) => {
+    setDateFilter(filterData.dateRange);
+    setCurrentPage(1);
+  };
+
+  // Export to Excel
+  const handleExportToExcel = async () => {
+    const result = await Swal.fire({
+      title: 'Export Applications?',
+      text: 'This will export all sanction applications with current filters.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      setExporting(true);
+      
+      // Build export params without pagination
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      
+      const response = await sanctionApplicationAPI.exportSanctionApplications(exportParams);
+      
+      if (response.success) {
+        const headers = [
+          'Sr. No.', 'Loan No.', 'CRN No.', 'Account ID', 'Name', 'Phone', 'Email', 
+          'Current Address', 'Current State', 'Current City', 'Permanent Address', 'State', 'City',
+          'Applied Amount', 'Approved Amount', 'Admin Fee', 'ROI (%)', 'Tenure (Days)', 'Loan Term',
+          'Loan Status', 'Approval Note', 'Enquiry Type', 'Cheque No', 'Send To Courier', 
+          'Courier Picked', 'Original Documents', 'E-mandate Status'
+        ];
+
+        const dataRows = response.data.map((app, index) => [
+          index + 1,
+          app.loanNo,
+          app.crnNo,
+          app.accountId,
+          app.name,
+          app.phoneNo,
+          app.email || 'N/A',
+          app.currentAddress,
+          app.currentState,
+          app.currentCity,
+          app.permanentAddress,
+          app.state,
+          app.city,
+          app.applied_amount,
+          app.approved_amount,
+          app.admin_fee || '0.00',
+          `${(parseFloat(app.roi) * 100).toFixed(2)}%`,
+          app.tenure,
+          app.loan_term === 4 ? "One Time Payment" : "Daily",
+          app.loanStatus,
+          app.approval_note,
+          app.enquiry_type || 'N/A',
+          app.cheque_no || 'N/A',
+          app.send_courier === 1 ? "Yes" : "No",
+          app.courier_picked === 1 ? "Yes" : "No",
+          app.original_documents === 1 ? "Yes" : "No",
+          app.emandateverification || 'No'
+        ]);
+
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, `sanction_applications_${new Date().toISOString().split('T')[0]}`);
+        
+        await Swal.fire({
+          title: 'Export Successful!',
+          text: 'Applications have been exported to Excel successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      } else {
+        throw new Error("Failed to export data");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      await Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -380,26 +531,28 @@ const handleActionClick = (application) => {
     setSearchTerm("");
     setStatusFilter("all");
     setLoanStatusFilter("all");
+    setDateFilter({ start: "", end: "" });
     setCurrentPage(1);
   };
 
   // Client-side filtering
   const filteredApplications = applications.filter(app => {
-    const matchesStatus = statusFilter === "all" || 
-      app.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesLoanStatus = loanStatusFilter === "all" || 
-      app.loanStatus.toLowerCase() === loanStatusFilter.toLowerCase();
+    const appStatus = (app.status || '').toLowerCase().trim();
+    const appLoanStatus = (app.loanStatus || '').toLowerCase().trim();
+    const filterStatus = statusFilter.toLowerCase().trim();
+    const filterLoanStatus = loanStatusFilter.toLowerCase().trim();
+    
+    const matchesStatus = statusFilter === "all" || appStatus === filterStatus;
+    const matchesLoanStatus = loanStatusFilter === "all" || appLoanStatus === filterLoanStatus;
+    
     return matchesStatus && matchesLoanStatus;
   });
 
   // Pagination
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedApplications = filteredApplications.slice(startIndex, endIndex).map((app, index) => ({
+  const paginatedApplications = filteredApplications.map((app, index) => ({
     ...app,
-    srNo: startIndex + index + 1
+    srNo: (currentPage - 1) * itemsPerPage + index + 1
   }));
-
 
   if (loading && applications.length === 0) {
     return (
@@ -448,7 +601,28 @@ const handleActionClick = (application) => {
               </h1>
             </div>
             
-            
+            <button
+              onClick={handleExportToExcel}
+              disabled={exporting || applications.length === 0}
+              className={`flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+                exporting || applications.length === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:shadow-lg"
+              } ${
+                isDark
+                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              }`}
+            >
+              {exporting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {exporting ? "Exporting..." : "Export"}
+              </span>
+            </button>
           </div>
 
           {/* Error Message */}
@@ -464,7 +638,12 @@ const handleActionClick = (application) => {
             </div>
           )}
 
-          
+          {/* Date Filter */}
+          <DateRangeFilter 
+            isDark={isDark}
+            onFilterChange={handleDateFilterChange}
+            showSourceFilter={false}
+          />
 
           {/* Search and Status Filters */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -475,12 +654,10 @@ const handleActionClick = (application) => {
                 isDark={isDark}
               />
             </div>
-
-           
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm   || statusFilter !== "all" || loanStatusFilter !== "all") && (
+          {(searchTerm || dateFilter.start || dateFilter.end || statusFilter !== "all" || loanStatusFilter !== "all") && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
@@ -498,7 +675,20 @@ const handleActionClick = (application) => {
                       {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
                     </span>
                   )}
-                  
+                  {dateFilter.start && (
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      From: {dateFilter.start}
+                    </span>
+                  )}
+                  {dateFilter.end && (
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      To: {dateFilter.end}
+                    </span>
+                  )}
                   {statusFilter !== "all" && (
                     <span className={`px-2 py-1 rounded text-xs ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
@@ -538,112 +728,120 @@ const handleActionClick = (application) => {
 
         {/* Table */}
         <SanctionTable
-  paginatedApplications={paginatedApplications}
-  filteredApplications={filteredApplications}
-  currentPage={currentPage}
-  totalPages={Math.ceil(filteredApplications.length / itemsPerPage)}
-  itemsPerPage={itemsPerPage}
-  isDark={isDark}
-  onPageChange={setCurrentPage}
-  onActionClick={handleActionClick}
-  loading={loading}
-  onChequeModalOpen={handleChequeModalOpen}
-  onCourierModalOpen={handleCourierModalOpen}
-  onCourierPickedModalOpen={handleCourierPickedModalOpen}
-  onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}  
-  onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
-  onChangeStatusClick={handleChangeStatusModalOpen} 
-  onRefundPDCClick={handleRefundPDCModalOpen}
-  onLoanEligibilityClick={handleLoanEligibilityClick}  
-  onCheckClick={handleCheckClick}
-  onReplaceKYCClick={handleReplaceKYCClick}
-            onCall={handleCall}   
-
-
-/>
+          paginatedApplications={paginatedApplications}
+          filteredApplications={filteredApplications}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          isDark={isDark}
+          onPageChange={setCurrentPage}
+          onActionClick={handleActionClick}
+          loading={loading}
+          onChequeModalOpen={handleChequeModalOpen}
+          onCourierModalOpen={handleCourierModalOpen}
+          onCourierPickedModalOpen={handleCourierPickedModalOpen}
+          onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}
+          onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
+          onChangeStatusClick={handleChangeStatusModalOpen}
+          onRefundPDCClick={handleRefundPDCModalOpen}
+          onLoanEligibilityClick={handleLoanEligibilityClick}
+          onCheckClick={handleCheckClick}
+          onReplaceKYCClick={handleReplaceKYCClick}
+          onCall={handleCall}
+          onFileView={handleFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
+        />
       </div>
 
-      <CallDetailsModal isOpen={showCallModal} onClose={() => {
+      {/* Modals */}
+      <CallDetailsModal 
+        isOpen={showCallModal} 
+        onClose={() => {
           setShowCallModal(false);
           setSelectedApplicant(null);
-        }} data={selectedApplicant} isDark={isDark}  />
+        }} 
+        data={selectedApplicant} 
+        isDark={isDark}  
+      />
 
       {currentRefundPDCApplication && (
-  <RefundPDCModal
-    isOpen={refundPDCModalOpen}
-    onClose={handleRefundPDCModalClose}
-    onSubmit={handleRefundPDCSubmit}
-    isDark={isDark}
-    customerName={currentRefundPDCApplication.name}
-    loanNo={currentRefundPDCApplication.loanNo}
-  />
-)}
+        <RefundPDCModal
+          isOpen={refundPDCModalOpen}
+          onClose={handleRefundPDCModalClose}
+          onSubmit={handleRefundPDCSubmit}
+          isDark={isDark}
+          customerName={currentRefundPDCApplication.name}
+          loanNo={currentRefundPDCApplication.loanNo}
+        />
+      )}
+
       {currentApplication && (
-  <ChequeModal
-    isOpen={chequeModalOpen}
-    onClose={handleChequeModalClose}
-    onSubmit={handleChequeSubmit}
-    isDark={isDark}
-    initialChequeNo={currentChequeNo}
-    customerName={currentApplication.name}
-    isEdit={!!currentChequeNo}
-  />
-)}
+        <ChequeModal
+          isOpen={chequeModalOpen}
+          onClose={handleChequeModalClose}
+          onSubmit={handleChequeSubmit}
+          isDark={isDark}
+          initialChequeNo={currentChequeNo}
+          customerName={currentApplication.name}
+          isEdit={!!currentChequeNo}
+        />
+      )}
 
-{currentCourierApplication && (
-  <SendToCourierModal
-    isOpen={courierModalOpen}
-    onClose={handleCourierModalClose}
-    onSubmit={handleCourierSubmit}
-    isDark={isDark}
-    customerName={currentCourierApplication.name}
-    loanNo={currentCourierApplication.loanNo}
-  />
-)}
+      {currentCourierApplication && (
+        <SendToCourierModal
+          isOpen={courierModalOpen}
+          onClose={handleCourierModalClose}
+          onSubmit={handleCourierSubmit}
+          isDark={isDark}
+          customerName={currentCourierApplication.name}
+          loanNo={currentCourierApplication.loanNo}
+        />
+      )}
 
-{currentCourierPickedApplication && (
-  <CourierPickedModal
-    isOpen={courierPickedModalOpen}
-    onClose={handleCourierPickedModalClose}
-    onSubmit={handleCourierPickedSubmit}
-    isDark={isDark}
-    customerName={currentCourierPickedApplication.name}
-    loanNo={currentCourierPickedApplication.loanNo}
-  />
-)}
-{currentOriginalDocumentsApplication && (
-  <OriginalDocumentsModal
-    isOpen={originalDocumentsModalOpen}
-    onClose={handleOriginalDocumentsModalClose}
-    onSubmit={handleOriginalDocumentsSubmit}
-    isDark={isDark}
-    customerName={currentOriginalDocumentsApplication.name}
-    loanNo={currentOriginalDocumentsApplication.loanNo}
-  />
-)}
-{currentDisburseEmandateApplication && (
-  <DisburseEmandateModal
-    isOpen={disburseEmandateModalOpen}
-    onClose={handleDisburseEmandateModalClose}
-    onSubmit={handleDisburseEmandateSubmit}
-    isDark={isDark}
-    customerName={currentDisburseEmandateApplication.name}
-    loanNo={currentDisburseEmandateApplication.loanNo}
-  />
-)}
+      {currentCourierPickedApplication && (
+        <CourierPickedModal
+          isOpen={courierPickedModalOpen}
+          onClose={handleCourierPickedModalClose}
+          onSubmit={handleCourierPickedSubmit}
+          isDark={isDark}
+          customerName={currentCourierPickedApplication.name}
+          loanNo={currentCourierPickedApplication.loanNo}
+        />
+      )}
 
-{currentChangeStatusApplication && (
-  <ChangeStatusModal
-    isOpen={changeStatusModalOpen}
-    onClose={handleChangeStatusModalClose}
-    onSubmit={handleChangeStatusSubmit}
-    isDark={isDark}
-    customerName={currentChangeStatusApplication.name}
-    loanNo={currentChangeStatusApplication.loanNo}
-  />
-)}
+      {currentOriginalDocumentsApplication && (
+        <OriginalDocumentsModal
+          isOpen={originalDocumentsModalOpen}
+          onClose={handleOriginalDocumentsModalClose}
+          onSubmit={handleOriginalDocumentsSubmit}
+          isDark={isDark}
+          customerName={currentOriginalDocumentsApplication.name}
+          loanNo={currentOriginalDocumentsApplication.loanNo}
+        />
+      )}
 
+      {currentDisburseEmandateApplication && (
+        <DisburseEmandateModal
+          isOpen={disburseEmandateModalOpen}
+          onClose={handleDisburseEmandateModalClose}
+          onSubmit={handleDisburseEmandateSubmit}
+          isDark={isDark}
+          customerName={currentDisburseEmandateApplication.name}
+          loanNo={currentDisburseEmandateApplication.loanNo}
+        />
+      )}
 
+      {currentChangeStatusApplication && (
+        <ChangeStatusModal
+          isOpen={changeStatusModalOpen}
+          onClose={handleChangeStatusModalClose}
+          onSubmit={handleChangeStatusSubmit}
+          isDark={isDark}
+          customerName={currentChangeStatusApplication.name}
+          loanNo={currentChangeStatusApplication.loanNo}
+        />
+      )}
     </div>
   );
 };
