@@ -34,61 +34,74 @@ function ServiceDetails() {
     const { user } = useAuth();
 
   const handleServiceDetails = async (values) => {
-    try {
-      setServiceData({ ...values });
-      setLoader(true);    
-      setErrorMessage("");
+  try {
+    setServiceData({ ...values });
+    setLoader(true);    
+    setErrorMessage("");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/form`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          step: 4, 
-          // userid: phoneData.userid,
-          // provider: 1,
-          organizationname: values.organizationName,
-          organisationaddress: values.organizationAddress,
-          officephone: values.officePhone,
-          hrname: values.hrName,
-          hrphone: parseInt(values.hrPhone, 10),
-          website: values.website, 
-          hremail: values.hrEmail,
-          designation: values.designation,
-          worksince_mm: values.workingSince.month,
-          worksince_yy: values.workingSince.year,
-          grossalary: parseInt(values.monthlySalary, 10),
-          netsalary: parseInt(values.netMonthlySalary, 10),
-          nethouseholdincome: parseInt(values.familyIncome, 10),
-          officialemail: values.officialEmail,
-          existingemi: parseInt(values.existingEmi, 10)
-        }),
-      });
+    const payload = { 
+      step: 4, 
+      organizationname: values.organizationName,
+      organisationaddress: values.organizationAddress,
+      officephone: values.officePhone,
+      hrname: values.hrName,
+      hrphone: parseInt(values.hrPhone, 10) || 0, 
+      website: values.website, 
+      hremail: values.hrEmail,
+      designation: values.designation,
+      worksince_mm: values.workingSince.month,
+      worksince_yy: values.workingSince.year,
+      grossalary: parseInt(values.monthlySalary, 10) || 0, 
+      netsalary: parseInt(values.netMonthlySalary, 10) || 0, 
+      nethouseholdincome: parseInt(values.familyIncome, 10) || 0, 
+      officialemail: values.officialEmail,
+      existingemi: parseInt(values.existingEmi, 10) || 0
+    };
 
-      const result = await response.json();
-      console.log(result);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/form`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (response.ok) {
-        setLoader(false);
-        setStep(step + 1);
-      } else {
-        setErrorMessage(result?.message);
-        setLoader(false);
-      }
-    } catch (error) {
-      setErrorMessage("Error submitting data: " + error.message);
+    const result = await response.json();
+    console.log(result);
+
+    if (response.ok) {
+      setLoader(false);
+      setStep(step + 1);
+    } else {
+      setErrorMessage(result?.message);
       setLoader(false);
     }
-  };
+  } catch (error) {
+    setErrorMessage("Error submitting data: " + error.message);
+    setLoader(false);
+  }
+};
 
-  const getInitialValues = () => ({
+ const getInitialValues = () => ({
   ...serviceData,
   organizationName: serviceData.organizationName || user?.organisation_name || '',
   netMonthlySalary: serviceData.netMonthlySalary || user?.net_monthly_salary || '',
-  // ... other existing fields
+  // Add these missing fields with proper fallbacks
+  monthlySalary: serviceData.monthlySalary || '',
+  existingEmi: serviceData.existingEmi || '',
+  familyIncome: serviceData.familyIncome || '',
+  // Also ensure other fields from your form have proper fallbacks
+  organizationAddress: serviceData.organizationAddress || '',
+  officePhone: serviceData.officePhone || '',
+  hrName: serviceData.hrName || '',
+  hrPhone: serviceData.hrPhone || '',
+  website: serviceData.website || '',
+  hrEmail: serviceData.hrEmail || '',
+  designation: serviceData.designation || '',
+  workingSince: serviceData.workingSince || { month: '', year: '' },
+  officialEmail: serviceData.officialEmail || ''
 });
 
   return (
