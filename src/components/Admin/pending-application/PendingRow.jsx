@@ -50,6 +50,18 @@ const PendingRow = ({
     onCall(application);
   };
 
+  // Create application object with proper props for buttons (IMPORTANT FIX)
+  const applicationForButtons = {
+    ...application,
+    // Ensure all required properties exist for button components
+    showActionButton: application.showActionButton !== false,
+    showAppraisalButton: application.showAppraisalButton !== false,
+    showEligibilityButton: application.showEligibilityButton !== false,
+    isFinalStage: application.isFinalStage || false,
+    finalReportStatus: application.finalReportStatus || null,
+    hasAppraisalReport: application.hasAppraisalReport || false
+  };
+
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
@@ -91,24 +103,23 @@ const PendingRow = ({
       </td>
 
       {/* Send Mail */}
-      
-<td className={cellStyle}>
-  <button
-    onClick={() => onSendMail(application)}
-    disabled={fileLoading}
-    className={`text-sm px-3 py-2 font-medium cursor-pointer rounded-md border transition-all duration-200 hover:scale-105 ${
-      fileLoading && loadingFileName === `mail_${application.id}`
-        ? "opacity-50 cursor-not-allowed"
-        : ""
-    } ${
-      isDark
-        ? "bg-cyan-900/50 border-cyan-700 text-cyan-300 hover:bg-cyan-800"
-        : "bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-200"
-    }`}
-  >
-    {fileLoading && loadingFileName === `mail_${application.id}` ? "Sending..." : "Send Mail"}
-  </button>
-</td>
+      <td className={cellStyle}>
+        <button
+          onClick={() => onSendMail(application)}
+          disabled={fileLoading}
+          className={`text-sm px-3 py-2 font-medium cursor-pointer rounded-md border transition-all duration-200 hover:scale-105 ${
+            fileLoading && loadingFileName === `mail_${application.id}`
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          } ${
+            isDark
+              ? "bg-cyan-900/50 border-cyan-700 text-cyan-300 hover:bg-cyan-800"
+              : "bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-200"
+          }`}
+        >
+          {fileLoading && loadingFileName === `mail_${application.id}` ? "Sending..." : "Send Mail"}
+        </button>
+      </td>
 
       {/* CRN No */}
       <td className={cellStyle}>
@@ -339,44 +350,33 @@ const PendingRow = ({
         </span>
       </td>
 
-      {/* Action */}
-<td className={cellStyle}>
-  <ActionButton
-    application={application}
-    isDark={isDark}
-    onActionClick={onActionClick}
-  />
-</td>
+      {/* Action - FIXED PROP NAMES */}
+      <td className={cellStyle}>
+        <ActionButton
+          enquiry={applicationForButtons}      
+          isDark={isDark}
+          onVerifyClick={onActionClick}
+        />
+      </td>
 
-{/* Appraisal Report */}
-<td className={cellStyle}>
-  <AppraisalReportButton
-    application={application}
-    isDark={isDark}
-    onFileView={onFileView}
-    onCheckClick={onCheckClick}
-  />
-</td>
+      {/* Appraisal Report - FIXED PROP NAMES */}
+      <td className={cellStyle}>
+        <AppraisalReportButton
+          enquiry={applicationForButtons}
+          isDark={isDark}
+          onFileView={onFileView}
+          onCheckClick={onCheckClick}
+        />
+      </td>
 
-{/* Eligibility */}
-<td className={cellStyle}>
-  <EligibilityButton
-    application={application}
-    isDark={isDark}
-    onLoanEligibilityClick={onLoanEligibilityClick}
-  />
-</td>
-
-      {/* Link - Last column, no border-r */}
-      {/* <td className={cellBase}>
-        <button
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
-            isDark ? "underline text-blue-300" : "underline text-blue-700"
-          }`}
-        >
-          Link With Last Loan
-        </button>
-      </td> */}
+      {/* Eligibility - FIXED PROP NAMES */}
+      <td className={cellStyle}>
+        <EligibilityButton
+          enquiry={applicationForButtons}      
+          isDark={isDark}
+          onLoanEligibilityClick={onLoanEligibilityClick}
+        />
+      </td>
     </tr>
   );
 };

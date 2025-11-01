@@ -22,10 +22,9 @@ export const pendingApplicationAPI = {
         }
     },
 
-    // Send pending email - UPDATED ENDPOINT
+    // Send pending email
     sendPendingEmail: async (applicationId) => {
         try {
-            // Try different possible endpoints
             const endpoints = [
                 `/crm/email/pending/email/${applicationId}`,
                 `/crm/application/send-email/${applicationId}`,
@@ -47,9 +46,7 @@ export const pendingApplicationAPI = {
                 }
             }
 
-            // If all endpoints failed
             throw lastError;
-
         } catch (error) {
             console.error("📧 Email sending error:", error);
             throw error;
@@ -57,13 +54,35 @@ export const pendingApplicationAPI = {
     }
 };
 
-// Format application data for UI
+// Use the same status mapping as completed applications
+export const APPLICATION_STATUS = {
+  PENDING: { id: 1, name: "Pending" },
+  COMPLETED: { id: 2, name: "Completed" },
+  REJECTED: { id: 3, name: "Rejected" },
+  FOLLOW_UP: { id: 4, name: "Follow Up" },
+  PROCESSING: { id: 5, name: "Processing" },
+  SANCTION: { id: 6, name: "Sanction" },
+  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
+  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
+  DISBURSED: { id: 9, name: "Disbursed" },
+  TRANSACTION: { id: 10, name: "Transaction" },
+  COLLECTION: { id: 11, name: "Collection" },
+  RE_COLLECTION: { id: 12, name: "Re-Collection" },
+  CLOSED: { id: 13, name: "Closed" },
+  DEFAULTER: { id: 14, name: "Defaulter" },
+  CANCELLED: { id: 15, name: "Cancelled" },
+  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
+  RETURN: { id: 17, name: "Return" },
+  RENEWAL: { id: 18, name: "Renewal" },
+  EMI: { id: 19, name: "EMI" }
+};
+
 export const formatApplicationForUI = (application) => {
-    
-    // Create permanent address from available fields
     const permanentAddress = application.address || 
                            `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
 
+    const loanStatus = getStatusName(application.loan_status);
+    
     return {
         // Basic identifiers
         id: application.application_id,
@@ -127,10 +146,10 @@ export const formatApplicationForUI = (application) => {
         socialScoreFileName: application.social_score_report,
         cibilScoreFileName: application.cibil_score_report,
 
-        // Status and approval information
+        // Status and approval information - FIXED with consistent mapping
         approvalNote: application.approval_note,
-        status: getLoanStatusText(application.loan_status),
-        loanStatus: getLoanStatusText(application.loan_status),
+        status: loanStatus,
+        loanStatus: loanStatus,
 
         // Application stage information
         isVerified: application.verify === 1,
@@ -144,6 +163,11 @@ export const formatApplicationForUI = (application) => {
         finalReportStatus: application.totl_final_report,
         isRecommended: application.totl_final_report === "Recommended",
 
+        // Button visibility flags - IMPORTANT: Set these to true for pending applications
+        showActionButton: true,
+        showAppraisalButton: true,
+        showEligibilityButton: true,
+
         // Mail information
         mailCounter: application.mail_counter,
         mailerDate: application.mailer_date,
@@ -154,44 +178,21 @@ export const formatApplicationForUI = (application) => {
     };
 };
 
-export const emailAPI = {
-    // Send pending email
-    sendPendingEmail: async (applicationId) => {
-        try {
-            const response = await api.get(`/crm/email/pending/email/${applicationId}`);
-            return response;
-        } catch (error) {
-            console.error("Email sending error:", error);
-            throw error;
-        }
-    }
+// Get status name from ID using the shared APPLICATION_STATUS
+const getStatusName = (statusId) => {
+    const status = Object.values(APPLICATION_STATUS).find(s => s.id === Number(statusId));
+    return status ? status.name : "Pending"; 
 };
 
-// Get loan status text
-const getLoanStatusText = (status) => {
-    switch (Number(status)) {
-        case 0: return "Pending";
-        case 1: return "In Progress";
-        case 2: return "Approved";
-        case 3: return "Rejected";
-        case 4: return "Disbursed";
-        default: return "Pending";
-    }
+// Get status ID from name
+export const getStatusId = (statusName) => {
+    const status = Object.values(APPLICATION_STATUS).find(s => 
+        s.name.toLowerCase() === statusName.toLowerCase()
+    );
+    return status ? status.id : 1;
 };
 
-// Get status text (for backward compatibility)
-const getStatusText = (status) => {
-    return getLoanStatusText(status);
-};
-
-// Get status number from text
-export const getStatusNumber = (status) => {
-    switch (String(status).toLowerCase()) {
-        case "pending": return 0;
-        case "in progress": return 1;
-        case "approved": return 2;
-        case "rejected": return 3;
-        case "disbursed": return 4;
-        default: return 0;
-    }
+// For backward compatibility
+export const getLoanStatusText = (status) => {
+    return getStatusName(status);
 };
