@@ -122,7 +122,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
         )}
         
         {totalPages > 0 && (
-          <div className="mt-8">
+          <div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

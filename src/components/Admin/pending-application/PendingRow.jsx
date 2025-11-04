@@ -103,23 +103,28 @@ const PendingRow = ({
       </td>
 
       {/* Send Mail */}
-      <td className={cellStyle}>
-        <button
-          onClick={() => onSendMail(application)}
-          disabled={fileLoading}
-          className={`text-sm px-3 py-2 font-medium cursor-pointer rounded-md border transition-all duration-200 hover:scale-105 ${
-            fileLoading && loadingFileName === `mail_${application.id}`
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          } ${
-            isDark
-              ? "bg-cyan-900/50 border-cyan-700 text-cyan-300 hover:bg-cyan-800"
-              : "bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-200"
-          }`}
-        >
-          {fileLoading && loadingFileName === `mail_${application.id}` ? "Sending..." : "Send Mail"}
-        </button>
-      </td>
+<td className={cellStyle}>
+  <button
+    onClick={() => onSendMail(application)}
+    disabled={fileLoading && loadingFileName === `mail_${application.id}`}
+    className={`flex items-center space-x-2 text-sm px-3 py-2 font-medium cursor-pointer rounded-md border transition-all duration-200 hover:scale-105 ${
+      fileLoading && loadingFileName === `mail_${application.id}`
+        ? "opacity-50 cursor-not-allowed"
+        : ""
+    } ${
+      isDark
+        ? "bg-cyan-900/50 border-cyan-700 text-cyan-300 hover:bg-cyan-800"
+        : "bg-cyan-100 border-cyan-300 text-cyan-700 hover:bg-cyan-200"
+    }`}
+  >
+    <span>
+      {fileLoading && loadingFileName === `mail_${application.id}` 
+        ? "Sending..." 
+        : `Send Mail${application.mailCounter ? ` (${application.mailCounter})` : ''}`
+      }
+    </span>
+  </button>
+</td>
 
       {/* CRN No */}
       <td className={cellStyle}>

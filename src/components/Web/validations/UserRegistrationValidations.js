@@ -466,6 +466,7 @@ const ReferencesSchema = Yup.object().shape({
 
         phone: Yup.string()
           .matches(/^\d{10}$/, "Must be exactly 10 digits")
+          .matches(/^[6-9]\d{9}$/, 'Please enter a valid phone number.')
           .required("Reference phone number is required"),
 
         email: Yup.string()

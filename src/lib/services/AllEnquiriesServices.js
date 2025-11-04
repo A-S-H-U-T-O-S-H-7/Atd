@@ -1,5 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
+import {  getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const enquiryAPI = {
     getAllEnquiries: (params = {}) => {
@@ -16,6 +17,34 @@ export const enquiryAPI = {
 
     updateApplication: (id, data) => {
         return api.put(`/crm/application/update/${id}`, data);
+    },
+
+    // ADD THESE NEW API METHODS FOR CONSISTENCY
+    updateApplicationStatus: async (applicationId, statusData) => {
+        try {
+            const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    blacklistApplication: async (applicationId) => {
+        try {
+            const response = await api.put(`/crm/application/black-list/${applicationId}`);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    activateAccount: async (applicationId) => {
+        try {
+            const response = await api.put(`/crm/application/activate/${applicationId}`);
+            return response;
+        } catch (error) {
+            throw error;
+        }
     }
 }; 
 
@@ -44,7 +73,7 @@ export const locationAPI = {
 };
 
 // Get appraisal PDF
-   export const AppraisalPDF = {
+export const AppraisalPDF = {
     getAppraisalPDF: (applicationId) => {
         return api.get(`/crm/appraisal/pdf/${applicationId}`, {
             responseType: 'blob' 
@@ -52,7 +81,7 @@ export const locationAPI = {
     },
 };
 
-
+// USE GLOBAL STATUS CONSTANTS INSTEAD OF LOCAL ONES
 export const formatEnquiryForUI = (enquiry) => {
     return {
         // Basic identifiers
@@ -111,7 +140,7 @@ export const formatEnquiryForUI = (enquiry) => {
         hasSocialScoreReport: !!enquiry.social_score_report,
         hasCibilScoreReport: !!enquiry.cibil_score_report,
 
-        //  Use the same property names that components expect
+        // Use the same property names that components expect
         selfie: enquiry.selfie, 
         pan_proof: enquiry.pan_proof, 
         address_proof: enquiry.address_proof, 
@@ -124,10 +153,10 @@ export const formatEnquiryForUI = (enquiry) => {
         social_score_report: enquiry.social_score_report, 
         cibil_score_report: enquiry.cibil_score_report, 
 
-        // Status and approval information
+        // Status and approval information - USE GLOBAL STATUS
         approvalNote: enquiry.approval_note,
-        status: getEnquiryStatusText(enquiry.loan_status),
-        loanStatus: enquiry.loan_status,
+        status: getStatusName(enquiry.loan_status), // Using imported function
+        loanStatus: getStatusName(enquiry.loan_status), // Using imported function
 
         // Application stage information
         isVerified: enquiry.verify === 1,
@@ -147,24 +176,45 @@ export const formatEnquiryForUI = (enquiry) => {
 
         // Timestamps
         createdAt: enquiry.created_at,
-        updatedAt: enquiry.updated_at
+        updatedAt: enquiry.updated_at,
+
+        // Add these for consistency with completed applications
+        accountActivation: enquiry.accountActivation === 1,
+        isBlacklisted: enquiry.blacklist === 1,
     };
 };
 
-const getEnquiryStatusText = (status) => {
-    switch (Number(status)) {
-        case 1: return "Pending";
-        case 2: return "Approved";
-        case 3: return "Rejected";
-        default: return "Pending";
-    }
-};
 
-export const getEnquiryStatusNumber = (status) => {
-    switch (String(status).toLowerCase()) {
-        case "pending": return 1;
-        case "approved": return 2;
-        case "rejected": return 3;
-        default: return 1;
+// ADD STATUS SERVICE FOR CONSISTENCY (Same as CompletedApplicationServices)
+export const statusService = {
+    updateStatus: async (applicationId, statusName, remark = "") => {
+        try {
+            const statusData = {
+                status: getStatusId(statusName), // Using imported function
+                remark: remark
+            };
+            const response = await enquiryAPI.updateApplicationStatus(applicationId, statusData);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    blacklist: async (applicationId) => {
+        try {
+            const response = await enquiryAPI.blacklistApplication(applicationId);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    activateAccount: async (applicationId) => {
+        try {
+            const response = await enquiryAPI.activateAccount(applicationId);
+            return response;
+        } catch (error) {
+            throw error;
+        }
     }
 };

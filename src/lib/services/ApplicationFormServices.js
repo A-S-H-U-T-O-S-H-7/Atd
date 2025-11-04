@@ -47,6 +47,7 @@ export const formatApplicationForUI = (applicationData) => {
     currentPinCode: data.current_pincode || '',
     currentAddressCode: data.current_address_code || '',
     currentStateCode: data.current_state_code || '',
+    currentAddressType: data.current_address_type || '', 
     
     // Permanent Address
     permanentHouseNo: data.house_no || '',
@@ -56,6 +57,8 @@ export const formatApplicationForUI = (applicationData) => {
     permanentPinCode: data.pincode || '',
     permanentAddressCode: data.address_code || '',
     permanentStateCode: data.state_code || '',
+    permanentAddressType: data.address_type || '',
+
     
     // Loan Details
     amountApproved: data.approved_amount || '',

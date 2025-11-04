@@ -1,4 +1,3 @@
-// components/Web/profile/steps/StepCompleteProfile.jsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,7 +13,7 @@ import ReviewSection from './ReviewSection';
 import AppDownloadSection from './AppDownloadSection';
 import ProtectedRoute from './ProtectRoute';
 import UserFooter from './UserFooter';
-import VerificationComponent from './VerificationComponent';
+import VerificationComponent from './verificationComponents/VerificationComponent';
 import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
 import CreditScoreSection from './CreditScore';
@@ -30,18 +29,51 @@ export default function StepCompleteProfile({
   showProfileLoading,
   setShowProfileLoading 
 }) {
-      const [currentStatus, setCurrentStatus] = useState('applied');
+  // Loan status mapping
+  const LOAN_STATUS = {
+    APPLIED: 2,
+    REJECTED: 3,
+    SANCTIONED: 6,
+    DISBURSED: 9,
+    CLOSED: 13,
+    IN_PROCESS: 5
+  };
 
-      const statuses = [
-    { value: 'applied', label: 'Applied Successfully' },
-    { value: 'inprogress', label: 'In Progress' },
-    { value: 'sanctioned_approved', label: 'Sanctioned - Approved' },
-    { value: 'sanctioned_rejected', label: 'Sanctioned - Rejected' },
-    { value: 'disbursed', label: 'Disbursed' },
-    { value: 'closed', label: 'Closed' }
+  const getLoanStatusLabel = (statusCode) => {
+    switch (parseInt(statusCode)) {
+      case LOAN_STATUS.APPLIED:
+        return 'applied';
+      case LOAN_STATUS.REJECTED:
+        return 'rejected';
+      case LOAN_STATUS.SANCTIONED:
+        return 'sanctioned';
+      case LOAN_STATUS.DISBURSED:
+        return 'disbursed';
+      case LOAN_STATUS.CLOSED:
+        return 'closed';
+      case LOAN_STATUS.IN_PROCESS:
+        return 'inprogress';
+      default:
+        return 'applied';
+    }
+  };
+
+  // Get loan status from user object
+  const userLoanStatus = user?.loan_status || LOAN_STATUS.APPLIED;
+  const [currentStatus, setCurrentStatus] = useState(userLoanStatus);
+
+  // Status options for testing
+  const statusOptions = [
+    { value: LOAN_STATUS.APPLIED, label: 'Applied Successfully' },
+    { value: LOAN_STATUS.IN_PROCESS, label: 'In Progress' },
+    { value: LOAN_STATUS.SANCTIONED, label: 'Sanctioned' },
+    { value: LOAN_STATUS.REJECTED, label: 'Rejected' },
+    { value: LOAN_STATUS.DISBURSED, label: 'Disbursed' },
+    { value: LOAN_STATUS.CLOSED, label: 'Closed' }
   ];
 
-
+  // Get current status label
+  const currentStatusLabel = getLoanStatusLabel(currentStatus);
   
   const handleClientHistory = () => router.push('/client-history');
   
@@ -102,30 +134,30 @@ export default function StepCompleteProfile({
         />
         
         <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">
-          {/* commnent from here */}
+          {/* Testing Section - Remove in production */}
           <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">Loan Status For Testing</h1>
-          <div className="flex flex-wrap gap-2">
-            {statuses.map(status => (
-              <button
-                key={status.value}
-                onClick={() => setCurrentStatus(status.value)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-                  currentStatus === status.value
-                    ? 'bg-blue-500 text-white shadow-lg'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {status.label}
-              </button>
-            ))}
+            <h1 className="text-2xl font-bold text-slate-800 mb-4">Loan Status For Testing</h1>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map(status => (
+                <button
+                  key={status.value}
+                  onClick={() => setCurrentStatus(status.value)}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                    currentStatus === status.value
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {status.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-            {/* Left Column - Profile & Verification */}
+          {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <ProfileCard user={user} loanStatus={currentStatus} />
+              <ProfileCard user={user} loanStatus={currentStatusLabel} />
               <LoanButtons loanStatus={currentStatus} />
               {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">
@@ -136,43 +168,34 @@ export default function StepCompleteProfile({
             {/* Right Column - Information & Features */}
             <div className="lg:col-span-2">
               <div className="space-y-6">
-                        <LoanStatusTracker loanStatus={currentStatus} />
+                <LoanStatusTracker loanStatus={currentStatus} />
 
-              {currentStatus !== 'disbursed' && currentStatus !== 'closed' && currentStatus !== 'sanctioned_rejected' && (
-  <VerificationComponent loanStatus={currentStatus} />
-)}
+                {currentStatusLabel !== 'disbursed' && currentStatusLabel !== 'closed' && currentStatusLabel !== 'rejected' && (
+                  <VerificationComponent loanStatus={currentStatus} user={user} />
+                )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-pink-200 rounded-xl bg-gradient-to-br from-rose-100 via-teal-50 to-cyan-200 px-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-pink-200 rounded-xl bg-gradient-to-br from-rose-100 via-teal-50 to-cyan-200 px-4 py-4">
+                  <InformationCards user={user} />
+                  <div className='border rounded-full overflow-hidden mt-2 border-rose-300'>
+                    <CreditScoreSection 
+                      className="rounded-full" 
+                      creditScore={user?.creditScore || 750} 
+                      imageWidth={150} 
+                      imageHeight={250} 
+                    />
+                  </div>
+                </div>
 
-                            <InformationCards user={user} />
-                            <div className='border rounded-full overflow-hidden mt-2 border-rose-300  '>
-<CreditScoreSection 
-  className="rounded-full" 
-  creditScore={user?.creditScore || 750} 
-  imageWidth={150} 
-  imageHeight={250} 
-/>                            </div>
-
-
-
-
-                            </div>
-
-{currentStatus !== 'applied' && currentStatus !== 'inprogress' && currentStatus !== 'sanctioned_approved' && (
-  <ReferBlock user={user} />
-)}
-
-
-              
+                {currentStatusLabel !== 'applied' && currentStatusLabel !== 'inprogress' && currentStatusLabel !== 'sanctioned' && (
+                  <ReferBlock user={user} />
+                )}
               </div>
             </div>
-
           </div>
         </div>
 
-
         {/* ReviewSection - Only visible on screens smaller than lg */}
-         <div className='px-4 md:px-8  pb-5'>
+        <div className='px-4 md:px-8 pb-5'>
           <div className="block pb-5 lg:hidden">
             <ReviewSection />
           </div>

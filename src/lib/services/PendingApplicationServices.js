@@ -1,5 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
+import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const pendingApplicationAPI = {
     // Get all pending applications with filters
@@ -22,59 +23,44 @@ export const pendingApplicationAPI = {
         }
     },
 
-    // Send pending email
     sendPendingEmail: async (applicationId) => {
+    try {
+      const endpoints = [
+        `/crm/email/pending/email/${applicationId}`,
+      ];
+
+      let response;
+      let lastError;
+
+      for (const endpoint of endpoints) {
         try {
-            const endpoints = [
-                `/crm/email/pending/email/${applicationId}`,
-                `/crm/application/send-email/${applicationId}`,
-                `/crm/application/${applicationId}/send-email`
-            ];
-
-            let response;
-            let lastError;
-
-            for (const endpoint of endpoints) {
-                try {
-                    response = await api.get(endpoint);
-                    console.log("✅ Email sent successfully:", response.data);
-                    return response.data;
-                } catch (error) {
-                    lastError = error;
-                    console.log(`❌ Endpoint failed: ${endpoint}`, error.response?.status);
-                    continue;
-                }
-            }
-
-            throw lastError;
+          response = await api.get(endpoint);
+          console.log("✅ Email sent successfully:", response.data);
+          
+          // Ensure we return the response data properly
+          return {
+            success: true,
+            message: response.data.message || "Email sent successfully",
+            data: response.data.data || response.data
+          };
         } catch (error) {
-            console.error("📧 Email sending error:", error);
-            throw error;
+          lastError = error;
+          console.log(`❌ Endpoint failed: ${endpoint}`, error.response?.status);
+          continue;
         }
-    }
-};
+      }
 
-// Use the same status mapping as completed applications
-export const APPLICATION_STATUS = {
-  PENDING: { id: 1, name: "Pending" },
-  COMPLETED: { id: 2, name: "Completed" },
-  REJECTED: { id: 3, name: "Rejected" },
-  FOLLOW_UP: { id: 4, name: "Follow Up" },
-  PROCESSING: { id: 5, name: "Processing" },
-  SANCTION: { id: 6, name: "Sanction" },
-  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
-  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
-  DISBURSED: { id: 9, name: "Disbursed" },
-  TRANSACTION: { id: 10, name: "Transaction" },
-  COLLECTION: { id: 11, name: "Collection" },
-  RE_COLLECTION: { id: 12, name: "Re-Collection" },
-  CLOSED: { id: 13, name: "Closed" },
-  DEFAULTER: { id: 14, name: "Defaulter" },
-  CANCELLED: { id: 15, name: "Cancelled" },
-  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
-  RETURN: { id: 17, name: "Return" },
-  RENEWAL: { id: 18, name: "Renewal" },
-  EMI: { id: 19, name: "EMI" }
+      throw lastError;
+    } catch (error) {
+      console.error("📧 Email sending error:", error);
+      // Return a structured error response
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to send email",
+        error: error
+      };
+    }
+  }
 };
 
 export const formatApplicationForUI = (application) => {
@@ -146,7 +132,7 @@ export const formatApplicationForUI = (application) => {
         socialScoreFileName: application.social_score_report,
         cibilScoreFileName: application.cibil_score_report,
 
-        // Status and approval information - FIXED with consistent mapping
+        // Status and approval information - USE IMPORTED FUNCTION
         approvalNote: application.approval_note,
         status: loanStatus,
         loanStatus: loanStatus,
@@ -169,8 +155,8 @@ export const formatApplicationForUI = (application) => {
         showEligibilityButton: true,
 
         // Mail information
-        mailCounter: application.mail_counter,
-        mailerDate: application.mailer_date,
+        mailCounter: application.mail_counter || application.mailCounter || 0,
+        mailerDate: application.mailer_date || null,
 
         // Timestamps
         createdAt: application.created_at,
@@ -178,21 +164,7 @@ export const formatApplicationForUI = (application) => {
     };
 };
 
-// Get status name from ID using the shared APPLICATION_STATUS
-const getStatusName = (statusId) => {
-    const status = Object.values(APPLICATION_STATUS).find(s => s.id === Number(statusId));
-    return status ? status.name : "Pending"; 
-};
-
-// Get status ID from name
-export const getStatusId = (statusName) => {
-    const status = Object.values(APPLICATION_STATUS).find(s => 
-        s.name.toLowerCase() === statusName.toLowerCase()
-    );
-    return status ? status.id : 1;
-};
-
 // For backward compatibility
 export const getLoanStatusText = (status) => {
-    return getStatusName(status);
+    return getStatusName(status); // USE IMPORTED FUNCTION
 };

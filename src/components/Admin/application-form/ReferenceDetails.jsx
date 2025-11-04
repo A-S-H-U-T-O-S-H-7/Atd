@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users, AlertTriangle } from 'lucide-react';
 
-const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
+const ReferenceDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
   const inputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -50,30 +50,11 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
     isDark ? "text-red-400" : "text-red-600"
   }`;
 
-  // Helper function to get field error
-  const getFieldError = (fieldName) => {
-    // Check multiple possible field name variations
-    const possibleNames = [
-      fieldName,
-      fieldName.replace(/([A-Z])/g, '_$1').toLowerCase(),
-      fieldName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase(),
-      // Additional variations for reference fields
-      fieldName.replace('reference', 'ref_').toLowerCase(),
-      fieldName.replace('reference', 'ref').toLowerCase()
-    ];
-    
-    for (const name of possibleNames) {
-      if (errors[name]) {
-        return errors[name];
-      }
-    }
-    return null;
-  };
 
   // Helper function to check if field has error
   const hasError = (fieldName) => {
-    return getFieldError(fieldName) !== null;
-  };
+  return errors[fieldName] && touched[fieldName];
+};
 
   return (
     <div className={`rounded-xl shadow-lg border-2 overflow-hidden ${
@@ -102,13 +83,14 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
               name="referenceName"
               value={formik.values.referenceName}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('referenceName') ? errorInputClassName : inputClassName}
               placeholder="Enter reference name"
             />
             {hasError('referenceName') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('referenceName')}</span>
+                <span>{errors.referenceName}</span>
               </div>
             )}
           </div>
@@ -123,13 +105,14 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
               name="referenceMobile"
               value={formik.values.referenceMobile}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('referenceMobile') ? errorInputClassName : inputClassName}
               placeholder="Enter mobile number"
             />
             {hasError('referenceMobile') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('referenceMobile')}</span>
+                <span>{errors.referenceMobile}</span>
               </div>
             )}
           </div>
@@ -144,13 +127,14 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
               name="referenceAddress"
               value={formik.values.referenceAddress}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('referenceAddress') ? errorTextareaClassName : textareaClassName}
               placeholder="Enter reference address"
             />
             {hasError('referenceAddress') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('referenceAddress')}</span>
+                <span>{errors.referenceAddress}</span>
               </div>
             )}
           </div>
@@ -165,13 +149,14 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
               name="referenceEmailId"
               value={formik.values.referenceEmailId}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('referenceEmailId') ? errorInputClassName : inputClassName}
               placeholder="Enter email address"
             />
             {hasError('referenceEmailId') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('referenceEmailId')}</span>
+                <span>{errors.referenceEmailId}</span>
               </div>
             )}
           </div>
@@ -185,6 +170,7 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
               name="referenceRelation"
               value={formik.values.referenceRelation}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('referenceRelation') ? errorSelectClassName : selectClassName}
             >
               <option value="">--Please Select Relation--</option>
@@ -203,7 +189,7 @@ const ReferenceDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('referenceRelation') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('referenceRelation')}</span>
+                <span>{errors.referenceRelation}</span>
               </div>
             )}
           </div>

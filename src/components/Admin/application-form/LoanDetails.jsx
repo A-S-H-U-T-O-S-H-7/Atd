@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { CreditCard, AlertTriangle } from 'lucide-react';
 
-const LoanDetails = ({ formik, isDark, errors = {} }) => {
+const LoanDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
   const inputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -44,26 +44,12 @@ const LoanDetails = ({ formik, isDark, errors = {} }) => {
     isDark ? "text-red-400" : "text-red-600"
   }`;
 
-  // Helper function to get field error
-  const getFieldError = (fieldName) => {
-    const possibleNames = [
-      fieldName,
-      fieldName.replace(/([A-Z])/g, '_$1').toLowerCase(),
-      fieldName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
-    ];
-    
-    for (const name of possibleNames) {
-      if (errors[name]) {
-        return errors[name];
-      }
-    }
-    return null;
-  };
+  
 
   // Helper function to check if field has error
   const hasError = (fieldName) => {
-    return getFieldError(fieldName) !== null;
-  };
+  return errors[fieldName] && touched[fieldName];
+};
 
   
   // Calculate Collection Amount
@@ -164,6 +150,7 @@ const calculateCollectionAmount = () => {
               type="number"
               name="amountApplied"
               value={formik.values.amountApplied}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('amountApplied') ? errorInputClassName : inputClassName}
               placeholder="Enter applied amount"
@@ -171,7 +158,7 @@ const calculateCollectionAmount = () => {
             {hasError('amountApplied') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('amountApplied')}</span>
+                <span>{errors.amountApplied}</span>
               </div>
             )}
           </div>
@@ -186,6 +173,7 @@ const calculateCollectionAmount = () => {
               name="amountApproved"
               value={formik.values.amountApproved}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={disabledInputClassName}
               placeholder="Approved amount"
               readOnly
@@ -193,7 +181,7 @@ const calculateCollectionAmount = () => {
             {hasError('amountApproved') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('amountApproved')}</span>
+                <span>{errors.amountApproved}</span>
               </div>
             )}
           </div>
@@ -207,6 +195,7 @@ const calculateCollectionAmount = () => {
               name="loanTerm"
               value={formik.values.loanTerm}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('loanTerm') ? errorSelectClassName : selectClassName}
             >
               <option value="4">One Time Payment</option>
@@ -214,7 +203,7 @@ const calculateCollectionAmount = () => {
             {hasError('loanTerm') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('loanTerm')}</span>
+                <span>{errors.loanTerm}</span>
               </div>
             )}
           </div>
@@ -230,13 +219,14 @@ const calculateCollectionAmount = () => {
               name="roi"
               value={formik.values.roi}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('roi') ? errorInputClassName : inputClassName}
               placeholder="Enter ROI"
             />
             {hasError('roi') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('roi')}</span>
+                <span>{errors.roi}</span>
               </div>
             )}
           </div>
@@ -251,13 +241,14 @@ const calculateCollectionAmount = () => {
               name="tenure"
               value={formik.values.tenure}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('tenure') ? errorInputClassName : inputClassName}
               placeholder="Enter tenure"
             />
             {hasError('tenure') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('tenure')}</span>
+                <span>{errors.tenure}</span>
               </div>
             )}
           </div>
@@ -278,7 +269,7 @@ const calculateCollectionAmount = () => {
             {hasError('collectionAmount') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('collectionAmount')}</span>
+                <span>{errors.collectionAmount}</span>
               </div>
             )}
           </div>
@@ -299,7 +290,7 @@ const calculateCollectionAmount = () => {
             {hasError('emiCollectionAmount') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('emiCollectionAmount')}</span>
+                <span>{errors.emiCollectionAmount}</span>
               </div>
             )}
           </div>
@@ -314,13 +305,14 @@ const calculateCollectionAmount = () => {
               name="gracePeriod"
               value={formik.values.gracePeriod}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('gracePeriod') ? errorInputClassName : inputClassName}
               placeholder="Enter grace period"
             />
             {hasError('gracePeriod') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('gracePeriod')}</span>
+                <span>{errors.gracePeriod}</span>
               </div>
             )}
           </div>
@@ -334,6 +326,7 @@ const calculateCollectionAmount = () => {
               name="administrationFeePercent"
               value={formik.values.administrationFeePercent}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('administrationFeePercent') ? errorSelectClassName : selectClassName}
             >
               <option value="">Please Select</option>
@@ -346,7 +339,7 @@ const calculateCollectionAmount = () => {
             {hasError('administrationFeePercent') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('administrationFeePercent')}</span>
+                <span>{errors.administrationFeePercent}</span>
               </div>
             )}
           </div>
@@ -367,7 +360,7 @@ const calculateCollectionAmount = () => {
             {hasError('administrationFeeAmount') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('administrationFeeAmount')}</span>
+                <span>{errors.administrationFeeAmount}</span>
               </div>
             )}
           </div>
@@ -388,7 +381,7 @@ const calculateCollectionAmount = () => {
             {hasError('gst') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('gst')}</span>
+                <span>{errors.gst}</span>
               </div>
             )}
           </div>
@@ -403,13 +396,14 @@ const calculateCollectionAmount = () => {
               name="redeemPoints"
               value={formik.values.redeemPoints}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('redeemPoints') ? errorInputClassName : inputClassName}
               placeholder="Enter redeem points"
             />
             {hasError('redeemPoints') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('redeemPoints')}</span>
+                <span>{errors.redeemPoints}</span>
               </div>
             )}
           </div>

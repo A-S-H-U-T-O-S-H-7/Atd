@@ -386,10 +386,6 @@ aadhar_status: appraisal.aadhar_status !== null && appraisal.aadhar_status !== u
 
     };
 
-
-
-
-
     return formattedData;
   };
 

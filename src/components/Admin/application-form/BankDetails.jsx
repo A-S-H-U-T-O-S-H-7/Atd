@@ -4,7 +4,7 @@ import { enachAPI } from '@/lib/services/AllEnquiriesServices';
 import { useState, useEffect } from 'react';
 
 
-const BankDetails = ({ formik, isDark, errors = {} }) => {
+const BankDetails = ({ formik, isDark,errors = {}, touched = {}  }) => {
   const [bankList, setBankList] = useState([]);
   const [bankModes, setBankModes] = useState([]);
   const [loadingModes, setLoadingModes] = useState(false);
@@ -63,27 +63,12 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
     isDark ? "text-red-400" : "text-red-600"
   }`;
 
-  // Helper function to get field error
-  const getFieldError = (fieldName) => {
-    // Check multiple possible field name variations
-    const possibleNames = [
-      fieldName,
-      fieldName.replace(/([A-Z])/g, '_$1').toLowerCase(),
-      fieldName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
-    ];
-    
-    for (const name of possibleNames) {
-      if (errors[name]) {
-        return errors[name];
-      }
-    }
-    return null;
-  };
+  
 
   // Helper function to check if field has error
   const hasError = (fieldName) => {
-    return getFieldError(fieldName) !== null;
-  };
+  return errors[fieldName] && touched[fieldName];
+};
 
   const handleVerifyClick = (type) => {
     // This will be handled by parent component to redirect to verification page
@@ -116,6 +101,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               type="text"
               name="bankName"
               value={formik.values.bankName}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('bankName') ? errorInputClassName : inputClassName}
               placeholder="Enter bank name"
@@ -123,7 +109,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('bankName') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('bankName')}</span>
+                <span>{errors.bankName}</span>
               </div>
             )}
           </div>
@@ -137,6 +123,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               type="text"
               name="branchName"
               value={formik.values.branchName}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('branchName') ? errorInputClassName : inputClassName}
               placeholder="Enter branch name"
@@ -144,7 +131,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('branchName') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('branchName')}</span>
+                <span>{errors.branchName}</span>
               </div>
             )}
           </div>
@@ -158,6 +145,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               name="accountType"
               value={formik.values.accountType}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('accountType') ? errorSelectClassName : selectClassName}
             >
               <option value="">Select Account Type</option>
@@ -169,7 +157,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('accountType') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('accountType')}</span>
+                <span>{errors.accountType}</span>
               </div>
             )}
           </div>
@@ -184,13 +172,14 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               name="accountNo"
               value={formik.values.accountNo}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('accountNo') ? errorInputClassName : inputClassName}
               placeholder="Enter account number"
             />
             {hasError('accountNo') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('accountNo')}</span>
+                <span>{errors.accountNo}</span>
               </div>
             )}
           </div>
@@ -204,6 +193,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               type="text"
               name="ifscCode"
               value={formik.values.ifscCode}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('ifscCode') ? errorInputClassName : inputClassName}
               placeholder="Enter IFSC code"
@@ -211,7 +201,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('ifscCode') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('ifscCode')}</span>
+                <span>{errors.ifscCode}</span>
               </div>
             )}
           </div>
@@ -226,22 +216,17 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
                 type="text"
                 name="panNo"
                 value={formik.values.panNo}
+                onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
                 className={`${hasError('panNo') ? errorInputClassName : inputClassName} flex-1`}
                 placeholder="Enter PAN number"
               />
-              <button
-                type="button"
-                onClick={() => handleVerifyClick('pan')}
-                className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-medium transition-all duration-200"
-              >
-                Verify PAN
-              </button>
+              
             </div>
             {hasError('panNo') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('panNo')}</span>
+                <span>{errors.panNo}</span>
               </div>
             )}
           </div>
@@ -257,21 +242,16 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
                 name="aadharNo"
                 value={formik.values.aadharNo}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 className={`${hasError('aadharNo') ? errorInputClassName : inputClassName} flex-1`}
                 placeholder="Enter Aadhar number"
               />
-              <button
-                type="button"
-                onClick={() => handleVerifyClick('aadhar')}
-                className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-medium transition-all duration-200"
-              >
-                Verify Aadhar
-              </button>
+              
             </div>
             {hasError('aadharNo') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('aadharNo')}</span>
+                <span>{errors.aadharNo}</span>
               </div>
             )}
           </div>
@@ -285,6 +265,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               type="text"
               name="crnNo"
               value={formik.values.crnNo}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('crnNo') ? errorInputClassName : inputClassName}
               placeholder="Enter CRN number"
@@ -292,7 +273,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('crnNo') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('crnNo')}</span>
+                <span>{errors.crnNo}</span>
               </div>
             )}
           </div>
@@ -306,6 +287,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
               type="text"
               name="accountId"
               value={formik.values.accountId}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('accountId') ? errorInputClassName : inputClassName}
               placeholder="Enter account ID"
@@ -313,7 +295,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('accountId') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('accountId')}</span>
+                <span>{errors.accountId}</span>
               </div>
             )}
           </div>
@@ -326,6 +308,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             <select
               name="approvalNote"
               value={formik.values.approvalNote}
+              onBlur={formik.handleBlur}
               onChange={formik.handleChange}
               className={hasError('approvalNote') ? errorSelectClassName : selectClassName}
             >
@@ -337,7 +320,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('approvalNote') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('approvalNote')}</span>
+                <span>{errors.approvalNote}</span>
               </div>
             )}
           </div>
@@ -350,6 +333,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             <select
   name="enachBank"
   value={formik.values.enachBank}
+  onBlur={formik.handleBlur}
   onChange={async (e) => {
     formik.handleChange(e);
     // Fetch modes when bank changes
@@ -384,7 +368,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('enachBank') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('enachBank')}</span>
+                <span>{errors.enachBank}</span>
               </div>
             )}
           </div>
@@ -397,6 +381,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             <select
   name="enachMode"
   value={formik.values.enachMode}
+  onBlur={formik.handleBlur}
   onChange={async (e) => {
   formik.handleChange(e);
   
@@ -435,7 +420,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('enachMode') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('enachMode')}</span>
+                <span>{errors.enachMode}</span>
               </div>
             )}
           </div>
@@ -449,7 +434,9 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
   type="text"
   name="enachBankCode"
   value={formik.values.enachBankCode}
+  onBlur={formik.handleBlur}
   onChange={formik.handleChange}
+  
   className={hasError('enachBankCode') ? errorInputClassName : inputClassName}
   placeholder={loadingBankCode ? "Loading..." : "Bank code will be auto-filled"}
   readOnly
@@ -457,7 +444,7 @@ const BankDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('enachBankCode') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('enachBankCode')}</span>
+                <span>{errors.enachBankCode}</span>
               </div>
             )}
           </div>

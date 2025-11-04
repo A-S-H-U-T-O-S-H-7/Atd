@@ -1,3 +1,4 @@
+// ApplicationForm.js - Updated Formik implementation
 "use client"
 import React, { useEffect, useState } from 'react';
 import { Formik } from 'formik';
@@ -9,8 +10,8 @@ import LoanDetails from './LoanDetails';
 import ReferenceDetails from './ReferenceDetails';
 import OrganizationDetails from './OrganizationDetails';
 import { useThemeStore } from '@/lib/store/useThemeStore';
-import { applicationAPI,formatApplicationForAPI,formatApplicationForUI } from '@/lib/services/ApplicationFormServices';
-
+import { applicationAPI, formatApplicationForAPI, formatApplicationForUI } from '@/lib/services/ApplicationFormServices';
+import { applicationValidationSchema } from '@/lib/schema/applicationFormValidation';
 
 const ApplicationForm = ({ enquiry, onBack }) => {
   const { theme } = useThemeStore();
@@ -42,38 +43,14 @@ const ApplicationForm = ({ enquiry, onBack }) => {
     fetchApplicationData();
   }, [enquiry?.id]);
 
-const mapApiDataToForm = (apiData) => {
-  return formatApplicationForUI({ data: apiData });
-};
-
-const mapFormDataToApi = (formData) => {
-  return formatApplicationForAPI(formData);
-};
-
-// UPDATE the fetch function in useEffect:
-useEffect(() => {
-  const fetchApplicationData = async () => {
-    if (enquiry?.id) {
-      try {
-        setLoading(true);
-        const response = await applicationAPI.getApplicationForEdit(enquiry.id);
-        if (response.success) {
-          setApiData(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching application data:', error);
-        setSubmitError('Failed to load application data');
-      } finally {
-        setLoading(false);
-      }
-    }
+  const mapApiDataToForm = (apiData) => {
+    return formatApplicationForUI({ data: apiData });
   };
-  
-  fetchApplicationData();
-}, [enquiry?.id]);
 
+  const mapFormDataToApi = (formData) => {
+    return formatApplicationForAPI(formData);
+  };
 
-  
   const getInitialValues = () => {
     const baseValues = {
       // Personal Details
@@ -189,73 +166,63 @@ useEffect(() => {
     return baseValues;
   };
 
-  //  the parseValidationErrors function:
-const parseValidationErrors = (errorResponse) => {
-  const errors = {};
-  
-  // Handle different possible error response structures
-  const errorData = errorResponse?.data || errorResponse;
-  
-  if (errorData?.errors) {
-    Object.keys(errorData.errors).forEach(field => {
-      const messages = errorData.errors[field];
-      if (Array.isArray(messages)) {
-        errors[field] = messages.join(', ');
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    try {
+      setLoading(true);
+      setSubmitError('');
+      setFieldErrors({});
+      
+      const mappedData = mapFormDataToApi(values);
+      
+      const response = await applicationAPI.updateApplication(enquiry.id, mappedData);
+      
+      if (response.success) {
+        onBack();
       } else {
-        errors[field] = messages;
+        setSubmitError(response.message || 'Failed to update application');
       }
-    });
-  }
-  
-  // Also check for message field
-  if (errorData?.message && !errors.general) {
-    errors.general = errorData.message;
-  }
-  
-  return errors;
-};
-
-const debugAPICall = (values) => {
-  const mappedData = mapFormDataToApi(values);
-  console.log('Submitting data:', mappedData);
-  console.log('To URL:', `/crm/application/update/${enquiry.id}`);
-  return mappedData;
-};
-
-
-
-  const handleSubmit = async (values) => {
-  try {
-    setLoading(true);
-    setSubmitError('');
-    setFieldErrors({});
-    
-    const mappedData = mapFormDataToApi(values);
-    
-    const response = await applicationAPI.updateApplication(enquiry.id, mappedData);
-    
-    if (response.success) {
-      onBack();
-    } else {
-      setSubmitError(response.message || 'Failed to update application');
+    } catch (error) {
+      console.error('Full error details:', error);
+      console.error('Error response:', error.response?.data);
+      
+      if (error.response?.status === 422) {
+        const validationErrors = parseValidationErrors(error.response.data);
+        setErrors(validationErrors); // Set errors in Formik
+        setFieldErrors(validationErrors);
+        setSubmitError('Please correct the highlighted errors below');
+      } else if (error.response?.data?.message) {
+        setSubmitError(error.response.data.message);
+      } else {
+        setSubmitError('An error occurred while updating the application');
+      }
+    } finally {
+      setLoading(false);
+      setSubmitting(false);
     }
-  } catch (error) {
-     console.error('Full error details:', error);
-    console.error('Error response:', error.response?.data);
+  };
+
+  const parseValidationErrors = (errorResponse) => {
+    const errors = {};
     
-    if (error.response?.status === 422) {
-      const validationErrors = parseValidationErrors(error.response.data); // Add .data here
-      setFieldErrors(validationErrors);
-      setSubmitError('Please correct the highlighted errors below');
-    } else if (error.response?.data?.message) {
-      setSubmitError(error.response.data.message);
-    } else {
-      setSubmitError('An error occurred while updating the application');
+    const errorData = errorResponse?.data || errorResponse;
+    
+    if (errorData?.errors) {
+      Object.keys(errorData.errors).forEach(field => {
+        const messages = errorData.errors[field];
+        if (Array.isArray(messages)) {
+          errors[field] = messages.join(', ');
+        } else {
+          errors[field] = messages;
+        }
+      });
     }
-  } finally {
-    setLoading(false);
-  }
-};
+    
+    if (errorData?.message && !errors.general) {
+      errors.general = errorData.message;
+    }
+    
+    return errors;
+  };
 
   // Error Alert Component
   const ErrorAlert = ({ message, errors = {} }) => {
@@ -307,109 +274,121 @@ const debugAPICall = (values) => {
     }`}>
       <Formik
         initialValues={getInitialValues()}
+        validationSchema={applicationValidationSchema} // Add validation schema
         onSubmit={handleSubmit}
         enableReinitialize={true}
+        validateOnBlur={true}
+        validateOnChange={false}
       >
         {(formik) => (
-          <div className="p-4 md:p-6">
-            {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <button 
-                    onClick={onBack}
-                    className={`p-2 rounded-xl transition-all duration-200 hover:scale-105 ${
-                      isDark
-                        ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                        : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-                    }`}
-                  >
-                    <ArrowLeft className={`w-4 h-4 ${
-                      isDark ? "text-emerald-400" : "text-emerald-600"
-                    }`} />
-                  </button>
-                  <h1 className={`text-xl md:text-2xl font-bold bg-gradient-to-r ${
-                    isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-                  } bg-clip-text text-transparent`}>
-                    Application Form - {formik.values.name || 'New Application'}
-                  </h1>
+          <form onSubmit={formik.handleSubmit}>
+            <div className="p-4 md:p-6">
+              {/* Header */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <button 
+                      type="button"
+                      onClick={onBack}
+                      className={`p-2 rounded-xl transition-all duration-200 hover:scale-105 ${
+                        isDark
+                          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                      }`}
+                    >
+                      <ArrowLeft className={`w-4 h-4 ${
+                        isDark ? "text-emerald-400" : "text-emerald-600"
+                      }`} />
+                    </button>
+                    <h1 className={`text-xl md:text-2xl font-bold bg-gradient-to-r ${
+                      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+                    } bg-clip-text text-transparent`}>
+                      Application Form - {formik.values.name || 'New Application'}
+                    </h1>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Error Alert */}
-            <ErrorAlert message={submitError} errors={fieldErrors} />
+              {/* Error Alert */}
+              <ErrorAlert message={submitError} errors={fieldErrors} />
 
-            {/* Form Sections Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column */}
-              <div className="space-y-6">
-                <PersonalDetails 
+              {/* Form Sections Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <PersonalDetails 
+                    formik={formik}
+                    isDark={isDark}
+                    errors={formik.errors}
+                    touched={formik.touched}
+                  />
+                  <AddressDetails 
+                    formik={formik}
+                    isDark={isDark}
+                    errors={formik.errors}
+                    touched={formik.touched}
+                  />
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  <LoanDetails 
+                    formik={formik}
+                    isDark={isDark}
+                    errors={formik.errors}
+                    touched={formik.touched}
+                  />
+                  <BankDetails 
+                    formik={formik}
+                    isDark={isDark}
+                    errors={formik.errors}
+                    touched={formik.touched}
+                  />
+                  <ReferenceDetails 
+                    formik={formik}
+                    isDark={isDark}
+                    errors={formik.errors}
+                    touched={formik.touched}
+                  />
+                </div>
+              </div>
+              
+              {/* Organization Details */}
+              <div className="mt-6">
+                <OrganizationDetails 
                   formik={formik}
                   isDark={isDark}
-                  errors={fieldErrors}
-                />
-                <AddressDetails 
-                  formik={formik}
-                  isDark={isDark}
-                  errors={fieldErrors}
+                  errors={formik.errors}
+                  touched={formik.touched}
                 />
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-                <LoanDetails 
-                  formik={formik}
-                  isDark={isDark}
-                  errors={fieldErrors}
-                />
-                <BankDetails 
-                  formik={formik}
-                  isDark={isDark}
-                  errors={fieldErrors}
-                />
-                <ReferenceDetails 
-                  formik={formik}
-                  isDark={isDark}
-                  errors={fieldErrors}
-                />
+              {/* Submit Button */}
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading || formik.isSubmitting}
+                  className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl ${
+                    loading || formik.isSubmitting
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-green-500 hover:bg-green-600 cursor-pointer'
+                  } text-white`}
+                >
+                  {loading || formik.isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={20} />
+                      <span>Submit Application</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-            
-            {/* Organization Details */}
-            <div className="mt-6">
-              <OrganizationDetails 
-                formik={formik}
-                isDark={isDark}
-                errors={fieldErrors}
-              />
-            </div>
-
-            {/* Submit Button */}
-            <div className="mt-8 flex justify-end">
-              <button
-                onClick={() => formik.handleSubmit()}
-                disabled={loading}
-                className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl ${
-                  loading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-500 hover:bg-green-600 cursor-pointer'
-                } text-white`}
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check size={20} />
-                    <span>Submit Application</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+          </form>
         )}
       </Formik>
     </div>

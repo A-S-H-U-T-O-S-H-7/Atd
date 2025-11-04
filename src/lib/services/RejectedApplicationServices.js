@@ -2,6 +2,7 @@
 import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const rejectedApplicationAPI = {
   // Get all rejected applications with filters
@@ -88,9 +89,9 @@ export const formatRejectedApplicationForUI = (application) => {
     verifierName: application.verifier_name,
     verifierPhoto: application.verifier_photo,
 
-    // Status information
-    status: getLoanStatusText(application.loan_status),
-    loanStatus: getLoanStatusText(application.loan_status),
+    // Status information - USE IMPORTED FUNCTION
+    status: getStatusName(application.loan_status),
+    loanStatus: getStatusName(application.loan_status),
 
     // Application stage information
     isVerified: application.verify === 1,
@@ -140,30 +141,6 @@ export const formatRejectedApplicationForUI = (application) => {
     showEligibilityButton: true,
     showRestoreButton: true
   };
-};
-
-// Get loan status text
-const getLoanStatusText = (status) => {
-  switch (Number(status)) {
-    case 0: return "Pending";
-    case 1: return "In Progress";
-    case 2: return "Approved";
-    case 3: return "Rejected";
-    case 4: return "Disbursed";
-    default: return "Rejected";
-  }
-};
-
-// Get status number from text
-export const getStatusNumber = (status) => {
-  switch (String(status).toLowerCase()) {
-    case "pending": return 0;
-    case "in progress": return 1;
-    case "approved": return 2;
-    case "rejected": return 3;
-    case "disbursed": return 4;
-    default: return 3; // Default to Rejected for rejected applications
-  }
 };
 
 // Application actions utility

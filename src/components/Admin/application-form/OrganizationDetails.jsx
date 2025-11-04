@@ -1,7 +1,7 @@
 import React from 'react';
 import { Building, AlertTriangle } from 'lucide-react';
 
-const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
+const OrganizationDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
   const inputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -26,39 +26,9 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
     isDark ? "text-red-400" : "text-red-600"
   }`;
 
-  // Helper function to get field error
-  const getFieldError = (fieldName) => {
-    // Check multiple possible field name variations
-    const possibleNames = [
-      fieldName,
-      fieldName.replace(/([A-Z])/g, '_$1').toLowerCase(),
-      fieldName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase(),
-      // Additional mappings for organization fields
-      fieldName === 'organisationName' ? 'organisation_name' : null,
-      fieldName === 'organisationAddress' ? 'organisation_address' : null,
-      fieldName === 'officePhone' ? 'office_phone' : null,
-      fieldName === 'contactPerson' ? 'contact_person' : null,
-      fieldName === 'mobileNo' ? 'mobile_no' : null,
-      fieldName === 'hrMail' ? 'hr_mail' : null,
-      fieldName === 'officialEmail' ? 'office_mail' : null,
-      fieldName === 'grossMonthlySalary' ? 'gross_montly_salary' : null,
-      fieldName === 'workSinceMm' ? 'work_since_mm' : null,
-      fieldName === 'workSinceYy' ? 'work_since_yy' : null,
-      fieldName === 'netHouseHoldIncome' ? 'net_house_hold_income' : null,
-      fieldName === 'netMonthlySalary' ? 'net_monthly_salary' : null,
-    ].filter(Boolean);
-    
-    for (const name of possibleNames) {
-      if (errors[name]) {
-        return errors[name];
-      }
-    }
-    return null;
-  };
-
-  // Helper function to check if field has error
+  // Simple helper function to check if field has error
   const hasError = (fieldName) => {
-    return getFieldError(fieldName) !== null;
+    return errors[fieldName] && touched[fieldName];
   };
 
   return (
@@ -88,13 +58,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="organisationName"
               value={formik.values.organisationName}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('organisationName') ? errorInputClassName : inputClassName}
               placeholder="Enter organization name"
             />
             {hasError('organisationName') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('organisationName')}</span>
+                <span>{errors.organisationName}</span>
               </div>
             )}
           </div>
@@ -108,6 +79,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="organisationAddress"
               value={formik.values.organisationAddress}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('organisationAddress') ? errorInputClassName : inputClassName}
               placeholder="Enter organization address"
               rows="2"
@@ -115,7 +87,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('organisationAddress') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('organisationAddress')}</span>
+                <span>{errors.organisationAddress}</span>
               </div>
             )}
           </div>
@@ -130,13 +102,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="officePhone"
               value={formik.values.officePhone}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('officePhone') ? errorInputClassName : inputClassName}
               placeholder="Enter office phone number"
             />
             {hasError('officePhone') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('officePhone')}</span>
+                <span>{errors.officePhone}</span>
               </div>
             )}
           </div>
@@ -151,13 +124,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="contactPerson"
               value={formik.values.contactPerson}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('contactPerson') ? errorInputClassName : inputClassName}
               placeholder="Enter contact person name"
             />
             {hasError('contactPerson') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('contactPerson')}</span>
+                <span>{errors.contactPerson}</span>
               </div>
             )}
           </div>
@@ -172,13 +146,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="mobileNo"
               value={formik.values.mobileNo}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('mobileNo') ? errorInputClassName : inputClassName}
               placeholder="Enter mobile number"
             />
             {hasError('mobileNo') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('mobileNo')}</span>
+                <span>{errors.mobileNo}</span>
               </div>
             )}
           </div>
@@ -193,13 +168,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="hrMail"
               value={formik.values.hrMail}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('hrMail') ? errorInputClassName : inputClassName}
               placeholder="Enter HR email address"
             />
             {hasError('hrMail') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('hrMail')}</span>
+                <span>{errors.hrMail}</span>
               </div>
             )}
           </div>
@@ -210,17 +186,18 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               Website
             </label>
             <input
-              type="url"
+              type="text"
               name="website"
               value={formik.values.website}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('website') ? errorInputClassName : inputClassName}
               placeholder="Enter website URL"
             />
             {hasError('website') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('website')}</span>
+                <span>{errors.website}</span>
               </div>
             )}
           </div>
@@ -235,13 +212,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="officialEmail"
               value={formik.values.officialEmail}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('officialEmail') ? errorInputClassName : inputClassName}
               placeholder="Enter official email address"
             />
             {hasError('officialEmail') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('officialEmail')}</span>
+                <span>{errors.officialEmail}</span>
               </div>
             )}
           </div>
@@ -256,13 +234,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="grossMonthlySalary"
               value={formik.values.grossMonthlySalary}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('grossMonthlySalary') ? errorInputClassName : inputClassName}
               placeholder="Enter gross monthly salary"
             />
             {hasError('grossMonthlySalary') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('grossMonthlySalary')}</span>
+                <span>{errors.grossMonthlySalary}</span>
               </div>
             )}
           </div>
@@ -277,6 +256,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="workSinceMm"
               value={formik.values.workSinceMm}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('workSinceMm') ? errorInputClassName : inputClassName}
               placeholder="Enter working month"
               min="1"
@@ -285,7 +265,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('workSinceMm') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('workSinceMm')}</span>
+                <span>{errors.workSinceMm}</span>
               </div>
             )}
           </div>
@@ -300,13 +280,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="designation"
               value={formik.values.designation}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('designation') ? errorInputClassName : inputClassName}
               placeholder="Enter designation"
             />
             {hasError('designation') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('designation')}</span>
+                <span>{errors.designation}</span>
               </div>
             )}
           </div>
@@ -321,6 +302,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="workSinceYy"
               value={formik.values.workSinceYy}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('workSinceYy') ? errorInputClassName : inputClassName}
               placeholder="Enter working year"
               min="1900"
@@ -329,7 +311,7 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
             {hasError('workSinceYy') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('workSinceYy')}</span>
+                <span>{errors.workSinceYy}</span>
               </div>
             )}
           </div>
@@ -344,13 +326,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="netHouseHoldIncome"
               value={formik.values.netHouseHoldIncome}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('netHouseHoldIncome') ? errorInputClassName : inputClassName}
               placeholder="Enter net house hold income"
             />
             {hasError('netHouseHoldIncome') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('netHouseHoldIncome')}</span>
+                <span>{errors.netHouseHoldIncome}</span>
               </div>
             )}
           </div>
@@ -365,13 +348,14 @@ const OrganizationDetails = ({ formik, isDark, errors = {} }) => {
               name="netMonthlySalary"
               value={formik.values.netMonthlySalary}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               className={hasError('netMonthlySalary') ? errorInputClassName : inputClassName}
               placeholder="Enter net monthly salary"
             />
             {hasError('netMonthlySalary') && (
               <div className={errorTextClassName}>
                 <AlertTriangle className="w-3 h-3" />
-                <span>{getFieldError('netMonthlySalary')}</span>
+                <span>{errors.netMonthlySalary}</span>
               </div>
             )}
           </div>

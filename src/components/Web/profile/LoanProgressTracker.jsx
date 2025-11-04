@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
 import { CheckCircle, Clock, XCircle, Banknote, FileCheck, Landmark } from 'lucide-react';
 
-export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
+export default function LoanStatusTracker ({ loanStatus = 2 }) {
+  const getLoanStatusLabel = (statusCode) => {
+    switch (parseInt(statusCode)) {
+      case 2: return 'applied';
+      case 3: return 'rejected';
+      case 6: return 'sanctioned';
+      case 9: return 'disbursed';
+      case 13: return 'closed';
+      case 5: return 'inprogress';
+      default: return 'applied';
+    }
+  };
+
+  const statusLabel = getLoanStatusLabel(loanStatus);
   
   const getStatusConfig = (status) => {
     const configs = {
       applied: { label: 'Applied Successfully', color: 'blue', icon: FileCheck },
       inprogress: { label: 'In Progress', color: 'yellow', icon: Clock },
-      sanctioned_approved: { label: 'Sanctioned - Approved', color: 'green', icon: CheckCircle },
-      sanctioned_rejected: { label: 'Sanctioned - Rejected', color: 'red', icon: XCircle },
+      sanctioned: { label: 'Sanctioned', color: 'green', icon: CheckCircle },
+      rejected: { label: 'Rejected', color: 'red', icon: XCircle },
       disbursed: { label: 'Disbursed', color: 'emerald', icon: Banknote },
       closed: { label: 'Closed', color: 'gray', icon: CheckCircle }
     };
@@ -25,9 +38,8 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
     ];
 
     const currentIndex = allSteps.findIndex(step => {
-      if (loanStatus === 'sanctioned_approved') return step.key === 'sanctioned';
-      if (loanStatus === 'sanctioned_rejected') return step.key === 'sanctioned';
-      return step.key === loanStatus;
+      if (statusLabel === 'rejected') return step.key === 'sanctioned';
+      return step.key === statusLabel;
     });
 
     return allSteps.map((step, index) => {
@@ -36,7 +48,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
       if (index < currentIndex) {
         status = 'completed';
       } else if (index === currentIndex) {
-        if (loanStatus === 'sanctioned_rejected') {
+        if (statusLabel === 'rejected') {
           status = 'rejected';
         } else {
           status = 'current';
@@ -48,7 +60,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
   };
 
   const steps = getProgressSteps();
-  const currentConfig = getStatusConfig(loanStatus);
+  const currentConfig = getStatusConfig(statusLabel);
 
   const getStepColor = (status) => {
     switch (status) {
@@ -80,30 +92,30 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
   };
 
   return (
-    <div className="bg-white rounded-xl mb-5 shadow-sm border border-gray-200 overflow-hidden max-w-full">
+    <div className="bg-white rounded-xl mb-5 shadow-sm border border-dashed border-cyan-500  overflow-hidden max-w-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-3 border-b border-gray-100">
+      <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-3 border-b border-cyan-300">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-slate-800">Loan Status</h3>
           
           {/* Status Badge */}
           <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-            loanStatus === 'sanctioned_rejected' 
+            statusLabel === 'rejected' 
               ? 'bg-red-50 text-red-600 border border-red-100'
-              : loanStatus === 'closed'
+              : statusLabel === 'closed'
               ? 'bg-gray-50 text-gray-600 border border-gray-100'
-              : loanStatus === 'disbursed'
+              : statusLabel === 'disbursed'
               ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+              : statusLabel === 'sanctioned'
+              ? 'bg-green-50 text-green-600 border border-green-100'
               : 'bg-blue-50 text-blue-600 border border-blue-100'
           }`}>
-            {loanStatus === 'sanctioned_approved' ? 'APPROVED' : 
-             loanStatus === 'sanctioned_rejected' ? 'REJECTED' : 
-             loanStatus.toUpperCase()}
+            {statusLabel.toUpperCase()}
           </div>
         </div>
       </div>
 
-      {/* Milestones - Added min-height to prevent stretching */}
+      {/* Milestones */}
       <div className="p-5 min-h-[180px]">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
@@ -133,49 +145,41 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
           ))}
         </div>
 
-       {/* Additional Info Messages */}
-{loanStatus === 'inprogress' && (
-  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-    <div className="flex flex-col sm:flex-row items-center gap-2">
-      <div className="text-sm italic text-blue-700">
-        <span>Loan application </span>
-        <span className="font-semibold">in progress.</span><br/>
-        <span>For further processing select:</span>
-      </div>
-             
-      <div className="flex flex-col items-center gap-2">
-        <div className="rounded-full bg-blue-100 border-2 border-blue-300 flex flex-col items-center justify-center w-16 h-16 shadow-sm">
-          <Landmark className="text-blue-600 w-4 h-4" />
-          <p className="text-xs font-semibold text-blue-700 mt-0.5">Report</p>
-        </div>
-                 
-        <button
-          onClick={handleBankReportClick}
-          className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 whitespace-nowrap"
-        >
-          Bank Account Report
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}
-        {/* {loanStatus === 'sanctioned_approved' && (
-          <div className="mt-4 p-2 bg-pink-50 border border-pink-100 rounded-lg">
-            <p className="text-sm text-pink-700 ">
-              🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps: Video Verification, E-Mandate, and Digital loan agreement.
-            </p>
-          </div>
-        )} */}
-
-        {loanStatus === 'sanctioned_rejected' && (
-          <div className="mt-4 p-2 italic bg-red-50 border border-red-100 rounded-lg">
-            <p className="text-sm text-red-700">
-            💔 Your loan application has been declined at this time 😔. You’re welcome to reapply after 30 days </p>
+        {/* Additional Info Messages */}
+        {statusLabel === 'inprogress' && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="text-sm italic text-blue-700">
+                <span>Loan application </span>
+                <span className="font-semibold">in progress.</span><br/>
+                <span>For further processing select:</span>
+              </div>
+                     
+              <div className="flex flex-col items-center gap-2">
+                <div className="rounded-full bg-blue-100 border-2 border-blue-300 flex flex-col items-center justify-center w-16 h-16 shadow-sm">
+                  <Landmark className="text-blue-600 w-4 h-4" />
+                  <p className="text-xs font-semibold text-blue-700 mt-0.5">Report</p>
+                </div>
+                         
+                <button
+                  onClick={handleBankReportClick}
+                  className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 whitespace-nowrap"
+                >
+                  Bank Account Report
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {loanStatus === 'disbursed' && (
+        {statusLabel === 'rejected' && (
+          <div className="mt-4 p-2 italic bg-red-50 border border-red-100 rounded-lg">
+            <p className="text-sm text-red-700">
+            💔 Your loan application has been declined at this time 😔. You're welcome to reapply after 30 days </p>
+          </div>
+        )}
+
+        {statusLabel === 'disbursed' && (
           <div className="mt-4 p-2 italic bg-emerald-50 border border-emerald-100 rounded-lg">
             <p className="text-sm text-emerald-700">
               🎉 Congratulations! Your loan has been disbursed successfully.
@@ -183,7 +187,7 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
           </div>
         )}
 
-        {loanStatus === 'closed' && (
+        {statusLabel === 'closed' && (
           <div className="mt-4 p-2 italic bg-gray-50 border border-gray-100 rounded-lg">
             <p className="text-sm text-gray-700">
               🙏 Your loan has been successfully closed. Thank you for banking with us!✨
@@ -193,4 +197,4 @@ export default function LoanStatusTracker ({ loanStatus = 'applied' }) {
       </div>
     </div>
   );
-};
+}

@@ -224,11 +224,11 @@ const { theme } = useThemeStore();
               type={type}
               placeholder={placeholder}
               readOnly={readOnly}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
+              className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ${
                 readOnly
                   ? isDark
-                    ? "bg-gray-600 border-gray-500 text-gray-300 cursor-not-allowed"
-                    : "bg-gray-50 border-gray-200 text-gray-600 cursor-not-allowed"
+                    ? "bg-slate-700 border-gray-500 text-gray-100 cursor-not-allowed"
+                    : "bg-slate-100 border-gray-400 text-gray-600 cursor-not-allowed"
                   : isDark
                     ? `bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400 ${
                         meta.touched && meta.error ? 'border-red-500' : ''
@@ -236,7 +236,7 @@ const { theme } = useThemeStore();
                     : `bg-gray-100 border-gray-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500 ${
                         meta.touched && meta.error ? 'border-red-500' : ''
                       }`
-              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
+              } focus:ring-1 focus:ring-emerald-500/20 focus:outline-none`}
             />
             {helpText && (
               <p className={`text-xs mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>

@@ -58,6 +58,20 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
     };
   }, []);
 
+  const getInitialPrimaryNumber = () => {
+    if (formik.values.alternateMobileNo1) {
+      return formik.values.alternateMobileNo1;
+    }
+    return formik.values.phoneNo || '';
+  };
+
+  useEffect(() => {
+    const initialPrimaryNumber = getInitialPrimaryNumber();
+    if (!formik.values.alternateMobileNo1 && initialPrimaryNumber) {
+      formik.setFieldValue('alternateMobileNo1', initialPrimaryNumber);
+    }
+  }, [formik.values.phoneNo, formik.values.alternateMobileNo1]);
+
   // Debounced save function for numbers and remarks
   const debouncedSaveData = useCallback(async (fieldName, value) => {
     if (timeoutRef.current) {
@@ -73,10 +87,10 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
         };
 
         if (fieldName === 'alternateMobileNo1' || fieldName === 'alternateMobileNo2') {
-          // Save BOTH numbers together (backend expects both)
-          // Ensure we send current values as strings
+          
           data.alternate_no1 = formik.values.alternateMobileNo1 || '';
           data.alternate_no2 = formik.values.alternateMobileNo2 || '';
+          
           await personalVerificationService.saveAlternativeNumbers(data);
         } else if (fieldName === 'remark') {
           // Save remark
@@ -87,7 +101,6 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
         // Clear any existing errors
         formik.setFieldError(fieldName, undefined);
       } catch (error) {
-        // Error handling is done in the service
         console.error('Error saving data:', error);
       } finally {
         setSaving(false);
@@ -97,10 +110,8 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
 
   // Handle phone number input change
   const handlePhoneChange = (fieldName, value) => {
-    // Only allow numbers and limit to 10 digits
     const numbersOnly = value.replace(/\D/g, '').slice(0, 10);
     
-    // Validate first digit (must be 6, 7, 8, or 9)
     if (numbersOnly.length > 0 && !/^[6-9]/.test(numbersOnly)) {
       formik.setFieldError(fieldName, 'Mobile number must start with 6, 7, 8, or 9');
       return;
@@ -122,7 +133,6 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
 
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
-    // Update local state immediately
     setLocalRemarkValue(value);
     
     // Debounce formik update to prevent excessive re-renders
@@ -133,21 +143,16 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
       formik.setFieldValue('remark', value);
     }, 500);
     
-    // Debounce the API call (longer delay)
     debouncedSaveData('remark', value);
   };
 
-  // Check if number is valid (must start with 6, 7, 8, or 9 and be exactly 10 digits)
   const isNumberValid = (number) => {
     return number && number.length === 10 && /^[6-9]\d{9}$/.test(number);
   };
-  
-  // Validate number starts with 6-9
-  const validateIndianMobile = (number) => {
-    if (number.length > 0 && !/^[6-9]/.test(number)) {
-      return 'Mobile number must start with 6, 7, 8, or 9';
-    }
-    return null;
+
+  // Check if primary number is the original main phone number (not edited)
+  const isPrimaryNumberOriginal = () => {
+    return formik.values.alternateMobileNo1 === formik.values.phoneNo;
   };
 
   return (
@@ -200,6 +205,7 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
                 {saving && formik.values.alternateMobileNo1?.length === 10 && (
                   <div className="ml-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 )}
+                
               </div>
               <input
                 type="tel"
@@ -217,7 +223,7 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
                 </div>
               ) : isNumberValid(formik.values.alternateMobileNo1) ? (
                 <div className={successClassName}>
-                  ✓ Number Added Successfully
+                  {isPrimaryNumberOriginal() ? '✓ Primary Number' : '✓ Number Updated Successfully'}
                 </div>
               ) : formik.values.alternateMobileNo1 ? (
                 <div className={`text-xs mt-1 ${isDark ? "text-yellow-400" : "text-yellow-600"}`}>
@@ -305,14 +311,14 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
                 ? (isDark ? "text-emerald-400" : "text-emerald-600") 
                 : (isDark ? "text-gray-400" : "text-gray-500")
             }>
-              Primary: {isNumberValid(formik.values.alternateMobileNo1) ? '✓ Valid' : '✗ Invalid'}
+              Primary: {isNumberValid(formik.values.alternateMobileNo1) ? (isPrimaryNumberOriginal() ? '✓ Original' : '✓ Edited') : '✗ Invalid'}
             </span>
             <span className={
               isNumberValid(formik.values.alternateMobileNo2) 
                 ? (isDark ? "text-emerald-400" : "text-emerald-600") 
                 : (isDark ? "text-gray-400" : "text-gray-500")
             }>
-              Secondary: {isNumberValid(formik.values.alternateMobileNo2) ? '✓ Valid' : '✗ Invalid'}
+              Secondary: {isNumberValid(formik.values.alternateMobileNo2) ? '✓ Added' : '✗ Not Added'}
             </span>
           </div>
         </div>

@@ -2,6 +2,7 @@
 import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const inProgressApplicationAPI = {
   // Get all in-progress applications with filters
@@ -33,29 +34,6 @@ export const inProgressApplicationAPI = {
       throw error;
     }
   }
-};
-
-// Status mapping constants - ADD THIS
-export const APPLICATION_STATUS = {
-  PENDING: { id: 1, name: "Pending" },
-  COMPLETED: { id: 2, name: "Completed" },
-  REJECTED: { id: 3, name: "Rejected" },
-  FOLLOW_UP: { id: 4, name: "Follow Up" },
-  PROCESSING: { id: 5, name: "Processing" },
-  SANCTION: { id: 6, name: "Sanction" },
-  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
-  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
-  DISBURSED: { id: 9, name: "Disbursed" },
-  TRANSACTION: { id: 10, name: "Transaction" },
-  COLLECTION: { id: 11, name: "Collection" },
-  RE_COLLECTION: { id: 12, name: "Re-Collection" },
-  CLOSED: { id: 13, name: "Closed" },
-  DEFAULTER: { id: 14, name: "Defaulter" },
-  CANCELLED: { id: 15, name: "Cancelled" },
-  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
-  RETURN: { id: 17, name: "Return" },
-  RENEWAL: { id: 18, name: "Renewal" },
-  EMI: { id: 19, name: "EMI" }
 };
 
 // Format application data for UI
@@ -140,9 +118,9 @@ export const formatInProgressApplicationForUI = (application) => {
     pdcFileName: application.pdc_file,
     agreementFileName: application.agreement_file,
 
-    // Status and approval information
+    // Status and approval information - USE IMPORTED FUNCTION
     approvalNote: application.approval_note,
-    loanStatus: getLoanStatusText(application.loan_status),
+    loanStatus: getStatusName(application.loan_status),
 
     // Application stage information
     isVerified: application.verify === 1,
@@ -162,26 +140,12 @@ export const formatInProgressApplicationForUI = (application) => {
   };
 };
 
-// Get loan status text - UPDATE THIS
-const getLoanStatusText = (status) => {
-  const statusObj = Object.values(APPLICATION_STATUS).find(s => s.id === Number(status));
-  return statusObj ? statusObj.name : "In Progress";
-};
-
-// Get status number from text - ADD THIS
-export const getStatusNumber = (status) => {
-  const statusObj = Object.values(APPLICATION_STATUS).find(s => 
-    s.name.toLowerCase() === String(status).toLowerCase()
-  );
-  return statusObj ? statusObj.id : 5; // Default to Processing (5)
-};
-
-// Status update utility - ADD THIS
+// Status update utility
 export const inProgressService = {
   updateStatus: async (applicationId, updateData) => {
     try {
       const statusData = {
-        status: getStatusNumber(updateData.status),
+        status: getStatusId(updateData.status), // USE IMPORTED FUNCTION
         remark: updateData.remark,
         documents_received: updateData.documentsReceived,
         bank_verified: updateData.bankVerified,

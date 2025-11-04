@@ -2,10 +2,12 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Formik, Form, Field } from "formik";
 import { BeatLoader } from "react-spinners";
-import { ChevronLeft, Mail } from "lucide-react";
+import { ChevronLeft, Mail ,Check, X} from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from "@/lib/firebase";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Components
 import InputField from "./InputField";
@@ -13,7 +15,71 @@ import { EmailVerification } from "./EmailVerification";
 import { TermsAndConditions } from "./TermsAndConditions";
 import { ErrorToast } from "./ErrorToast";
 import { FormLayout } from "./FormLayout";
-import { RegistrationValidationSchema,formatPanNumber,formatAadharNumber,formatMobileNumber } from "./ValidationSchema";
+import { RegistrationValidationSchema, formatPanNumber, formatAadharNumber, formatMobileNumber } from "./ValidationSchema";
+
+// Custom DatePicker Component with portal for proper z-index
+const DOBDatePicker = ({ field, form, ...props }) => {
+  const handleChange = (date) => {
+    form.setFieldValue(field.name, date ? date.toISOString().split('T')[0] : '');
+  };
+
+  const hasError = form.errors[field.name] && form.touched[field.name];
+  const hasSuccess = form.touched[field.name] && field.value && !form.errors[field.name];
+
+  return (
+    <div className="mb-3 relative group z-10">
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        {props.label} <span className="text-red-500">*</span>
+      </label>
+      <div className={`relative flex items-center px-4 rounded-xl bg-white/70 backdrop-blur-sm border shadow-sm transition-all duration-200 focus-within:ring-2 focus-within:ring-offset-1 ${
+        hasError ? 
+          "border-red-400 ring-red-200 focus-within:ring-red-200" : 
+          hasSuccess ? 
+            "border-emerald-400 ring-emerald-200 focus-within:ring-emerald-200" : 
+            "border-gray-300 ring-transparent focus-within:ring-blue-200 focus-within:border-blue-400"
+      }`}>
+        <DatePicker
+          selected={field.value ? new Date(field.value) : null}
+          onChange={handleChange}
+          maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+          minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
+          showYearDropdown
+          showMonthDropdown
+          dropdownMode="select"
+          yearDropdownItemNumber={100}
+          scrollableYearDropdown
+          dateFormat="dd/MM/yyyy"
+          className="w-full bg-transparent h-12 outline-none text-gray-700 placeholder-gray-400 text-sm cursor-pointer"
+          placeholderText="Select your date of birth"
+          name={field.name}
+          withPortal
+          portalId="root-portal"
+          wrapperClassName="w-full"
+          popperClassName="z-[9999]"
+          popperPlacement="bottom-start"
+        />
+        {form.touched[field.name] && field.value && (
+          hasError ? 
+            <X className="w-5 h-5 text-red-400 flex-shrink-0" /> : 
+            <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        )}
+      </div>
+      {hasError && (
+        <p className="text-red-500 text-xs mt-1 ml-1">{form.errors[field.name]}</p>
+      )}
+    </div>
+  );
+};
+
+// Custom Debounce Hook
+const useDebounce = (callback, delay) => {
+  const timeoutRef = useRef(null);
+  
+  return useCallback((...args) => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => callback(...args), delay);
+  }, [callback, delay]);
+};
 
 const BasicRegistrationForm = ({ onNext, onError, userData, onBack }) => {
   const [loading, setLoading] = useState(false);
@@ -24,16 +90,6 @@ const BasicRegistrationForm = ({ onNext, onError, userData, onBack }) => {
   const [mobileCheckStatus, setMobileCheckStatus] = useState({ checking: false, exists: false, checked: false });
   const [panCheckStatus, setPanCheckStatus] = useState({ checking: false, exists: false, checked: false });
   const router = useRouter();
-
-  // Debounce hook
-  const useDebounce = (callback, delay) => {
-    const timeoutRef = useRef(null);
-    
-    return useCallback((...args) => {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
-    }, [callback, delay]);
-  };
 
   // API check functions
   const checkMobileExists = async (mobile) => {
@@ -358,19 +414,14 @@ const BasicRegistrationForm = ({ onNext, onError, userData, onBack }) => {
                   debouncedMobileCheck={debouncedMobileCheck}
                   debouncedPanCheck={debouncedPanCheck}
                 />
-                <InputField 
+                
+                {/* Enhanced Date of Birth Field with React DatePicker */}
+                <Field 
                   name="dob" 
                   label="Date of Birth"
-                  placeholder="Select your date of birth" 
-                  type="date"
-                  mobileCheckStatus={mobileCheckStatus}
-                  panCheckStatus={panCheckStatus}
-                  setMobileCheckStatus={setMobileCheckStatus}
-                  setPanCheckStatus={setPanCheckStatus}
-                  setError={setError}
-                  debouncedMobileCheck={debouncedMobileCheck}
-                  debouncedPanCheck={debouncedPanCheck}
+                  component={DOBDatePicker}
                 />
+                
                 <InputField 
                   name="companyName" 
                   label="Company Name"

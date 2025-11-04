@@ -81,7 +81,7 @@ const AddressProofDocument = ({ fileName, hasDoc, onFileView }) => {
       </button>
     );
   }
-
+ 
   return (
     <div className="p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed" title="Address Proof Missing">
       <FileText size={18} className="flex-shrink-0" />

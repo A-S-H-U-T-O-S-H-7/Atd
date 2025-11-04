@@ -2,6 +2,7 @@
 import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const followUpApplicationAPI = {
   // Get all follow-up applications with filters
@@ -14,7 +15,6 @@ export const followUpApplicationAPI = {
     }
   },
 
-  // Export follow-up applications
   exportFollowUpApplications: async (params = {}) => {
     try {
       const response = await api.get("/crm/application/export/followup", { params });
@@ -24,7 +24,6 @@ export const followUpApplicationAPI = {
     }
   },
 
-  // Update application status
   updateApplicationStatus: async (applicationId, statusData) => {
     try {
       const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
@@ -34,7 +33,6 @@ export const followUpApplicationAPI = {
     }
   },
 
-  // Blacklist application
   blacklistApplication: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/black-list/${applicationId}`);
@@ -44,7 +42,6 @@ export const followUpApplicationAPI = {
     }
   },
 
-  // Activate account
   activateAccount: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/activate/${applicationId}`);
@@ -55,30 +52,6 @@ export const followUpApplicationAPI = {
   }
 };
 
-// Status mapping constants
-export const APPLICATION_STATUS = {
-  PENDING: { id: 1, name: "Pending" },
-  COMPLETED: { id: 2, name: "Completed" },
-  REJECTED: { id: 3, name: "Rejected" },
-  FOLLOW_UP: { id: 4, name: "Follow Up" },
-  PROCESSING: { id: 5, name: "Processing" },
-  SANCTION: { id: 6, name: "Sanction" },
-  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
-  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
-  DISBURSED: { id: 9, name: "Disbursed" },
-  TRANSACTION: { id: 10, name: "Transaction" },
-  COLLECTION: { id: 11, name: "Collection" },
-  RE_COLLECTION: { id: 12, name: "Re-Collection" },
-  CLOSED: { id: 13, name: "Closed" },
-  DEFAULTER: { id: 14, name: "Defaulter" },
-  CANCELLED: { id: 15, name: "Cancelled" },
-  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
-  RETURN: { id: 17, name: "Return" },
-  RENEWAL: { id: 18, name: "Renewal" },
-  EMI: { id: 19, name: "EMI" }
-};
-
-// Format application data for UI
 export const formatFollowUpApplicationForUI = (application) => {
   // Format dates
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
@@ -167,10 +140,10 @@ export const formatFollowUpApplicationForUI = (application) => {
     socialScoreFileName: application.social_score_report,
     cibilScoreFileName: application.cibil_score_report,
 
-    // Status and approval information
+    // Status and approval information - USE IMPORTED FUNCTION
     approvalNote: application.approval_note,
-    status: getLoanStatusText(application.loan_status),
-    loanStatus: getLoanStatusText(application.loan_status),
+    status: getStatusName(application.loan_status),
+    loanStatus: getStatusName(application.loan_status),
 
     // Application stage information - CRITICAL FOR BUTTONS
     isVerified: application.verify === 1,
@@ -197,26 +170,12 @@ export const formatFollowUpApplicationForUI = (application) => {
   };
 };
 
-// Get loan status text - USE APPLICATION_STATUS
-const getLoanStatusText = (status) => {
-  const statusObj = Object.values(APPLICATION_STATUS).find(s => s.id === Number(status));
-  return statusObj ? statusObj.name : "Unknown";
-};
-
-// Get status number from text - USE APPLICATION_STATUS (FIXED)
-export const getStatusNumber = (status) => {
-  const statusObj = Object.values(APPLICATION_STATUS).find(s => 
-    s.name.toLowerCase() === String(status).toLowerCase()
-  );
-  return statusObj ? statusObj.id : 4; // Default to Follow Up (4)
-};
-
 // Status update utility
 export const followUpService = {
   updateStatus: async (applicationId, status, remark = "") => {
     try {
       const statusData = {
-        status: getStatusNumber(status), // This uses APPLICATION_STATUS mapping
+        status: getStatusId(status), // USE IMPORTED FUNCTION
         remark: remark
       };
       const response = await followUpApplicationAPI.updateApplicationStatus(applicationId, statusData);

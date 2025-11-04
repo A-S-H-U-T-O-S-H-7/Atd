@@ -1,9 +1,21 @@
 import { Info } from 'lucide-react';
 
-export default function LoanButtons({ loanStatus = 'applied' }) {
-  const isPayNowEnabled = loanStatus === 'disbursed';
-  
-  const isNewLoanEnabled = loanStatus === 'closed';
+export default function LoanButtons({ loanStatus = 2 }) {
+  const getLoanStatusLabel = (statusCode) => {
+    switch (parseInt(statusCode)) {
+      case 2: return 'applied';
+      case 3: return 'rejected';
+      case 6: return 'sanctioned';
+      case 9: return 'disbursed';
+      case 13: return 'closed';
+      case 5: return 'inprogress';
+      default: return 'applied';
+    }
+  };
+
+  const statusLabel = getLoanStatusLabel(loanStatus);
+  const isPayNowEnabled = statusLabel === 'disbursed';
+  const isNewLoanEnabled = statusLabel === 'closed';
 
   // Tooltip component
   const Tooltip = ({ children, text, show }) => (

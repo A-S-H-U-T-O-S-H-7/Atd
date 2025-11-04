@@ -117,7 +117,7 @@ const RejectedTable = ({
         )}
         
         {totalPages > 0 && (
-          <div className="mt-8">
+          <div >
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

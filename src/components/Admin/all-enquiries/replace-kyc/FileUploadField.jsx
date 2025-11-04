@@ -132,10 +132,10 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
                   type="button"
                   onClick={handleFileView}
                   disabled={viewLoading}
-                  className={`p-1.5 rounded-md transition-all ${
+                  className={`p-1.5 cursor-pointer rounded-md transition-all ${
                     isDark 
-                      ? "hover:bg-blue-500/20 text-blue-400 hover:text-blue-300" 
-                      : "hover:bg-blue-100 text-blue-600 hover:text-blue-700"
+                      ? "hover:bg-orange-500/20 text-orange-400 hover:text-orange-300" 
+                      : "hover:bg-orange-100 text-orange-600 hover:text-orange-700"
                   } ${viewLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
                   title="View file"
                 >

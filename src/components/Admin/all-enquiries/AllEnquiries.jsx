@@ -471,19 +471,23 @@ const AllEnquiries = () => {
             </div>
 
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
-                isDark
-                  ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                  : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
-            >
-              <option value="all">All Status</option>
-              <option value="1">Pending</option>
-              <option value="2">Approved</option>
-              <option value="3">Rejected</option>
-            </select>
+  value={statusFilter}
+  onChange={(e) => setStatusFilter(e.target.value)}
+  className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
+    isDark
+      ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+      : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
+  } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
+>
+  <option value="all">All Status</option>
+  {/* Use global status IDs */}
+  <option value="1">Pending</option>
+  <option value="2">Completed</option>
+  <option value="3">Rejected</option>
+  <option value="4">Follow Up</option>
+  <option value="5">Processing</option>
+  {/* Add other status options as needed */}
+</select>
           </div>
 
           {/* Filter Summary */}

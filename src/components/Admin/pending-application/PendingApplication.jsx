@@ -12,6 +12,7 @@ import { pendingApplicationAPI, formatApplicationForUI } from "@/lib/services/Pe
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
 
 const PendingApplication = () => { 
   
@@ -76,79 +77,45 @@ const PendingApplication = () => {
 
   //  email send
 const handleSendMail = async (application) => {
-    if (!application?.id) {
-        await Swal.fire({
-            title: 'Error!',
-            text: 'Invalid application data',
-            icon: 'error',
-            confirmButtonColor: '#ef4444',
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#f9fafb' : '#111827',
-        });
-        return;
+  if (!application?.id) {
+    toast.error('Invalid application data');
+    return;
+  }
+
+  setFileLoading(true);
+  setLoadingFileName(`mail_${application.id}`);
+
+  try {
+    const response = await pendingApplicationAPI.sendPendingEmail(application.id);
+    
+    if (response && response.success) {
+      // Show success toast with count
+      const count = response.data?.count || (application.mailCounter + 1);
+      toast.success(`Email sent successfully! Total sent: ${count}`);
+      
+      // Update the specific application's mail counter in state
+      setApplications(prevApplications => 
+        prevApplications.map(app => 
+          app.id === application.id 
+            ? { 
+                ...app, 
+                mailCounter: count,
+                mailerDate: response.data?.date || new Date().toLocaleString()
+              }
+            : app
+        )
+      );
+      
+    } else {
+      toast.error('Failed to send email. Please try again.');
     }
-
-    setFileLoading(true);
-    setLoadingFileName(`mail_${application.id}`);
-
-    try {
-        const result = await Swal.fire({
-            title: 'Send Email?',
-            text: `Send pending email to ${application.name}?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, Send!',
-            cancelButtonText: 'Cancel',
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#f9fafb' : '#111827',
-        });
-
-        if (!result.isConfirmed) {
-            return;
-        }
-
-        // Try the main endpoint first
-        const response = await pendingApplicationAPI.sendPendingEmail(application.id);
-        
-        if (response && response.success) {
-            await Swal.fire({
-                title: 'Email Sent!',
-                text: response.message || 'Pending email sent successfully.',
-                icon: 'success',
-                confirmButtonColor: '#10b981',
-                background: isDark ? '#1f2937' : '#ffffff',
-                color: isDark ? '#f9fafb' : '#111827',
-            });
-            
-            // Refresh the applications to update mail counter
-            fetchApplications(true);
-        } else {
-            // If API fails, show a fallback message
-            await Swal.fire({
-                title: 'Email Feature',
-                text: 'Email functionality is currently being configured. Please check back later.',
-                icon: 'info',
-                confirmButtonColor: '#3b82f6',
-                background: isDark ? '#1f2937' : '#ffffff',
-                color: isDark ? '#f9fafb' : '#111827',
-            });
-        }
-    } catch (err) {
-        console.error("Email sending error:", err);
-        await Swal.fire({
-            title: 'Email Feature',
-            text: 'Email functionality is currently being configured. Please check back later.',
-            icon: 'info',
-            confirmButtonColor: '#3b82f6',
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#f9fafb' : '#111827',
-        });
-    } finally {
-        setFileLoading(false);
-        setLoadingFileName('');
-    }
+  } catch (err) {
+    console.error("Email sending error:", err);
+    toast.error('Failed to send email. Please try again.');
+  } finally {
+    setFileLoading(false);
+    setLoadingFileName('');
+  }
 };
 
 

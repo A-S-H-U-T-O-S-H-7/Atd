@@ -2,6 +2,7 @@
 import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const completedApplicationAPI = {
   // Get all completed applications with filters
@@ -55,32 +56,8 @@ export const completedApplicationAPI = {
   }
 };
 
-// Status mapping constants
-export const APPLICATION_STATUS = {
-  PENDING: { id: 1, name: "Pending" },
-  COMPLETED: { id: 2, name: "Completed" },
-  REJECTED: { id: 3, name: "Rejected" },
-  FOLLOW_UP: { id: 4, name: "Follow Up" },
-  PROCESSING: { id: 5, name: "Processing" },
-  SANCTION: { id: 6, name: "Sanction" },
-  READY_TO_VERIFY: { id: 7, name: "Ready To Verify" },
-  READY_TO_DISBURSED: { id: 8, name: "Ready To Disbursed" },
-  DISBURSED: { id: 9, name: "Disbursed" },
-  TRANSACTION: { id: 10, name: "Transaction" },
-  COLLECTION: { id: 11, name: "Collection" },
-  RE_COLLECTION: { id: 12, name: "Re-Collection" },
-  CLOSED: { id: 13, name: "Closed" },
-  DEFAULTER: { id: 14, name: "Defaulter" },
-  CANCELLED: { id: 15, name: "Cancelled" },
-  CLOSED_BY_ADMIN: { id: 16, name: "Closed By Admin" },
-  RETURN: { id: 17, name: "Return" },
-  RENEWAL: { id: 18, name: "Renewal" },
-  EMI: { id: 19, name: "EMI" }
-};
-
 // Format application data for UI
 export const formatCompletedApplicationForUI = (application) => {
-  // ... keep your existing formatCompletedApplicationForUI function unchanged ...
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
   const completedDate = application.updated_at ? new Date(application.updated_at) : new Date();
   
@@ -169,20 +146,6 @@ export const formatCompletedApplicationForUI = (application) => {
   };
 };
 
-// Get status name from ID
-const getStatusName = (statusId) => {
-  const status = Object.values(APPLICATION_STATUS).find(s => s.id === Number(statusId));
-  return status ? status.name : "Unknown";
-};
-
-// Get status ID from name
-export const getStatusId = (statusName) => {
-  const status = Object.values(APPLICATION_STATUS).find(s => 
-    s.name.toLowerCase() === statusName.toLowerCase()
-  );
-  return status ? status.id : 1; // Default to Pending
-};
-
 // Status update utility
 export const statusService = {
   updateStatus: async (applicationId, statusName, remark = "") => {
@@ -217,7 +180,7 @@ export const statusService = {
   }
 };
 
-// File view utility (keep existing)
+// File view utility
 export const fileService = {
   viewFile: async (fileName, documentCategory) => {
     if (!fileName) {

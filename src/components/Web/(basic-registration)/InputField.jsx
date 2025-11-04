@@ -23,11 +23,12 @@ const InputField = ({
     
     if (formatFunction) {
       value = formatFunction(value);
-      e.target.value = value; // Update the input value directly
+      e.target.value = value;
     }
     
     form.handleChange(e);
     
+    // Reset status when user starts typing again
     if (name === 'phoneNumber' && mobileCheckStatus.exists && value !== form.values[name]) {
       setMobileCheckStatus({ checking: false, exists: false, checked: false });
       setError('');
@@ -37,6 +38,7 @@ const InputField = ({
       setError('');
     }
     
+    // API checks
     if (name === 'phoneNumber') {
       if (value.length === 10) {
         debouncedMobileCheck(value);
@@ -52,14 +54,18 @@ const InputField = ({
         setPanCheckStatus({ checking: false, exists: false, checked: false });
       }
     }
-  }, [name, formatFunction, mobileCheckStatus, panCheckStatus, debouncedMobileCheck, debouncedPanCheck]);
+  }, [name, formatFunction, mobileCheckStatus, panCheckStatus, debouncedMobileCheck, debouncedPanCheck, setMobileCheckStatus, setPanCheckStatus, setError]);
+
+  const getFieldStatus = (name, meta) => {
+    if (name === 'phoneNumber') return mobileCheckStatus;
+    if (name === 'panNumber') return panCheckStatus;
+    return { checking: false, exists: false, checked: false };
+  };
 
   return (
     <Field name={name}>
       {({ field, form, meta }) => {
-        const fieldStatus = name === 'phoneNumber' ? mobileCheckStatus : 
-                          name === 'panNumber' ? panCheckStatus : 
-                          { checking: false, exists: false, checked: false };
+        const fieldStatus = getFieldStatus(name, meta);
         const hasError = meta.touched && (meta.error || fieldStatus.exists);
         const hasSuccess = meta.touched && field.value && !meta.error && !fieldStatus.exists && fieldStatus.checked;
         
@@ -84,12 +90,12 @@ const InputField = ({
                 onChange={(e) => handleChange(e, form)}
               />
               {fieldStatus.checking ? (
-                <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
               ) : (
                 meta.touched && field.value && (
                   (meta.error || fieldStatus.exists)
-                    ? <X className="w-5 h-5 text-red-400" />
-                    : <Check className="w-5 h-5 text-emerald-500" />
+                    ? <X className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    : <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                 )
               )}
             </div>
