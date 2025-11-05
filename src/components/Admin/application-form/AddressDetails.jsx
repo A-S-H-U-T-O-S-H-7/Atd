@@ -296,10 +296,9 @@ const handleStateChange = (e, addressType) => {
                 className={hasError('currentAddressType') ? errorSelectClassName : selectClassName}
               >
                 <option value="">Select Address Type</option>
-                <option value="Own">Own</option>
-                <option value="Rented">Rented</option>
-                <option value="Company Provided">Company Provided</option>
-                <option value="Parental">Parental</option>
+                <option value="2">Own</option>
+                <option value="4">Rented</option>
+                  
               </select>
               {hasError('currentAddressType') && (
                 <div className={errorTextClassName}>

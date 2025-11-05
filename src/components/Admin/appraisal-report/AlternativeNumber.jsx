@@ -66,39 +66,101 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
   };
 
   useEffect(() => {
-    const initialPrimaryNumber = getInitialPrimaryNumber();
-    if (!formik.values.alternateMobileNo1 && initialPrimaryNumber) {
-      formik.setFieldValue('alternateMobileNo1', initialPrimaryNumber);
-    }
-  }, [formik.values.phoneNo, formik.values.alternateMobileNo1]);
+  // Set initial value only when component first loads
+  if (formik.values.phoneNo && !formik.values.alternateMobileNo1) {
+    formik.setFieldValue('alternateMobileNo1', formik.values.phoneNo);
+  }
+}, []);
 
   // Debounced save function for numbers and remarks
   const debouncedSaveData = useCallback(async (fieldName, value) => {
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
+
+  timeoutRef.current = setTimeout(async () => {
+    console.log('🔹 debouncedSaveData EXECUTING:', {
+      fieldName,
+      value,
+      length: value.length,
+      currentAlt1: formik.values.alternateMobileNo1,
+      currentAlt2: formik.values.alternateMobileNo2
+    });
+
+    try {
+      setSaving(true);
+      
+      const data = {
+        application_id: parseInt(formik.values.applicationId),
+      };
+
+      // Get the CURRENT values at the time of execution
+      const currentAlt1 = formik.values.alternateMobileNo1 || '';
+      const currentAlt2 = formik.values.alternateMobileNo2 || '';
+
+      console.log('🔹 Current values for save:', {
+        currentAlt1,
+        currentAlt1Length: currentAlt1.length,
+        currentAlt2, 
+        currentAlt2Length: currentAlt2.length
+      });
+
+      if (fieldName === 'alternateMobileNo1' || fieldName === 'alternateMobileNo2') {
+        data.alternate_no1 = currentAlt1;
+        data.alternate_no2 = currentAlt2;
+        
+        console.log('🔹 Final payload being sent:', data);
+        await personalVerificationService.saveAlternativeNumbers(data);
+      } else if (fieldName === 'remark') {
+        data.remarks = value;
+        await personalVerificationService.savePersonalRemark(data);
+      }
+      
+      // Clear any existing errors
+      formik.setFieldError(fieldName, undefined);
+    } catch (error) {
+      console.error('Error saving data:', error);
+    } finally {
+      setSaving(false);
+    }
+  }, 500);
+}, [formik.values.applicationId]);
+
+  // Handle phone number input change
+  const handlePhoneChange = (fieldName, value) => {
+  const numbersOnly = value.replace(/\D/g, '').slice(0, 10);
+  
+  if (numbersOnly.length > 0 && !/^[6-9]/.test(numbersOnly)) {
+    formik.setFieldError(fieldName, 'Mobile number must start with 6, 7, 8, or 9');
+    return;
+  }
+  
+  // Update formik value immediately
+  formik.setFieldValue(fieldName, numbersOnly);
+  
+  // Clear existing error when user starts typing
+  if (formik.errors[fieldName] && numbersOnly.length > 0) {
+    formik.setFieldError(fieldName, undefined);
+  }
+
+  // Trigger save if we have exactly 10 digits and valid
+  if (numbersOnly.length === 10 && /^[6-9]\d{9}$/.test(numbersOnly)) {
+    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-
+    
+    // Save immediately with the exact value we have
     timeoutRef.current = setTimeout(async () => {
       try {
         setSaving(true);
-        
         const data = {
           application_id: parseInt(formik.values.applicationId),
+          alternate_no1: fieldName === 'alternateMobileNo1' ? numbersOnly : (formik.values.alternateMobileNo1 || ''),
+          alternate_no2: fieldName === 'alternateMobileNo2' ? numbersOnly : (formik.values.alternateMobileNo2 || '')
         };
-
-        if (fieldName === 'alternateMobileNo1' || fieldName === 'alternateMobileNo2') {
-          
-          data.alternate_no1 = formik.values.alternateMobileNo1 || '';
-          data.alternate_no2 = formik.values.alternateMobileNo2 || '';
-          
-          await personalVerificationService.saveAlternativeNumbers(data);
-        } else if (fieldName === 'remark') {
-          // Save remark
-          data.remarks = value;
-          await personalVerificationService.savePersonalRemark(data);
-        }
         
-        // Clear any existing errors
+        await personalVerificationService.saveAlternativeNumbers(data);
         formik.setFieldError(fieldName, undefined);
       } catch (error) {
         console.error('Error saving data:', error);
@@ -106,30 +168,8 @@ const AlternativeNumberRemark = ({ formik, isDark }) => {
         setSaving(false);
       }
     }, 500);
-  }, [formik.values.applicationId, formik.values.alternateMobileNo1, formik.values.alternateMobileNo2]);
-
-  // Handle phone number input change
-  const handlePhoneChange = (fieldName, value) => {
-    const numbersOnly = value.replace(/\D/g, '').slice(0, 10);
-    
-    if (numbersOnly.length > 0 && !/^[6-9]/.test(numbersOnly)) {
-      formik.setFieldError(fieldName, 'Mobile number must start with 6, 7, 8, or 9');
-      return;
-    }
-    
-    // Update formik value immediately
-    formik.setFieldValue(fieldName, numbersOnly);
-    
-    // Clear existing error when user starts typing
-    if (formik.errors[fieldName] && numbersOnly.length > 0) {
-      formik.setFieldError(fieldName, undefined);
-    }
-
-    // Trigger save if we have exactly 10 digits and valid
-    if (numbersOnly.length === 10 && /^[6-9]\d{9}$/.test(numbersOnly)) {
-      debouncedSaveData(fieldName, numbersOnly);
-    }
-  };
+  }
+};
 
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
