@@ -13,6 +13,7 @@ export default function UserSignupPage() {
   const [phase, setPhase] = useState("salaried"); 
   const [userData, setUserData] = useState({});
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [otpLoader, setOtpLoader] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(true);
@@ -24,23 +25,20 @@ export default function UserSignupPage() {
     setUserData(prev => ({ ...prev, ...data }));
     setPhase(nextPhase);
     setError(""); // Clear any previous errors
+    setSuccess(""); // Clear any previous success messages
     
-    // If moving to OTP phase, start countdown
-    if (nextPhase === "otp") {
-      setCountdown(60);
-      setCanResend(false);
-      setTimeout(() => setCanResend(true), 60000);
-    }
+    // Don't start countdown here - wait for API success
   };
 
   const handleError = (errorMessage) => {
     setError(errorMessage);
   };
 
-  // Handle OTP verification
+// Handle OTP verification
 const handleVerifyOTP = async (otpData) => {
   setOtpLoader(true);
   setError("");
+  setSuccess("");
   
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/verify`, {
@@ -55,22 +53,25 @@ const handleVerifyOTP = async (otpData) => {
     const result = await response.json();
     
     if (response.ok && result.success) {
-     
-setToken(result.access_token);
-setUserId(result.user.id || result.user._id);
-setStep(result.user.step || 1);
-login(result.user, result.access_token);
+      setToken(result.access_token);
+      setUserId(result.user.id || result.user._id);
+      setStep(result.user.step || 1);
+      login(result.user, result.access_token);
 
-setError("Registration completed successfully!");
-setTimeout(() => {router.push('/userProfile');}, 1500);
-      
+      setSuccess("Registration completed successfully!");
+      setTimeout(() => {router.push('/userProfile');}, 1500);
     } else {
       setError(result.message || "OTP verification failed. Please try again.");
       setOtpLoader(false);
     }
   } catch (error) {
     console.error('OTP verification error:', error);
-    setError("An error occurred during verification. Please try again.");
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      setError("Network error. Please check your internet connection.");
+    } else {
+      setError("An error occurred during verification. Please try again.");
+    }
     setOtpLoader(false);
   } 
 };
@@ -78,6 +79,7 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
   // Handle OTP resend
   const handleResendOTP = async () => {
   setError("");
+  setSuccess("");
   
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/registration/otp/resend`, {
@@ -95,17 +97,24 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
     const result = await response.json();
     
     if (response.ok && result.success) {
+      // Start countdown only after successful API call
       setCountdown(60);
       setCanResend(false);
       setTimeout(() => setCanResend(true), 60000);
-      setError("OTP sent successfully!");
-      setTimeout(() => setError(""), 3000);
+      
+      setSuccess("OTP sent successfully!");
+      setTimeout(() => setSuccess(""), 3000);
     } else {
       setError(result.message || "Failed to resend OTP. Please try again.");
     }
   } catch (error) {
     console.error('Resend OTP error:', error);
-    setError("Failed to resend OTP. Please try again.");
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      setError("Network error. Please check your internet connection.");
+    } else {
+      setError("Failed to resend OTP. Please try again.");
+    }
   }
 };
 
@@ -113,6 +122,7 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
   const handleChangeNumber = () => {
     setPhase("form");
     setError("");
+    setSuccess("");
   };
 
   const renderCurrentPhase = () => {
@@ -134,6 +144,13 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
           />
         ); 
       case "otp":
+        // Start countdown when entering OTP phase
+        if (countdown === 0) {
+          setCountdown(60);
+          setCanResend(false);
+          setTimeout(() => setCanResend(true), 60000);
+        }
+        
         return (
           <BasicOtpVerification
             phoneNumber={userData.phoneNumber}
@@ -171,8 +188,8 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
 
   return (
     <div className="min-h-screen relative">
-      {/* Error Toast - Only show for actual errors, not success messages */}
-      {error && !error.includes("successfully") && (
+      {/* Error Toast */}
+      {error && (
         <div className="fixed top-4 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-md">
           <div className="flex items-center">
             <XCircle className="w-5 h-5 mr-2 flex-shrink-0" />
@@ -188,13 +205,13 @@ setTimeout(() => {router.push('/userProfile');}, 1500);
       )}
 
       {/* Success Toast */}
-      {error && error.includes("successfully") && (
+      {success && (
         <div className="fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg max-w-md">
           <div className="flex items-center">
             <div className="w-5 h-5 mr-2 flex-shrink-0 text-green-500">✓</div>
-            <span className="text-sm">{error}</span>
+            <span className="text-sm">{success}</span>
             <button 
-              onClick={() => setError("")}
+              onClick={() => setSuccess("")}
               className="ml-2 text-green-500 hover:text-green-700"
             >
               <XCircle className="w-4 h-4" />

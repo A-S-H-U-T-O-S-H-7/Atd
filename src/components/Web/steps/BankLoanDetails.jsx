@@ -21,6 +21,7 @@ function BankLoanDetails() {
     } = useUser();
 
     const [ifscLoading, setIfscLoading] = useState(false);
+    const [ifscError, setIfscError] = useState("");
     const [showAccountNumber, setShowAccountNumber] = useState(false);
     const [dailyInterest, setDailyInterest] = useState(0);
     const [totalRepayAmount, setTotalRepayAmount] = useState(0);
@@ -34,34 +35,48 @@ function BankLoanDetails() {
         try {
             const upperIFSC = ifsc.toUpperCase();
             setFieldValue("ifscCode", upperIFSC);
+            setIfscError(""); // Clear previous errors
             
             // Validate IFSC format before API call
             if (/^[A-Z]{4}0[A-Z0-9]{6}$/.test(upperIFSC)) {
                 setIfscLoading(true);
-                const response = await fetch(`https://ifsc.razorpay.com/${upperIFSC}`, {
-                    method: "GET",
-                });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    setFieldValue("bankName", data.BANK || "");
-                    setFieldValue("bankBranch", data.BRANCH || "");
-                } else {
-                    // Clear fields if IFSC is invalid
+                try {
+                    const response = await fetch(`https://ifsc.razorpay.com/${upperIFSC}`, {
+                        method: "GET",
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        setFieldValue("bankName", data.BANK || "");
+                        setFieldValue("bankBranch", data.BRANCH || "");
+                        setIfscError("");
+                    } else {
+                        // IFSC not found
+                        setFieldValue("bankName", "");
+                        setFieldValue("bankBranch", "");
+                        setIfscError("Invalid IFSC code. Please check and try again.");
+                    }
+                } catch (fetchError) {
+                    // Network error
                     setFieldValue("bankName", "");
                     setFieldValue("bankBranch", "");
+                    setIfscError("Unable to verify IFSC. Please enter bank details manually.");
                 }
+                
                 setIfscLoading(false);
             } else {
                 // Clear fields if format is invalid
                 setFieldValue("bankName", "");
                 setFieldValue("bankBranch", "");
+                setIfscError("");
             }
         } catch (error) {
             console.error("IFSC lookup error:", error);
             setIfscLoading(false);
             setFieldValue("bankName", "");
             setFieldValue("bankBranch", "");
+            setIfscError("Error checking IFSC code.");
         }
     };
 
@@ -111,7 +126,7 @@ function BankLoanDetails() {
                     ifsccode: values.ifscCode,
                     bankname: values.bankName,
                     bankbranch: values.bankBranch,
-                    accountno: parseInt(values.accountNumber), 
+                    accountno: values.accountNumber, // Keep as string
                     accounttype: values.accountType,
                     // Loan details
                     amount: parseInt(values.amount.replace(/[^0-9]/g, '')),
@@ -120,17 +135,36 @@ function BankLoanDetails() {
             });
     
             const result = await response.json();
-            console.log(result);
+            console.log("API Response:", result);
     
             if (response.ok && result.success) {
+                setErrorMessage(""); // Clear any previous errors
                 setLoader(false);
                 setStep(step + 1);
             } else {
-                setErrorMessage(result?.message || "Something went wrong.");
+                // Handle different error types
+                let errorMsg = result?.message || "Something went wrong.";
+                
+                // If there are validation errors from server, show them
+                if (result?.errors && typeof result.errors === 'object') {
+                    const errorFields = Object.keys(result.errors);
+                    if (errorFields.length > 0) {
+                        errorMsg = Object.values(result.errors).flat().join(', ');
+                    }
+                }
+                
+                setErrorMessage(errorMsg);
                 setLoader(false);
             }
         } catch (error) {
-            setErrorMessage("Error submitting data: " + error.message);
+            console.error("Network/Submit error:", error);
+            
+            // Check if it's a network error
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                setErrorMessage("Network error. Please check your internet connection.");
+            } else {
+                setErrorMessage("Error submitting data: " + error.message);
+            }
             setLoader(false);
         }
     };
@@ -364,6 +398,12 @@ function BankLoanDetails() {
                                                 )}
                                             </div>
                                             <ErrorMessage name="ifscCode" component="p" className="text-red-500 text-sm" />
+                                            {ifscError && (
+                                                <p className="text-orange-500 text-sm flex items-center gap-1">
+                                                    <Info className="w-3 h-3" />
+                                                    {ifscError}
+                                                </p>
+                                            )}
                                             <p className="text-xs text-gray-500">
                                                 11-character bank identifier code
                                             </p>

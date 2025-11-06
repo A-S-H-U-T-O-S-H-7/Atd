@@ -1,5 +1,8 @@
+// app/layout.js
 import { Inter, Sora } from 'next/font/google';
 import "./globals.css";
+import ScriptLoader from './ScriptLoader';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,7 +24,30 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${sora.variable}`}>
-      <body>{children}</body>
+      <head>
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1" />
+      </head>
+      <body>
+        <ScriptLoader />
+        {children}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              theme: {
+                primary: 'green',
+                secondary: 'black',
+              },
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }

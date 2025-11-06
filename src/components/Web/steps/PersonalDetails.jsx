@@ -188,14 +188,33 @@ const handlePersonalDetails = async (values) => {
     console.log("API Response:", result);
 
     if (response.ok && result.success) {
+      setErrorMessage(""); // Clear any previous errors
       setLoader(false);
       setStep(step + 1);
     } else {
-      setErrorMessage(result?.message || "Something went wrong");
+      // Handle different error types
+      let errorMsg = result?.message || "Something went wrong";
+      
+      // If there are validation errors from server, show them
+      if (result?.errors && typeof result.errors === 'object') {
+        const errorFields = Object.keys(result.errors);
+        if (errorFields.length > 0) {
+          errorMsg = Object.values(result.errors).flat().join(', ');
+        }
+      }
+      
+      setErrorMessage(errorMsg);
       setLoader(false);
     }
   } catch (error) {
-    setErrorMessage("Error submitting data: " + error.message);
+    console.error("Network/Submit error:", error);
+    
+    // Check if it's a network error
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      setErrorMessage("Network error. Please check your internet connection.");
+    } else {
+      setErrorMessage("Error submitting data: " + error.message);
+    }
     setLoader(false);
   }
 };

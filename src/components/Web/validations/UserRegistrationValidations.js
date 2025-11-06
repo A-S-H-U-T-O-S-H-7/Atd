@@ -121,12 +121,15 @@ const PersonalDetailsSchema = Yup.object().shape({
   }),
  
   referralCode: Yup.string()
-    .min(6, "Referral code must be at least 6 characters")
-    .max(12, "Referral code must be at most 12 characters")
+    .trim()
+    .min(4, "Referral code must be at least 4 characters")
+    .max(20, "Referral code must be at most 20 characters")
     .matches(
-      /^[A-Z0-9]+$/,
-      "Referral code must contain only uppercase letters and numbers"
-    ),
+      /^[A-Za-z0-9]+$/,
+      "Referral code must contain only letters and numbers"
+    )
+    .nullable()
+    .optional(),
 
   fatherName: Yup.string()
     .matches(

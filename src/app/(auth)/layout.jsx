@@ -1,16 +1,19 @@
+// app/(auth)/layout.jsx
 import { AuthProvider } from "@/lib/AuthContext";
 import { UserContextProvider } from "@/lib/UserRegistrationContext";
+import '../globals.css';
 
-function layout({ children }) {
+export const metadata = {
+  title: 'ATD Money',
+  description: 'Loan Application Platform',
+};
+
+export default function AuthLayout({ children }) {
   return (
-    <div>
-      <AuthProvider>
-        <UserContextProvider>
-          {children}
-        </UserContextProvider>
-      </AuthProvider>
-    </div>
+    <AuthProvider>
+      <UserContextProvider>
+        {children}
+      </UserContextProvider>
+    </AuthProvider>
   );
 }
-
-export default layout;

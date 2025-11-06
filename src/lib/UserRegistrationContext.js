@@ -92,7 +92,7 @@ export const UserContextProvider = ({ children }) => {
     aadharFront: null,
     aadharBack: null,
     panCard: null,
-    selfie: null,
+    photo: null,
     salarySlip1: null,
     salarySlip2: null,
     salarySlip3: null,
@@ -103,7 +103,7 @@ export const UserContextProvider = ({ children }) => {
     aadharFront: { uploading: false, uploaded: false, error: null },
     aadharBack: { uploading: false, uploaded: false, error: null },
     panCard: { uploading: false, uploaded: false, error: null },
-    selfie: { uploading: false, uploaded: false, error: null },
+    photo: { uploading: false, uploaded: false, error: null },
     salarySlip1: { uploading: false, uploaded: false, error: null },
     salarySlip2: { uploading: false, uploaded: false, error: null },
     salarySlip3: { uploading: false, uploaded: false, error: null },
@@ -277,10 +277,17 @@ export const UserContextProvider = ({ children }) => {
           }));
         }
       } else {
-        console.error("Failed to fetch user data:", response.status);
+        const errorText = await response.text();
+        console.error("Failed to fetch user data:", response.status, errorText);
+        setErrorMessage(`Failed to load user data: ${response.status}`);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        setErrorMessage("Network error. Please check your internet connection.");
+      } else {
+        setErrorMessage("Failed to load user data. Please try again.");
+      }
     } finally {
       setLoader(false);
     }
@@ -288,27 +295,30 @@ export const UserContextProvider = ({ children }) => {
 
   useEffect(() => {
     console.log("🔄 UserContext useEffect triggered:");
-  console.log("- User:", user);
-  console.log("- Current token state:", token);
-  console.log("- Token in localStorage:", localStorage.getItem("token"));
+    console.log("- User:", user);
+    console.log("- Current token state:", token);
+    console.log("- Token in localStorage:", localStorage.getItem("token"));
 
-    if (user &&  !loader) {
+    if (user && !loader) {
       setStep(user.step || 1);
       setUserId(user.id || user._id);
 
       try {
         const storedToken = localStorage.getItem("token");
-        if (storedToken) {
+        
+        // Sync token: if localStorage has token but context doesn't, update context
+        if (storedToken && storedToken !== token) {
           setToken(storedToken);
-          // Only fetch if we don't already have the data
-          if (!personalData.firstName && user.step >= 2) {
-            fetchAndPopulateUserData(user.id || user._id, storedToken);
-          }
+        }
+        
+        // Only fetch if we have token and don't already have the data
+        if (storedToken && !personalData.firstName && user.step >= 2) {
+          fetchAndPopulateUserData(user.id || user._id, storedToken);
         }
       } catch (error) {
         console.warn("Could not access localStorage:", error);
+        setErrorMessage("Storage access error. Please check your browser settings.");
       }
-
     }
   }, [user]);
 
@@ -399,7 +409,7 @@ export const UserContextProvider = ({ children }) => {
       aadharFront: null,
       aadharBack: null,
       panCard: null,
-      selfie: null,
+      photo: null,
       salarySlip1: null,
       salarySlip2: null,
       salarySlip3: null,
@@ -409,7 +419,7 @@ export const UserContextProvider = ({ children }) => {
       aadharFront: { uploading: false, uploaded: false, error: null },
       aadharBack: { uploading: false, uploaded: false, error: null },
       panCard: { uploading: false, uploaded: false, error: null },
-      selfie: { uploading: false, uploaded: false, error: null },
+      photo: { uploading: false, uploaded: false, error: null },
       salarySlip1: { uploading: false, uploaded: false, error: null },
       salarySlip2: { uploading: false, uploaded: false, error: null },
       salarySlip3: { uploading: false, uploaded: false, error: null },

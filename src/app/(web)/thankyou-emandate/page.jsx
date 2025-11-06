@@ -1,13 +1,73 @@
+// app/thankyou-emandate/page.js
 "use client"
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { CheckCircle2, XCircle, ArrowRight, Sparkles, Clock } from 'lucide-react';
 
 export default function EMandateThankYou() {
   const [isVisible, setIsVisible] = useState(false);
+  const [status, setStatus] = useState('processing');
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     setIsVisible(true);
-  }, []);
+    
+    // Check URL parameters for status
+    const success = searchParams.get('success');
+    const statusCode = searchParams.get('status_code');
+    const transactionId = searchParams.get('transaction_id');
+    
+    console.log('Thank You Page Params:', { success, statusCode, transactionId });
+
+    if (statusCode === '0300' || success === '1') {
+      setStatus('success');
+    } else {
+      setStatus('failed');
+    }
+  }, [searchParams]);
+
+  const handleBackToProfile = () => {
+    router.push('/profile');
+  };
+
+  const getStatusContent = () => {
+    switch (status) {
+      case 'success':
+        return {
+          icon: CheckCircle2,
+          title: 'Thank You!',
+          message: 'Your E-Mandate has been submitted successfully',
+          description: 'We have received your e-mandate submission and it has been processed successfully.',
+          gradient: 'from-green-400 via-green-500 to-emerald-600',
+          bgGradient: 'from-green-200 to-emerald-200',
+          textColor: 'text-green-600'
+        };
+      case 'failed':
+        return {
+          icon: XCircle,
+          title: 'Processing Failed',
+          message: 'E-Mandate submission failed',
+          description: 'There was an issue processing your E-Mandate. Please try again or contact support.',
+          gradient: 'from-red-400 via-red-500 to-pink-600',
+          bgGradient: 'from-red-200 to-pink-200',
+          textColor: 'text-red-600'
+        };
+      default:
+        return {
+          icon: Clock,
+          title: 'Processing...',
+          message: 'Checking your E-Mandate status',
+          description: 'Please wait while we verify your E-Mandate submission.',
+          gradient: 'from-blue-400 via-blue-500 to-cyan-600',
+          bgGradient: 'from-blue-200 to-cyan-200',
+          textColor: 'text-blue-600'
+        };
+    }
+  };
+
+  const content = getStatusContent();
+  const IconComponent = content.icon;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center px-6 py-2 relative overflow-hidden">
@@ -30,7 +90,7 @@ export default function EMandateThankYou() {
       <div className={`relative max-w-2xl w-full transition-all duration-700 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30 rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-200/50 backdrop-blur-sm">
           {/* Top Accent with Gradient */}
-          <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 relative">
+          <div className={`h-2 bg-gradient-to-r ${content.gradient} relative`}>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
           </div>
           
@@ -40,26 +100,26 @@ export default function EMandateThankYou() {
             <Sparkles className="absolute top-8 right-8 w-6 h-6 text-blue-300 opacity-60 animate-pulse" />
             <Sparkles className="absolute bottom-8 left-8 w-5 h-5 text-indigo-300 opacity-50 animate-pulse" style={{ animationDelay: '1s' }} />
 
-            {/* Success Icon */}
+            {/* Status Icon */}
             <div className="flex justify-center mb-8 relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 bg-gradient-to-r from-green-200 to-emerald-200 rounded-full animate-ping opacity-20"></div>
+                <div className={`w-32 h-32 bg-gradient-to-r ${content.bgGradient} rounded-full animate-ping opacity-20`}></div>
               </div>
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-emerald-400 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                <div className="relative bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-full p-6 shadow-2xl ring-4 ring-green-100">
-                  <CheckCircle2 className="w-16 h-16 text-white" strokeWidth={2.5} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${content.gradient} rounded-full blur-xl opacity-50 animate-pulse`}></div>
+                <div className={`relative bg-gradient-to-br ${content.gradient} rounded-full p-6 shadow-2xl ring-4 ring-${content.textColor.split('-')[1]}-100`}>
+                  <IconComponent className="w-16 h-16 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             </div>
 
             {/* Heading */}
             <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent mb-4 tracking-tight">
-              Thank You!
+              {content.title}
             </h1>
             
             <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-              Your E-Mandate has been submitted successfully
+              {content.message}
             </p>
 
             {/* Message Box with Soft Gradient */}
@@ -67,12 +127,20 @@ export default function EMandateThankYou() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/30 to-transparent rounded-full blur-2xl"></div>
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-indigo-200/30 to-transparent rounded-full blur-2xl"></div>
               <p className="text-gray-700 text-base leading-relaxed relative z-10">
-                We have received your e-mandate submission. A confirmation has been sent to your registered email address.
+                {content.description}
               </p>
+              {searchParams.get('transaction_id') && (
+                <p className="text-sm text-gray-500 mt-3 relative z-10">
+                  Transaction ID: <strong>{searchParams.get('transaction_id')}</strong>
+                </p>
+              )}
             </div>
 
             {/* Action Button */}
-            <button className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 overflow-hidden">
+            <button 
+              onClick={handleBackToProfile}
+              className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 overflow-hidden"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span className="relative">Back to Profile</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 relative" />
