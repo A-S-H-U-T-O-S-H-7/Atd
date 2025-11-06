@@ -211,8 +211,11 @@ export const UserContextProvider = ({ children }) => {
           setBankLoanData((prev) => ({
             ...prev,
             // Loan fields
-            amount: userData.applied_amount || userData.loan_amount || prev.amount,
-            tenure: userData.tenure || userData.loan_tenure || prev.tenure,
+        amount: userData.applied_amount 
+      ? String(parseFloat(userData.applied_amount)) 
+      : userData.loan_amount 
+        ? String(parseFloat(userData.loan_amount))
+        : prev.amount,            tenure: userData.tenure || userData.loan_tenure || prev.tenure,
             // Bank fields
             ifscCode: userData.ifsc_code || prev.ifscCode,
             bankName: userData.bank_name || prev.bankName,
@@ -233,7 +236,7 @@ export const UserContextProvider = ({ children }) => {
     organizationAddress: userData.organisation_address || prev.organizationAddress,
     officePhone: userData.office_phone || prev.officePhone,
     hrName: userData.contact_person || prev.hrName,
-    hrPhone: userData.hr_mobile || prev.hrPhone,
+    hrPhone: userData.mobile_no ? String(userData.mobile_no) : prev.hrPhone, 
     hrEmail: userData.hr_mail || prev.hrEmail,
     website: userData.website || prev.website,
     officialEmail: userData.official_email || prev.officialEmail,
