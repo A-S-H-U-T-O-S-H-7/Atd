@@ -93,15 +93,7 @@ function LoanDetails() {
         }
     };
 
-    const formatAmount = (value) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
-        
-        if (numericValue) {
-            return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-        return numericValue;
-    };
-
+    
     // Fixed the duplicate key issue by ensuring unique values
     const tenureOptions = [
         { value: '90', label: '90 Days' },
@@ -175,20 +167,20 @@ function LoanDetails() {
                                                     Loan Amount (₹)<span className="text-red-500 ml-1">*</span>
                                                 </label>
                                                 <Field name="amount">
-                                                    {({ field, form }) => (
-                                                        <input
-                                                            {...field}
-                                                            type="text"
-                                                            placeholder="Enter loan amount"
-                                                            className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
-                                                            onChange={(e) => {
-                                                                const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                                                                form.setFieldValue(field.name, rawValue);
-                                                            }}
-                                                            value={formatAmount(field.value)}
-                                                        />
-                                                    )}
-                                                </Field>
+    {({ field, form }) => (
+        <input
+            {...field}
+            type="text"
+            placeholder="Enter loan amount"
+            className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 border-gray-200 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300"
+            onChange={(e) => {
+                // Only allow numbers
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                form.setFieldValue(field.name, rawValue);
+            }}
+        />
+    )}
+</Field>
                                                 <p className="text-xs text-gray-500">
                                                     Minimum: ₹3,000 | Maximum: ₹50,000
                                                 </p>
@@ -241,8 +233,8 @@ function LoanDetails() {
                                                             Amount
                                                         </p>
                                                         <p className="text-xl font-bold text-teal-600">
-                                                            ₹{formatAmount(values.amount)}
-                                                        </p>
+    ₹{values.amount ? parseInt(values.amount).toLocaleString('en-IN') : '0'}
+</p>
                                                     </div>
                                                     <div className="text-center">
                                                         <p className="text-sm text-gray-600 flex items-center justify-center gap-1">

@@ -208,7 +208,7 @@ export default function StepOneProfile({ user, router, logout }) {
                   <span className="text-slate-600 flex items-center">
                     Salary
                   </span>
-                  <span className="font-medium">{userData?.netsalary ? formatCurrency(userData.netsalary) : 'N/A'}</span>
+                  <span className="font-medium">{userData?.net_monthly_salary ? formatCurrency(userData.net_monthly_salary) : 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function StepOneProfile({ user, router, logout }) {
               <div className="flex justify-center items-center gap-2 lg:gap-3">
                 <span className="font-semibold mb-4 lg:text-lg text-slate-800"> Company Name</span>
               </div>
-              <span className="text-sm lg:text-lg font-medium text-slate-700">{userData?.company || 'N/A'}</span>
+              <span className="text-sm lg:text-lg font-medium text-slate-700">{userData?.organisation_name || 'N/A'}</span>
             </div>
           </div>
 
