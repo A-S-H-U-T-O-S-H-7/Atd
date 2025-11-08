@@ -4,19 +4,51 @@ import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
-export const sanctionApplicationAPI = {
-  getSanctionApplications: async (params = {}) => {
+export const manageApplicationAPI = {
+  // Get all manage applications with filters
+  getManageApplications: async (params = {}) => {
     try {
-      const response = await api.get("/crm/application/sanction", { params });
+      const response = await api.get("/crm/application/manage-application", { params });
       return response;
     } catch (error) { 
       throw error;
     }
   },
 
-  exportSanctionApplications: async (params = {}) => {
+  // Export manage applications
+  exportManageApplications: async (params = {}) => {
     try {
-      const response = await api.get("/crm/application/export/sanction", { params });
+      const response = await api.get("/crm/application/export/manage-application", { params });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update ready for approve status
+  updateReadyForApprove: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/application/manage/ready-approve/${applicationId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update bank verification status
+  updateBankVerification: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/application/manage/bank-verify/${applicationId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update disburse approval status
+  updateDisburseApproval: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/application/manage/disburse-approval/${applicationId}`);
       return response;
     } catch (error) {
       throw error;
@@ -24,7 +56,8 @@ export const sanctionApplicationAPI = {
   }
 };
 
-export const formatSanctionApplicationForUI = (application) => {
+// Format application data for UI
+export const formatManageApplicationForUI = (application) => {
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
   const updatedDate = application.updated_at ? new Date(application.updated_at) : new Date();
   
@@ -35,6 +68,7 @@ export const formatSanctionApplicationForUI = (application) => {
     `${application.current_house_no || ''}, ${application.current_city || ''}, ${application.current_state || ''} - ${application.current_pincode || ''}`.trim();
 
   return {
+    // Basic identifiers
     id: application.application_id,
     srNo: application.application_id,
     enquirySource: application.enquiry_type || 'N/A',
@@ -42,25 +76,33 @@ export const formatSanctionApplicationForUI = (application) => {
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
 
+    // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     updatedDate: updatedDate.toLocaleDateString('en-GB'),
     updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     approvedDate: enquiryDate.toLocaleDateString('en-GB'),
+    disburseDate: application.disburse_date || 'N/A',
+    dueDate: application.due_date || 'N/A',
 
+    // Personal information
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
     
+    // Address information
     permanentAddress: permanentAddress,
     state: application.state,
     city: application.city,
     
+    // Current address information
     currentAddress: currentAddress,
     currentState: application.current_state,
     currentCity: application.current_city,
 
+    // Contact information
     phoneNo: application.phone,
     email: application.email || 'N/A',
 
+    // Loan information
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
     adminFee: "0.00",
@@ -70,7 +112,15 @@ export const formatSanctionApplicationForUI = (application) => {
     disbursalAccount: application.disbursal_account,
     customerAcVerified: application.customer_ac_verify === 1 ? "Yes" : "No",
 
-    // Document flags - CORRECTED based on your API response
+    // Renewal information
+    renewalSanctionDate: application.renewal_sanction_date || 'N/A',
+    renewalTenure: application.renewal_tenure || 'N/A',
+    renewalMaturityDate: application.renewal_maturity_date || 'N/A',
+    renewalOutstandingBalance: application.renewal_outstanding_balance || 'N/A',
+    renewalRemarks: application.renewal_remarks || 'N/A',
+    renewalSanctionLetter: application.renewal_sanction_letter || null,
+
+    // Document availability flags
     hasPhoto: !!application.selfie,
     hasPanCard: !!application.pan_proof,
     hasAddressProof: !!application.address_proof,
@@ -106,34 +156,104 @@ export const formatSanctionApplicationForUI = (application) => {
     agreementFileName: application.aggrement,
     sanctionLetterFileName: application.sanction_letter,
 
-    // Status information - CORRECTED based on your API response
+    // Status and process information
     approvalNote: application.approval_note,
     loanStatus: getStatusName(application.loan_status),
-    emandateStatus: application.emandateverification || "Pending",
+    emandateStatus: application.emandatestatus || "Pending",
     iciciEmandateStatus: application.emandatestatus || "Pending",
-    chequeNo: application.cheque_no, // ✅ This is correct from API
+    chequeNo: application.cheque_no,
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
-    originalDocuments: application.original_documents === "Yes" ? "Yes" : "No", // ✅ Corrected
+    originalDocuments: application.original_documents === "Yes" ? "Yes" : "No",
     receivedDisburse: application.emandateverification || "No",
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
+    refundPdc: application.refund_pdc || "Update",
+    settled: application.settled || "-",
 
+    // Bank verification and disburse approval
+    bankVerification: "not_verified", // Default value
+    disburseApproval: "not_approved", // Default value
+
+    // Application stage information
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,
 
+    // Final report information
     hasAppraisalReport: !!application.totl_final_report,
     finalReportStatus: application.totl_final_report,
     finalReportFile: application.totl_final_report_file,
     isRecommended: application.totl_final_report === "Recommended",
 
+    // Button visibility flags
     showActionButton: true,
     showAppraisalButton: true,
-    showEligibilityButton: true
+    showEligibilityButton: true,
+
+    // Additional fields for manage application
+    mailCounter: application.mail_counter || 0,
+    mailerDate: application.mailer_date || null,
+    renewStatus: application.renewStatus || 0,
+    accountActivation: application.accountActivation || 0,
+    activateDate: application.activateDate || null,
+    blacklist: application.blacklist || 0,
+    blacklistdate: application.blacklistdate || null
   };
 };
 
-export const sanctionService = {
+// Combined service with direct API calls
+export const manageApplicationService = {
+  // Data fetching
+  getApplications: async (params = {}) => {
+    try {
+      const response = await manageApplicationAPI.getManageApplications(params);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Export functionality
+  exportApplications: async (params = {}) => {
+    try {
+      const response = await manageApplicationAPI.exportManageApplications(params);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Ready for approve
+  updateReadyForApprove: async (applicationId) => {
+    try {
+      const response = await manageApplicationAPI.updateReadyForApprove(applicationId);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Bank verification
+  updateBankVerification: async (applicationId) => {
+    try {
+      const response = await manageApplicationAPI.updateBankVerification(applicationId);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Disburse approval
+  updateDisburseApproval: async (applicationId) => {
+    try {
+      const response = await manageApplicationAPI.updateDisburseApproval(applicationId);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Modal functions (same as other pages)
   updateChequeNumber: async (applicationId, chequeNo) => {
     try {
       const response = await api.put(`/crm/application/sanction/update-check/${applicationId}`, { 
@@ -191,29 +311,6 @@ export const sanctionService = {
     }
   },
 
-  updateStatusChange: async (applicationId, updateData) => {
-    try {
-      const payload = {};
-      
-      if (updateData.courierPickedDate) {
-        payload.courier_picked = 1;
-        payload.picked_date = updateData.courierPickedDate;
-      }
-      
-      if (updateData.originalDocumentsReceived) {
-        payload.original_documents = updateData.originalDocumentsReceived === "yes" ? "Yes" : "No";
-        if (updateData.originalDocumentsReceived === "yes" && updateData.documentsReceivedDate) {
-          payload.received_date = updateData.documentsReceivedDate;
-        }
-      }
-      
-      const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, payload);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
   updateLoanStatus: async (applicationId, status, remark = "") => {
     try {
       const statusData = {
@@ -225,10 +322,33 @@ export const sanctionService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  updateRemarks: async (applicationId, remarks) => {
+    try {
+      const response = await api.put(`/crm/application/remarks/${applicationId}`, {
+        remarks: remarks
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateRefundPDC: async (applicationId, refundStatus) => {
+    try {
+      const response = await api.put(`/crm/application/refund-pdc/${applicationId}`, {
+        refund_pdc: refundStatus
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
-export const fileService = {
+// File view utility (same as other pages)
+export const manageFileService = {
   viewFile: async (fileName, documentCategory) => {
     if (!fileName) {
       throw new Error('No file available');
@@ -252,7 +372,8 @@ export const fileService = {
       'nach_form': 'agreement',
       'pdc': 'agreement',
       'aggrement': 'agreement',
-      'sanction_letter': 'sanctionletter'
+      'sanction_letter': 'sanctionletter',
+      'renewal_sanction_letter': 'sanctionletter'
     };
 
     const folder = folderMappings[documentCategory];

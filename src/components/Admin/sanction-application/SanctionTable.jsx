@@ -27,7 +27,8 @@ const SanctionTable = ({
   onCheckClick, 
   onReplaceKYCClick,
   fileLoading,
-  loadingFileName
+  loadingFileName,
+  onStatusClick
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -84,7 +85,6 @@ const SanctionTable = ({
     { label: "Sanction Letter", width: "140px" },
     { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
-    { label: "Ready For Approve", width: "180px" },
     
     { label: "Loan Status", width: "120px" },
     { label: "Change Status", width: "200px" },
@@ -140,6 +140,7 @@ const SanctionTable = ({
                   onRefundPDCClick={onRefundPDCClick}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
+                  onStatusClick={onStatusClick}
                   onReplaceKYCClick={onReplaceKYCClick}
                   onCall={onCall}
                   fileLoading={fileLoading}

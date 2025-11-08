@@ -7,7 +7,7 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import InProgressTable from "./InprogressTable";
 import CallDetailsModal from "../CallDetailsModal";
-import InProcessStatusModal from "../InProcessStatusModal"; // Import the modal
+import InProcessStatusModal from "../InProcessStatusModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   inProgressApplicationAPI,

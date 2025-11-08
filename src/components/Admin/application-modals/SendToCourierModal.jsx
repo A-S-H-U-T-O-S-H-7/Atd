@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calendar, Truck, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const SendToCourierModal = ({ 
   isOpen, 
@@ -12,24 +13,24 @@ const SendToCourierModal = ({
   const [courierDate, setCourierDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!courierDate) {
-      alert('Please select a courier date');
-      return;
-    }
+const handleSubmit = async () => {
+  if (!courierDate) {
+    toast.error('Please select a courier date');
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
-      await onSubmit(courierDate);
-      setCourierDate('');
-      onClose();
-    } catch (error) {
-      console.error('Error submitting courier date:', error);
-      alert('Failed to save courier date. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    setIsSubmitting(true);
+    await onSubmit(courierDate);
+    setCourierDate('');
+    onClose();
+  } catch (error) {
+    console.error('Error submitting courier date:', error);
+    toast.error('Failed to save courier date');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleClose = () => {
     setCourierDate('');

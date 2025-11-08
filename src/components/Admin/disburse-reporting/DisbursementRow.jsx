@@ -311,37 +311,7 @@ const handleTransactionStatus = (item) => {
         </span>
       </td>
 
-      {/* New Loan */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <button
-          onClick={() => handleNewLoan(item)}
-          className={`px-3 cursor-pointer py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-sky-900/50 text-sky-300 border-sky-700 hover:bg-sky-800"
-              : "bg-sky-100 text-sky-800 border-sky-200 hover:bg-sky-200"
-          }`}
-        >
-          New Loan
-        </button>
-      </td>
-
-      {/* Action */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-transparent" : "border-transparent"
-}`}>
-      <button
-  onClick={() => handleUpdate(item)}
-  className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-    isDark
-      ? "bg-pink-900/50 text-pink-300 border-pink-700 hover:bg-pink-800"
-      : "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-200"
-  }`}
->
-  Update
-</button>
-</td>
+     
 
       
     </tr>

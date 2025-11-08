@@ -14,7 +14,7 @@ const DisburseEmandateModal = ({
 
   const handleSubmit = async () => {
     if (!selectedOption) {
-      alert('Please select an option');
+      // Remove alert - let parent handle validation if needed
       return;
     }
 
@@ -25,7 +25,7 @@ const DisburseEmandateModal = ({
       onClose();
     } catch (error) {
       console.error('Error submitting disburse e-mandate option:', error);
-      alert('Failed to save disburse e-mandate option. Please try again.');
+      // Error handled by parent via throw
     } finally {
       setIsSubmitting(false);
     }
@@ -206,16 +206,16 @@ const DisburseEmandateModal = ({
                 `}
               >
                 {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4" />
-                    <span>Save</span>
-                  </>
-                )}
+  <>
+    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    <span>Saving...</span>
+  </>
+) : (
+  <>
+    <CreditCard className="w-4 h-4" />
+    <span>Save</span>
+  </>
+)}
               </button>
             </div>
           </div>

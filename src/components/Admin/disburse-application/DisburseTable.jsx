@@ -4,8 +4,8 @@ import Pagination from "../Pagination";
 import DisburseRow from "./DisburseRow";
 
 const DisburseTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
   itemsPerPage,
@@ -23,14 +23,17 @@ const DisburseTable = ({
   onRemarksClick,
   onRefundPDCClick,
   onLoanEligibilityClick,  
-   onCheckClick, 
-   onReplaceKYCClick,  
-   onDocumentStatusClick 
-   
+  onCheckClick, 
+  onReplaceKYCClick,  
+  onDocumentStatusClick,
+  fileLoading,
+  loadingFileName,
+  onBankVerification,
+  onDisburseApproval
 }) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
-        isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
   // Table headers configuration with their respective widths
@@ -40,9 +43,10 @@ const DisburseTable = ({
     { label: "Loan No.", width: "120px" },
     { label: "CRN No.", width: "140px" },
     { label: "Account ID", width: "140px" },
-
     { label: "Approved Date", width: "160px" },
-
+    { label: "Disburse Date", width: "160px" },
+    { label: "Due Date", width: "160px" },
+    
     { label: "Name", width: "200px" },
     { label: "Current Address", width: "180px" },
     { label: "Current State", width: "140px" },
@@ -53,11 +57,12 @@ const DisburseTable = ({
     { label: "Phone No.", width: "140px" },
     { label: "E-mail", width: "200px" },
 
+    { label: "Applied Amount", width: "120px" },
     { label: "Amount Approved", width: "120px" },
     { label: "Admin Fee", width: "140px" },
     { label: "ROI", width: "80px" },
     { label: "Tenure", width: "100px" },
-
+   
     { label: "Photo", width: "80px" },
     { label: "Pan Proof", width: "100px" },
     { label: "Address Proof", width: "120px" },
@@ -86,17 +91,13 @@ const DisburseTable = ({
     { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
 
-    { label: "Ready For Approve", width: "180px" },
     { label: "Bank A/c Verification", width: "180px" },
     { label: "Disburse Approval", width: "160px" },
-
-    // { label: "Disburse", width: "100px" },
 
     { label: "Loan Status", width: "120px" },
     { label: "Change Status", width: "200px" },
     { label: "Action", width: "140px" },
     { label: "Sanction Mail", width: "140px" },
-
     { label: "Remarks", width: "120px" },
     { label: "Document Status", width: "210px" },
     { label: "Appraisal Report", width: "160px" },
@@ -149,11 +150,14 @@ const DisburseTable = ({
                   onRefundPDCClick={onRefundPDCClick}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
+                  onReplaceKYCClick={onReplaceKYCClick}
                   onCall={onCall}
                   onDocumentStatusClick={onDocumentStatusClick}
-
-                  />
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                  onBankVerification={onBankVerification}
+                  onDisburseApproval={onDisburseApproval}
+                />
               ))}
             </tbody>
           </table>

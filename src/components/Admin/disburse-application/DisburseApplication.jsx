@@ -16,14 +16,22 @@ import ChangeStatusModal from "../application-modals/StatusModal";
 import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
 import CallDetailsModal from "../CallDetailsModal";
- import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
+import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-
+import { 
+  disburseApprovalService,
+  formatDisburseApprovalApplicationForUI,
+  disburseFileService
+} from "@/lib/services/DisburseApprovalServices";
+import toast from 'react-hot-toast';
+import Swal from "sweetalert2";
 
 const DisburseApplication = () => {
- const { theme } = useThemeStore();
-   const isDark = theme === "dark";
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
   const router = useRouter();
+  
+  // State management
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loanStatusFilter, setLoanStatusFilter] = useState("all");
@@ -31,296 +39,41 @@ const DisburseApplication = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  const [fileLoading, setFileLoading] = useState(false);
+  const [loadingFileName, setLoadingFileName] = useState('');
+
+  // Modal states
+  const [showCallModal, setShowCallModal] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
-const [currentApplication, setCurrentApplication] = useState(null);
-const [currentChequeNo, setCurrentChequeNo] = useState('');
-const [courierModalOpen, setCourierModalOpen] = useState(false);
-const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
-const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
-const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
-const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
-const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
-const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
-const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
-const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
-const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
-const [remarksModalOpen, setRemarksModalOpen] = useState(false);
-const [currentRemarksApplication, setCurrentRemarksApplication] = useState(null);
-const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
-const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
-const [showCallModal, setShowCallModal] = useState(false);
-const [selectedApplicant, setSelectedApplicant] = useState(null);
-const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
-const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+  const [currentApplication, setCurrentApplication] = useState(null);
+  const [currentChequeNo, setCurrentChequeNo] = useState('');
+  const [courierModalOpen, setCourierModalOpen] = useState(false);
+  const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
+  const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
+  const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
+  const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
+  const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
+  const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
+  const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
+  const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
+  const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
+  const [remarksModalOpen, setRemarksModalOpen] = useState(false);
+  const [currentRemarksApplication, setCurrentRemarksApplication] = useState(null);
+  const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
+  const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
+  const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
+  const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
 
-
-const handleDocumentVerificationModalOpen = (application) => {
-  setCurrentDocumentApplication(application);
-  setDocumentVerificationModalOpen(true);
-};
-
-const handleDocumentVerificationModalClose = () => {
-  setDocumentVerificationModalOpen(false);
-  setCurrentDocumentApplication(null);
-};
-
-const handleDocumentVerify = (application, documentId) => {
-  // Navigate to application form for verification
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/application-form/${application.id}`);
-  // Close modal after navigation
-  setDocumentVerificationModalOpen(false);
-};
-
-
-const handleChequeModalOpen = (application, chequeNumber) => {
-  setCurrentApplication(application);
-  setCurrentChequeNo(chequeNumber);
-  setChequeModalOpen(true);
-};
-
-const handleChequeModalClose = () => {
-  setChequeModalOpen(false);
-  setCurrentApplication(null);
-  setCurrentChequeNo('');
-};
-
-const handleChequeSubmit = async (newChequeNo) => {
-  try {
-    // Your API call here
-    console.log('Cheque number saved:', newChequeNo);
-    // Update the application data if needed
-  } catch (error) {
-    console.error('Error saving cheque number:', error);
-    throw error;
-  }
-};
-
-const handleOriginalDocumentsModalOpen = (application) => {
-  setCurrentOriginalDocumentsApplication(application);
-  setOriginalDocumentsModalOpen(true);
-};
-
-const handleOriginalDocumentsModalClose = () => {
-  setOriginalDocumentsModalOpen(false);
-  setCurrentOriginalDocumentsApplication(null);
-};
-
-const handleOriginalDocumentsSubmit = async (receivedDate) => {
-  try {
-    // Your API call here to save original documents received date
-    console.log('Original documents received date saved:', receivedDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentOriginalDocumentsApplication.id 
-          ? { ...app, originalDocuments: 'Yes', originalDocumentsDate: receivedDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving original documents received date:', error);
-    throw error;
-  }
-};
-
-const handleRemarksModalOpen = (application) => {
-  setCurrentRemarksApplication(application);
-  setRemarksModalOpen(true);
-};
-
-const handleRemarksModalClose = () => {
-  setRemarksModalOpen(false);
-  setCurrentRemarksApplication(null);
-};
-
-const handleRefundPDCModalOpen = (application) => {
-  setCurrentRefundPDCApplication(application);
-  setRefundPDCModalOpen(true);
-};
-
-const handleRefundPDCModalClose = () => {
-  setRefundPDCModalOpen(false);
-  setCurrentRefundPDCApplication(null);
-};
-
-const handleRefundPDCSubmit = async (refundStatus) => {
-  try {
-    console.log('Refund PDC status saved:', refundStatus);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentRefundPDCApplication.id 
-          ? { ...app, refundPdc: refundStatus }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving refund PDC status:', error);
-    throw error;
-  }
-};
-
-// Add these handlers with your existing handlers
-const handleChangeStatusModalOpen = (application) => {
-  setCurrentChangeStatusApplication(application);
-  setChangeStatusModalOpen(true);
-};
-
-const handleChangeStatusModalClose = () => {
-  setChangeStatusModalOpen(false);
-  setCurrentChangeStatusApplication(null);
-};
-
-const handleChangeStatusSubmit = async (updateData) => {
-  try {
-    // Your API call here to save the status changes
-    console.log('Status changes saved:', updateData);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentChangeStatusApplication.id 
-          ? { 
-              ...app, 
-              ...(updateData.courierPickedDate && { courierPickedDate: updateData.courierPickedDate }),
-              ...(updateData.originalDocumentsReceived && { originalDocumentsReceived: updateData.originalDocumentsReceived })
-            }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving status changes:', error);
-    throw error;
-  }
-};
-// Add these handlers with your existing ones
-const handleDisburseEmandateModalOpen = (application) => {
-  setCurrentDisburseEmandateApplication(application);
-  setDisburseEmandateModalOpen(true);
-};
-
-const handleDisburseEmandateModalClose = () => {
-  setDisburseEmandateModalOpen(false);
-  setCurrentDisburseEmandateApplication(null);
-};
-
-const handleDisburseEmandateSubmit = async (selectedOption) => {
-  try {
-    // Your API call here to save disburse e-mandate option
-    console.log('Disburse e-mandate option saved:', selectedOption);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentDisburseEmandateApplication.id 
-          ? { ...app, receivedDisburse: selectedOption }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving disburse e-mandate option:', error);
-    throw error;
-  }
-};
-
-const handleCourierPickedModalOpen = (application) => {
-  setCurrentCourierPickedApplication(application);
-  setCourierPickedModalOpen(true);
-};
-
-const handleCourierPickedModalClose = () => {
-  setCourierPickedModalOpen(false);
-  setCurrentCourierPickedApplication(null);
-};
-
-const handleCourierPickedSubmit = async (pickedDate) => {
-  try {
-    // Your API call here to save courier picked date
-    console.log('Courier picked date saved:', pickedDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentCourierPickedApplication.id 
-          ? { ...app, courierPicked: 'Yes', courierPickedDate: pickedDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving courier picked date:', error);
-    throw error;
-  }
-};
-
-// Add courier modal handlers
-const handleCourierModalOpen = (application) => {
-  setCurrentCourierApplication(application);
-  setCourierModalOpen(true);
-};
-
-const handleCourierModalClose = () => {
-  setCourierModalOpen(false);
-  setCurrentCourierApplication(null);
-};
-
-const handleCourierSubmit = async (courierDate) => {
-  try {
-    // Your API call here to save courier date
-    console.log('Courier date saved:', courierDate);
-    
-    // Update the application data
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === currentCourierApplication.id 
-          ? { ...app, sendToCourier: 'Yes', courierDate: courierDate }
-          : app
-      )
-    );
-  } catch (error) {
-    console.error('Error saving courier date:', error);
-    throw error;
-  }
-};
-
-const handleLoanEligibilityClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/loan-eligibility/${application.id}`);
-};
-
-const handleCheckClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/appraisal-report/${application.id}`);
-};
-
-const handleReplaceKYCClick = (application) => {
-  localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-  router.push(`/crm/replace-kyc/${application.id}`);
-};
-const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
-
-  const handleCall = (applicant) => {
-  setSelectedApplicant(applicant);
-  setShowCallModal(true);
-};
-
-
-  // Advanced Search States
+  // Search and filter states
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Date Filter States
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [sourceFilter, setSourceFilter] = useState("all");
 
   // Data states
-  const [applications, setApplications] = useState(mockApplicationsData);
-  const [totalCount, setTotalCount] = useState(mockApplicationsData.length);
+  const [applications, setApplications] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
@@ -336,7 +89,31 @@ const handleActionClick = (application) => {
     { value: 'approvedAmount', label: 'Approved Amount' },
   ];
 
-  // Simulate data fetching
+  // Build API parameters
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    // Add search parameters
+    if (searchField && searchTerm) {
+      params.search_by = searchField;
+      params.search_value = searchTerm;
+    }
+
+    // Add date filters
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
+    }
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
+    }
+
+    return params;
+  };
+
+  // Fetch applications
   const fetchApplications = async (isAutoRefresh = false) => {
     try {
       if (isAutoRefresh) {
@@ -346,39 +123,22 @@ const handleActionClick = (application) => {
       }
       setError(null);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const params = buildApiParams();
+      const response = await disburseApprovalService.getApplications(params);
       
-      // Filter applications based on search and date filters
-      let filteredData = [...mockApplicationsData];
+      const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
-      // Apply search filter
-      if (searchField && searchTerm) {
-        filteredData = filteredData.filter(app => {
-          const fieldValue = app[searchField]?.toString().toLowerCase() || "";
-          return fieldValue.includes(searchTerm.toLowerCase());
-        });
+      if (actualResponse && actualResponse.success && actualResponse.data) {
+        const formattedApplications = actualResponse.data.map(formatDisburseApprovalApplicationForUI);
+        setApplications(formattedApplications);
+        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalPages(actualResponse.pagination?.total_pages || 1);
+      } else {
+        console.error("❌ Invalid API Response structure:", actualResponse);
+        setError("Failed to fetch applications - Invalid response");
       }
-      
-      // Apply date filter
-      if (dateRange.start || dateRange.end) {
-        filteredData = filteredData.filter(app => {
-          const appDate = new Date(app.createdAt);
-          const startDate = dateRange.start ? new Date(dateRange.start) : null;
-          const endDate = dateRange.end ? new Date(dateRange.end) : null;
-          
-          if (startDate && appDate < startDate) return false;
-          if (endDate && appDate > endDate) return false;
-          return true;
-        });
-      }
-      
-      setApplications(filteredData);
-      setTotalCount(filteredData.length);
-      setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
-      
     } catch (err) {
-      console.error("Error fetching applications:", err);
+      console.error("❌ Error details:", err);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
@@ -389,7 +149,7 @@ const handleActionClick = (application) => {
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchApplications();
-  }, [searchField, searchTerm, dateRange.start, dateRange.end]);
+  }, [currentPage, searchField, searchTerm, dateRange]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -400,7 +160,7 @@ const handleActionClick = (application) => {
     }, 60000); // 1 minute
   
     return () => clearInterval(interval);
-  }, [searchField, searchTerm, dateRange.start, dateRange.end]);
+  }, [currentPage, searchField, searchTerm, dateRange]);
   
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -411,7 +171,375 @@ const handleActionClick = (application) => {
   
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+  }, [currentPage, searchField, searchTerm, dateRange]);
+
+  // Bank Verification Handler
+  const handleBankVerification = async (application) => {
+    try {
+      await disburseApprovalService.updateBankVerification(application.id);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === application.id 
+          ? { ...app, bankVerification: "verified" }
+          : app
+      ));
+      
+      toast.success('Bank verification completed successfully!');
+    } catch (error) {
+      console.error('Error updating bank verification:', error);
+      toast.error('Failed to update bank verification');
+    }
+  };
+
+  // Disburse Approval Handler
+  const handleDisburseApproval = async (application) => {
+    try {
+      await disburseApprovalService.updateDisburseApproval(application.id);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === application.id 
+          ? { ...app, disburseApproval: "approved" }
+          : app
+      ));
+      
+      toast.success('Disburse approval completed successfully!');
+    } catch (error) {
+      console.error('Error updating disburse approval:', error);
+      toast.error('Failed to update disburse approval');
+    }
+  };
+
+  // Modal handlers
+  const handleChequeModalOpen = (application, chequeNumber) => {
+    setCurrentApplication(application);
+    setCurrentChequeNo(chequeNumber);
+    setChequeModalOpen(true);
+  };
+
+  const handleChequeModalClose = () => {
+    setChequeModalOpen(false);
+    setCurrentApplication(null);
+    setCurrentChequeNo('');
+  };
+
+  const handleChequeSubmit = async (newChequeNo) => {
+    try {
+      await disburseApprovalService.updateChequeNumber(currentApplication.id, newChequeNo);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentApplication.id 
+          ? { ...app, chequeNo: newChequeNo }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success('Cheque number updated successfully!');
+    } catch (error) {
+      console.error('Error saving cheque number:', error);
+      toast.error('Failed to update cheque number');
+      throw error;
+    }
+  };
+
+  const handleOriginalDocumentsModalOpen = (application) => {
+    setCurrentOriginalDocumentsApplication(application);
+    setOriginalDocumentsModalOpen(true);
+  };
+
+  const handleOriginalDocumentsModalClose = () => {
+    setOriginalDocumentsModalOpen(false);
+    setCurrentOriginalDocumentsApplication(null);
+  };
+
+  const handleOriginalDocumentsSubmit = async (isReceived, receivedDate) => {
+    try {
+      await disburseApprovalService.updateOriginalDocuments(
+        currentOriginalDocumentsApplication.id, 
+        isReceived, 
+        receivedDate
+      );
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentOriginalDocumentsApplication.id 
+          ? { 
+              ...app, 
+              originalDocuments: isReceived ? "Yes" : "No",
+              ...(isReceived && { originalDocumentsDate: receivedDate })
+            }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success(isReceived ? 'Original documents received!' : 'Documents status updated!');
+    } catch (error) {
+      console.error('Error saving original documents status:', error);
+      toast.error('Failed to update documents status');
+      throw error;
+    }
+  };
+
+  const handleRemarksModalOpen = (application) => {
+    setCurrentRemarksApplication(application);
+    setRemarksModalOpen(true);
+  };
+
+  const handleRemarksModalClose = () => {
+    setRemarksModalOpen(false);
+    setCurrentRemarksApplication(null);
+  };
+
+  const handleRemarksSubmit = async (remarks) => {
+    try {
+      await disburseApprovalService.updateRemarks(currentRemarksApplication.id, remarks);
+      
+      await fetchApplications();
+      toast.success('Remarks updated successfully!');
+    } catch (error) {
+      console.error('Error saving remarks:', error);
+      toast.error('Failed to update remarks');
+      throw error;
+    }
+  };
+
+  const handleRefundPDCModalOpen = (application) => {
+    setCurrentRefundPDCApplication(application);
+    setRefundPDCModalOpen(true);
+  };
+
+  const handleRefundPDCModalClose = () => {
+    setRefundPDCModalOpen(false);
+    setCurrentRefundPDCApplication(null);
+  };
+
+  const handleRefundPDCSubmit = async (refundStatus) => {
+    try {
+      console.log('Refund PDC status saved:', refundStatus);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentRefundPDCApplication.id 
+          ? { ...app, refundPdc: refundStatus }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success('Refund PDC status updated successfully!');
+    } catch (error) {
+      console.error('Error saving refund PDC status:', error);
+      toast.error('Failed to update refund PDC status');
+      throw error;
+    }
+  };
+
+  const handleChangeStatusModalOpen = (application) => {
+    setCurrentChangeStatusApplication(application);
+    setChangeStatusModalOpen(true);
+  };
+
+  const handleChangeStatusModalClose = () => {
+    setChangeStatusModalOpen(false);
+    setCurrentChangeStatusApplication(null);
+  };
+
+  const handleChangeStatusSubmit = async (updateData) => {
+    try {
+      await disburseApprovalService.updateStatusChange(currentChangeStatusApplication.id, updateData);
+      
+      // Update UI immediately based on changes
+      setApplications(prev => prev.map(app => 
+        app.id === currentChangeStatusApplication.id 
+          ? { 
+              ...app, 
+              ...(updateData.courierPickedDate && { 
+                courierPicked: "Yes", 
+                courierPickedDate: updateData.courierPickedDate 
+              }),
+              ...(updateData.originalDocumentsReceived && { 
+                originalDocuments: updateData.originalDocumentsReceived === "yes" ? "Yes" : "No" 
+              })
+            }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success('Status updated successfully!');
+    } catch (error) {
+      console.error('Error saving status changes:', error);
+      toast.error('Failed to update status');
+      throw error;
+    }
+  };
+
+  const handleDisburseEmandateModalOpen = (application) => {
+    setCurrentDisburseEmandateApplication(application);
+    setDisburseEmandateModalOpen(true);
+  };
+
+  const handleDisburseEmandateModalClose = () => {
+    setDisburseEmandateModalOpen(false);
+    setCurrentDisburseEmandateApplication(null);
+  };
+
+  const handleDisburseEmandateSubmit = async (selectedOption) => {
+    try {
+      await disburseApprovalService.updateEmandateStatus(currentDisburseEmandateApplication.id, selectedOption);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentDisburseEmandateApplication.id 
+          ? { ...app, receivedDisburse: selectedOption }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success('E-mandate status updated successfully!');
+    } catch (error) {
+      console.error('Error saving disburse e-mandate option:', error);
+      toast.error('Failed to update e-mandate status');
+      throw error;
+    }
+  };
+
+  const handleCourierPickedModalOpen = (application) => {
+    setCurrentCourierPickedApplication(application);
+    setCourierPickedModalOpen(true);
+  };
+
+  const handleCourierPickedModalClose = () => {
+    setCourierPickedModalOpen(false);
+    setCurrentCourierPickedApplication(null);
+  };
+
+  const handleCourierPickedSubmit = async (isPicked, pickedDate) => {
+    try {
+      await disburseApprovalService.updateCourierPicked(
+        currentCourierPickedApplication.id, 
+        isPicked, 
+        pickedDate
+      );
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentCourierPickedApplication.id 
+          ? { 
+              ...app, 
+              courierPicked: isPicked ? "Yes" : "No",
+              ...(isPicked && { courierPickedDate: pickedDate })
+            }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success(isPicked ? 'Courier pickup recorded!' : 'Courier status updated!');
+    } catch (error) {
+      console.error('Error saving courier picked status:', error);
+      toast.error('Failed to update courier status');
+      throw error;
+    }
+  };
+
+  const handleCourierModalOpen = (application) => {
+    setCurrentCourierApplication(application);
+    setCourierModalOpen(true);
+  };
+
+  const handleCourierModalClose = () => {
+    setCourierModalOpen(false);
+    setCurrentCourierApplication(null);
+  };
+
+  const handleCourierSubmit = async (courierDate) => {
+    try {
+      await disburseApprovalService.updateSendToCourier(currentCourierApplication.id, courierDate);
+      
+      // Update UI immediately
+      setApplications(prev => prev.map(app => 
+        app.id === currentCourierApplication.id 
+          ? { ...app, sendToCourier: "Yes", courierDate: courierDate }
+          : app
+      ));
+      
+      await fetchApplications();
+      toast.success('Courier scheduled successfully!');
+    } catch (error) {
+      console.error('Error saving courier date:', error);
+      toast.error('Failed to schedule courier');
+      throw error;
+    }
+  };
+
+  // Document verification handlers
+  const handleDocumentVerificationModalOpen = (application) => {
+    setCurrentDocumentApplication(application);
+    setDocumentVerificationModalOpen(true);
+  };
+
+  const handleDocumentVerificationModalClose = () => {
+    setDocumentVerificationModalOpen(false);
+    setCurrentDocumentApplication(null);
+  };
+
+  const handleDocumentVerify = (application, documentId) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/application-form/${application.id}`);
+    setDocumentVerificationModalOpen(false);
+  };
+
+  // Navigation handlers
+  const handleLoanEligibilityClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/loan-eligibility/${application.id}`);
+  };
+
+  const handleCheckClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/appraisal-report/${application.id}`);
+  };
+
+  const handleReplaceKYCClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/replace-kyc/${application.id}`);
+  };
+
+  const handleActionClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/application-form/${application.id}`);
+  };
+
+  const handleCall = (applicant) => {
+    setSelectedApplicant(applicant);
+    setShowCallModal(true);
+  };
+
+  // Handle file view
+  const handleFileView = async (fileName, documentCategory) => {
+    if (!fileName) {
+      alert('No file available');
+      return;
+    }
+    
+    setFileLoading(true);
+    setLoadingFileName(fileName);
+    
+    try {
+      const url = await disburseFileService.viewFile(fileName, documentCategory);
+      
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site.');
+      }
+    } catch (error) {
+      console.error("Failed to load file:", error);
+      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+    } finally {
+      setFileLoading(false);
+      setLoadingFileName('');
+    }
+  };
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -425,6 +553,96 @@ const handleActionClick = (application) => {
     setDateRange(filters.dateRange);
     setSourceFilter(filters.source);
     setCurrentPage(1);
+  };
+
+  // Export functionality
+  const handleExport = async (type) => {
+    const result = await Swal.fire({
+      title: 'Export Applications?',
+      text: 'This will export all disburse applications with current filters.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      setExporting(true);
+      
+      // Build export params without pagination
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      
+      const response = await disburseApprovalService.exportApplications(exportParams);
+      
+      if (response.success) {
+        const headers = [
+          'Sr. No.', 'Loan No.', 'CRN No.', 'Account ID', 'Approved Date', 'Disburse Date', 'Due Date',
+          'Name', 'Current Address', 'Current State', 'Current City', 'Phone', 'Email', 
+          'Applied Amount', 'Approved Amount', 'Admin Fee', 'ROI (%)', 'Tenure (Days)',
+          'Loan Status', 'Status', 'Created At'
+        ];
+
+        const dataRows = response.data.map((app, index) => [
+          index + 1,
+          app.loanNo,
+          app.crnNo,
+          app.accountId,
+          app.approvedDate,
+          app.disburseDate,
+          app.dueDate,
+          app.name,
+          app.currentAddress,
+          app.currentState,
+          app.currentCity,
+          app.phoneNo,
+          app.email,
+          app.applied_amount,
+          app.approved_amount,
+          app.admin_fee || '0.00',
+          `${(parseFloat(app.roi) * 100).toFixed(2)}%`,
+          app.tenure,
+          app.loanStatus,
+          app.status,
+          app.createdAt
+        ]);
+
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, `disburse_applications_${new Date().toISOString().split('T')[0]}`);
+        
+        await Swal.fire({
+          title: 'Export Successful!',
+          text: 'Applications have been exported to Excel successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      } else {
+        throw new Error("Failed to export data");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      await Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Clear all filters
@@ -454,48 +672,6 @@ const handleActionClick = (application) => {
     ...app,
     srNo: startIndex + index + 1
   }));
-
-  // Export functionality
-  const handleExport = async (type) => {
-    if (type === 'excel') {
-      try {
-        setExporting(true);
-        
-        const exportData = filteredApplications.map(app => ({
-          'Loan No.': app.loanNo,
-          'CRN No.': app.crnNo,
-          'Account ID': app.accountId,
-          'Approved Date': app.approvedDate,
-          'Disburse Date': app.disburseDate,
-          'Due Date': app.dueDate,
-          'Name': app.name,
-          'Current Address': app.currentAddress,
-          'Current State': app.currentState,
-          'Current City': app.currentCity,
-          'Phone No.': app.phoneNo,
-          'Email': app.email,
-          'Applied Amount': app.appliedAmount,
-          'Approved Amount': app.approvedAmount,
-          'Admin Fee': app.adminFee,
-          'ROI': app.roi,
-          'Tenure': app.tenure,
-          'Loan Status': app.loanStatus,
-          'Status': app.status,
-          'Created At': new Date(app.createdAt).toLocaleDateString('en-GB')
-        }));
-
-        exportToExcel(exportData, 'manage-applications');
-        
-      } catch (err) {
-        console.error("Export error:", err);
-        setError("Failed to export data. Please try again.");
-      } finally {
-        setExporting(false);
-      }
-    }
-  };
-
-
 
   if (loading && applications.length === 0) {
     return (
@@ -707,133 +883,146 @@ const handleActionClick = (application) => {
 
         {/* Table */}
         <DisburseTable
-  paginatedApplications={paginatedApplications}
-  filteredApplications={filteredApplications}
-  currentPage={currentPage}
-  totalPages={Math.ceil(filteredApplications.length / itemsPerPage)}
-  itemsPerPage={itemsPerPage}
-  isDark={isDark}
-  onPageChange={setCurrentPage}
-  onActionClick={handleActionClick}
-  loading={loading}
-  onChequeModalOpen={handleChequeModalOpen}
-  onCourierModalOpen={handleCourierModalOpen}
-  onCourierPickedModalOpen={handleCourierPickedModalOpen}
-  onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}  
-  onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
-  onChangeStatusClick={handleChangeStatusModalOpen} 
-  onRemarksClick={handleRemarksModalOpen}
-  onRefundPDCClick={handleRefundPDCModalOpen}
-  onLoanEligibilityClick={handleLoanEligibilityClick}  
-  onCheckClick={handleCheckClick}
-  onReplaceKYCClick={handleReplaceKYCClick} 
- onCall={handleCall}  
-  onDocumentStatusClick={handleDocumentVerificationModalOpen}
- 
-  
-/>
+          paginatedApplications={paginatedApplications}
+          filteredApplications={filteredApplications}
+          currentPage={currentPage}
+          totalPages={Math.ceil(filteredApplications.length / itemsPerPage)}
+          itemsPerPage={itemsPerPage}
+          isDark={isDark}
+          onPageChange={setCurrentPage}
+          onActionClick={handleActionClick}
+          loading={loading}
+          onChequeModalOpen={handleChequeModalOpen}
+          onCourierModalOpen={handleCourierModalOpen}
+          onCourierPickedModalOpen={handleCourierPickedModalOpen}
+          onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}  
+          onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
+          onChangeStatusClick={handleChangeStatusModalOpen} 
+          onRemarksClick={handleRemarksModalOpen}
+          onRefundPDCClick={handleRefundPDCModalOpen}
+          onLoanEligibilityClick={handleLoanEligibilityClick}  
+          onCheckClick={handleCheckClick}
+          onReplaceKYCClick={handleReplaceKYCClick} 
+          onCall={handleCall}  
+          onDocumentStatusClick={handleDocumentVerificationModalOpen}
+          onFileView={handleFileView}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
+          onBankVerification={handleBankVerification}
+          onDisburseApproval={handleDisburseApproval}
+        />
       </div>
-      
-{currentDocumentApplication && (
-  <DocumentVerificationModal
-    isOpen={documentVerificationModalOpen}
-    onClose={handleDocumentVerificationModalClose}
-    onVerify={handleDocumentVerify}
-    isDark={isDark}
-    application={currentDocumentApplication}
-  />
-)}
 
-      <CallDetailsModal isOpen={showCallModal} onClose={() => {
+      {/* Modals */}
+      <CallDetailsModal 
+        isOpen={showCallModal} 
+        onClose={() => {
           setShowCallModal(false);
           setSelectedApplicant(null);
-        }} data={selectedApplicant} isDark={isDark}  />
+        }} 
+        data={selectedApplicant} 
+        isDark={isDark}  
+      />
+
+      {currentDocumentApplication && (
+        <DocumentVerificationModal
+          isOpen={documentVerificationModalOpen}
+          onClose={handleDocumentVerificationModalClose}
+          onVerify={handleDocumentVerify}
+          isDark={isDark}
+          application={currentDocumentApplication}
+        />
+      )}
 
       {currentRefundPDCApplication && (
-  <RefundPDCModal
-    isOpen={refundPDCModalOpen}
-    onClose={handleRefundPDCModalClose}
-    onSubmit={handleRefundPDCSubmit}
-    isDark={isDark}
-    customerName={currentRefundPDCApplication.name}
-    loanNo={currentRefundPDCApplication.loanNo}
-  />
-)}
+        <RefundPDCModal
+          isOpen={refundPDCModalOpen}
+          onClose={handleRefundPDCModalClose}
+          onSubmit={handleRefundPDCSubmit}
+          isDark={isDark}
+          customerName={currentRefundPDCApplication.name}
+          loanNo={currentRefundPDCApplication.loanNo}
+        />
+      )}
+
       {currentApplication && (
-  <ChequeModal
-    isOpen={chequeModalOpen}
-    onClose={handleChequeModalClose}
-    onSubmit={handleChequeSubmit}
-    isDark={isDark}
-    initialChequeNo={currentChequeNo}
-    customerName={currentApplication.name}
-    isEdit={!!currentChequeNo}
-  />
-)}
+        <ChequeModal
+          isOpen={chequeModalOpen}
+          onClose={handleChequeModalClose}
+          onSubmit={handleChequeSubmit}
+          isDark={isDark}
+          initialChequeNo={currentChequeNo}
+          customerName={currentApplication.name}
+          isEdit={!!currentChequeNo}
+        />
+      )}
 
-{currentCourierApplication && (
-  <SendToCourierModal
-    isOpen={courierModalOpen}
-    onClose={handleCourierModalClose}
-    onSubmit={handleCourierSubmit}
-    isDark={isDark}
-    customerName={currentCourierApplication.name}
-    loanNo={currentCourierApplication.loanNo}
-  />
-)}
+      {currentCourierApplication && (
+        <SendToCourierModal
+          isOpen={courierModalOpen}
+          onClose={handleCourierModalClose}
+          onSubmit={handleCourierSubmit}
+          isDark={isDark}
+          customerName={currentCourierApplication.name}
+          loanNo={currentCourierApplication.loanNo}
+        />
+      )}
 
-{currentCourierPickedApplication && (
-  <CourierPickedModal
-    isOpen={courierPickedModalOpen}
-    onClose={handleCourierPickedModalClose}
-    onSubmit={handleCourierPickedSubmit}
-    isDark={isDark}
-    customerName={currentCourierPickedApplication.name}
-    loanNo={currentCourierPickedApplication.loanNo}
-  />
-)}
-{currentOriginalDocumentsApplication && (
-  <OriginalDocumentsModal
-    isOpen={originalDocumentsModalOpen}
-    onClose={handleOriginalDocumentsModalClose}
-    onSubmit={handleOriginalDocumentsSubmit}
-    isDark={isDark}
-    customerName={currentOriginalDocumentsApplication.name}
-    loanNo={currentOriginalDocumentsApplication.loanNo}
-  />
-)}
-{currentDisburseEmandateApplication && (
-  <DisburseEmandateModal
-    isOpen={disburseEmandateModalOpen}
-    onClose={handleDisburseEmandateModalClose}
-    onSubmit={handleDisburseEmandateSubmit}
-    isDark={isDark}
-    customerName={currentDisburseEmandateApplication.name}
-    loanNo={currentDisburseEmandateApplication.loanNo}
-  />
-)}
+      {currentCourierPickedApplication && (
+        <CourierPickedModal
+          isOpen={courierPickedModalOpen}
+          onClose={handleCourierPickedModalClose}
+          onSubmit={handleCourierPickedSubmit}
+          isDark={isDark}
+          customerName={currentCourierPickedApplication.name}
+          loanNo={currentCourierPickedApplication.loanNo}
+        />
+      )}
 
-{currentChangeStatusApplication && (
-  <ChangeStatusModal
-    isOpen={changeStatusModalOpen}
-    onClose={handleChangeStatusModalClose}
-    onSubmit={handleChangeStatusSubmit}
-    isDark={isDark}
-    customerName={currentChangeStatusApplication.name}
-    loanNo={currentChangeStatusApplication.loanNo}
-  />
-)}
+      {currentOriginalDocumentsApplication && (
+        <OriginalDocumentsModal
+          isOpen={originalDocumentsModalOpen}
+          onClose={handleOriginalDocumentsModalClose}
+          onSubmit={handleOriginalDocumentsSubmit}
+          isDark={isDark}
+          customerName={currentOriginalDocumentsApplication.name}
+          loanNo={currentOriginalDocumentsApplication.loanNo}
+        />
+      )}
 
-{currentRemarksApplication && (
-  <RemarksModal
-    isOpen={remarksModalOpen}
-    onClose={handleRemarksModalClose}
-    isDark={isDark}
-    customerName={currentRemarksApplication.name}
-    loanNo={currentRemarksApplication.loanNo}
-    application={currentRemarksApplication}
-  />
-)}
+      {currentDisburseEmandateApplication && (
+        <DisburseEmandateModal
+          isOpen={disburseEmandateModalOpen}
+          onClose={handleDisburseEmandateModalClose}
+          onSubmit={handleDisburseEmandateSubmit}
+          isDark={isDark}
+          customerName={currentDisburseEmandateApplication.name}
+          loanNo={currentDisburseEmandateApplication.loanNo}
+        />
+      )}
+
+      {currentChangeStatusApplication && (
+        <ChangeStatusModal
+          isOpen={changeStatusModalOpen}
+          onClose={handleChangeStatusModalClose}
+          onSubmit={handleChangeStatusSubmit}
+          isDark={isDark}
+          customerName={currentChangeStatusApplication.name}
+          loanNo={currentChangeStatusApplication.loanNo}
+        />
+      )}
+
+      {currentRemarksApplication && (
+        <RemarksModal
+          isOpen={remarksModalOpen}
+          onClose={handleRemarksModalClose}
+          onSubmit={handleRemarksSubmit}
+          isDark={isDark}
+          customerName={currentRemarksApplication.name}
+          loanNo={currentRemarksApplication.loanNo}
+          application={currentRemarksApplication}
+        />
+      )}
     </div>
   );
 };

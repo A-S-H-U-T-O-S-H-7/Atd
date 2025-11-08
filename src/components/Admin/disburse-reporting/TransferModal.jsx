@@ -1,21 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Building, CreditCard, Calendar, Lock } from "lucide-react";
+import disbursementService from "@/lib/services/disbursementService";
+import toast from 'react-hot-toast';
 
 const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) => {
   const [formData, setFormData] = useState({
-    disbursementAmount: disbursementData?.disbursedAmount || "",
-    bankName: disbursementData?.beneficiaryBankIFSC?.includes("FDRL") ? "THE FEDERAL BANK LTD" : "",
-    accountNo: disbursementData?.beneficiaryAcNo || "",
-    ifscNo: disbursementData?.beneficiaryBankIFSC || "",
+    disbursementAmount: "",
+    bankName: "",
+    accountNo: "",
+    ifscNo: "",
     branchName: "",
-    accountType: disbursementData?.beneficiaryAcType || "SAVING",
+    accountType: "SAVING",
     authCode1: "",
     authCode2: "",
     transactionDate: new Date().toISOString().split('T')[0],
-    dueDate: disbursementData?.dueDate || "",
-    atdBankName: "ICICI Bank-A/c-5399",
-    atdBranchName: "Sector-61, Noida"
+    dueDate: "",
+    atdBankName: "",
+    atdBranchName: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [atdBanks, setAtdBanks] = useState([]);
+
+  // Load ATD banks and set initial data when modal opens
+  useEffect(() => {
+    if (isOpen && disbursementData) {
+      // Set initial form data from disbursementData
+      setFormData(prev => ({
+        ...prev,
+        disbursementAmount: disbursementData.disbursedAmount || "",
+        bankName: disbursementData.beneficiaryBankIFSC?.includes("FDRL") ? "THE FEDERAL BANK LTD" : "",
+        accountNo: disbursementData.beneficiaryAcNo || "",
+        ifscNo: disbursementData.beneficiaryBankIFSC || "",
+        accountType: disbursementData.beneficiaryAcType || "SAVING",
+        dueDate: disbursementData.dueDate || ""
+      }));
+
+      // Load ATD banks
+      const loadAtdBanks = async () => {
+        try {
+          const bankList = await disbursementService.getBanks();
+          setAtdBanks(bankList);
+          
+          // Set default ATD bank if available
+          if (bankList.length > 0 && !formData.atdBankName) {
+            setFormData(prev => ({
+              ...prev,
+              atdBankName: bankList[0].id.toString()
+            }));
+          }
+        } catch (error) {
+          console.error('Error loading ATD banks:', error);
+          toast.error('Failed to load bank list');
+        }
+      };
+      
+      loadAtdBanks();
+    }
+  }, [isOpen, disbursementData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,14 +64,72 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
       ...prev,
       [name]: value
     }));
+
+    // If ATD bank changes, try to load branch details
+    if (name === 'atdBankName' && value) {
+      loadBankBranch(value);
+    }
   };
 
-  const handleSubmit = () => {
-    onSubmit({
-      ...disbursementData,
-      ...formData
-    });
-    onClose();
+  const loadBankBranch = async (bankId) => {
+    try {
+      const bankDetails = await disbursementService.getBankDetails(bankId);
+      if (bankDetails && bankDetails.branch_name) {
+        setFormData(prev => ({
+          ...prev,
+          atdBranchName: bankDetails.branch_name
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading bank branch:', error);
+      // Continue without setting branch name
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.authCode1.trim()) {
+      toast.error('Please enter Authorization Code 1');
+      return;
+    }
+
+    if (!formData.authCode2.trim()) {
+      toast.error('Please enter Authorization Code 2');
+      return;
+    }
+
+    if (!formData.atdBankName) {
+      toast.error('Please select ATD Bank');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      // Call the actual API to process transfer
+      const response = await disbursementService.processTransfer(formData, disbursementData);
+      
+      if (response.success) {
+        toast.success('Transfer processed successfully!');
+        
+        // Call parent onSubmit callback if provided
+        if (onSubmit) {
+          await onSubmit({
+            ...disbursementData,
+            ...formData
+          });
+        }
+        
+        onClose();
+      } else {
+        throw new Error(response.message || 'Failed to process transfer');
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+      toast.error(error.message || 'Transfer failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -59,7 +158,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
       <div className={`rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto border ${
         isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
       }`}>
-        {/* Compact Header */}
+        {/* Header */}
         <div className={`px-4 py-3 border-b ${
           isDark 
             ? "bg-gray-900 border-gray-700" 
@@ -78,30 +177,31 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                 <h2 className={`text-lg font-bold ${
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`}>
-                  Disbursement Details
+                  Disbursement Transfer
                 </h2>
                 <p className={`text-xs ${
                   isDark ? "text-gray-300" : "text-gray-600"
                 }`}>
-                  {disbursementData?.beneficiaryAcName}
+                  {disbursementData?.beneficiaryAcName} - {disbursementData?.loanNo}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
+              disabled={isSubmitting}
               className={`p-2 rounded-lg hover:bg-opacity-80 transition-all duration-200 ${
                 isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"
-              }`}
+              } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <X className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-600"}`} />
             </button>
           </div>
         </div>
 
-        {/* Compact Form Content */}
+        {/* Form Content */}
         <div className="p-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Left Column */}
+            {/* Left Column - Customer Details */}
             <div className="space-y-4">
               {/* Disbursement Amount */}
               <div className="space-y-1">
@@ -191,7 +291,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
               </div>
             </div>
 
-            {/* Right Column */}
+            {/* Right Column - Transfer Details */}
             <div className="space-y-4">
               {/* Auth Codes */}
               <div className="space-y-3">
@@ -199,18 +299,21 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                   <label className={`block text-xs font-medium ${
                     isDark ? "text-gray-300" : "text-gray-600"
                   }`}>
-                    Authorization Code 1
+                    Authorization Code 1 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="authCode1"
                     value={formData.authCode1}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                     className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                       isDark 
                         ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                         : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                    } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                    } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
 
@@ -218,18 +321,21 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                   <label className={`block text-xs font-medium ${
                     isDark ? "text-gray-300" : "text-gray-600"
                   }`}>
-                    Authorization Code 2
+                    Authorization Code 2 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="authCode2"
                     value={formData.authCode2}
                     onChange={handleInputChange}
+                    disabled={isSubmitting}
                     className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                       isDark 
                         ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                         : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                    } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                    } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -248,11 +354,14 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                       name="transactionDate"
                       value={formData.transactionDate}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
                           ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                           : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
                     <Calendar className={`absolute right-2 top-2 w-4 h-4 ${
                       isDark ? "text-gray-400" : "text-gray-500"
@@ -272,11 +381,14 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                       name="dueDate"
                       value={formData.dueDate}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
                           ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                           : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
                     <Calendar className={`absolute right-2 top-2 w-4 h-4 ${
                       isDark ? "text-gray-400" : "text-gray-500"
@@ -307,21 +419,25 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                     <label className={`block text-xs font-medium ${
                       isDark ? "text-gray-300" : "text-gray-600"
                     }`}>
-                      Bank Name
+                      Bank Name <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="atdBankName"
                       value={formData.atdBankName}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
                           ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                           : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
-                      <option value="ICICI Bank-A/c-5399">ICICI Bank-A/c-5399</option>
-                      <option value="HDFC Bank-A/c-1234">HDFC Bank-A/c-1234</option>
-                      <option value="SBI Bank-A/c-5678">SBI Bank-A/c-5678</option>
+                      <option value="">--Select ATD Bank--</option>
+                      {atdBanks.map(bank => (
+                        <option key={bank.id} value={bank.id}>{bank.name}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -336,11 +452,14 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                       name="atdBranchName"
                       value={formData.atdBranchName}
                       onChange={handleInputChange}
+                      disabled={isSubmitting}
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
                           ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
                           : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
+                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
+                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
                   </div>
                 </div>
@@ -348,20 +467,32 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
             </div>
           </div>
 
-          {/* Compact Submit Button */}
+          {/* Submit Button */}
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSubmit}
+              disabled={isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName}
               className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center space-x-2 shadow-lg transform hover:scale-105 ${
-                isDark
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/25"
-                  : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25"
+                isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName
+                  ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                  : isDark
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/25"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25"
               }`}
             >
-              <span>Submit Transfer</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              {isSubmitting ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Processing Transfer...</span>
+                </>
+              ) : (
+                <>
+                  <span>Submit Transfer</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
             </button>
           </div>
         </div>

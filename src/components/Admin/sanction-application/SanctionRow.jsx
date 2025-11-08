@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { Calendar, Mail, Edit, CheckCircle, X, Play, Edit2 } from "lucide-react";
-import { FaRegFilePdf } from "react-icons/fa";
-import Swal from 'sweetalert2';
+import React from "react";
+import { Calendar, Mail, Edit, CheckCircle, X, Edit2 } from "lucide-react";
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -37,34 +35,13 @@ const SanctionRow = ({
   onReplaceKYCClick,
   onCall,
   onActionClick,
+  onStatusClick,
   onFileView,
   fileLoading,
   loadingFileName
 }) => {
-  const [chequeNumber, setChequeNumber] = useState(application.chequeNo || "");
-  const [readyForApprove, setReadyForApprove] = useState(application.readyForApprove || "pending");
-
-  const handleReadyForApprove = () => {
-    if (readyForApprove === "pending") {
-      Swal.fire({
-        title: 'Ready for Approve',
-        text: 'Are you sure you want to change the status?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Ready to Verify',
-        cancelButtonText: 'Cancel'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          setReadyForApprove("ready_to_verify");
-        }
-      });
-    }
-  };
-
   const handleChequeClick = () => {
-    onChequeModalOpen(application, chequeNumber);
+    onChequeModalOpen(application, application.chequeNo || "");
   };
 
   const formatCurrency = amount => {
@@ -224,8 +201,8 @@ const SanctionRow = ({
 
       {/* Approved Amount */}
       <td className={cellStyle}>
-        <div className="bg-gradient-to-r px-2  rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
-          <span className={`text-sm font-semibold `}>
+        <div className="bg-gradient-to-r px-2 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
+          <span className={`text-sm font-semibold`}>
             {formatCurrency(application.approvedAmount)}
           </span>
         </div>
@@ -429,7 +406,7 @@ const SanctionRow = ({
       {/* Cheque */}
       <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          {chequeNumber ? (
+          {application.chequeNo ? (
             <div className="flex items-center space-x-2">
               <span
                 className={`px-3 py-1 rounded-md text-xs font-medium ${
@@ -438,7 +415,7 @@ const SanctionRow = ({
                     : "bg-green-100 text-green-800 border border-green-200"
                 }`}
               >
-                {chequeNumber}
+                {application.chequeNo}
               </span>
               <button
                 onClick={handleChequeClick}
@@ -607,34 +584,18 @@ const SanctionRow = ({
         </span>
       </td>
 
-      {/* Ready For Approve Column */}
-      <td className={`px-6 py-4 text-center border-r ${cellBorder}`}>
-        <button
-          onClick={handleReadyForApprove}
-          className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-            readyForApprove === "pending"
-              ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-              : "bg-green-100 text-green-600 cursor-default"
-          }`}
-        >
-          {readyForApprove === "pending" ? (
-            <span>Pending</span>
-          ) : (
-            <>
-              <CheckCircle size={14} />
-              <span>Ready to Verify</span>
-            </>
-          )}
-        </button>
-      </td>
-
       {/* Loan Status */}
       <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-orange-400" : "text-orange-600"
-        }`}>
+        <button
+          onClick={() => onStatusClick(application)}
+          className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 hover:scale-105 ${
+            isDark 
+              ? "bg-orange-900/50 text-orange-300 border border-orange-700 hover:bg-orange-800" 
+              : "bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200"
+          }`}
+        >
           {application.loanStatus}
-        </span>
+        </button>
       </td>
 
       {/* Change Status */}
@@ -651,36 +612,36 @@ const SanctionRow = ({
         </div>
       </td>
 
-      {/* Action  */}
+      {/* Action */}
       <td className={cellStyle}>
-  <ActionButton
-    enquiry={application}
-    isDark={isDark}
-    onVerifyClick={onActionClick} 
-    className="w-full flex justify-center"
-  />
-</td>
+        <ActionButton
+          enquiry={application}
+          isDark={isDark}
+          onVerifyClick={onActionClick} 
+          className="w-full flex justify-center"
+        />
+      </td>
 
       {/* Appraisal Report */}
-<td className={cellStyle}>
-  <AppraisalReportButton
-    enquiry={application}
-    isDark={isDark}
-    onFileView={onFileView}
-    onCheckClick={onCheckClick}
-    className="w-full flex justify-center"
-  />
-</td>
+      <td className={cellStyle}>
+        <AppraisalReportButton
+          enquiry={application}
+          isDark={isDark}
+          onFileView={onFileView}
+          onCheckClick={onCheckClick}
+          className="w-full flex justify-center"
+        />
+      </td>
 
       {/* Eligibility */}
-<td className={cellStyle}>
-  <EligibilityButton
-    enquiry={application}
-    isDark={isDark}
-    onLoanEligibilityClick={onLoanEligibilityClick}
-    className="w-full flex justify-center"
-  />
-</td>
+      <td className={cellStyle}>
+        <EligibilityButton
+          enquiry={application}
+          isDark={isDark}
+          onLoanEligibilityClick={onLoanEligibilityClick}
+          className="w-full flex justify-center"
+        />
+      </td>
 
       {/* Replace KYC */}
       <td className={cellStyle}>

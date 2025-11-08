@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, Calculator } from "lucide-react";
+import { FileText, Calculator, Loader } from "lucide-react";
 import DisbursementRow from "./DisbursementRow";
 import Pagination from "../Pagination";
 
@@ -11,19 +11,18 @@ const DisbursementTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onNewLoanClick,
-  onUpdateClick,
   onTransactionClick,
   onTransactionStatusClick,
-  onTransferClick  
+  onTransferClick,
+  isLoading = false
 }) => {
   // Calculate totals
   const totalSanctionedAmount = filteredDisbursementData.reduce((sum, item) => 
-    sum + parseFloat(item.sanctionedAmount), 0
+    sum + parseFloat(item.sanctionedAmount || 0), 0
   );
   
   const totalDisbursedAmount = filteredDisbursementData.reduce((sum, item) => 
-    sum + parseFloat(item.disbursedAmount), 0
+    sum + parseFloat(item.disbursedAmount || 0), 0
   );
 
   const formatCurrency = (amount) => {
@@ -32,6 +31,23 @@ const DisbursementTable = ({
       maximumFractionDigits: 2
     })}`;
   };
+
+  if (isLoading) {
+    return (
+      <div className={`rounded-2xl shadow-2xl border-2 p-12 flex items-center justify-center ${
+        isDark
+          ? "bg-gray-800 border-emerald-600/50"
+          : "bg-white border-emerald-300"
+      }`}>
+        <div className="flex flex-col items-center space-y-4">
+          <Loader className="w-8 h-8 animate-spin text-emerald-500" />
+          <p className={`text-lg font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            Loading disbursement data...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -103,7 +119,6 @@ const DisbursementTable = ({
                 }`} style={{ minWidth: "100px" }}>
                   Transaction
                 </th>
-
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "100px" }}>
@@ -114,8 +129,6 @@ const DisbursementTable = ({
                 }`} style={{ minWidth: "170px" }}>
                   ICICI Transaction Status
                 </th>
-
-
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
@@ -141,16 +154,6 @@ const DisbursementTable = ({
                 }`} style={{ minWidth: "180px" }}>
                   Send to Rec (Transaction Narration)
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "150px" }}>
-                  New Loan
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold  ${
-                  isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "120px" }}>
-                  Action
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -160,12 +163,9 @@ const DisbursementTable = ({
                   item={item}
                   index={index}
                   isDark={isDark}
-                  onNewLoanClick={onNewLoanClick}
-                  onUpdateClick={onUpdateClick}
                   onTransactionClick={onTransactionClick}
-                    onTransactionStatusClick={onTransactionStatusClick}
-                    onTransferClick={onTransferClick}
-
+                  onTransactionStatusClick={onTransactionStatusClick}
+                  onTransferClick={onTransferClick}
                 />
               ))}
             </tbody>

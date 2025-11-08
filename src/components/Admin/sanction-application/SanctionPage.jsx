@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateRangeFilter from "../DateRangeFilter";
 import SanctionTable from "./SanctionTable";
+
 import CallDetailsModal from "../CallDetailsModal";
+
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";
@@ -13,6 +15,7 @@ import OriginalDocumentsModal from "../application-modals/OriginalDocumentsModal
 import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
 import ChangeStatusModal from "../application-modals/StatusModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
+
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   sanctionApplicationAPI,
@@ -22,6 +25,8 @@ import {
 } from "@/lib/services/SanctionApplicationServices";
 import { exportToExcel } from "@/components/utils/exportutil";
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
+import StatusUpdateModal from "../StatusUpdateModal";
 
 const SanctionPage = () => {
   const { theme } = useThemeStore();
@@ -57,6 +62,9 @@ const SanctionPage = () => {
   const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
   const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
+
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -138,6 +146,10 @@ const SanctionPage = () => {
     }
   };
 
+  const statusOptions = [
+  { value: "Ready To Verify", label: "Ready To Verify" }
+];
+
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchApplications();
@@ -178,22 +190,110 @@ const SanctionPage = () => {
     setCurrentChequeNo('');
   };
 
-  const handleChequeSubmit = async (newChequeNo) => {
-    try {
-      await sanctionService.updateChequeNumber(currentApplication.id, newChequeNo);
-      // Refresh applications after update
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'Cheque number updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving cheque number:', error);
-      throw error;
-    }
-  };
+const handleChequeSubmit = async (newChequeNo) => {
+  try {
+    await sanctionService.updateChequeNumber(currentApplication.id, newChequeNo);
+    
+    // Update UI immediately
+    setApplications(prev => prev.map(app => 
+      app.id === currentApplication.id 
+        ? { ...app, chequeNo: newChequeNo }
+        : app
+    ));
+    
+    // Also refresh from server
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update cheque number');
+    throw error;
+  }
+};
+
+const handleCourierSubmit = async (courierDate) => {
+  try {
+    await sanctionService.updateSendToCourier(currentCourierApplication.id, courierDate);
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to schedule courier');
+    throw error;
+  }
+};
+
+const handleCourierPickedSubmit = async (isPicked, pickedDate) => {
+  try {
+    await sanctionService.updateCourierPicked(
+      currentCourierPickedApplication.id, 
+      isPicked, 
+      pickedDate
+    );
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update courier status');
+    throw error;
+  }
+};
+
+// Update original documents handler
+const handleOriginalDocumentsSubmit = async (isReceived, receivedDate) => {
+  try {
+    await sanctionService.updateOriginalDocuments(
+      currentOriginalDocumentsApplication.id, 
+      isReceived, 
+      receivedDate
+    );
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update documents status');
+    throw error;
+  }
+};
+
+const handleDisburseEmandateSubmit = async (selectedOption) => {
+  try {
+    await sanctionService.updateEmandateStatus(
+      currentDisburseEmandateApplication.id, 
+      selectedOption
+    );
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update e-mandate status');
+    throw error;
+  }
+};
+
+// Update status change handler
+const handleChangeStatusSubmit = async (updateData) => {
+  try {
+    await sanctionService.updateStatusChange(
+      currentChangeStatusApplication.id, 
+      updateData
+    );
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update status');
+    throw error;
+  }
+};
+
+const handleStatusUpdate = async (applicationId, status, remark) => {
+  try {
+    await sanctionService.updateLoanStatus(applicationId, status, remark);
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update loan status');
+    throw error;
+  }
+};
+
+const handleStatusModalOpen = (application) => {
+  setCurrentStatusApplication(application);
+  setStatusModalOpen(true);
+};
+
+const handleStatusModalClose = () => {
+  setStatusModalOpen(false);
+  setCurrentStatusApplication(null);
+};
 
   const handleOriginalDocumentsModalOpen = (application) => {
     setCurrentOriginalDocumentsApplication(application);
@@ -203,25 +303,6 @@ const SanctionPage = () => {
   const handleOriginalDocumentsModalClose = () => {
     setOriginalDocumentsModalOpen(false);
     setCurrentOriginalDocumentsApplication(null);
-  };
-
-  const handleOriginalDocumentsSubmit = async (receivedDate) => {
-    try {
-      await sanctionService.updateOriginalDocuments(currentOriginalDocumentsApplication.id, {
-        original_documents: 1,
-        documents_received_date: receivedDate
-      });
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'Original documents status updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving original documents received date:', error);
-      throw error;
-    }
   };
 
   const handleRefundPDCModalOpen = (application) => {
@@ -261,21 +342,6 @@ const SanctionPage = () => {
     setCurrentChangeStatusApplication(null);
   };
 
-  const handleChangeStatusSubmit = async (updateData) => {
-    try {
-      await sanctionService.updateStatus(currentChangeStatusApplication.id, updateData);
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'Status updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving status changes:', error);
-      throw error;
-    }
-  };
 
   const handleDisburseEmandateModalOpen = (application) => {
     setCurrentDisburseEmandateApplication(application);
@@ -285,24 +351,6 @@ const SanctionPage = () => {
   const handleDisburseEmandateModalClose = () => {
     setDisburseEmandateModalOpen(false);
     setCurrentDisburseEmandateApplication(null);
-  };
-
-  const handleDisburseEmandateSubmit = async (selectedOption) => {
-    try {
-      await sanctionService.updateEmandateStatus(currentDisburseEmandateApplication.id, {
-        emandateverification: selectedOption
-      });
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'E-mandate status updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving disburse e-mandate option:', error);
-      throw error;
-    }
   };
 
   const handleCourierPickedModalOpen = (application) => {
@@ -315,24 +363,6 @@ const SanctionPage = () => {
     setCurrentCourierPickedApplication(null);
   };
 
-  const handleCourierPickedSubmit = async (pickedDate) => {
-    try {
-      await sanctionService.updateCourierStatus(currentCourierPickedApplication.id, {
-        courier_picked: 1,
-        courier_picked_date: pickedDate
-      });
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'Courier picked status updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving courier picked date:', error);
-      throw error;
-    }
-  };
 
   const handleCourierModalOpen = (application) => {
     setCurrentCourierApplication(application);
@@ -344,24 +374,7 @@ const SanctionPage = () => {
     setCurrentCourierApplication(null);
   };
 
-  const handleCourierSubmit = async (courierDate) => {
-    try {
-      await sanctionService.updateCourierStatus(currentCourierApplication.id, {
-        send_courier: 1,
-        courier_date: courierDate
-      });
-      fetchApplications();
-      Swal.fire({
-        title: 'Success!',
-        text: 'Courier status updated successfully',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-      });
-    } catch (error) {
-      console.error('Error saving courier date:', error);
-      throw error;
-    }
-  };
+  
 
   // Navigation handlers
   const handleLoanEligibilityClick = (application) => {
@@ -751,6 +764,7 @@ const SanctionPage = () => {
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
+          onStatusClick={handleStatusModalOpen}
         />
       </div>
 
@@ -842,6 +856,17 @@ const SanctionPage = () => {
           loanNo={currentChangeStatusApplication.loanNo}
         />
       )}
+
+      {currentStatusApplication && (
+  <StatusUpdateModal
+    isOpen={statusModalOpen}
+    onClose={handleStatusModalClose}
+    application={currentStatusApplication}
+    statusOptions={statusOptions}
+    onStatusUpdate={handleStatusUpdate}
+    isDark={isDark}
+  />
+)}
     </div>
   );
 };

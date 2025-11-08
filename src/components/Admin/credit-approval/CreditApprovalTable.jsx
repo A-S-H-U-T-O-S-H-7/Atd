@@ -4,8 +4,8 @@ import Pagination from "../Pagination";
 import CreditApprovalRow from "./CreditApprovalRow";
 
 const CreditApprovalTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
   itemsPerPage,
@@ -14,23 +14,27 @@ const CreditApprovalTable = ({
   onCall,
   onFileView,
   onActionClick,
-  onVerifyClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
   onOriginalDocumentsModalOpen,
   onDisburseEmandateModalOpen,
   onChangeStatusClick,
-  onRemarksClick,
   onRefundPDCClick,
-  onLoanEligibilityClick,
-  onCheckClick,
-  onReplaceKYCClick,}) => {
+  onLoanEligibilityClick,  
+  onCheckClick, 
+  onReplaceKYCClick,
+  fileLoading,
+  loadingFileName,
+  // NEW: Bank verification and disburse approval handlers
+  onBankVerification,
+  onDisburseApproval
+}) => {
 
-    const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
- 
+
   // Table headers configuration with their respective widths
   const tableHeaders = [
     { label: "SR. No", width: "100px" },
@@ -81,7 +85,7 @@ const CreditApprovalTable = ({
     { label: "Sanction Letter", width: "140px" },
     { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
-    { label: "Ready For Approve", width: "180px" },
+    // NEW COLUMNS FOR CREDIT APPROVAL
     { label: "Bank A/c Verification", width: "180px" },
     { label: "Disburse Approval", width: "160px" },
 
@@ -91,11 +95,8 @@ const CreditApprovalTable = ({
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Replace KYC", width: "160px" },
-
-    
-
   ];
-
+ 
   return (
     <>
       <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
@@ -137,13 +138,17 @@ const CreditApprovalTable = ({
                   onOriginalDocumentsModalOpen={onOriginalDocumentsModalOpen}
                   onDisburseEmandateModalOpen={onDisburseEmandateModalOpen}
                   onChangeStatusClick={onChangeStatusClick}
-                  onRemarksClick={onRemarksClick}
                   onRefundPDCClick={onRefundPDCClick}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onReplaceKYCClick ={onReplaceKYCClick}
+                  onReplaceKYCClick={onReplaceKYCClick}
                   onCall={onCall}
-                  />
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                  // NEW: Pass the bank verification and disburse approval handlers
+                  onBankVerification={onBankVerification}
+                  onDisburseApproval={onDisburseApproval}
+                />
               ))}
             </tbody>
           </table>

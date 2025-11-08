@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Calendar, Building, CheckCircle } from 'lucide-react';
+import disbursementService from '@/lib/services/disbursementService';
+import toast from 'react-hot-toast';
 
 const TransactionDetailsModal = ({ 
   isOpen, 
@@ -9,26 +11,43 @@ const TransactionDetailsModal = ({
   disbursementData 
 }) => {
   const [formData, setFormData] = useState({
-    disbursementAmount: disbursementData?.disbursedAmount || '',
+    disbursementAmount: '',
     transactionId: '',
     transactionDate: '',
-    dueDate: disbursementData?.dueDate || '',
+    dueDate: '',
     bankName: '',
     branchName: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [banks, setBanks] = useState([]);
 
-  // Sample banks list - you can move this to a constants file
-  const banks = [
-    { id: 'IDBI', name: 'IDBI Bank' },
-    { id: 'SBI', name: 'State Bank of India' },
-    { id: 'HDFC', name: 'HDFC Bank' },
-    { id: 'ICICI', name: 'ICICI Bank' },
-    { id: 'AXIS', name: 'Axis Bank' },
-    { id: 'PNB', name: 'Punjab National Bank' },
-    { id: 'BOI', name: 'Bank of India' },
-    { id: 'CANARA', name: 'Canara Bank' }
-  ];
+  // Load banks and set initial data when modal opens
+  useEffect(() => {
+    if (isOpen && disbursementData) {
+      // Set initial form data from disbursementData
+      setFormData({
+        disbursementAmount: disbursementData.disbursedAmount || '',
+        transactionId: '',
+        transactionDate: '',
+        dueDate: disbursementData.dueDate || '',
+        bankName: '',
+        branchName: ''
+      });
+
+      // Load banks list
+      const loadBanks = async () => {
+        try {
+          const bankList = await disbursementService.getBanks();
+          setBanks(bankList);
+        } catch (error) {
+          console.error('Error loading banks:', error);
+          toast.error('Failed to load bank list');
+        }
+      };
+      
+      loadBanks();
+    }
+  }, [isOpen, disbursementData]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -40,50 +59,64 @@ const TransactionDetailsModal = ({
   const handleSubmit = async () => {
     // Validate required fields
     if (!formData.transactionId.trim()) {
-      alert('Please enter Transaction ID');
+      toast.error('Please enter Transaction ID');
       return;
     }
 
     if (!formData.transactionDate) {
-      alert('Please select Transaction Date');
+      toast.error('Please select Transaction Date');
       return;
     }
 
     if (!formData.bankName) {
-      alert('Please select Bank Name');
+      toast.error('Please select Bank Name');
       return;
     }
 
     if (!formData.branchName.trim()) {
-      alert('Please enter Branch Name');
+      toast.error('Please enter Branch Name');
       return;
     }
 
     try {
       setIsSubmitting(true);
       
-      // Prepare data to submit
-      const transactionData = {
-        ...disbursementData,
-        ...formData,
-        updatedAt: new Date().toISOString()
-      };
+      // Call the actual API to update manual transaction
+      const response = await disbursementService.updateTransaction(
+        disbursementData.disburse_id,
+        formData,
+        disbursementData
+      );
       
-      await onSubmit(transactionData);
-      
-      // Reset form
-      setFormData({
-        disbursementAmount: disbursementData?.disbursedAmount || '',
-        transactionId: '',
-        transactionDate: '',
-        dueDate: disbursementData?.dueDate || '',
-        bankName: '',
-        branchName: ''
-      });
-      onClose();
+      if (response.success) {
+        toast.success('Transaction updated successfully!');
+        
+        // Reset form
+        setFormData({
+          disbursementAmount: disbursementData.disbursedAmount || '',
+          transactionId: '',
+          transactionDate: '',
+          dueDate: disbursementData.dueDate || '',
+          bankName: '',
+          branchName: ''
+        });
+        
+        // Call parent onSubmit callback if provided
+        if (onSubmit) {
+          await onSubmit({
+            ...disbursementData,
+            ...formData,
+            updatedAt: new Date().toISOString()
+          });
+        }
+        
+        onClose();
+      } else {
+        throw new Error(response.message || 'Failed to update transaction');
+      }
     } catch (error) {
       console.error('Error updating transaction:', error);
-      alert('Failed to update transaction. Please try again.');
+      toast.error(error.message || 'Failed to update transaction. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

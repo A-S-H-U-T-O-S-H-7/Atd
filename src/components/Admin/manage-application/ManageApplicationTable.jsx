@@ -52,6 +52,7 @@ const ManageApplicationTable = ({
         { label: "City", width: "100px" },
         { label: "Phone No.", width: "140px" },
         { label: "E-mail", width: "200px" },
+        { label: "Applied Amount", width: "120px" },
         { label: "Amount Approved", width: "120px" },
         { label: "Admin Fee", width: "140px" },
         { label: "ROI", width: "80px" },
@@ -88,7 +89,6 @@ const ManageApplicationTable = ({
         { label: "Sanction Letter", width: "140px" },
         { label: "Emandate Status", width: "100px" },
         { label: "ICICI Emandate Status", width: "180px" },
-        { label: "Ready For Approve", width: "180px" },
         { label: "Bank A/c Verification", width: "180px" },
         { label: "Disburse Approval", width: "160px" },
         //here i sthe space for Disburse and collection

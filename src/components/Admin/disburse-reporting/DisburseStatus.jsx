@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { X, Shield, Key, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import disbursementService from '@/lib/services/disbursementService';
+import toast from 'react-hot-toast';
 
 const DisburseStatusModal = ({ 
   isOpen, 
@@ -38,26 +40,39 @@ const DisburseStatusModal = ({
       setIsSubmitting(true);
       
       const statusData = {
-        id: disbursementData?.id,
-        loanNo: disbursementData?.loanNo,
-        customerName: customerName,
         authCode1: authCode1.trim(),
         authCode2: authCode2.trim(),
-        timestamp: new Date().toISOString(),
-        // Add any other relevant data
-        ...disbursementData
+        customer_name: customerName,
+        timestamp: new Date().toISOString()
       };
       
-      await onSubmit(statusData);
+      // Call the actual API
+      const response = await disbursementService.checkTransactionStatus(statusData, disbursementData);
       
-      // Reset form
-      setAuthCode1('');
-      setAuthCode2('');
-      setErrors({});
-      onClose();
+      if (response.success) {
+        toast.success('Transaction status checked successfully!');
+        
+        // Reset form
+        setAuthCode1('');
+        setAuthCode2('');
+        setErrors({});
+        
+        // Call the parent onSubmit callback if provided
+        if (onSubmit) {
+          await onSubmit({
+            ...disbursementData,
+            ...statusData,
+            transactionStatus: 'Checked'
+          });
+        }
+        
+        onClose();
+      } else {
+        throw new Error(response.message || 'Failed to check transaction status');
+      }
     } catch (error) {
       console.error('Error checking transaction status:', error);
-      alert('Failed to check transaction status. Please try again.');
+      toast.error(error.message || 'Failed to check transaction status. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

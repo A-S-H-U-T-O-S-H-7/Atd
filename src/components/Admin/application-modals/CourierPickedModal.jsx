@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Package, CheckCircle } from 'lucide-react';
+import { X, Calendar, Package, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const CourierPickedModal = ({ 
   isOpen, 
@@ -10,29 +10,26 @@ const CourierPickedModal = ({
   loanNo 
 }) => {
   const [pickedDate, setPickedDate] = useState('');
+  const [isPicked, setIsPicked] = useState(true); // Default to "Yes"
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!pickedDate) {
-      alert('Please select a pickup date');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      await onSubmit(pickedDate);
-      setPickedDate('');
-      onClose();
-    } catch (error) {
-      console.error('Error submitting courier picked date:', error);
-      alert('Failed to save courier picked date. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    setIsSubmitting(true);
+    await onSubmit(isPicked, isPicked ? pickedDate : null);
+    setPickedDate('');
+    setIsPicked(true);
+    onClose();
+  } catch (error) {
+    console.error('Error submitting courier picked status:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleClose = () => {
     setPickedDate('');
+    setIsPicked(true);
     onClose();
   };
 
@@ -77,7 +74,7 @@ const CourierPickedModal = ({
                   text-sm
                   ${isDark ? 'text-gray-400' : 'text-gray-600'}
                 `}>
-                  Record courier pickup date
+                  Record courier pickup status
                 </p>
               </div>
             </div>
@@ -134,46 +131,101 @@ const CourierPickedModal = ({
               </div>
             </div>
 
-            {/* Date Input */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="pickedDate"
-                className={`
-                  block text-sm font-medium
-                  ${isDark ? 'text-gray-300' : 'text-gray-700'}
-                `}
-              >
-                Pickup Date 
-              </label>
-              <div className="relative">
-                <Calendar className={`
-                  absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
-                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
-                `} />
-                <input
-                  type="date"
-                  id="pickedDate"
-                  value={pickedDate}
-                  onChange={(e) => setPickedDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className={`
-                    w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
-                    ${isDark
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
-                    }
-                    focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
-                  `}
-                  required
-                />
-              </div>
-              <p className={`
-                text-xs
-                ${isDark ? 'text-gray-400' : 'text-gray-500'}
+            {/* Yes/No Toggle */}
+            <div className="space-y-3">
+              <label className={`
+                block text-sm font-medium
+                ${isDark ? 'text-gray-300' : 'text-gray-700'}
               `}>
-                Select the date when courier picked up the documents
-              </p>
+                Courier Pickup Status
+              </label>
+              <div className="flex items-center space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setIsPicked(true)}
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 flex-1 ${
+                    isPicked
+                      ? isDark
+                        ? 'bg-emerald-900/30 border-emerald-500 text-emerald-400'
+                        : 'bg-emerald-100 border-emerald-500 text-emerald-700'
+                      : isDark
+                        ? 'bg-gray-700 border-gray-600 text-gray-400 hover:bg-gray-600'
+                        : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {isPicked ? (
+                    <ToggleRight className="w-5 h-5" />
+                  ) : (
+                    <ToggleLeft className="w-5 h-5" />
+                  )}
+                  <span>Yes, Picked Up</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPicked(false)}
+                  className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 flex-1 ${
+                    !isPicked
+                      ? isDark
+                        ? 'bg-red-900/30 border-red-500 text-red-400'
+                        : 'bg-red-100 border-red-500 text-red-700'
+                      : isDark
+                        ? 'bg-gray-700 border-gray-600 text-gray-400 hover:bg-gray-600'
+                        : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {!isPicked ? (
+                    <ToggleRight className="w-5 h-5" />
+                  ) : (
+                    <ToggleLeft className="w-5 h-5" />
+                  )}
+                  <span>No, Not Picked</span>
+                </button>
+              </div>
             </div>
+
+            {/* Date Input - Only show when "Yes" is selected */}
+            {isPicked && (
+              <div className="space-y-2">
+                <label 
+                  htmlFor="pickedDate"
+                  className={`
+                    block text-sm font-medium
+                    ${isDark ? 'text-gray-300' : 'text-gray-700'}
+                  `}
+                >
+                  Pickup Date 
+                </label>
+                <div className="relative">
+                  <Calendar className={`
+                    absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
+                    ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                  `} />
+                  <input
+                    type="date"
+                    id="pickedDate"
+                    value={pickedDate}
+                    onChange={(e) => setPickedDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    className={`
+                      w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
+                      ${isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
+                      }
+                      focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
+                    `}
+                    required
+                  />
+                </div>
+                <p className={`
+                  text-xs
+                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                `}>
+                  Select the date when courier picked up the documents
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex space-x-4 pt-4">
@@ -193,11 +245,11 @@ const CourierPickedModal = ({
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !pickedDate}
+                disabled={isSubmitting || (isPicked && !pickedDate)}
                 className={`
                   flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200
                   flex items-center justify-center space-x-2
-                  ${isSubmitting || !pickedDate
+                  ${isSubmitting || (isPicked && !pickedDate)
                     ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                     : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                   }
@@ -211,7 +263,7 @@ const CourierPickedModal = ({
                 ) : (
                   <>
                     <Package className="w-4 h-4" />
-                    <span>Confirm Pickup</span>
+                    <span>Confirm Status</span>
                   </>
                 )}
               </button>

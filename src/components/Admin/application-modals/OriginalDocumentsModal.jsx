@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Calendar, FileText, CheckCircle } from 'lucide-react';
+import { X, Calendar, FileText, CheckCircle, ChevronDown } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const OriginalDocumentsModal = ({ 
   isOpen, 
@@ -10,22 +11,24 @@ const OriginalDocumentsModal = ({
   loanNo 
 }) => {
   const [receivedDate, setReceivedDate] = useState('');
+  const [isReceived, setIsReceived] = useState(true); // Default to "Yes"
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!receivedDate) {
-      alert('Please select a received date');
+    if (isReceived && !receivedDate) {
+      toast.error('Please select a received date');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await onSubmit(receivedDate);
+      await onSubmit(isReceived, isReceived ? receivedDate : null);
       setReceivedDate('');
+      setIsReceived(true);
       onClose();
     } catch (error) {
-      console.error('Error submitting original documents received date:', error);
-      alert('Failed to save original documents received date. Please try again.');
+      console.error('Error submitting original documents status:', error);
+      // Error handled by parent via throw
     } finally {
       setIsSubmitting(false);
     }
@@ -33,6 +36,7 @@ const OriginalDocumentsModal = ({
 
   const handleClose = () => {
     setReceivedDate('');
+    setIsReceived(true);
     onClose();
   };
 
@@ -71,13 +75,13 @@ const OriginalDocumentsModal = ({
                   text-xl font-bold
                   ${isDark ? 'text-white' : 'text-gray-900'}
                 `}>
-                  Original Documents Received
+                  Original Documents
                 </h2>
                 <p className={`
                   text-sm
                   ${isDark ? 'text-gray-400' : 'text-gray-600'}
                 `}>
-                  Record documents received date
+                  Update documents status
                 </p>
               </div>
             </div>
@@ -134,46 +138,79 @@ const OriginalDocumentsModal = ({
               </div>
             </div>
 
-            {/* Date Input */}
+            {/* Yes/No Dropdown */}
             <div className="space-y-2">
-              <label 
-                htmlFor="receivedDate"
-                className={`
-                  block text-sm font-medium
-                  ${isDark ? 'text-gray-300' : 'text-gray-700'}
-                `}
-              >
-                Documents Received Date 
+              <label className={`
+                block text-sm font-medium
+                ${isDark ? 'text-gray-300' : 'text-gray-700'}
+              `}>
+                Documents Received Status
               </label>
               <div className="relative">
-                <Calendar className={`
-                  absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
-                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
-                `} />
-                <input
-                  type="date"
-                  id="receivedDate"
-                  value={receivedDate}
-                  onChange={(e) => setReceivedDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
+                <select
+                  value={isReceived ? "yes" : "no"}
+                  onChange={(e) => setIsReceived(e.target.value === "yes")}
                   className={`
-                    w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
+                    w-full pl-3 pr-10 py-3 rounded-xl border-2 appearance-none transition-all duration-200
                     ${isDark
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500 focus:bg-gray-600'
+                      : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:bg-gray-50'
                     }
                     focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
                   `}
-                  required
-                />
+                >
+                  <option value="yes">Yes, Received</option>
+                  <option value="no">No, Not Received</option>
+                </select>
+                <ChevronDown className={`
+                  absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none
+                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                `} />
               </div>
-              <p className={`
-                text-xs
-                ${isDark ? 'text-gray-400' : 'text-gray-500'}
-              `}>
-                Select the date when original documents were received
-              </p>
             </div>
+
+            {/* Date Input - Only show when "Yes" is selected */}
+            {isReceived && (
+              <div className="space-y-2">
+                <label 
+                  htmlFor="receivedDate"
+                  className={`
+                    block text-sm font-medium
+                    ${isDark ? 'text-gray-300' : 'text-gray-700'}
+                  `}
+                >
+                  Received Date 
+                </label>
+                <div className="relative">
+                  <Calendar className={`
+                    absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
+                    ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                  `} />
+                  <input
+                    type="date"
+                    id="receivedDate"
+                    value={receivedDate}
+                    onChange={(e) => setReceivedDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    className={`
+                      w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
+                      ${isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
+                      }
+                      focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
+                    `}
+                    required
+                  />
+                </div>
+                <p className={`
+                  text-xs
+                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                `}>
+                  Select the date when original documents were received
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex space-x-4 pt-4">
@@ -193,11 +230,11 @@ const OriginalDocumentsModal = ({
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !receivedDate}
+                disabled={isSubmitting || (isReceived && !receivedDate)}
                 className={`
                   flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200
                   flex items-center justify-center space-x-2
-                  ${isSubmitting || !receivedDate
+                  ${isSubmitting || (isReceived && !receivedDate)
                     ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                     : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                   }
@@ -211,7 +248,7 @@ const OriginalDocumentsModal = ({
                 ) : (
                   <>
                     <FileText className="w-4 h-4" />
-                    <span>Received</span>
+                    <span>Update Status</span>
                   </>
                 )}
               </button>
