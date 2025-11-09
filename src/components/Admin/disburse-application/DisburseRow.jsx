@@ -43,7 +43,8 @@ const DisburseRow = ({
   fileLoading,
   loadingFileName,
   onBankVerification,
-  onDisburseApproval
+  onDisburseApproval,
+  onStatusClick
 }) => {
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
@@ -557,13 +558,6 @@ const DisburseRow = ({
               <CheckCircle className="w-3 h-3" />
               <span>Yes</span>
             </span>
-          ) : application.receivedDisburse === "No" ? (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
           ) : (
             <button
               onClick={() => onDisburseEmandateModalOpen(application)}
@@ -679,13 +673,19 @@ const DisburseRow = ({
       </td>
 
       {/* Loan Status */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-orange-400" : "text-orange-600"
-        }`}>
-          {application.loanStatus}
-        </span>
-      </td>
+<td className={cellStyle}>
+  <button
+    onClick={() => onStatusClick(application)}
+    className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 hover:scale-105 cursor-pointer ${
+      isDark 
+        ? "bg-gradient-to-r from-cyan-100 to-cyan-300 text-cyan-800 border border-cyan-700 hover:bg-cyan-800" 
+        : "bg-gradient-to-r from-cyan-200 to-cyan-300 text-cyan-800 border border-cyan-400 hover:bg-cyan-200"
+    }`}
+    title="Click to update loan status"
+  >
+    {application.loanStatus}
+  </button>
+</td>
 
       {/* Change Status */}
       <td className={cellStyle}>
@@ -699,16 +699,6 @@ const DisburseRow = ({
             <span>Change Status</span>
           </button>
         </div>
-      </td>
-
-      {/* Action */}
-      <td className={cellStyle}>
-        <ActionButton
-          enquiry={application}
-          isDark={isDark}
-          onVerifyClick={onActionClick} 
-          className="w-full flex justify-center"
-        />
       </td>
 
       {/* Sanction Mail */}
@@ -750,6 +740,16 @@ const DisburseRow = ({
             <span>Check Status</span>
           </button>
         </div>
+      </td>
+
+      {/* Action */}
+      <td className={cellStyle}>
+        <ActionButton
+          enquiry={application}
+          isDark={isDark}
+          onVerifyClick={onActionClick} 
+          className="w-full flex justify-center"
+        />
       </td>
 
       {/* Appraisal Report */}

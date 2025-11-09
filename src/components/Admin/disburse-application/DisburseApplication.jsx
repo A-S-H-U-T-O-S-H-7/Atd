@@ -25,6 +25,8 @@ import {
 } from "@/lib/services/DisburseApprovalServices";
 import toast from 'react-hot-toast';
 import Swal from "sweetalert2";
+import StatusUpdateModal from "../StatusUpdateModal";
+
 
 const DisburseApplication = () => {
   const { theme } = useThemeStore();
@@ -64,6 +66,8 @@ const DisburseApplication = () => {
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
   const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -88,6 +92,10 @@ const DisburseApplication = () => {
     { value: 'appliedAmount', label: 'Applied Amount' },
     { value: 'approvedAmount', label: 'Approved Amount' },
   ];
+
+  const statusOptions = [
+  { value: "Disbursed", label: "Disbursed" },
+];
 
   // Build API parameters
   const buildApiParams = () => {
@@ -124,12 +132,19 @@ const DisburseApplication = () => {
       setError(null);
       
       const params = buildApiParams();
+      console.log('🔵 [Disburse] API Params:', params);
+      
       const response = await disburseApprovalService.getApplications(params);
+      console.log('🟢 [Disburse] Raw API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
       if (actualResponse && actualResponse.success && actualResponse.data) {
+        console.log('📊 [Disburse] Raw Data (First Record):', actualResponse.data[0]);
+        
         const formattedApplications = actualResponse.data.map(formatDisburseApprovalApplicationForUI);
+        console.log('✅ [Disburse] Formatted Data (First Record):', formattedApplications[0]);
+        
         setApplications(formattedApplications);
         setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
@@ -173,43 +188,127 @@ const DisburseApplication = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [currentPage, searchField, searchTerm, dateRange]);
 
-  // Bank Verification Handler
-  const handleBankVerification = async (application) => {
-    try {
-      await disburseApprovalService.updateBankVerification(application.id);
-      
-      // Update UI immediately
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, bankVerification: "verified" }
-          : app
-      ));
-      
-      toast.success('Bank verification completed successfully!');
-    } catch (error) {
-      console.error('Error updating bank verification:', error);
-      toast.error('Failed to update bank verification');
-    }
-  };
+  // Bank Verification Handler with SweetAlert Confirmation
+const handleBankVerification = async (application) => {
+  if (application.bankVerification === "verified") {
+    toast.success('Bank verification already completed!');
+    return;
+  }
 
-  // Disburse Approval Handler
-  const handleDisburseApproval = async (application) => {
-    try {
-      await disburseApprovalService.updateDisburseApproval(application.id);
-      
-      // Update UI immediately
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, disburseApproval: "approved" }
-          : app
-      ));
-      
-      toast.success('Disburse approval completed successfully!');
-    } catch (error) {
-      console.error('Error updating disburse approval:', error);
-      toast.error('Failed to update disburse approval');
-    }
-  };
+  const result = await Swal.fire({
+    title: 'Confirm Bank Verification?',
+    text: `Are you sure you want to verify bank account for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Verify!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await disburseApprovalService.updateBankVerification(application.id);
+    
+    // Refresh data from server to get updated values
+    await fetchApplications();
+    
+    await Swal.fire({
+      title: 'Verified!',
+      text: 'Bank verification completed successfully!',
+      icon: 'success',
+      confirmButtonColor: '#10b981',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } catch (error) {
+    console.error('Error updating bank verification:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update bank verification',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
+
+// Disburse Approval Handler with SweetAlert Confirmation
+const handleDisburseApproval = async (application) => {
+  if (application.disburseApproval === "approved") {
+    toast.success('Disburse approval already completed!');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: 'Confirm Disburse Approval?',
+    text: `Are you sure you want to approve disbursement for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Approve!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await disburseApprovalService.updateDisburseApproval(application.id);
+    
+    // Refresh data from server to get updated values
+    await fetchApplications();
+    
+    await Swal.fire({
+      title: 'Approved!',
+      text: 'Disburse approval completed successfully!',
+      icon: 'success',
+      confirmButtonColor: '#10b981',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } catch (error) {
+    console.error('Error updating disburse approval:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update disburse approval',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
+
+const handleStatusUpdate = async (applicationId, status, remark) => {
+  try {
+    await disburseApprovalService.updateLoanStatus(applicationId, status, remark);
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update loan status');
+    throw error;
+  }
+};
+
+const handleStatusModalOpen = (application) => {
+  setCurrentStatusApplication(application);
+  setStatusModalOpen(true);
+};
+
+const handleStatusModalClose = () => {
+  setStatusModalOpen(false);
+  setCurrentStatusApplication(null);
+};
 
   // Modal handlers
   const handleChequeModalOpen = (application, chequeNumber) => {
@@ -346,33 +445,33 @@ const DisburseApplication = () => {
   };
 
   const handleChangeStatusSubmit = async (updateData) => {
-    try {
-      await disburseApprovalService.updateStatusChange(currentChangeStatusApplication.id, updateData);
-      
-      // Update UI immediately based on changes
-      setApplications(prev => prev.map(app => 
-        app.id === currentChangeStatusApplication.id 
-          ? { 
-              ...app, 
-              ...(updateData.courierPickedDate && { 
-                courierPicked: "Yes", 
-                courierPickedDate: updateData.courierPickedDate 
-              }),
-              ...(updateData.originalDocumentsReceived && { 
-                originalDocuments: updateData.originalDocumentsReceived === "yes" ? "Yes" : "No" 
-              })
-            }
-          : app
-      ));
-      
-      await fetchApplications();
-      toast.success('Status updated successfully!');
-    } catch (error) {
-      console.error('Error saving status changes:', error);
-      toast.error('Failed to update status');
-      throw error;
-    }
-  };
+  try {
+    await disburseApprovalService.updateStatusChange(currentChangeStatusApplication.id, updateData);
+    
+    // Update UI immediately based on changes
+    setApplications(prev => prev.map(app => 
+      app.id === currentChangeStatusApplication.id 
+        ? { 
+            ...app, 
+            ...(updateData.courierPickedDate && { 
+              courierPicked: "Yes", 
+              courierPickedDate: updateData.courierPickedDate 
+            }),
+            ...(updateData.originalDocumentsReceived && { 
+              originalDocuments: updateData.originalDocumentsReceived === "yes" ? "Yes" : "No" 
+            })
+          }
+        : app
+    ));
+    
+    await fetchApplications();
+    toast.success('Status updated successfully!');
+  } catch (error) {
+    console.error('Error saving status changes:', error);
+    toast.error('Failed to update status');
+    throw error;
+  }
+};
 
   const handleDisburseEmandateModalOpen = (application) => {
     setCurrentDisburseEmandateApplication(application);
@@ -910,6 +1009,8 @@ const DisburseApplication = () => {
           loadingFileName={loadingFileName}
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
+            onStatusClick={handleStatusModalOpen}
+
         />
       </div>
 
@@ -923,6 +1024,16 @@ const DisburseApplication = () => {
         data={selectedApplicant} 
         isDark={isDark}  
       />
+      {currentStatusApplication && (
+  <StatusUpdateModal
+    isOpen={statusModalOpen}
+    onClose={handleStatusModalClose}
+    application={currentStatusApplication}
+    statusOptions={statusOptions}
+    onStatusUpdate={handleStatusUpdate}
+    isDark={isDark}
+  />
+)}
 
       {currentDocumentApplication && (
         <DocumentVerificationModal

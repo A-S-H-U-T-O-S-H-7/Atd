@@ -106,18 +106,22 @@ export const formatSanctionApplicationForUI = (application) => {
     agreementFileName: application.aggrement,
     sanctionLetterFileName: application.sanction_letter,
 
-    // Status information - CORRECTED based on your API response
+    // Status information 
     approvalNote: application.approval_note,
     loanStatus: getStatusName(application.loan_status),
     emandateStatus: application.emandateverification || "Pending",
     iciciEmandateStatus: application.emandatestatus || "Pending",
-    chequeNo: application.cheque_no, // ✅ This is correct from API
+    chequeNo: application.cheque_no, 
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
-    originalDocuments: application.original_documents === "Yes" ? "Yes" : "No", // ✅ Corrected
-    receivedDisburse: application.emandateverification || "No",
+    originalDocuments: application.original_documents === "Yes" ? "Yes" : "No", 
+    receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
+    // Raw values for validation logic
+    sendToCourierRaw: application.send_courier,
+    courierPickedRaw: application.courier_picked,
+    originalDocumentsRaw: application.original_documents,
+    emandateVerificationRaw: application.emandateverification,
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
-
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,
@@ -181,15 +185,15 @@ export const sanctionService = {
   },
 
   updateEmandateStatus: async (applicationId, emandateStatus) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
-        emandateverification: emandateStatus === "Yes" ? 1 : 0
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+  try {
+    const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
+      emandateverification: emandateStatus === "Yes" ? 1 : 0
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
 
   updateStatusChange: async (applicationId, updateData) => {
     try {
@@ -202,7 +206,8 @@ export const sanctionService = {
       
       if (updateData.originalDocumentsReceived) {
         payload.original_documents = updateData.originalDocumentsReceived === "yes" ? "Yes" : "No";
-        if (updateData.originalDocumentsReceived === "yes" && updateData.documentsReceivedDate) {
+        // Send received_date if provided, regardless of yes/no selection
+        if (updateData.documentsReceivedDate) {
           payload.received_date = updateData.documentsReceivedDate;
         }
       }

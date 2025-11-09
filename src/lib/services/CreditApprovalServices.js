@@ -144,13 +144,16 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     chequeNo: application.cheque_no,
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
+    
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No",
     receivedDisburse: application.emandateverification || "No",
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
 
     // NEW FIELDS FOR CREDIT APPROVAL
-    bankVerification: "not_verified", // Default value
-    disburseApproval: "not_approved", // Default value
+    bankVerification: application.bank_veried === 1 ? "verified" : "not_verified",
+    disburseApproval: application.credit_approval === 1 ? "approved" : "not_approved",
+    bankVerifiedRaw: application.bank_veried,
+    creditApprovalRaw: application.credit_approval,
 
     // Application stage information
     isVerified: application.verify === 1,
@@ -222,7 +225,7 @@ export const creditApprovalService = {
     } catch (error) {
       throw error;
     }
-  },
+  }, 
 
   updateSendToCourier: async (applicationId, courierDate) => {
     try {
@@ -281,7 +284,31 @@ export const creditApprovalService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  updateStatusChange: async (applicationId, updateData) => {
+  try {
+    const payload = {};
+    
+    if (updateData.courierPickedDate) {
+      payload.courier_picked = 1;
+      payload.picked_date = updateData.courierPickedDate;
+    }
+    
+    if (updateData.originalDocumentsReceived) {
+      payload.original_documents = updateData.originalDocumentsReceived === "yes" ? "Yes" : "No";
+      // Send received_date if provided, regardless of yes/no selection
+      if (updateData.documentsReceivedDate) {
+        payload.received_date = updateData.documentsReceivedDate;
+      }
+    }
+    
+    const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, payload);
+    return response;
+  } catch (error) {
+    throw error;
   }
+},
 };
 
 // File view utility (same as sanction)

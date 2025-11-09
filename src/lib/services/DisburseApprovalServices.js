@@ -162,9 +162,14 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     sanctionMail: application.sanction_mail || "Not Sent",
 
     // Bank verification and disburse approval
-    bankVerification: "not_verified", // Default value
-    disburseApproval: "not_approved", // Default value
-
+    // Note: API field has typo - it's 'bank_veried' not 'bank_verified'
+    bankVerification: application.bank_veried === 1 ? "verified" : "not_verified",
+    disburseApproval: application.credit_approval === 1 ? "approved" : "not_approved",
+    
+    // ADD RAW VALUES FOR VALIDATION
+    bankVerifiedRaw: application.bank_veried,
+    creditApprovalRaw: application.credit_approval,
+    
     // Application stage information
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
@@ -213,6 +218,30 @@ export const disburseApprovalService = {
       throw error;
     }
   },
+
+  updateStatusChange: async (applicationId, updateData) => {
+  try {
+    const payload = {};
+    
+    if (updateData.courierPickedDate) {
+      payload.courier_picked = 1;
+      payload.picked_date = updateData.courierPickedDate;
+    }
+    
+    if (updateData.originalDocumentsReceived) {
+      payload.original_documents = updateData.originalDocumentsReceived === "yes" ? "Yes" : "No";
+      // Send received_date if provided, regardless of yes/no selection
+      if (updateData.documentsReceivedDate) {
+        payload.received_date = updateData.documentsReceivedDate;
+      }
+    }
+    
+    const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
 
   // Bank verification
   updateBankVerification: async (applicationId) => {
@@ -359,7 +388,7 @@ export const disburseFileService = {
     
     if (!folder) {
       throw new Error('Document type not configured');
-    }
+    } 
     
     const filePath = `${folder}/${fileName}`;
     const fileRef = ref(storage, filePath);

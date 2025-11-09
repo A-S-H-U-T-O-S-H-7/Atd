@@ -254,7 +254,18 @@ const handleDisburseEmandateSubmit = async (selectedOption) => {
       currentDisburseEmandateApplication.id, 
       selectedOption
     );
-    fetchApplications();
+    
+    // Update UI immediately for better UX
+    setApplications(prev => prev.map(app => 
+      app.id === currentDisburseEmandateApplication.id 
+        ? { ...app, receivedDisburse: selectedOption }
+        : app
+    ));
+    
+    // Refresh from server to sync
+    await fetchApplications();
+    
+    toast.success(`E-mandate status updated to "${selectedOption}" successfully!`);
   } catch (error) {
     toast.error('Failed to update e-mandate status');
     throw error;

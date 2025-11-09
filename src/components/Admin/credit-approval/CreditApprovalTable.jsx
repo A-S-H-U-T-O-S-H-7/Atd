@@ -28,7 +28,8 @@ const CreditApprovalTable = ({
   loadingFileName,
   // NEW: Bank verification and disburse approval handlers
   onBankVerification,
-  onDisburseApproval
+  onDisburseApproval,
+  onStatusClick
 }) => {
 
   const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -89,7 +90,7 @@ const CreditApprovalTable = ({
     { label: "Bank A/c Verification", width: "180px" },
     { label: "Disburse Approval", width: "160px" },
 
-    { label: "Loan Status", width: "120px" },
+    { label: "Loan Status", width: "190px" },
     { label: "Change Status", width: "200px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
@@ -148,6 +149,7 @@ const CreditApprovalTable = ({
                   // NEW: Pass the bank verification and disburse approval handlers
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
+                  onStatusClick={onStatusClick}
                 />
               ))}
             </tbody>

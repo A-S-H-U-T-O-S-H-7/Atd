@@ -106,7 +106,7 @@ const DisbursementTable = ({
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r  ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "150px" }}>
+                }`} style={{ minWidth: "220px" }}>
                   Sender a/c no (Debit a/c number)
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r  ${

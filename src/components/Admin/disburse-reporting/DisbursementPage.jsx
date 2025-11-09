@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, Calendar, Search, Filter } from "lucide-react";
+import { ArrowLeft, Download, ChevronDown, Filter } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DisbursementTable from "./DisbursementTable";
 import BankDateFilter from "../BankDateFilter";
@@ -24,6 +24,7 @@ const DisbursementPage = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   const [transactionModal, setTransactionModal] = useState({ 
     isOpen: false, 
@@ -47,7 +48,6 @@ const DisbursementPage = () => {
   });
   const [banks, setBanks] = useState([]);
 
-  // Fetch banks list
   useEffect(() => {
     const loadBanks = async () => {
       try {
@@ -69,7 +69,6 @@ const DisbursementPage = () => {
     loadBanks();
   }, []);
 
-  // Fetch disbursement data
   const fetchDisbursementData = async () => {
     setIsLoading(true);
     try {
@@ -91,7 +90,6 @@ const DisbursementPage = () => {
     } catch (error) {
       console.error('Error fetching disbursement data:', error);
       toast.error('Failed to load disbursement data');
-      // Fallback to empty data
       setDisbursementData([]);
     } finally {
       setIsLoading(false);
@@ -102,7 +100,6 @@ const DisbursementPage = () => {
     fetchDisbursementData();
   }, [currentPage, dateRange, selectedBank, filterBy, advancedSearch]);
 
-  // Export handlers
   const handleExport = async (type) => {
     try {
       const filters = disbursementService.mapFiltersToAPI({
@@ -139,7 +136,6 @@ const DisbursementPage = () => {
     }
   };
 
-  // Modal handlers
   const handleTransactionModalOpen = (disbursementData) => {
     setTransactionModal({ isOpen: true, disbursementData });
   };
@@ -204,7 +200,6 @@ const DisbursementPage = () => {
     }
   };
 
-  // Search and filter handlers
   const handleAdvancedSearch = (searchData) => {
     setAdvancedSearch(searchData);
     setCurrentPage(1);
@@ -226,7 +221,6 @@ const DisbursementPage = () => {
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
       <div className="p-0 md:p-4">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -245,99 +239,142 @@ const DisbursementPage = () => {
               <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
-                Disbursement
+                Disbursement Reporting
               </h1>
             </div>
             
-            {/* Export Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={handleGSTExport}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export GST</span>
-              </button>
-              <button
-                onClick={() => handleExport('excel')}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
-            </div>
+            <button
+              onClick={() => handleExport('excel')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-sm ${
+                isDark
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              }`}
+            >
+              <Download size={16} />
+              <span>Export Data</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Bank Date Filter */}
-            <BankDateFilter
-              dateRange={dateRange}
-              selectedBank={selectedBank}
-              banks={banks}
-              isDark={isDark}
-              onFilterChange={handleFilterChange}
-              onSearch={handleSearch}
-            />
-
-            {/* Non-Transaction Export Block */}
-            <div className={`rounded-2xl p-4 mb-6 border-2 ${
-              isDark
-                ? "bg-gray-800 border-blue-600/50"
-                : "bg-blue-50 border-blue-300"
-            }`}>
-              <div className="flex flex-wrap gap-8 items-center justify-between">
-                <div>
-                  <h3 className={`text-lg font-semibold ${
-                    isDark ? "text-blue-300" : "text-blue-700"
+          {/* BOTH FILTERS UNDER ONE DROPDOWN TOGGLE */}
+          <div className={`rounded-xl border shadow-sm overflow-hidden transition-all duration-200 mb-6 ${
+            isDark ? "bg-gray-800/50 border-blue-600" : "bg-white border-blue-400"
+          }`}>
+            {/* Toggle Header */}
+            <button
+              onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+              className={`w-full px-4 py-3 flex items-center justify-between transition-colors duration-200 ${
+                isDark ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${
+                  isDark ? "bg-emerald-600/20" : "bg-emerald-50"
+                }`}>
+                  <Filter className={`w-4 h-4 ${
+                    isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`} />
+                </div>
+                <div className="text-left">
+                  <h3 className={`text-base font-semibold ${
+                    isDark ? "text-gray-100" : "text-gray-800"
                   }`}>
-                    Non-Transaction Data Export
+                    Filters & Export Options
                   </h3>
-                  <p className={`text-sm ${
+                  <p className={`text-xs ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Export only non-transaction disbursement data
+                    Date range, bank filter and non-transaction export
                   </p>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <select
-                    value={selectedBank}
-                    onChange={(e) => setSelectedBank(e.target.value)}
-                    className={`px-4 py-2 rounded-xl border-2 transition-all duration-200 font-medium ${
-                      isDark
-                        ? "bg-gray-700 border-gray-600 text-white"
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    {banks.map(bank => (
-                      <option key={bank.id} value={bank.id}>{bank.name}</option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleGSTExport}
-                    className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                      isDark
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
-                    }`}
-                  >
-                    <Download size={16} />
-                    <span>Export Non-Transaction</span>
-                  </button>
+              </div>
+              <div className={`transition-transform duration-200 ${
+                isFiltersExpanded ? 'rotate-180' : ''
+              }`}>
+                <ChevronDown className={`w-5 h-5 ${
+                  isDark ? "text-gray-400" : "text-gray-600"
+                }`} />
+              </div>
+            </button>
+            
+            {/* BOTH FILTERS IN ONE LINE */}
+            <div className={`overflow-hidden transition-all  duration-300 ${
+              isFiltersExpanded ? 'max-h-[500px]' : 'max-h-0'
+            }`}>
+              <div className={`px-4 pb-4 pt-2 border-t ${
+                isDark ? "border-gray-700" : "border-gray-200"
+              }`}>
+                <div className="grid grid-cols-1 lg:grid-cols-2  gap-6">
+                  
+                  {/* LEFT: Bank Date Filter */}
+                  <div className={`rounded-lg p-4 border ${
+                    isDark ? "bg-gray-700/30 border-gray-600" : "bg-emerald-50/50 border-emerald-200"
+                  }`}>
+                    <h4 className={`text-sm font-semibold mb-3 ${
+                      isDark ? "text-emerald-400" : "text-emerald-700"
+                    }`}>
+                      Date & Bank Filter
+                    </h4>
+                    <BankDateFilter
+                      dateRange={dateRange}
+                      selectedBank={selectedBank}
+                      banks={banks}
+                      isDark={isDark}
+                      onFilterChange={handleFilterChange}
+                      onSearch={handleSearch}
+                    />
+                  </div>
+
+                  {/* RIGHT: Non-Transaction Export */}
+                  <div className={`rounded-lg p-4 border ${
+                    isDark ? "bg-gray-700/30 border-gray-600" : "bg-blue-50/50 border-blue-200"
+                  }`}>
+                    <h4 className={`text-sm font-semibold mb-3 ${
+                      isDark ? "text-blue-400" : "text-blue-700"
+                    }`}>
+                      Export Non-Transaction Data
+                    </h4>
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className={`block text-xs font-medium mb-1.5 ${
+                          isDark ? "text-gray-400" : "text-gray-600"
+                        }`}>
+                          Select Bank for Export
+                        </label>
+                        <select
+                          value={selectedBank}
+                          onChange={(e) => setSelectedBank(e.target.value)}
+                          className={`w-full px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
+                            isDark
+                              ? "bg-gray-700/50 border-gray-600 text-white hover:border-blue-500 focus:border-blue-400"
+                              : "bg-white border-gray-300 text-gray-900 hover:border-blue-400 focus:border-blue-500"
+                          } focus:ring-2 focus:ring-blue-500/20 focus:outline-none`}
+                        >
+                          {banks.map(bank => (
+                            <option key={bank.id} value={bank.id}>{bank.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        onClick={handleGSTExport}
+                        className={`w-full px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-sm ${
+                          isDark
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                        }`}
+                      >
+                        <Download size={14} />
+                        <span>Export Non-Transaction</span>
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            {/* Transaction Filter */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center space-x-4">
               <span className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 Filter By:
@@ -351,14 +388,14 @@ const DisbursementPage = () => {
                   <button
                     key={filter.id}
                     onClick={() => setFilterBy(filter.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
                       filterBy === filter.id
                         ? isDark
-                          ? "bg-emerald-600 text-white"
-                          : "bg-emerald-500 text-white"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "bg-emerald-500 text-white shadow-sm"
                         : isDark
-                          ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          ? "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border border-gray-600"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
                     }`}
                   >
                     {filter.label}
@@ -367,7 +404,6 @@ const DisbursementPage = () => {
               </div>
             </div>
 
-            {/* Advanced Search */}
             <div className="w-full md:w-auto">
               <AdvancedSearchBar
                 searchOptions={disbursementService.searchOptions}
@@ -379,7 +415,6 @@ const DisbursementPage = () => {
           </div>
         </div>
 
-        {/* Table */}
         <DisbursementTable
           paginatedDisbursementData={disbursementData}
           filteredDisbursementData={disbursementData}
@@ -395,7 +430,6 @@ const DisbursementPage = () => {
         />
       </div>
 
-      {/* Modals */}
       <TransferModal
         isOpen={transferModal.isOpen}
         onClose={handleTransferModalClose}

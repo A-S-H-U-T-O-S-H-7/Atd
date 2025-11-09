@@ -40,7 +40,8 @@ const CreditApprovalRow = ({
   loadingFileName,
   // NEW: Bank verification and disburse approval handlers
   onBankVerification,
-  onDisburseApproval
+  onDisburseApproval,
+  onStatusClick
 }) => {
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
@@ -57,18 +58,48 @@ const CreditApprovalRow = ({
   };
 
   // NEW: Bank verification handler
-  const handleBankVerificationClick = () => {
-    if (application.bankVerification === "not_verified") {
-      onBankVerification(application);
-    }
-  };
+const handleBankVerificationClick = () => {
+  if (application.bankVerification === "not_verified") {
+    onBankVerification(application);
+  }
+};
 
-  // NEW: Disburse approval handler
-  const handleDisburseApprovalClick = () => {
-    if (application.disburseApproval === "not_approved") {
-      onDisburseApproval(application);
-    }
-  };
+// NEW: Disburse approval handler
+const handleDisburseApprovalClick = () => {
+  if (application.disburseApproval === "not_approved") {
+    onDisburseApproval(application);
+  }
+};
+
+// Add this helper function inside the component
+const getLoanStatusTooltip = (application) => {
+  if (application.bankVerifiedRaw !== 1 && application.creditApprovalRaw !== 1) {
+    return "Complete Bank Verification and Disburse Approval first";
+  } else if (application.bankVerifiedRaw !== 1) {
+    return "Complete Bank Verification first";
+  } else if (application.creditApprovalRaw !== 1) {
+    return "Complete Disburse Approval first";
+  }
+  return "Click to update loan status";
+};
+
+const getLoanStatusClassName = (application) => {
+  const isEnabled = application.bankVerifiedRaw === 1 && application.creditApprovalRaw === 1;
+  
+  return `px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
+    isEnabled
+      ? "hover:scale-105 cursor-pointer"
+      : "opacity-60 cursor-not-allowed"
+  } ${
+    isEnabled
+      ? isDark
+        ? "bg-gradient-to-r from-cyan-100 to-cyan-300 text-cyan-800 border border-cyan-700 hover:bg-cyan-800"
+        : "bg-gradient-to-r from-cyan-200 to-cyan-300 text-cyan-800 border border-cyan-400 hover:bg-cyan-200"
+      : isDark
+        ? "bg-orange-900/50 text-orange-300 border border-orange-700"
+        : "bg-orange-100 text-orange-800 border border-orange-200"
+  }`;
+};
 
   // Common cell styles
   const cellBase = "px-6 py-4 border-r";
@@ -525,13 +556,6 @@ const CreditApprovalRow = ({
               <CheckCircle className="w-3 h-3" />
               <span>Yes</span>
             </span>
-          ) : application.receivedDisburse === "No" ? (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
           ) : (
             <button
               onClick={() => onDisburseEmandateModalOpen(application)}
@@ -601,59 +625,68 @@ const CreditApprovalRow = ({
       </td>
 
       {/* NEW: Bank A/c Verification */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={handleBankVerificationClick}
-            className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-              application.bankVerification === "not_verified"
-                ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-                : "bg-green-100 text-green-600 cursor-default"
-            }`}
-          >
-            {application.bankVerification === "not_verified" ? (
-              <span>Not Verified</span>
-            ) : (
-              <>
-                <CheckCircle size={14} />
-                <span>Verified</span>
-              </>
-            )}
-          </button>
-        </div>
-      </td>
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <button
+      onClick={handleBankVerificationClick}
+      className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
+        application.bankVerification === "not_verified"
+          ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
+          : "bg-green-100 text-green-600 cursor-default"
+      }`}
+      disabled={application.bankVerification === "verified"}
+    >
+      {application.bankVerification === "not_verified" ? (
+        <span>Not Verified</span>
+      ) : (
+        <>
+          <CheckCircle size={14} />
+          <span>Verified</span>
+        </>
+      )}
+    </button>
+  </div>
+</td>
 
       {/* NEW: Disburse Approval */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={handleDisburseApprovalClick}
-            className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-              application.disburseApproval === "not_approved"
-                ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-                : "bg-green-100 text-green-600 cursor-default"
-            }`}
-          >
-            {application.disburseApproval === "not_approved" ? (
-              <span>Not Approved</span>
-            ) : (
-              <>
-                <CheckCircle size={14} />
-                <span>Approved</span>
-              </>
-            )}
-          </button>
-        </div>
-      </td>
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <button
+      onClick={handleDisburseApprovalClick}
+      className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
+        application.disburseApproval === "not_approved"
+          ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
+          : "bg-green-100 text-green-600 cursor-default"
+      }`}
+      disabled={application.disburseApproval === "approved"}
+    >
+      {application.disburseApproval === "not_approved" ? (
+        <span>Not Approved</span>
+      ) : (
+        <>
+          <CheckCircle size={14} />
+          <span>Approved</span>
+        </>
+      )}
+    </button>
+  </div>
+</td>
 
       {/* Loan Status */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-orange-400" : "text-orange-600"
-        }`}>
-          {application.loanStatus}
-        </span>
-      </td>
+<td className={cellStyle}>
+  <button
+    onClick={() => {
+      // Only open modal if both bank_veried and credit_approval are 1
+      if (application.bankVerifiedRaw === 1 && application.creditApprovalRaw === 1) {
+        onStatusClick(application);
+      }
+    }}
+    className={getLoanStatusClassName(application)}
+    title={getLoanStatusTooltip(application)}
+  >
+    {application.loanStatus}
+  </button>
+</td>
 
       {/* Change Status */}
       <td className={cellStyle}>

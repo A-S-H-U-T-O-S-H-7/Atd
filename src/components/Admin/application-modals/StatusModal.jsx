@@ -9,21 +9,14 @@ const ChangeStatusModal = ({
   customerName, 
   loanNo 
 }) => {
-  const [courierPickedDate, setCourierPickedDate] = useState('');
   const [originalDocumentsReceived, setOriginalDocumentsReceived] = useState('');
   const [documentsReceivedDate, setDocumentsReceivedDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     // At least one field should be filled
-    if (!courierPickedDate && !originalDocumentsReceived) {
-      toast.error('Please select at least one field to update');
-      return;
-    }
-
-    // If documents received is "yes", date is required
-    if (originalDocumentsReceived === "yes" && !documentsReceivedDate) {
-      toast.error('Please select documents received date');
+    if (!originalDocumentsReceived && !documentsReceivedDate) {
+      toast.error('Please fill at least one field to update');
       return;
     }
 
@@ -32,20 +25,16 @@ const ChangeStatusModal = ({
       
       // Prepare data to submit
       const updateData = {};
-      if (courierPickedDate) {
-        updateData.courierPickedDate = courierPickedDate;
-      }
       if (originalDocumentsReceived) {
         updateData.originalDocumentsReceived = originalDocumentsReceived;
-        if (originalDocumentsReceived === "yes") {
-          updateData.documentsReceivedDate = documentsReceivedDate;
-        }
+      }
+      if (documentsReceivedDate) {
+        updateData.documentsReceivedDate = documentsReceivedDate;
       }
       
       await onSubmit(updateData);
       
       // Reset form
-      setCourierPickedDate('');
       setOriginalDocumentsReceived('');
       setDocumentsReceivedDate('');
       onClose();
@@ -58,7 +47,6 @@ const ChangeStatusModal = ({
   };
 
   const handleClose = () => {
-    setCourierPickedDate('');
     setOriginalDocumentsReceived('');
     setDocumentsReceivedDate('');
     onClose();
@@ -127,40 +115,6 @@ const ChangeStatusModal = ({
         {/* Body */}
         <div className="p-6">
           <div className="space-y-6">
-            {/* Courier Picked Date Input */}
-            <div className="space-y-2">
-              <label 
-                htmlFor="courierPickedDate"
-                className={`
-                  block text-sm font-medium
-                  ${isDark ? 'text-gray-300' : 'text-gray-700'}
-                `}
-              >
-                Courier Picked Date 
-              </label>
-              <div className="relative">
-                <Calendar className={`
-                  absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
-                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
-                `} />
-                <input
-                  type="date"
-                  id="courierPickedDate"
-                  value={courierPickedDate}
-                  onChange={(e) => setCourierPickedDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className={`
-                    w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
-                    ${isDark
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
-                    }
-                    focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
-                  `}
-                />
-              </div>
-            </div>
-
             {/* Original Documents Received Dropdown */}
             <div className="space-y-2">
               <label 
@@ -180,12 +134,7 @@ const ChangeStatusModal = ({
                 <select
                   id="originalDocumentsReceived"
                   value={originalDocumentsReceived}
-                  onChange={(e) => {
-                    setOriginalDocumentsReceived(e.target.value);
-                    if (e.target.value !== "yes") {
-                      setDocumentsReceivedDate('');
-                    }
-                  }}
+                  onChange={(e) => setOriginalDocumentsReceived(e.target.value)}
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                     ${isDark
@@ -202,41 +151,39 @@ const ChangeStatusModal = ({
               </div>
             </div>
 
-            {/* Documents Received Date - Only show when "Yes" is selected */}
-            {originalDocumentsReceived === "yes" && (
-              <div className="space-y-2">
-                <label 
-                  htmlFor="documentsReceivedDate"
+            {/* Documents Received Date - ALWAYS VISIBLE */}
+            <div className="space-y-2">
+              <label 
+                htmlFor="documentsReceivedDate"
+                className={`
+                  block text-sm font-medium
+                  ${isDark ? 'text-gray-300' : 'text-gray-700'}
+                `}
+              >
+                Documents Received Date 
+              </label>
+              <div className="relative">
+                <Calendar className={`
+                  absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
+                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                `} />
+                <input
+                  type="date"
+                  id="documentsReceivedDate"
+                  value={documentsReceivedDate}
+                  onChange={(e) => setDocumentsReceivedDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
                   className={`
-                    block text-sm font-medium
-                    ${isDark ? 'text-gray-300' : 'text-gray-700'}
+                    w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
+                    ${isDark
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
+                    }
+                    focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
                   `}
-                >
-                  Documents Received Date 
-                </label>
-                <div className="relative">
-                  <Calendar className={`
-                    absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
-                    ${isDark ? 'text-gray-400' : 'text-gray-500'}
-                  `} />
-                  <input
-                    type="date"
-                    id="documentsReceivedDate"
-                    value={documentsReceivedDate}
-                    onChange={(e) => setDocumentsReceivedDate(e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
-                    className={`
-                      w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
-                      ${isDark
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
-                      }
-                      focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
-                    `}
-                  />
-                </div>
+                />
               </div>
-            )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex space-x-4 pt-4">
@@ -257,15 +204,13 @@ const ChangeStatusModal = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting || 
-                  (!courierPickedDate && !originalDocumentsReceived) ||
-                  (originalDocumentsReceived === "yes" && !documentsReceivedDate)
+                  (!originalDocumentsReceived && !documentsReceivedDate)
                 }
                 className={`
                   flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200
                   flex items-center justify-center space-x-2
                   ${isSubmitting || 
-                    (!courierPickedDate && !originalDocumentsReceived) ||
-                    (originalDocumentsReceived === "yes" && !documentsReceivedDate)
+                    (!originalDocumentsReceived && !documentsReceivedDate)
                     ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                     : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                   }

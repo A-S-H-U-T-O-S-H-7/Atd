@@ -29,7 +29,9 @@ const DisburseTable = ({
   fileLoading,
   loadingFileName,
   onBankVerification,
-  onDisburseApproval
+  onDisburseApproval,
+  onStatusClick
+
 }) => {
 
   const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -96,10 +98,10 @@ const DisburseTable = ({
 
     { label: "Loan Status", width: "120px" },
     { label: "Change Status", width: "200px" },
-    { label: "Action", width: "140px" },
     { label: "Sanction Mail", width: "140px" },
     { label: "Remarks", width: "120px" },
     { label: "Document Status", width: "210px" },
+    { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
     { label: "Replace KYC", width: "160px" },
@@ -157,6 +159,7 @@ const DisburseTable = ({
                   loadingFileName={loadingFileName}
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
+                  onStatusClick={onStatusClick}
                 />
               ))}
             </tbody>

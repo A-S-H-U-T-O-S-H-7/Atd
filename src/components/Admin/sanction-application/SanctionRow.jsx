@@ -40,6 +40,7 @@ const SanctionRow = ({
   fileLoading,
   loadingFileName
 }) => {
+
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
   };
@@ -52,6 +53,45 @@ const SanctionRow = ({
 
   const handleCall = () => {
     onCall(application);
+  };
+
+  // Validation logic for loan status modal
+  const canOpenLoanStatusModal = () => {
+    // Use raw values if available, otherwise fallback to formatted strings
+    const sendCourierValue = application.sendToCourierRaw !== undefined 
+      ? application.sendToCourierRaw === 1 
+      : application.sendToCourier === "Yes";
+    
+    const courierPickedValue = application.courierPickedRaw !== undefined
+      ? application.courierPickedRaw === 1
+      : application.courierPicked === "Yes";
+    
+    const originalDocsValue = application.originalDocumentsRaw !== undefined
+      ? application.originalDocumentsRaw === "Yes"
+      : application.originalDocuments === "Yes";
+    
+    const emandateValue = application.emandateVerificationRaw !== undefined
+      ? (application.emandateVerificationRaw === 1 || application.emandateVerificationRaw === "1")
+      : (application.emandateStatus === "1" || application.emandateStatus === 1 || application.receivedDisburse === "Yes");
+
+    // Condition 1: All courier and document fields are complete
+    const allCourierFieldsComplete = sendCourierValue && courierPickedValue && originalDocsValue;
+
+    // Condition 2: E-mandate is verified
+    const emandateVerified = emandateValue;
+
+    // Block condition: All fields are incomplete (inverse check)
+    const allFieldsIncomplete = !sendCourierValue && !courierPickedValue && !originalDocsValue && !emandateValue;
+
+    // Allow if condition 1 OR condition 2 is true, AND not all fields are incomplete
+    return (allCourierFieldsComplete || emandateVerified) && !allFieldsIncomplete;
+  };
+
+  const handleLoanStatusClick = () => {
+    if (canOpenLoanStatusModal()) {
+      onStatusClick(application);
+    }
+    // No action if validation fails - button appears disabled
   };
 
   // Common cell styles
@@ -501,31 +541,24 @@ const SanctionRow = ({
         </div>
       </td>
 
-      {/* Disburse Behalf of E-mandate */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.receivedDisburse === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : application.receivedDisburse === "No" ? (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>Verify</span>
-            </button>
-          )}
-        </div>
-      </td>
+     {/* Disburse Behalf of E-mandate */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    {application.receivedDisburse === "Yes" ? (
+      <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+        <CheckCircle className="w-3 h-3" />
+        <span>Yes</span>
+      </span>
+    ) : (
+      <button
+        onClick={() => onDisburseEmandateModalOpen(application)}
+        className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+      >
+        <span>Verify</span>
+      </button>
+    )}
+  </div>
+</td>
 
       {/* Loan Term */}
       <td className={cellStyle}>
@@ -587,12 +620,17 @@ const SanctionRow = ({
       {/* Loan Status */}
       <td className={cellStyle}>
         <button
-          onClick={() => onStatusClick(application)}
-          className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 hover:scale-105 ${
+          onClick={handleLoanStatusClick}
+          className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
+            canOpenLoanStatusModal()
+              ? "hover:scale-105 cursor-pointer"
+              : "opacity-60 cursor-not-allowed"
+          } ${
             isDark 
               ? "bg-orange-900/50 text-orange-300 border border-orange-700 hover:bg-orange-800" 
               : "bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200"
           }`}
+          title={canOpenLoanStatusModal() ? "Click to update loan status" : "Complete required fields to update status"}
         >
           {application.loanStatus}
         </button>

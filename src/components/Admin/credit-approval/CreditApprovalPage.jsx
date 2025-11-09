@@ -22,6 +22,8 @@ import {
 import { exportToExcel } from "@/components/utils/exportutil";
 import toast from 'react-hot-toast';
 import Swal from "sweetalert2";
+import StatusUpdateModal from "../StatusUpdateModal";
+
 
 const CreditApprovalPage = () => {
   const { theme } = useThemeStore();
@@ -57,6 +59,8 @@ const CreditApprovalPage = () => {
   const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
   const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -69,6 +73,10 @@ const CreditApprovalPage = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   const itemsPerPage = 10;
+
+  const statusOptions = [
+  { value: "Ready To Disbursed", label: "Ready To Disbursed" }
+];
 
   const SearchOptions = [
     { value: 'loanNo', label: 'Loan No.' },
@@ -116,12 +124,32 @@ const CreditApprovalPage = () => {
       setError(null);
       
       const params = buildApiParams();
+      console.log('🔵 [Credit Approval] API Request Params:', params);
+      
       const response = await creditApprovalService.getApplications(params);
+      console.log('🟢 [Credit Approval] Raw API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
+      console.log('🟡 [Credit Approval] Processed Response:', actualResponse);
       
       if (actualResponse && actualResponse.success && actualResponse.data) {
+        console.log('📊 [Credit Approval] Raw Data Array:', actualResponse.data);
+        console.log('📈 [Credit Approval] Total Records:', actualResponse.data.length);
+        console.log('📋 [Credit Approval] Pagination Info:', actualResponse.pagination);
+        
+        // Log first record in detail if available
+        if (actualResponse.data.length > 0) {
+          console.log('🔍 [Credit Approval] First Record (Raw):', actualResponse.data[0]);
+        }
+        
         const formattedApplications = actualResponse.data.map(formatCreditApprovalApplicationForUI);
+        console.log('✅ [Credit Approval] Formatted Applications:', formattedApplications);
+        
+        // Log first formatted record if available
+        if (formattedApplications.length > 0) {
+          console.log('🎨 [Credit Approval] First Record (Formatted):', formattedApplications[0]);
+        }
+        
         setApplications(formattedApplications);
         setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
@@ -165,43 +193,135 @@ const CreditApprovalPage = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [currentPage, searchField, searchTerm, dateFilter]);
 
-  // NEW: Bank Verification Handler
-  const handleBankVerification = async (application) => {
-    try {
-      await creditApprovalService.updateBankVerification(application.id);
-      
-      // Update UI immediately
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, bankVerification: "verified" }
-          : app
-      ));
-      
-      toast.success('Bank verification completed successfully!');
-    } catch (error) {
-      console.error('Error updating bank verification:', error);
-      toast.error('Failed to update bank verification');
-    }
-  };
+  const handleStatusUpdate = async (applicationId, status, remark) => {
+  try {
+    await creditApprovalService.updateLoanStatus(applicationId, status, remark);
+    fetchApplications();
+  } catch (error) {
+    toast.error('Failed to update loan status');
+    throw error;
+  }
+};
 
-  // NEW: Disburse Approval Handler
-  const handleDisburseApproval = async (application) => {
-    try {
-      await creditApprovalService.updateDisburseApproval(application.id);
-      
-      // Update UI immediately
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, disburseApproval: "approved" }
-          : app
-      ));
-      
-      toast.success('Disburse approval completed successfully!');
-    } catch (error) {
-      console.error('Error updating disburse approval:', error);
-      toast.error('Failed to update disburse approval');
-    }
-  };
+const handleStatusModalOpen = (application) => {
+  setCurrentStatusApplication(application);
+  setStatusModalOpen(true);
+};
+
+const handleStatusModalClose = () => {
+  setStatusModalOpen(false);
+  setCurrentStatusApplication(null);
+};
+
+  // NEW: Bank Verification Handler with SweetAlert Confirmation
+const handleBankVerification = async (application) => {
+  if (application.bankVerification === "verified") {
+    toast.success('Bank verification already completed!');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: 'Confirm Bank Verification?',
+    text: `Are you sure you want to verify bank account for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Verify!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await creditApprovalService.updateBankVerification(application.id);
+    
+    // Update UI immediately
+    setApplications(prev => prev.map(app => 
+      app.id === application.id 
+        ? { ...app, bankVerification: "verified" }
+        : app
+    ));
+    
+    await Swal.fire({
+      title: 'Verified!',
+      text: 'Bank verification completed successfully!',
+      icon: 'success',
+      confirmButtonColor: '#10b981',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } catch (error) {
+    console.error('Error updating bank verification:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update bank verification',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
+
+// NEW: Disburse Approval Handler with SweetAlert Confirmation
+const handleDisburseApproval = async (application) => {
+  if (application.disburseApproval === "approved") {
+    toast.success('Disburse approval already completed!');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: 'Confirm Disburse Approval?',
+    text: `Are you sure you want to approve disbursement for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Approve!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await creditApprovalService.updateDisburseApproval(application.id);
+    
+    // Update UI immediately
+    setApplications(prev => prev.map(app => 
+      app.id === application.id 
+        ? { ...app, disburseApproval: "approved" }
+        : app
+    ));
+    
+    await Swal.fire({
+      title: 'Approved!',
+      text: 'Disburse approval completed successfully!',
+      icon: 'success',
+      confirmButtonColor: '#10b981',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } catch (error) {
+    console.error('Error updating disburse approval:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update disburse approval',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
 
   // Modal handlers (same as sanction page)
   const handleChequeModalOpen = (application, chequeNumber) => {
@@ -838,6 +958,7 @@ const CreditApprovalPage = () => {
           // NEW: Pass the bank verification and disburse approval handlers
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
+          onStatusClick={handleStatusModalOpen}
         />
       </div>
 
@@ -851,6 +972,16 @@ const CreditApprovalPage = () => {
         data={selectedApplicant} 
         isDark={isDark}  
       />
+      {currentStatusApplication && (
+  <StatusUpdateModal
+    isOpen={statusModalOpen}
+    onClose={handleStatusModalClose}
+    application={currentStatusApplication}
+    statusOptions={statusOptions}
+    onStatusUpdate={handleStatusUpdate}
+    isDark={isDark}
+  />
+)}
 
       {currentRefundPDCApplication && (
         <RefundPDCModal
