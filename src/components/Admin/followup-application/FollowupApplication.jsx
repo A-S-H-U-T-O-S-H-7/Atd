@@ -7,7 +7,7 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import FollowUpTable from "./FollowUpTable";
 import CallDetailsModal from "../CallDetailsModal";
-import StatusUpdateModal from "../StatusUpdateModal"; // Import the modal
+import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   followUpApplicationAPI, 

@@ -7,7 +7,7 @@ import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import CallDetailsModal from "../CallDetailsModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
-import AdjustmentModal from "../AdjustmentModal";
+import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 

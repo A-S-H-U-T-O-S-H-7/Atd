@@ -5,8 +5,8 @@ import AdvancedSearchBar from "../AdvanceSearchBar";
 import OverdueApplicantTable from "./OverdueApplicantTable";
 import { exportToExcel } from "@/components/utils/exportutil";
 import CallDetailsModal from "../CallDetailsModal";
-import AdjustmentModal from "../AdjustmentModal";
-import OverdueAmountModal from "../OverdueAmountModal";
+import AdjustmentModal from "../application-modals/AdjustmentModal";
+import OverdueAmountModal from "../application-modals/OverdueAmountModal";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 
