@@ -91,7 +91,7 @@ const CreditApprovalTable = ({
     { label: "Disburse Approval", width: "160px" },
 
     { label: "Loan Status", width: "190px" },
-    { label: "Change Status", width: "200px" },
+    // { label: "Change Status", width: "200px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },

@@ -25,7 +25,8 @@ import {
 } from "@/lib/services/DisburseApprovalServices";
 import toast from 'react-hot-toast';
 import Swal from "sweetalert2";
-import StatusUpdateModal from "../StatusUpdateModal";
+import DisbursementModal from "../application-modals/DisbursementModal";
+
 
 
 const DisburseApplication = () => {
@@ -66,8 +67,8 @@ const DisburseApplication = () => {
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
   const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
-  const [statusModalOpen, setStatusModalOpen] = useState(false);
-const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
+  const [disbursementModalOpen, setDisbursementModalOpen] = useState(false);
+const [currentDisbursementApplication, setCurrentDisbursementApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -290,24 +291,20 @@ const handleDisburseApproval = async (application) => {
   }
 };
 
-const handleStatusUpdate = async (applicationId, status, remark) => {
+const handleDisbursementModalOpen = (application) => {
+  setCurrentDisbursementApplication(application);
+  setDisbursementModalOpen(true);
+};
+
+const handleDisbursementSubmit = async (applicationId, formData) => {
   try {
-    await disburseApprovalService.updateLoanStatus(applicationId, status, remark);
-    fetchApplications();
+    // Call your API service here
+    await disburseApprovalService.submitDisbursement(applicationId, formData);
+    await fetchApplications();
   } catch (error) {
-    toast.error('Failed to update loan status');
+    toast.error('Failed to process disbursement');
     throw error;
   }
-};
-
-const handleStatusModalOpen = (application) => {
-  setCurrentStatusApplication(application);
-  setStatusModalOpen(true);
-};
-
-const handleStatusModalClose = () => {
-  setStatusModalOpen(false);
-  setCurrentStatusApplication(null);
 };
 
   // Modal handlers
@@ -1009,7 +1006,8 @@ const handleStatusModalClose = () => {
           loadingFileName={loadingFileName}
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
-            onStatusClick={handleStatusModalOpen}
+          onStatusClick={handleDisbursementModalOpen}
+            
 
         />
       </div>
@@ -1024,13 +1022,12 @@ const handleStatusModalClose = () => {
         data={selectedApplicant} 
         isDark={isDark}  
       />
-      {currentStatusApplication && (
-  <StatusUpdateModal
-    isOpen={statusModalOpen}
-    onClose={handleStatusModalClose}
-    application={currentStatusApplication}
-    statusOptions={statusOptions}
-    onStatusUpdate={handleStatusUpdate}
+      {currentDisbursementApplication && (
+  <DisbursementModal
+    isOpen={disbursementModalOpen}
+    onClose={() => setDisbursementModalOpen(false)}
+    application={currentDisbursementApplication}
+    onDisbursementSubmit={handleDisbursementSubmit}
     isDark={isDark}
   />
 )}

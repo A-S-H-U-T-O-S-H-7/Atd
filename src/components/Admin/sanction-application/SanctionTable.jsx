@@ -28,7 +28,7 @@ const SanctionTable = ({
   onReplaceKYCClick,
   fileLoading,
   loadingFileName,
-  onStatusClick
+  onStatusClick,
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${

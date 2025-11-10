@@ -26,8 +26,12 @@ const ManageApplicationTable = ({
    onCheckClick, 
    onReplaceKYCClick, 
    onCall, 
-   onDocumentStatusClick, 
-   
+   onDocumentStatusClick,
+   fileLoading,
+   loadingFileName,
+   onReadyForApprove,
+   onBankVerification,
+   onDisburseApproval,
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -94,7 +98,7 @@ const ManageApplicationTable = ({
         //here i sthe space for Disburse and collection
   
         { label: "Loan Status", width: "120px" },
-        { label: "Change Status", width: "200px" },
+        // { label: "Change Status", width: "200px" },
         { label: "Action", width: "140px" },
         { label: "Remarks", width: "120px" },
         { label: "Document Status", width: "210px" },
@@ -161,6 +165,11 @@ const ManageApplicationTable = ({
                   onReplaceKYCClick = {onReplaceKYCClick}
                   onCall={onCall}
                   onDocumentStatusClick={onDocumentStatusClick}
+                  fileLoading={fileLoading}
+                  loadingFileName={loadingFileName}
+                  onReadyForApprove={onReadyForApprove}
+                  onBankVerification={onBankVerification}
+                  onDisburseApproval={onDisburseApproval}
                   />
               ))}
             </tbody>

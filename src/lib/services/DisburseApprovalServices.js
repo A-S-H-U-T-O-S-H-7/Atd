@@ -157,7 +157,8 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No",
-    receivedDisburse: application.emandateverification || "No",
+    receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
+    emandateVerificationRaw: application.emandateverification,
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
     sanctionMail: application.sanction_mail || "Not Sent",
 
@@ -263,10 +264,20 @@ export const disburseApprovalService = {
     }
   },
 
-  // Disburse application
-  disburseApplication: async (applicationId, disburseData) => {
+  // Submit disbursement
+  submitDisbursement: async (applicationId, formData) => {
     try {
-      const response = await disburseApprovalAPI.disburseApplication(applicationId, disburseData);
+      const payload = {
+        loan_status: 9, // Disbursed status
+        disburse_amount: parseFloat(formData.disburseAmount),
+        disburse_date: formData.disbursementDate,
+        customer_bank: formData.bankName,
+        customer_branch: formData.branchName,
+        customer_account: formData.accountNo,
+        customer_ifsc: formData.ifscCode
+      };
+      
+      const response = await api.put(`/crm/disbursement/disburse/${applicationId}`, payload);
       return response;
     } catch (error) {
       throw error;
@@ -321,15 +332,15 @@ export const disburseApprovalService = {
   },
 
   updateEmandateStatus: async (applicationId, emandateStatus) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
-        emandateverification: emandateStatus === "Yes" ? 1 : 0
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+  try {
+    const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
+      emandateverification: emandateStatus === "Yes" ? 1 : 0
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
 
   updateLoanStatus: async (applicationId, status, remark = "") => {
     try {

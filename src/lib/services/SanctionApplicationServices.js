@@ -116,6 +116,8 @@ export const formatSanctionApplicationForUI = (application) => {
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No", 
     receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
+    emandateVerificationRaw: application.emandateverification,
+
     // Raw values for validation logic
     sendToCourierRaw: application.send_courier,
     courierPickedRaw: application.courier_picked,

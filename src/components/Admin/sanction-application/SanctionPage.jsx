@@ -26,7 +26,7 @@ import {
 import { exportToExcel } from "@/components/utils/exportutil";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
-import StatusUpdateModal from "../StatusUpdateModal";
+import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 
 const SanctionPage = () => {
   const { theme } = useThemeStore();
@@ -286,6 +286,8 @@ const handleChangeStatusSubmit = async (updateData) => {
   }
 };
 
+
+
 const handleStatusUpdate = async (applicationId, status, remark) => {
   try {
     await sanctionService.updateLoanStatus(applicationId, status, remark);
@@ -347,6 +349,7 @@ const handleStatusModalClose = () => {
     setCurrentChangeStatusApplication(application);
     setChangeStatusModalOpen(true);
   };
+  
 
   const handleChangeStatusModalClose = () => {
     setChangeStatusModalOpen(false);
@@ -867,6 +870,8 @@ const handleStatusModalClose = () => {
           loanNo={currentChangeStatusApplication.loanNo}
         />
       )}
+
+     
 
       {currentStatusApplication && (
   <StatusUpdateModal

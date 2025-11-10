@@ -97,7 +97,7 @@ const DisburseTable = ({
     { label: "Disburse Approval", width: "160px" },
 
     { label: "Loan Status", width: "120px" },
-    { label: "Change Status", width: "200px" },
+    // { label: "Change Status", width: "200px" },
     { label: "Sanction Mail", width: "140px" },
     { label: "Remarks", width: "120px" },
     { label: "Document Status", width: "210px" },

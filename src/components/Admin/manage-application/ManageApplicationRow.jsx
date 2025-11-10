@@ -551,88 +551,97 @@ const ApplicationRow = ({
         </div>
       </td>
 
-      {/* Send To Courier */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.sendToCourier === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onCourierModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
-        </div>
-      </td>
+      {/* Send To Courier - READ ONLY */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+      application.sendToCourier === "Yes" 
+        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+    }`}>
+      {application.sendToCourier === "Yes" ? (
+        <>
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </>
+      ) : (
+        <>
+          <X className="w-3 h-3" />
+          <span>No</span>
+        </>
+      )}
+    </span>
+  </div>
+</td>
 
-      {/* Courier Picked */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.courierPicked === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onCourierPickedModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
-        </div>
-      </td>
+{/* Courier Picked - READ ONLY */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+      application.courierPicked === "Yes" 
+        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+    }`}>
+      {application.courierPicked === "Yes" ? (
+        <>
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </>
+      ) : (
+        <>
+          <X className="w-3 h-3" />
+          <span>No</span>
+        </>
+      )}
+    </span>
+  </div>
+</td>
 
-      {/* Original Documents */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.originalDocuments === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onOriginalDocumentsModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
-        </div>
-      </td>
+{/* Original Documents Received - READ ONLY */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+      application.originalDocuments === "Yes" 
+        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+    }`}>
+      {application.originalDocuments === "Yes" ? (
+        <>
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </>
+      ) : (
+        <>
+          <X className="w-3 h-3" />
+          <span>No</span>
+        </>
+      )}
+    </span>
+  </div>
+</td>
 
-      {/* Disburse Behalf of E-mandate */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.receivedDisburse === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : application.receivedDisburse === "No" ? (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onDisburseEmandateModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>Verify</span>
-            </button>
-          )}
-        </div>
-      </td>
+{/* Disburse Behalf of E-mandate - READ ONLY */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+      application.receivedDisburse === "Yes" 
+        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+    }`}>
+      {application.receivedDisburse === "Yes" ? (
+        <>
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </>
+      ) : (
+        <>
+          <X className="w-3 h-3" />
+          <span>No</span>
+        </>
+      )}
+    </span>
+  </div>
+</td>
 
       {/* Loan Term */}
       <td className={cellStyle}>
@@ -747,7 +756,7 @@ const ApplicationRow = ({
       </td>
 
       {/* Change Status */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onChangeStatusClick(application)}
@@ -758,7 +767,7 @@ const ApplicationRow = ({
             <span>Change Status</span>
           </button>
         </div>
-      </td>
+      </td> */}
 
       {/* Action */}
       <td className={cellStyle}>
@@ -868,8 +877,10 @@ const ApplicationRow = ({
 
       {/* Disburse */}
       <td className={cellStyle}>
-        <span className="text-sm text-gray-500">-</span>
-      </td>
+  <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
+    <CheckCircle className="w-5 h-5 text-white mx-auto" />
+  </div>
+</td>
 
       {/* Collection */}
       <td className={cellStyle}>

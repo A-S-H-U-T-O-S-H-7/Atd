@@ -146,7 +146,7 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
     
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No",
-    receivedDisburse: application.emandateverification || "No",
+    receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
 
     // NEW FIELDS FOR CREDIT APPROVAL
@@ -263,15 +263,15 @@ export const creditApprovalService = {
   },
 
   updateEmandateStatus: async (applicationId, emandateStatus) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
-        emandateverification: emandateStatus === "Yes" ? 1 : 0
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+  try {
+    const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
+      emandateverification: emandateStatus === "Yes" ? 1 : 0
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
 
   updateLoanStatus: async (applicationId, status, remark = "") => {
     try {

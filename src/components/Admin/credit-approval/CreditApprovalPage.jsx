@@ -22,7 +22,7 @@ import {
 import { exportToExcel } from "@/components/utils/exportutil";
 import toast from 'react-hot-toast';
 import Swal from "sweetalert2";
-import StatusUpdateModal from "../StatusUpdateModal";
+import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 
 
 const CreditApprovalPage = () => {
