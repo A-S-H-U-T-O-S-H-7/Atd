@@ -159,7 +159,7 @@ export const formatManageApplicationForUI = (application) => {
     // Status and process information
     approvalNote: application.approval_note,
     loanStatus: getStatusName(application.loan_status),
-    loanStatusId: application.loan_status, // Keep raw ID for conditional logic
+    loanStatusId: application.loan_status, 
     emandateStatus: application.emandatestatus || "Pending",
     iciciEmandateStatus: application.emandatestatus || "Pending",
     chequeNo: application.cheque_no,

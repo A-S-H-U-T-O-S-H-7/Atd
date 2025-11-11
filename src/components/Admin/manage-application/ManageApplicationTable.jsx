@@ -99,7 +99,7 @@ const ManageApplicationTable = ({
         //here i sthe space for Disburse and collection
   
         { label: "Loan Status", width: "120px" },
-        { label: "Collection", width: "120px" },
+        { label: "Collection", width: "150px" },
 
         // { label: "Change Status", width: "200px" },
         { label: "Action", width: "140px" },
