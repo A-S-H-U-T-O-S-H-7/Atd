@@ -32,6 +32,7 @@ const ManageApplicationTable = ({
    onReadyForApprove,
    onBankVerification,
    onDisburseApproval,
+   onCollectionClick,
 }) => {
 
     const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
@@ -98,6 +99,8 @@ const ManageApplicationTable = ({
         //here i sthe space for Disburse and collection
   
         { label: "Loan Status", width: "120px" },
+        { label: "Collection", width: "120px" },
+
         // { label: "Change Status", width: "200px" },
         { label: "Action", width: "140px" },
         { label: "Remarks", width: "120px" },
@@ -112,8 +115,7 @@ const ManageApplicationTable = ({
 
         
     { label: "Disburse", width: "100px" },
-    { label: "Collection", width: "120px" },
-            { label: "NOC", width: "120px" },
+    { label: "NOC", width: "120px" },
 
   ];
 
@@ -170,6 +172,7 @@ const ManageApplicationTable = ({
                   onReadyForApprove={onReadyForApprove}
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
+                  onCollectionClick={onCollectionClick}
                   />
               ))}
             </tbody>

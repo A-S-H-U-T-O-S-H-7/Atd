@@ -43,7 +43,8 @@ const ApplicationRow = ({
   loadingFileName,
   onReadyForApprove,
   onBankVerification,
-  onDisburseApproval
+  onDisburseApproval,
+  onCollectionClick
 }) => {
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
@@ -755,6 +756,56 @@ const ApplicationRow = ({
         </span>
       </td>
 
+      {/* Collection */}
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center">
+          {application.loanStatusId === 11 && (
+            <button
+              onClick={() => onCollectionClick && onCollectionClick(application, 'normal')}
+              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+              title="Collection"
+            >
+              Collection
+            </button>
+          )}
+          {application.loanStatusId === 12 && (
+            <button
+              onClick={() => onCollectionClick && onCollectionClick(application, 'recollection')}
+              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+              title="Re-collection"
+            >
+              Re-collection
+            </button>
+          )}
+          {application.loanStatusId === 18 && (
+            <button
+              onClick={() => onCollectionClick && onCollectionClick(application, 'renewal')}
+              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+              title="Renewal"
+            >
+              Renewal
+            </button>
+          )}
+          {application.loanStatusId === 19 && (
+            <button
+              onClick={() => onCollectionClick && onCollectionClick(application, 'emi')}
+              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+              title="EMI Collection"
+            >
+              Emi-collection
+            </button>
+          )}
+          {application.loanStatusId === 13 && (
+            <div className="border-2 border-green-500 bg-green-500 rounded-md px-2 py-1">
+              <CheckCircle className="w-5 h-5 text-white" />
+            </div>
+          )}
+          {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
+            <span className="text-sm text-gray-500">-</span>
+          )}
+        </div>
+      </td>
+
       {/* Change Status */}
       {/* <td className={cellStyle}>
         <div className="flex items-center justify-center">
@@ -882,10 +933,7 @@ const ApplicationRow = ({
   </div>
 </td>
 
-      {/* Collection */}
-      <td className={cellStyle}>
-        <span className="text-sm text-gray-500">-</span>
-      </td>
+      
 
       {/* NOC */}
       <td className={cellStyle}>

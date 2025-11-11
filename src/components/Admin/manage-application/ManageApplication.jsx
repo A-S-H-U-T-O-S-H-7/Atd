@@ -17,6 +17,10 @@ import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
 import CallDetailsModal from "../CallDetailsModal";
 import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
+import NormalCollectionForm from "./collectionForms/NormalCollectionForm";
+import RecollectionForm from "./collectionForms/RecollectionForm";
+import RenewalCollectionForm from "./collectionForms/RenewalCollectionForm";
+import CreateEmiForm from "./collectionForms/CreateEmiForm";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   manageApplicationService,
@@ -64,6 +68,11 @@ const ManageApplication = () => {
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
   const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+  
+  // Collection modal states
+  const [collectionModalOpen, setCollectionModalOpen] = useState(false);
+  const [collectionType, setCollectionType] = useState(null); // 'normal', 'recollection', 'renewal', 'emi'
+  const [currentCollectionApplication, setCurrentCollectionApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -189,6 +198,33 @@ const ManageApplication = () => {
     } catch (error) {
       console.error('Error updating ready for approve:', error);
       toast.error('Failed to update approval status');
+    }
+  };
+
+  // Collection handler
+  const handleCollectionClick = (application, type) => {
+    setCurrentCollectionApplication(application);
+    setCollectionType(type);
+    setCollectionModalOpen(true);
+  };
+
+  const handleCollectionClose = () => {
+    setCollectionModalOpen(false);
+    setCollectionType(null);
+    setCurrentCollectionApplication(null);
+  };
+
+  const handleCollectionSubmit = async (applicationId, formData) => {
+    try {
+      // TODO: Add API call for collection submission
+      console.log('Collection submitted:', { applicationId, formData, type: collectionType });
+      
+      await fetchApplications();
+      toast.success('Collection processed successfully!');
+    } catch (error) {
+      console.error('Error processing collection:', error);
+      toast.error('Failed to process collection');
+      throw error;
     }
   };
 
@@ -993,6 +1029,7 @@ const ManageApplication = () => {
           onReadyForApprove={handleReadyForApprove}
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
+          onCollectionClick={handleCollectionClick}
         />
       </div>
       
@@ -1104,6 +1141,47 @@ const ManageApplication = () => {
           customerName={currentRemarksApplication.name}
           loanNo={currentRemarksApplication.loanNo}
           application={currentRemarksApplication}
+        />
+      )}
+
+      {/* Collection Forms */}
+      {currentCollectionApplication && collectionType === 'normal' && (
+        <NormalCollectionForm
+          isOpen={collectionModalOpen}
+          onClose={handleCollectionClose}
+          application={currentCollectionApplication}
+          onCollectionSubmit={handleCollectionSubmit}
+          isDark={isDark}
+        />
+      )}
+
+      {currentCollectionApplication && collectionType === 'recollection' && (
+        <RecollectionForm
+          isOpen={collectionModalOpen}
+          onClose={handleCollectionClose}
+          application={currentCollectionApplication}
+          onCollectionSubmit={handleCollectionSubmit}
+          isDark={isDark}
+        />
+      )}
+
+      {currentCollectionApplication && collectionType === 'renewal' && (
+        <RenewalCollectionForm
+          isOpen={collectionModalOpen}
+          onClose={handleCollectionClose}
+          application={currentCollectionApplication}
+          onCollectionSubmit={handleCollectionSubmit}
+          isDark={isDark}
+        />
+      )}
+
+      {currentCollectionApplication && collectionType === 'emi' && (
+        <CreateEmiForm
+          isOpen={collectionModalOpen}
+          onClose={handleCollectionClose}
+          application={currentCollectionApplication}
+          onCollectionSubmit={handleCollectionSubmit}
+          isDark={isDark}
         />
       )}
     </div>
