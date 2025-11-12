@@ -6,7 +6,7 @@ const PersonalDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
     isDark
       ? "bg-gray-700 border-gray-600 text-white hover:border-emerald-500 focus:border-emerald-400"
       : "bg-gray-50 border-gray-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`;
+  } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`; 
 
   const errorInputClassName = `w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 text-sm ${
     isDark

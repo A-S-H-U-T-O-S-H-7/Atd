@@ -500,8 +500,7 @@ const handleStateChange = (e, addressType) => {
                 <option value="">Select Address Type</option>
                 <option value="Own">Own</option>
                 <option value="Rented">Rented</option>
-                <option value="Company Provided">Company Provided</option>
-                <option value="Parental">Parental</option>
+                
               </select>
               {hasError('permanentAddressType') && (
                 <div className={errorTextClassName}>

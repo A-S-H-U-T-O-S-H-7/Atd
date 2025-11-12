@@ -5,27 +5,9 @@ import Swal from 'sweetalert2';
 
 const FinalReportSection = ({ formik, onSubmit, onReject, isDark, submitting, saving, applicationId }) => {
   const [autoRecommendation, setAutoRecommendation] = useState(null);
-  const [initialSectionValues, setInitialSectionValues] = useState(null);
 
-  // Store initial values from database (only once when component mounts)
+  // Calculate automatic recommendation based on 6 section final reports
   useEffect(() => {
-    if (!initialSectionValues && formik.values.applicationId) {
-      const initial = {
-        personal_final_report: formik.values.personal_final_report,
-        organizationFinalReport: formik.values.organizationFinalReport,
-        bankVerificationFinalReport: formik.values.bankVerificationFinalReport,
-        cibilFinalReport: formik.values.cibilFinalReport,
-        socialScoreFinalReport: formik.values.socialScoreFinalReport,
-        incomeVerificationFinalReport: formik.values.incomeVerificationFinalReport
-      };
-      setInitialSectionValues(initial);
-    }
-  }, [formik.values.applicationId]);
-
-  // Calculate automatic recommendation based on 6 section final reports (SAVED values only)
-  useEffect(() => {
-    if (!initialSectionValues) return;
-    
     const calculateAutoRecommendation = () => {
       const {
         personal_final_report,
@@ -33,8 +15,9 @@ const FinalReportSection = ({ formik, onSubmit, onReject, isDark, submitting, sa
         bankVerificationFinalReport,
         cibilFinalReport,
         socialScoreFinalReport,
-        incomeVerificationFinalReport
-      } = initialSectionValues;
+        incomeVerificationFinalReport,
+        finalReport
+      } = formik.values;
 
       const sections = [
         { name: 'Personal', value: personal_final_report },
@@ -74,13 +57,11 @@ const FinalReportSection = ({ formik, onSubmit, onReject, isDark, submitting, sa
       setAutoRecommendation(recommendation);
       
       if (recommendation) {
-        const currentValue = formik.values.finalReport;
-        
-        if (!currentValue) {
+        if (!finalReport) {
           formik.setFieldValue('finalReport', recommendation);
         }
-        else if (currentValue === 'Recommended' || currentValue === 'Not Recommended') {
-          if (currentValue !== recommendation) {
+        else if (finalReport === 'Recommended' || finalReport === 'Not Recommended') {
+          if (finalReport !== recommendation) {
             formik.setFieldValue('finalReport', recommendation);
           }
         }
@@ -88,7 +69,16 @@ const FinalReportSection = ({ formik, onSubmit, onReject, isDark, submitting, sa
     };
 
     calculateAutoRecommendation();
-  }, [initialSectionValues]);
+  }, [
+    formik.values.personal_final_report,
+    formik.values.organizationFinalReport,
+    formik.values.bankVerificationFinalReport,
+    formik.values.cibilFinalReport,
+    formik.values.socialScoreFinalReport,
+    formik.values.incomeVerificationFinalReport,
+    formik.values.finalReport,
+    formik
+  ]);
 
   const handleRejectClick = () => {
     Swal.fire({

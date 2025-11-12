@@ -23,6 +23,12 @@ export const formatApplicationForUI = (applicationData) => {
   if (!applicationData?.data) return {};
   
   const data = applicationData.data;
+  console.log('Raw API data for administration fee:', {
+    process_percent: data.process_percent,
+    process_fee: data.process_fee,
+    gst: data.gst
+  });
+  
   return {
     // Personal Details
     formNo: data.loan_no || '',
@@ -60,19 +66,22 @@ export const formatApplicationForUI = (applicationData) => {
     permanentAddressType: data.address_type || '',
 
     
-    // Loan Details
+    // Loan Details - FIXED: Handle null values properly
     amountApproved: data.approved_amount || '',
     amountApplied: data.applied_amount || '',
     loanTerm: data.loan_term || '',
     roi: data.roi || '',
     tenure: data.tenure || '',
-    collectionAmount: data.dw_collection || '',
-    emiCollectionAmount: data.emi_collection || '',
-    gracePeriod: data.grace_period || '',
-    administrationFeePercent: data.process_percent || '',
-    administrationFeeAmount: data.process_fee || '',
-    gst: data.gst || '',
-    redeemPoints: data.redeem_points || '',
+    collectionAmount: data.dw_collection ? String(data.dw_collection) : '',
+    emiCollectionAmount: data.emi_collection ? String(data.emi_collection) : '',
+    gracePeriod: data.grace_period ? String(data.grace_period) : '',
+    
+    // FIX: Handle null values explicitly
+    administrationFeePercent: data.process_percent !== null ? String(data.process_percent) : '',
+    administrationFeeAmount: data.process_fee !== null ? String(data.process_fee) : '',
+    gst: data.gst !== null ? String(data.gst) : '',
+    
+    redeemPoints: data.redeem_points ? String(data.redeem_points) : '',
 
     // Organization Details
     organisationName: data.organisation_name || '',
@@ -161,9 +170,9 @@ export const formatApplicationForAPI = (formData) => {
     dw_collection: formData.collectionAmount,
     emi_collection: formData.emiCollectionAmount,
     grace_period: formData.gracePeriod,
-    process_percent: formData.administrationFeePercent || "0",
-    process_fee: formData.administrationFeeAmount,
-    gst: formData.gst,
+    process_percent: formData.administrationFeePercent || null,
+    process_fee: formData.administrationFeeAmount || null,
+    gst: formData.gst || null,
     approval_note: formData.approvalNote,
     
     // Bank Details

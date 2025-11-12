@@ -97,11 +97,9 @@ const RejectedApplication = () => {
         setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
       } else {
-        console.error("❌ Invalid API Response structure:", actualResponse);
         setError("Failed to fetch applications - Invalid response");
       }
     } catch (err) {
-      console.error("❌ Error details:", err);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
@@ -223,7 +221,6 @@ const RejectedApplication = () => {
         throw new Error("Failed to export data");
       }
     } catch (err) {
-      console.error("Export error:", err);
       await Swal.fire({
         title: 'Export Failed!',
         text: 'Failed to export data. Please try again.',
@@ -255,7 +252,6 @@ const RejectedApplication = () => {
         alert('Popup blocked! Please allow popups for this site.');
       }
     } catch (error) {
-      console.error("Failed to load file:", error);
       alert(`Failed to load file: ${fileName}. Please check if file exists.`);
     } finally {
       setFileLoading(false);
@@ -263,29 +259,32 @@ const RejectedApplication = () => {
     }
   };
 
-  // Handle restore application
-  const handleRestoreApplication = async (applicationId) => {
-    try {
-      const result = await Swal.fire({
-        title: 'Restore Application?',
-        text: 'This will move the application back to pending status.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, Restore!',
-        cancelButtonText: 'Cancel',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+// Handle restore application
+const handleRestoreApplication = async (applicationId) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Restore Application?',
+      text: 'This will move the application back to pending status.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Restore!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
 
-      if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
-      await rejectedApplicationService.restoreApplication(applicationId);
-      
+    // Call the restore API
+    const response = await rejectedApplicationService.restoreApplication(applicationId);
+    
+    // Check response structure - handle different possible formats
+    if (response && (response.success === true || response.message)) {
       await Swal.fire({
         title: 'Application Restored!',
-        text: 'Application has been restored successfully.',
+        text: response.message || 'Application has been restored successfully.',
         icon: 'success',
         confirmButtonColor: '#10b981',
         background: isDark ? "#1f2937" : "#ffffff",
@@ -294,19 +293,39 @@ const RejectedApplication = () => {
 
       // Refresh applications
       fetchApplications();
-    } catch (error) {
-      console.error("Restore error:", error);
+    } else {
+      // If response doesn't have expected structure but API call was successful
       await Swal.fire({
-        title: 'Restore Failed!',
-        text: 'Failed to restore application. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
+        title: 'Application Restored!',
+        text: 'Application has been restored successfully.',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
       });
+      
+      // Refresh applications anyway
+      fetchApplications();
     }
-  };
-
+  } catch (error) {
+    let errorMessage = 'Failed to restore application. Please try again.';
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    await Swal.fire({
+      title: 'Restore Failed!',
+      text: errorMessage,
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
   // Clear all filters
   const clearAllFilters = () => {
     setSearchField("");

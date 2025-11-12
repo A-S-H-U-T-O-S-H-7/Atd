@@ -28,7 +28,12 @@ const ApplicationForm = ({ enquiry, onBack }) => {
         try {
           setLoading(true);
           const response = await applicationAPI.getApplicationForEdit(enquiry.id);
+          console.log('API Response:', response);
           if (response.success) {
+            console.log('Setting API Data:', response.data);
+            console.log('process_percent from API:', response.data.process_percent);
+            console.log('process_fee from API:', response.data.process_fee);
+            console.log('gst from API:', response.data.gst);
             setApiData(response.data);
           }
         } catch (error) {
@@ -44,7 +49,9 @@ const ApplicationForm = ({ enquiry, onBack }) => {
   }, [enquiry?.id]);
 
   const mapApiDataToForm = (apiData) => {
-    return formatApplicationForUI({ data: apiData });
+    const formatted = formatApplicationForUI({ data: apiData });
+    console.log('Formatted data for form:', formatted);
+    return formatted;
   };
 
   const mapFormDataToApi = (formData) => {
@@ -139,12 +146,17 @@ const ApplicationForm = ({ enquiry, onBack }) => {
 
     // If we have API data, use it
     if (apiData) {
-      return { ...baseValues, ...mapApiDataToForm(apiData) };
+      const initialValues = { ...baseValues, ...mapApiDataToForm(apiData) };
+      console.log('Initial values from API data:', initialValues);
+      console.log('administrationFeePercent:', initialValues.administrationFeePercent);
+      console.log('administrationFeeAmount:', initialValues.administrationFeeAmount);
+      console.log('gst:', initialValues.gst);
+      return initialValues;
     }
 
     // If we have enquiry data, use it
     if (enquiry) {
-      return {
+      const initialValues = {
         ...baseValues,
         name: enquiry.name || '',
         firstName: enquiry.firstName || '',
@@ -161,8 +173,11 @@ const ApplicationForm = ({ enquiry, onBack }) => {
         tenure: enquiry.tenure || '',
         loanTerm: enquiry.loanTerm || ''
       };
+      console.log('Initial values from enquiry:', initialValues);
+      return initialValues;
     }
 
+    console.log('Using base values');
     return baseValues;
   };
 
@@ -172,7 +187,16 @@ const ApplicationForm = ({ enquiry, onBack }) => {
       setSubmitError('');
       setFieldErrors({});
       
+      console.log('Form values being submitted:', values);
+      console.log('administrationFeePercent:', values.administrationFeePercent);
+      console.log('administrationFeeAmount:', values.administrationFeeAmount);
+      console.log('gst:', values.gst);
+      
       const mappedData = mapFormDataToApi(values);
+      console.log('Mapped data for API:', mappedData);
+      console.log('process_percent:', mappedData.process_percent);
+      console.log('process_fee:', mappedData.process_fee);
+      console.log('gst:', mappedData.gst);
       
       const response = await applicationAPI.updateApplication(enquiry.id, mappedData);
       

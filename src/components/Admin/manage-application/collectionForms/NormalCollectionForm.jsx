@@ -120,8 +120,8 @@ const NormalCollectionForm = ({
       onClick={handleBackdropClick}
     >
       <div 
-        className={`rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform transition-all ${
-          isDark ? "bg-gray-800" : "bg-white"
+        className={`rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-y-auto transform transition-all ${
+          isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -136,10 +136,10 @@ const NormalCollectionForm = ({
           </h2>
           <button
             onClick={onClose}
-            className={`p-1 rounded-lg transition-colors ${
+            className={`p-2 rounded-lg transition-colors ${
               isDark 
-                ? "hover:bg-gray-700 text-gray-400" 
-                : "hover:bg-gray-100 text-gray-600"
+                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200" 
+                : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
             }`}
           >
             <X className="w-5 h-5" />
@@ -149,42 +149,47 @@ const NormalCollectionForm = ({
         {/* Form Content */}
         <div className="p-6">
           {/* Non-editable Application Details */}
-          <div className={`mb-6 p-4 rounded-lg ${
-            isDark ? "bg-gray-700/50" : "bg-gray-50"
+          <div className={`mb-6 p-5 rounded-xl border ${
+            isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
-            <div className="grid grid-cols-2 gap-4">
+            <h3 className={`text-lg font-semibold mb-4 ${
+              isDark ? "text-indigo-300" : "text-indigo-700"
+            }`}>
+              Application Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={`block text-sm font-medium mb-1 ${
+                <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Sanction Amount :
+                  Sanction Amount
                 </label>
                 <input
                   type="text"
                   value={sanctionAmount}
                   readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
                       : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-1 ${
+                <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Process Fee :
+                  Process Fee
                 </label>
                 <div className="space-y-1">
                   <input
                     type="text"
                     value={processFee}
                     readOnly
-                    className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                       isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
                         : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                     }`}
                   />
@@ -197,54 +202,54 @@ const NormalCollectionForm = ({
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-1 ${
+                <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Disburse Date :
+                  Disburse Date
                 </label>
                 <input
                   type="date"
                   value={disburseDate}
                   readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
                       : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
                 />
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-1 ${
+                <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Transaction Date :
+                  Transaction Date
                 </label>
                 <input
                   type="date"
                   value={transactionDate}
                   readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
                       : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
                 />
               </div>
 
-              <div className="col-span-2">
-                <label className={`block text-sm font-medium mb-1 ${
+              <div className="md:col-span-2">
+                <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Due Date :
+                  Due Date
                 </label>
                 <input
                   type="date"
                   value={dueDate}
                   readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
                       : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
                 />
@@ -253,312 +258,324 @@ const NormalCollectionForm = ({
           </div>
 
           {/* Due Amount Section */}
-          <div className={`mb-6 p-4 rounded-lg ${
-            isDark ? "bg-gray-700/50" : "bg-gray-50"
+          <div className={`mb-6 p-5 rounded-xl border ${
+            isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
-            <h3 className={`text-sm font-semibold mb-3 ${
-              isDark ? "text-gray-300" : "text-gray-700"
+            <h3 className={`text-lg font-semibold mb-4 ${
+              isDark ? "text-indigo-300" : "text-indigo-700"
             }`}>
-              Due Amount
+              Collection Details
             </h3>
             
             <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Collection date : <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="collectionDate"
-                  value={formData.collectionDate}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Interest :
-                </label>
-                <input
-                  type="text"
-                  value={interest}
-                  readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Due Amount :
-                </label>
-                <input
-                  type="text"
-                  value={dueAmount}
-                  readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Penality :
-                </label>
-                <input
-                  type="number"
-                  name="penaltyInput"
-                  value={formData.penaltyInput}
-                  onChange={handleChange}
-                  placeholder="Enter penalty amount"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                  min="0"
-                />
-                <p className={`text-xs px-1 mt-1 ${
-                  isDark ? "text-gray-400" : "text-gray-500"
-                }`}>
-                  (Principal: + GST: )
-                </p>
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Penal Interest:
-                </label>
-                <input
-                  type="number"
-                  name="penalInterest"
-                  value={formData.penalInterest}
-                  onChange={handleChange}
-                  placeholder="Enter penal interest"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                  min="0"
-                />
-                <p className={`text-xs px-1 mt-1 ${
-                  isDark ? "text-gray-400" : "text-gray-500"
-                }`}>
-                  (Penal Int: + GST: )
-                </p>
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Bounce Charge:
-                </label>
-                <input
-                  type="number"
-                  name="bounceCharge"
-                  value={formData.bounceCharge}
-                  onChange={handleChange}
-                  placeholder="Enter bounce charge"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Total Due Amount :
-                </label>
-                <input
-                  type="text"
-                  value={totalDueAmount}
-                  readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Collection By : <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="collectionBy"
-                  value={formData.collectionBy}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  required
-                >
-                  <option value="">--Select--</option>
-                  <option value="by bank">By Bank</option>
-                  <option value="by cash">By Cash</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Bank Name :
-                </label>
-                <select
-                  name="bankName"
-                  value={formData.bankName}
-                  onChange={handleChange}
-                  disabled={formData.collectionBy === "by cash"}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    formData.collectionBy === "by cash"
-                      ? isDark
-                        ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                      : isDark 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Collection date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="collectionDate"
+                    value={formData.collectionDate}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
                         ? "bg-gray-600 border-gray-500 text-white" 
                         : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                >
-                  <option value="">--Select Bank--</option>
-                  {bankOptions.map((bank, index) => (
-                    <option key={index} value={bank}>
-                      {bank}
-                    </option>
-                  ))}
-                </select>
+                    }`}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Interest
+                  </label>
+                  <input
+                    type="text"
+                    value={interest}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Amt Disbursed From :
-                </label>
-                <input
-                  type="text"
-                  value={amtDisbursedFrom}
-                  readOnly
-                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Due Amount
+                  </label>
+                  <input
+                    type="text"
+                    value={dueAmount}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Total Due Amount
+                  </label>
+                  <input
+                    type="text"
+                    value={totalDueAmount}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Transaction Id :
-                </label>
-                <input
-                  type="text"
-                  name="transactionId"
-                  value={formData.transactionId}
-                  onChange={handleChange}
-                  placeholder="Enter transaction ID"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Penalty
+                  </label>
+                  <input
+                    type="number"
+                    name="penaltyInput"
+                    value={formData.penaltyInput}
+                    onChange={handleChange}
+                    placeholder="Enter penalty amount"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                    min="0"
+                  />
+                  <p className={`text-xs px-1 mt-1 ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    (Principal: + GST: )
+                  </p>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Penal Interest
+                  </label>
+                  <input
+                    type="number"
+                    name="penalInterest"
+                    value={formData.penalInterest}
+                    onChange={handleChange}
+                    placeholder="Enter penal interest"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                    min="0"
+                  />
+                  <p className={`text-xs px-1 mt-1 ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    (Penal Int: + GST: )
+                  </p>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Bounce Charge
+                  </label>
+                  <input
+                    type="number"
+                    name="bounceCharge"
+                    value={formData.bounceCharge}
+                    onChange={handleChange}
+                    placeholder="Enter bounce charge"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                    min="0"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Collection Amount : <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="collectionAmount"
-                  value={formData.collectionAmount}
-                  onChange={handleChange}
-                  placeholder="Enter collection amount"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                  required
-                  min="0"
-                  step="0.01"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Collection By <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="collectionBy"
+                    value={formData.collectionBy}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white" 
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                    required
+                  >
+                    <option value="">--Select--</option>
+                    <option value="by bank">By Bank</option>
+                    <option value="by cash">By Cash</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Bank Name
+                  </label>
+                  <select
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={handleChange}
+                    disabled={formData.collectionBy === "by cash"}
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      formData.collectionBy === "by cash"
+                        ? isDark
+                          ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                        : isDark 
+                          ? "bg-gray-600 border-gray-500 text-white" 
+                          : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="">--Select Bank--</option>
+                    {bankOptions.map((bank, index) => (
+                      <option key={index} value={bank}>
+                        {bank}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-1 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  required
-                >
-                  <option value="">--Select Status--</option>
-                  <option value="Returned">Returned</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Amt Disbursed From
+                  </label>
+                  <input
+                    type="text"
+                    value={amtDisbursedFrom}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Transaction Id
+                  </label>
+                  <input
+                    type="text"
+                    name="transactionId"
+                    value={formData.transactionId}
+                    onChange={handleChange}
+                    placeholder="Enter transaction ID"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Collection Amount <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="collectionAmount"
+                    value={formData.collectionAmount}
+                    onChange={handleChange}
+                    placeholder="Enter collection amount"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Status <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white" 
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                    required
+                  >
+                    <option value="">--Select Status--</option>
+                    <option value="Returned">Returned</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 mt-6">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className={`px-6 py-2 rounded-lg border transition-colors ${
+              className={`px-6 py-3 rounded-lg border transition-colors font-medium ${
                 isDark
-                  ? "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
-                  : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500"
+                  : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200 hover:border-gray-400"
               } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               Cancel
@@ -567,14 +584,23 @@ const NormalCollectionForm = ({
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className={`px-6 py-2 rounded-lg text-white transition-colors flex items-center gap-2 ${
+              className={`px-8 py-3 rounded-lg text-white transition-colors flex items-center justify-center gap-2 font-medium ${
                 loading
                   ? "bg-emerald-400 cursor-not-allowed"
-                  : "bg-emerald-600 hover:bg-emerald-700"
+                  : "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
               }`}
             >
-              {loading ? "Processing..." : "Submit"}
-              {!loading && <span>→</span>}
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Submit Collection
+                  <span>→</span>
+                </>
+              )}
             </button>
           </div>
         </div>

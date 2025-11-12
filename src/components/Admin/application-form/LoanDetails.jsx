@@ -44,27 +44,24 @@ const LoanDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
     isDark ? "text-red-400" : "text-red-600"
   }`;
 
-  
-
   // Helper function to check if field has error
   const hasError = (fieldName) => {
-  return errors[fieldName] && touched[fieldName];
-};
+    return errors[fieldName] && touched[fieldName];
+  };
 
-  
   // Calculate Collection Amount
-const calculateCollectionAmount = () => {
-  const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
-  const tenure = parseInt(formik.values.tenure) || 0;
-  const roi = 0.067; 
-  
-  if (approvedAmount > 0 && tenure > 0) {
-    const interestAmount = approvedAmount * tenure * (roi / 100);
-    const totalAmount = approvedAmount + interestAmount;
-    return Math.round(totalAmount); 
-  }
-  return approvedAmount;
-};
+  const calculateCollectionAmount = () => {
+    const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
+    const tenure = parseInt(formik.values.tenure) || 0;
+    const roi = 0.067; 
+    
+    if (approvedAmount > 0 && tenure > 0) {
+      const interestAmount = approvedAmount * tenure * (roi / 100);
+      const totalAmount = approvedAmount + interestAmount;
+      return Math.round(totalAmount); 
+    }
+    return approvedAmount;
+  };
 
   // Calculate Administration Fee Amount
   const calculateAdministrationFee = () => {
@@ -73,7 +70,7 @@ const calculateCollectionAmount = () => {
     
     if (approvedAmount > 0 && adminFeePercent > 0) {
       const adminFee = approvedAmount * (adminFeePercent / 100);
-      return Math.round(adminFee); // Round to nearest integer
+      return Math.round(adminFee);
     }
     return 0;
   };
@@ -82,39 +79,46 @@ const calculateCollectionAmount = () => {
   const calculateGST = () => {
     const adminFee = calculateAdministrationFee();
     const gst = adminFee * 0.18;
-    return Math.round(gst); // Round to nearest integer
+    return Math.round(gst);
   };
 
-  // Update calculated fields when dependencies change
+  // FIXED: Only calculate when fields are empty (don't overwrite API data)
   useEffect(() => {
+    console.log('LoanDetails - Current values:', {
+      administrationFeePercent: formik.values.administrationFeePercent,
+      administrationFeeAmount: formik.values.administrationFeeAmount,
+      gst: formik.values.gst,
+      amountApproved: formik.values.amountApproved
+    });
+
+    // Only calculate if fields are empty (not overwriting existing data)
     const collectionAmount = calculateCollectionAmount();
-    const adminFeeAmount = calculateAdministrationFee();
-    const gstAmount = calculateGST();
-
-    // Update formik values if they don't match calculated values
-    if (formik.values.collectionAmount !== collectionAmount.toString()) {
-      formik.setFieldValue('collectionAmount', collectionAmount);
+    
+    if (!formik.values.collectionAmount) {
+      formik.setFieldValue('collectionAmount', collectionAmount.toString());
     }
 
-    if (formik.values.emiCollectionAmount !== collectionAmount.toString()) {
-      formik.setFieldValue('emiCollectionAmount', collectionAmount);
+    if (!formik.values.emiCollectionAmount) {
+      formik.setFieldValue('emiCollectionAmount', collectionAmount.toString());
     }
 
-    if (formik.values.administrationFeeAmount !== adminFeeAmount.toString()) {
-      formik.setFieldValue('administrationFeeAmount', adminFeeAmount);
-    }
+    // Only calculate administration fee and GST if percentage is provided AND amounts are empty
+    if (formik.values.administrationFeePercent && (!formik.values.administrationFeeAmount || !formik.values.gst)) {
+      const adminFeeAmount = calculateAdministrationFee();
+      const gstAmount = calculateGST();
 
-    if (formik.values.gst !== gstAmount.toString()) {
-      formik.setFieldValue('gst', gstAmount);
+      if (!formik.values.administrationFeeAmount) {
+        formik.setFieldValue('administrationFeeAmount', adminFeeAmount.toString());
+      }
+
+      if (!formik.values.gst) {
+        formik.setFieldValue('gst', gstAmount.toString());
+      }
     }
   }, [
     formik.values.amountApproved,
     formik.values.tenure,
-    formik.values.administrationFeePercent,
-    formik.values.collectionAmount,
-    formik.values.emiCollectionAmount,
-    formik.values.administrationFeeAmount,
-    formik.values.gst
+    formik.values.administrationFeePercent
   ]);
 
   // Set default loan term to "One Time Payment" if empty
@@ -261,7 +265,7 @@ const calculateCollectionAmount = () => {
             <input
               type="number"
               name="collectionAmount"
-              value={calculateCollectionAmount()}
+              value={formik.values.collectionAmount}
               className={disabledInputClassName}
               placeholder="Auto-calculated"
               readOnly
@@ -282,7 +286,7 @@ const calculateCollectionAmount = () => {
             <input
               type="number"
               name="emiCollectionAmount"
-              value={calculateCollectionAmount()}
+              value={formik.values.emiCollectionAmount}
               className={disabledInputClassName}
               placeholder="Same as collection amount"
               readOnly
@@ -325,7 +329,10 @@ const calculateCollectionAmount = () => {
             <select
               name="administrationFeePercent"
               value={formik.values.administrationFeePercent}
-              onChange={formik.handleChange}
+              onChange={(e) => {
+                console.log('Administration Fee % changed to:', e.target.value);
+                formik.handleChange(e);
+              }}
               onBlur={formik.handleBlur}
               className={hasError('administrationFeePercent') ? errorSelectClassName : selectClassName}
             >
@@ -352,7 +359,7 @@ const calculateCollectionAmount = () => {
             <input
               type="number"
               name="administrationFeeAmount"
-              value={calculateAdministrationFee()}
+              value={formik.values.administrationFeeAmount}
               className={disabledInputClassName}
               placeholder="Auto-calculated"
               readOnly
@@ -373,7 +380,7 @@ const calculateCollectionAmount = () => {
             <input
               type="number"
               name="gst"
-              value={calculateGST()}
+              value={formik.values.gst}
               className={disabledInputClassName}
               placeholder="Auto-calculated"
               readOnly

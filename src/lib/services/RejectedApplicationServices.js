@@ -26,14 +26,19 @@ export const rejectedApplicationAPI = {
   },
 
   // Restore application (move from rejected to pending/in-progress)
-  restoreApplication: async (applicationId) => {
+ restoreApplication: async (applicationId) => {
     try {
-      const response = await api.put(`/crm/application/restore/${applicationId}`);
-      return response;
+      const response = await api.get(`/crm/application/rejected/restore/${applicationId}`);
+      return response.data;
     } catch (error) {
-      throw error;
+      // Create a proper error object with the response data if available
+      const apiError = new Error(error.message || 'API call failed');
+      apiError.response = error.response;
+      apiError.status = error.response?.status;
+      throw apiError;
     }
   }
+
 };
 
 // Format application data for UI
@@ -154,6 +159,7 @@ export const rejectedApplicationService = {
     }
   }
 };
+
 
 // File view utility
 export const fileService = {

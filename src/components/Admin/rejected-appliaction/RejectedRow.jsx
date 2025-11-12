@@ -50,10 +50,10 @@ const RejectedRow = ({
   };
 
   const handleRestore = () => {
-    if (onRestoreApplication && application.id) {
-      onRestoreApplication(application.id);
-    }
-  };
+  if (onRestoreApplication && application.id) {
+    onRestoreApplication(application.id);
+  }
+};
 
   // CRITICAL FIX: Create application object with ALL required properties for button components
   const applicationForButtons = {

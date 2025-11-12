@@ -32,44 +32,44 @@ const CreditApprovalTable = ({
   onStatusClick
 }) => {
 
-  const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
+  const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
   // Table headers configuration with their respective widths
   const tableHeaders = [
     { label: "SR. No", width: "100px" },
-    { label: "Call", width: "100px" },
-    { label: "Loan No.", width: "120px" },
-    { label: "CRN No.", width: "140px" },
-    { label: "Account ID", width: "140px" },
-    { label: "Approved Date", width: "160px" },
+    { label: "Call", width: "70px" },
+    { label: "Loan No.", width: "100px" },
+    { label: "CRN No.", width: "80px" },
+    { label: "Account ID", width: "120px" },
+    { label: "Approved Date", width: "100px" },
     
-    { label: "Name", width: "200px" },
-    { label: "Current Address", width: "180px" },
-    { label: "Current State", width: "140px" },
-    { label: "Current City", width: "120px" },
-    { label: "Permanent Address", width: "180px" },
-    { label: "State", width: "100px" },
+    { label: "Name", width: "160px" },
+    { label: "Current Address", width: "150px" },
+    { label: "Current State", width: "110px" },
+    { label: "Current City", width: "110px" },
+    { label: "Permanent Address", width: "150px" },
+    { label: "State", width: "110px" },
     { label: "City", width: "100px" },
-    { label: "Phone No.", width: "140px" },
+    { label: "Phone No.", width: "90px" },
     { label: "E-mail", width: "200px" },
 
     { label: "Amount Approved", width: "120px" },
-    { label: "Admin Fee", width: "140px" },
+    { label: "Admin Fee", width: "100px" },
     { label: "ROI", width: "80px" },
-    { label: "Tenure", width: "100px" },
+    { label: "Tenure", width: "80px" },
    
     { label: "Photo", width: "80px" },
     { label: "Pan Proof", width: "100px" },
     { label: "Address Proof", width: "120px" },
-    { label: "ID Proof", width: "100px" },
+    { label: "ID Proof", width: "80px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
     { label: "Video KYC", width: "100px" },
-    { label: "Approval Note", width: "180px" },
-    { label: "Enquiry Source", width: "140px" },
-    { label: "Bank Verification Report", width: "180px" },
+    { label: "Approval Note", width: "140px" },
+    { label: "Enquiry Source", width: "120px" },
+    { label: "Bank Verification Report", width: "150px" },
     { label: "Social Score Report", width: "160px" },
     { label: "Cibil Score Report", width: "160px" },
     { label: "NACH Form", width: "120px" },
@@ -80,22 +80,22 @@ const CreditApprovalTable = ({
     { label: "Courier Picked", width: "140px" },
     { label: "Original Documents Received", width: "120px" },
     { label: "Disburse Behalf of E-mandate", width: "120px" },
-    { label: "Loan Term", width: "120px" },
+    { label: "Loan Term", width: "100px" },
     { label: "Disbursal Account", width: "160px" },
     { label: "Customer A/c Verified", width: "180px" },
     { label: "Sanction Letter", width: "140px" },
     { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
     // NEW COLUMNS FOR CREDIT APPROVAL
-    { label: "Bank A/c Verification", width: "180px" },
-    { label: "Disburse Approval", width: "160px" },
+    { label: "Bank A/c Verification", width: "80px" },
+    { label: "Disburse Approval", width: "80px" },
 
-    { label: "Loan Status", width: "190px" },
+    { label: "Loan Status", width: "160px" },
     // { label: "Change Status", width: "200px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
     { label: "Eligibility", width: "120px" },
-    { label: "Replace KYC", width: "160px" },
+    { label: "Replace KYC", width: "120px" },
   ];
  
   return (
@@ -106,7 +106,7 @@ const CreditApprovalTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "6000px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "1500px" }}>
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"

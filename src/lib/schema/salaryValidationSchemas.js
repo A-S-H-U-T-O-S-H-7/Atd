@@ -35,20 +35,18 @@
     // Final Report - required
     incomeVerificationFinalReport: Yup.string().required('Final report is required'),
 
-   monthsOfEmployment: Yup.number()
-    .required('Months of employment is required')
-    .min(1, 'Months of employment over last one year must be at least 1')  
-    .max(12, 'Months cannot exceed 12'),
-  
-  selfReportedMonthlyIncome: Yup.number()
-    .required('Self-reported monthly income is required')
-    .min(1, 'Self-reported monthly income must be greater than 0')  
-    .positive('Self-reported monthly income be positive'),
     
     // Optional fields
     availabilityOfBasicAmenities: Yup.string().optional(),
     availabilityOfOtherAssets: Yup.string().optional(),
     primarySourceOfIncome: Yup.string().optional(),
     natureOfWork: Yup.string().optional(),
-    frequencyOfIncome: Yup.string().optional()
+    frequencyOfIncome: Yup.string().optional(),
+    monthsOfEmployment: Yup.number()
+      .transform((value, originalValue) => originalValue === '' ? undefined : value)
+      .optional(),
+    selfReportedMonthlyIncome: Yup.number()
+      .transform((value, originalValue) => originalValue === '' ? undefined : value)
+      .optional(),
+
   });

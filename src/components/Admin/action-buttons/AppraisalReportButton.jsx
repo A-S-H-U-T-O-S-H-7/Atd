@@ -47,17 +47,28 @@ const AppraisalReportButton = ({
         throw new Error("Received empty PDF file");
       }
       
-      // Create download link
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Appraisal_Report_${enquiry.crnNo || applicationId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
+      // Create URL for the PDF blob
+      const pdfUrl = window.URL.createObjectURL(pdfBlob);
       
-      // Cleanup
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Open PDF in new tab
+      const newTab = window.open(pdfUrl, '_blank');
+      
+      // Fallback if popup blocked
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        // If popup blocked, create download link as fallback
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `Appraisal_Report_${enquiry.crnNo || applicationId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      // Cleanup URL after some time (optional)
+      setTimeout(() => {
+        window.URL.revokeObjectURL(pdfUrl);
+      }, 1000);
+      
     } catch (error) {
       alert(`Failed to generate appraisal report: ${error.message}`);
     } finally {
@@ -68,7 +79,7 @@ const AppraisalReportButton = ({
   const handleClick = () => {
     if (!disabled && !loading && !isDownloading && enquiry) {
       if (finalReportStatus === "Recommended") {
-        // Always generate and download PDF using API
+        // Always generate and open PDF in new tab using API
         handlePdfView();
       } else if (!isFinalStage) {
         onCheckClick?.(enquiry);
@@ -106,7 +117,7 @@ const AppraisalReportButton = ({
             : "cursor-pointer hover:bg-green-200"
         } bg-gradient-to-r from-orange-100  to-orange-300 text-orange-800 border border-orange-400 ${className}`}
       >
-        {isDownloading ? "Downloading..." : loading ? "Loading..." : "Recommended"}
+        {isDownloading ? "Opening..." : loading ? "Loading..." : "Recommended"}
       </button>
     );
   }

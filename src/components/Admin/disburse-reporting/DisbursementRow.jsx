@@ -1,17 +1,24 @@
-import {Calendar,Building} from "lucide-react";
+import React from "react";
+import { Calendar, Building } from "lucide-react";
 
-const DisbursementRow = ({ item, index, isDark,onNewLoanClick,onUpdateClick,
-  onTransactionClick,  onTransactionStatusClick,onTransferClick
-
- }) => {  
+const DisbursementRow = ({ 
+  item, 
+  index, 
+  isDark,
+  onNewLoanClick,
+  onUpdateClick,
+  onTransactionClick,  
+  onTransactionStatusClick,
+  onTransferClick
+}) => {  
 
   const handleTransaction = (item) => {
     onTransactionClick(item);
   };
 
   const handleTransfer = (item) => {
-  onTransferClick(item);
-};
+    onTransferClick(item);
+  };
 
   const handleNewLoan = (item) => {
     onNewLoanClick(item.beneficiaryAcName, item.loanNo);
@@ -21,10 +28,9 @@ const DisbursementRow = ({ item, index, isDark,onNewLoanClick,onUpdateClick,
     onUpdateClick(item); 
   };
 
-const handleTransactionStatus = (item) => {
-  onTransactionStatusClick(item);
-};
-  
+  const handleTransactionStatus = (item) => {
+    onTransactionStatusClick(item);
+  };
 
   const formatCurrency = (amount) => {
     return `₹${parseFloat(amount).toLocaleString('en-IN', {
@@ -33,26 +39,18 @@ const handleTransactionStatus = (item) => {
     })}`;
   };
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'completed':
-        return isDark
-          ? "bg-green-900/50 text-green-300 border-green-700"
-          : "bg-green-100 text-green-800 border-green-200";
-      case 'pending':
-        return isDark
-          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
-          : "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case 'failed':
-        return isDark
-          ? "bg-red-900/50 text-red-300 border-red-700"
-          : "bg-red-100 text-red-800 border-red-200";
-      default:
-        return isDark
-          ? "bg-blue-900/50 text-blue-300 border-blue-700"
-          : "bg-blue-100 text-blue-800 border-blue-200";
-    }
-  };
+  // Common cell styles
+  const cellBase = "px-2 py-3 text-center border-r";
+  const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
+  const cellStyle = `${cellBase} ${cellBorder}`;
+  
+  // Text styles
+  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
+  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
+  
+  // Icon styles
+  const iconAccent = `w-4 h-4 ${textAccent}`;
 
   return (
     <tr
@@ -62,157 +60,100 @@ const handleTransactionStatus = (item) => {
           : "border-emerald-300 hover:bg-emerald-50/50"
       } ${
         index % 2 === 0
-          ? isDark 
-            ? "bg-gray-700/80" 
-            : "bg-gray-50"
+          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
           : ""
       }`}
     >
       {/* SN */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-          isDark
-            ? " text-white"
-            : " text-black"
-        }`}>
+      <td className={cellStyle}>
+        <span className={`font-medium ${textPrimary}`}>
           {item.sn}
-        </div>
+        </span>
       </td>
 
       {/* Loan No */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <div className="flex items-center space-x-2">
-          
-          <span className={`text-sm font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
-            {item.loanNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${textAccent}`}>
+          {item.loanNo}
+        </span>
       </td>
 
       {/* Disburse Date */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {item.disburseDate}
           </span>
         </div>
       </td>
 
       {/* CRN No */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <div className="flex items-center space-x-2">
-                   <span className={`text-sm font-medium ${
-            isDark ? "text-blue-500" : "text-blue-800"
-          }`}>
-            {item.crnNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${
+          isDark ? "text-blue-400" : "text-blue-600"
+        }`}>
+          {item.crnNo}
+        </span>
       </td>
 
       {/* Tran. Ref. No */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {item.tranRefNo}
         </span>
       </td>
 
       {/* Tran. Date */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {item.tranDate}
           </span>
         </div>
       </td>
 
       {/* Sanctioned Amount */}
-<td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>        <div className="flex items-center space-x-2">
-          <span className={`text-sm font-bold px-2 py-1 rounded ${
-            isDark ? "bg-orange-900/50 text-orange-300" : "bg-orange-100 text-orange-800"
-          }`}>
+      <td className={cellStyle}>
+        <div className="bg-gradient-to-r px-2 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
+          <span className="text-sm font-semibold">
             {formatCurrency(item.sanctionedAmount)}
           </span>
         </div>
       </td>
 
       {/* Disbursed Amount */}
-          <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <div className="flex items-center space-x-2">
-          <span className={`text-sm font-bold px-2 py-1 rounded ${
-            isDark ? "bg-green-900/50 text-green-300" : "bg-green-100 text-green-800"
-          }`}>
+      <td className={cellStyle}>
+        <div className="bg-gradient-to-r px-2 rounded-md from-green-100 to-green-200 text-green-800 border border-green-300">
+          <span className="text-sm font-semibold">
             {formatCurrency(item.disbursedAmount)}
           </span>
         </div>
       </td>
 
       {/* Sender a/c no */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Building className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
+          <Building className={iconAccent} />
+          <span className={`text-sm ${textSecondary}`}>
             {item.senderAcNo}
           </span>
         </div>
       </td>
 
       {/* Sender name */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <div className="flex items-center space-x-2">
-         
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
-            {item.senderName}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-medium ${textPrimary}`}>
+          {item.senderName}
+        </span>
       </td>
 
       {/* Transaction */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
+      <td className={cellStyle}>
         <button
           onClick={() => handleTransaction(item)}
-          className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
               : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
@@ -222,13 +163,11 @@ const handleTransactionStatus = (item) => {
         </button>
       </td>
 
-      {/* Transaction */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
+      {/* Transfer */}
+      <td className={cellStyle}>
         <button
           onClick={() => handleTransfer(item)}
-          className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-indigo-900/50 text-indigo-300 border-indigo-700 hover:bg-indigo-800"
               : "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200"
@@ -239,36 +178,29 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* ICICI Transaction Status */}
-<td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-  <button
-    onClick={() => handleTransactionStatus(item)}
-    className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-      isDark
-        ? "bg-orange-900/50 text-orange-300 border-orange-700 hover:bg-orange-800"
-        : "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
-    }`}
-  >
-    Check Status
-  </button>
-</td>
+      <td className={cellStyle}>
+        <button
+          onClick={() => handleTransactionStatus(item)}
+          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+            isDark
+              ? "bg-orange-900/50 text-orange-300 border-orange-700 hover:bg-orange-800"
+              : "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
+          }`}
+        >
+          Check Status
+        </button>
+      </td>
 
       {/* Beneficiary Bank IFSC Code */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {item.beneficiaryBankIFSC}
         </span>
       </td>
 
       {/* Beneficiary a/c type */}
-<td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>      <span className={`text-sm font-semibold ${
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${
           isDark ? "text-teal-400" : "text-teal-600"
         }`}>
           {item.beneficiaryAcType}
@@ -276,44 +208,25 @@ const handleTransactionStatus = (item) => {
       </td>
 
       {/* Beneficiary a/c no */}
-<td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-          <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {item.beneficiaryAcNo}
         </span>
       </td>
 
       {/* Beneficiary a/c name */}
-<td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-          <div className="flex items-center space-x-2">
-          
-          <span className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
-            {item.beneficiaryAcName}
-          </span>
-        </div>
-      </td>
-
-      {/* Send to Rec */}
-      <td className={`px-6 py-4 border-r ${
-  isDark ? "border-gray-600/80" : "border-gray-300/90"
-}`}>
-        <span className={`text-sm font-medium ${
-          isDark ? "text-gray-200" : "text-gray-800"
-        }`}>
-          {item.sendToRec}
+      <td className={cellStyle}>
+        <span className={`text-sm font-medium ${textPrimary}`}>
+          {item.beneficiaryAcName}
         </span>
       </td>
 
-     
-
-      
+      {/* Send to Rec */}
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
+          {item.sendToRec}
+        </span>
+      </td>
     </tr>
   );
 };

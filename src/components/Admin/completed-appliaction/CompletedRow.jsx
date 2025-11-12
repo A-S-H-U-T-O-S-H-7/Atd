@@ -31,7 +31,7 @@ const CompletedRow = ({
   onOpenStatusModal // Add this prop
 }) => {
   // Common cell styles
-  const cellBase = "px-6 py-4 border-r";
+  const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
