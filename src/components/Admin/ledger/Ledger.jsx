@@ -19,7 +19,6 @@ const LedgerPage = () => {
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [selectedTransactionData, setSelectedTransactionData] = useState(null);
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);

@@ -1,309 +1,43 @@
-📞 Fetching call history for customer: 
-fullData
-: 
-accountActivation
-: 
-false
-accountId
-: 
-"ATDFSLA16GA941NOVEMBER2025"
-activateDate
-: 
-null
-addressProofFileName
-: 
-"1763037722789-r8u0f1wxwp.pdf"
-appliedLoan
-: 
-"15000.00"
-approvalNote
-: 
-"NEW CUSTOMER"
-approvedAmount
-: 
-"10000.00"
-bankStatementFileName
-: 
-"1763037824992-nsfgyien6e.pdf"
-bankVerificationFileName
-: 
-null
-blacklistDate
-: 
-null
-cibilScoreFileName
-: 
-null
-city
-: 
-"Kalahandi"
-completedDate
-: 
-"14/11/2025"
-completedTime
-: 
-"09:35"
-createdAt
-: 
-undefined
-crnNo
-: 
-"A16GA941"
-currentAddress
-: 
-"377, At/po-iswarpur via- Bahanga,Dist-Balasore,state -odisha,pin-756042, At/po-iswarpur via- Bahanga,Dist-Balasore,state -odisha,pin-756042"
-currentCity
-: 
-"Kalahandi"
-currentHouseNo
-: 
-"377"
-currentPincode
-: 
-"756042"
-currentState
-: 
-"Odisha"
-dob
-: 
-"2000-12-16"
-email
-: 
-"ashutoshmohanty13703@gmail.com"
-enquiryDate
-: 
-"14/11/2025"
-enquirySource
-: 
-"Desktop"
-enquiryTime
-: 
-"09:35"
-finalReportStatus
-: 
-null
-firstName
-: 
-"Ashutosh"
-gender
-: 
-"Male"
-hasAddressProof
-: 
-true
-hasAppraisalReport
-: 
-false
-hasBankStatement
-: 
-true
-hasBankVerificationReport
-: 
-false
-hasCibilScoreReport
-: 
-false
-hasIdProof
-: 
-true
-hasPanCard
-: 
-true
-hasPhoto
-: 
-true
-hasSalaryProof
-: 
-true
-hasSecondSalaryProof
-: 
-true
-hasSocialScoreReport
-: 
-false
-hasThirdSalaryProof
-: 
-true
-houseNo
-: 
-"377"
-id
-: 
-4
-idProofFileName
-: 
-"1763037538988-ks4ztz82jnn.jpg"
-isBlacklisted
-: 
-false
-isFinalStage
-: 
-false
-isRecommended
-: 
-false
-isReportChecked
-: 
-false
-isVerified
-: 
-false
-lastName
-: 
-"mohanty"
-loanStatus
-: 
-"Completed"
-loanTerm
-: 
-"One Time Payment"
-mailCounter
-: 
-0
-mailerDate
-: 
-null
-name
-: 
-"Ashutosh mohanty"
-panCardFileName
-: 
-"1763037785609-emkfrcgn3hk.jpg"
-permanentAddress
-: 
-"377, At/po-iswarpur via- Bahanga,Dist-Balasore,state -odisha,pin-756042, At/po-iswarpur via- Bahanga,Dist-Balasore,state -odisha,pin-756042"
-phoneNo
-: 
-"9556508941"
-photoFileName
-: 
-"1763037524590-8vco8ztyjcs.jpg"
-pincode
-: 
-"756042"
-reportCheckStatus
-: 
-0
-roi
-: 
-"0.067"
-salarySlip1
-: 
-"1763037797024-b6il8qnfo5e.png"
-salarySlip2
-: 
-"1763037806168-y1yind7ul8b.png"
-salarySlip3
-: 
-"1763037814261-of5po96u2fa.png"
-showActionButton
-: 
-true
-showAppraisalButton
-: 
-true
-showEligibilityButton
-: 
-true
-socialScoreFileName
-: 
-null
-srNo
-: 
-1
-state
-: 
-"Odisha"
-status
-: 
-"Completed"
-tenure
-: 
-90
-updatedAt
-: 
-undefined
-userId
-: 
-4
-verifyStatus
-: 
-0
+const myHeaders = new Headers();
+myHeaders.append("Accept", "application/json");
+myHeaders.append("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5hdGRtb25leS5pbi9hcGkvY3JtL2xvZ2luIiwiaWF0IjoxNzYyNTExMzczLCJleHAiOjE3NjQzMTEzNzMsIm5iZiI6MTc2MjUxMTM3MywianRpIjoiUlZDTHVVeDU2UWNES3lUQiIsInN1YiI6IjY4IiwicHJ2IjoiZGY4ODNkYjk3YmQwNWVmOGZmODUwODJkNjg2YzQ1ZTgzMmU1OTNhOSJ9.G4I5BfSxVk-SXmjme_6Nu_mZ7MjiXyeb762XZm9ubrE");
 
-id
-: 
-4
-selectedCustomerId
-: 
-4
-userId
-: 
-4
-🔄 Calling API with customer ID: 4
-CallServices.js:6 
- GET https://api.atdmoney.in/api/crm/call/get/4 404 (Not Found)
-Promise.then		
-getCallHistory	@	CallServices.js:6
-fetchCallHistory	@	CallDetailsModal.jsx:47
-CallDetailsModal.useEffect	@	CallDetailsModal.jsx:21
+const requestOptions = {
+  method: "GET",
+  headers: myHeaders,
+  redirect: "follow"
+};
 
-❌ Error fetching call history: 
-AxiosError {message: 'Request failed with status code 404', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
-code
-: 
-"ERR_BAD_REQUEST"
-config
-: 
-{transitional: {…}, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 10000, …}
-message
-: 
-"Request failed with status code 404"
-name
-: 
-"AxiosError"
-request
-: 
-XMLHttpRequest {onreadystatechange: null, readyState: 4, timeout: 10000, withCredentials: false, upload: XMLHttpRequestUpload, …}
-response
-: 
-config
-: 
-{transitional: {…}, adapter: Array(3), transformRequest: Array(1), transformResponse: Array(1), timeout: 10000, …}
-data
-: 
-calls
-: 
-[]
-message
-: 
-"No call history found for this application"
-success
-: 
-false
-[[Prototype]]
-: 
-Object
-headers
-: 
-AxiosHeaders {cache-control: 'no-cache, private', content-type: 'application/json'}
-request
-: 
-XMLHttpRequest {onreadystatechange: null, readyState: 4, timeout: 10000, withCredentials: false, upload: XMLHttpRequestUpload, …}
-status
-: 
-404
-statusText
-: 
-"Not Found"
-[[Prototype]]
-: 
-Object
-status
-: 
-404
-Symbol(next.console.error.digest)
-: 
-"NEXT_CONSOLE_ERROR"
-stack
-: 
-"AxiosError: Re
+fetch("https://api.atdmoney.in/api/crm/collection/get/2", requestOptions)
+  .then((response) => response.text())
+  .then((result) => console.log(result))
+  .catch((error) => console.error(error));
+  {
+    "success": true,
+    "message": "Collection details fetched successfully.",
+    "data": {
+        "approved_amount": "12000.00",
+        "roi": "0.067",
+        "tenure": 30,
+        "dw_collection": "12241.00",
+        "emi_collection": "12241.00",
+        "grace_period": 7,
+        "process_percent": null,
+        "process_fee": "1560.00",
+        "gst": "281.00",
+        "loan_status": 9,
+        "disburse_date": "2025-11-13",
+        "transaction_date": "2025-11-07",
+        "duedate": "2025-12-01",
+        "disburse_amount": "10500.00",
+        "ledger_balance": "0.00",
+        "bank_name": "ICICI banks-A/c-5399",
+        "total_collection": "0.00",
+        "total_penalty_paid": "0.00",
+        "total_penal_interest_paid": "0.00",
+        "total_bounce_charges_paid": "0.00",
+        "last_collection_date": null,
+        "overdue_days": -17,
+        "has_overdue_payment": 0
+    }
+}

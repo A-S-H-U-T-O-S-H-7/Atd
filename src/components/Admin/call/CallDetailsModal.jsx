@@ -110,7 +110,7 @@ const CallDetailsModal = ({
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded flex items-center justify-center text-white font-bold text-xs hidden">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded items-center justify-center text-white font-bold text-xs hidden">
                 ATD
               </div>
             </div>
