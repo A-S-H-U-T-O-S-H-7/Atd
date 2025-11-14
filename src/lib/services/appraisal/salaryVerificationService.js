@@ -30,7 +30,7 @@ export const salaryVerificationService = {
 
     // ✅ FIX: Use direct API call, not recursive call
     const response = await api.post('/crm/appraisal/salary/remarks', data);
-    toast.success('Salary remark saved successfully!');
+    // Toast shown in component layer to avoid duplicates
     return response;
   } catch (error) {
     console.error('Error saving salary remark:', error);
@@ -67,7 +67,7 @@ saveHouseholdIncomes: async (applicationId, familyMembers) => {
       });
 
       const results = await Promise.all(savePromises);
-      toast.success(`Saved ${validMembers.length} household member(s) successfully!`);
+      // Toast shown in component layer to avoid duplicates
       return { success: true, results };
       
     } catch (error) {
@@ -92,7 +92,7 @@ saveSalaryVerificationData: async (data) => {
       }
 
       const response = await api.post('/crm/appraisal/salary/verification', data);
-      toast.success('Salary verification saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       console.error('Error saving salary verification:', error);

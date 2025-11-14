@@ -84,73 +84,139 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
     return hasAnyData(ref) && !hasMinimumData(ref);
   };
 
-// In handleSaveReferences function, add this:
-const handleSaveReferences = async () => {
-  try {
-    setSubmittingReferences(true);
-    
-    // Validate all references before saving
+  // Check for duplicate emails and phones
+  const getDuplicateErrors = () => {
     const refs = formik.values.additionalRefs || [];
-    const invalidRefs = [];
-    
+    const errors = {
+      emails: {},
+      phones: {}
+    };
+
+    // Track occurrences of each email and phone
     refs.forEach((ref, index) => {
-      // Check if reference has any data
-      const hasAnyData = (ref.name && ref.name.trim()) || 
-                        (ref.email && ref.email.trim()) || 
-                        (ref.phone && ref.phone.trim()) || 
-                        ref.relation;
-      
-      if (hasAnyData) {
-        // Validate phone if provided
-        if (ref.phone && ref.phone.trim()) {
-          if (ref.phone.trim().length !== 10 || !/^\d{10}$/.test(ref.phone.trim())) {
-            invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
-          }
+      if (ref.email && ref.email.trim()) {
+        const email = ref.email.trim().toLowerCase();
+        if (!errors.emails[email]) {
+          errors.emails[email] = [];
         }
-        
-        // Validate email if provided
-        if (ref.email && ref.email.trim()) {
-          if (!ref.email.includes('@') || !ref.email.includes('.')) {
-            invalidRefs.push(`Reference ${index + 1}: Email must contain @ and .`);
-          }
+        errors.emails[email].push(index);
+      }
+
+      if (ref.phone && ref.phone.trim()) {
+        const phone = ref.phone.trim();
+        if (!errors.phones[phone]) {
+          errors.phones[phone] = [];
         }
-        
-        // Check if minimum data (name and phone) is present
-        if (!ref.name || !ref.name.trim() || !ref.phone || !ref.phone.trim()) {
-          invalidRefs.push(`Reference ${index + 1}: Both name and phone are required`);
-        }
+        errors.phones[phone].push(index);
       }
     });
-    
-    // Show all validation errors
-    if (invalidRefs.length > 0) {
-      invalidRefs.forEach(error => toast.error(error));
-      return;
+
+    return errors;
+  };
+
+  // Check if a specific reference has duplicate issues
+  const getReferenceErrors = (index) => {
+    const errors = getDuplicateErrors();
+    const ref = formik.values.additionalRefs[index];
+    const refErrors = [];
+
+    if (ref.email && ref.email.trim()) {
+      const email = ref.email.trim().toLowerCase();
+      if (errors.emails[email] && errors.emails[email].length > 1) {
+        refErrors.push('email');
+      }
     }
-    
-    // Final check for applicationId before sending
-    const applicationId = formik.values.applicationId;
-    if (!applicationId) {
-      toast.error('Application ID is required. Please refresh the page.');
-      return;
+
+    if (ref.phone && ref.phone.trim()) {
+      const phone = ref.phone.trim();
+      if (errors.phones[phone] && errors.phones[phone].length > 1) {
+        refErrors.push('phone');
+      }
     }
-    
-    const referencesData = {
-      application_id: parseInt(applicationId),
-      crnno: formik.values.crnNo || '',
-      additionalRefs: formik.values.additionalRefs
-    };
-    
-    await personalVerificationService.saveReferences(referencesData);
-    
-    // Don't call onSectionSave - it would trigger a duplicate save
-    // The service call above already saves the data
-  } catch (error) {
-    // Error handling is done in the service layer
-  } finally {
-    setSubmittingReferences(false);
-  }
-};
+
+    return refErrors;
+  };
+
+  const handleSaveReferences = async () => {
+    try {
+      setSubmittingReferences(true);
+      
+      // Validate all references before saving
+      const refs = formik.values.additionalRefs || [];
+      const invalidRefs = [];
+      const duplicateErrors = getDuplicateErrors();
+      
+      refs.forEach((ref, index) => {
+        // Check if reference has any data
+        const hasAnyData = (ref.name && ref.name.trim()) || 
+                          (ref.email && ref.email.trim()) || 
+                          (ref.phone && ref.phone.trim()) || 
+                          ref.relation;
+        
+        if (hasAnyData) {
+          // Validate phone if provided
+          if (ref.phone && ref.phone.trim()) {
+            if (ref.phone.trim().length !== 10 || !/^\d{10}$/.test(ref.phone.trim())) {
+              invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
+            }
+          }
+          
+          // Validate email if provided
+          if (ref.email && ref.email.trim()) {
+            if (!ref.email.includes('@') || !ref.email.includes('.')) {
+              invalidRefs.push(`Reference ${index + 1}: Email must contain @ and .`);
+            }
+          }
+          
+          // Check if minimum data (name and phone) is present
+          if (!ref.name || !ref.name.trim() || !ref.phone || !ref.phone.trim()) {
+            invalidRefs.push(`Reference ${index + 1}: Both name and phone are required`);
+          }
+        }
+      });
+      
+      // Check for duplicates
+      Object.entries(duplicateErrors.emails).forEach(([email, indices]) => {
+        if (indices.length > 1) {
+          invalidRefs.push(`Email ${email} is used in references: ${indices.map(i => i + 1).join(', ')}`);
+        }
+      });
+
+      Object.entries(duplicateErrors.phones).forEach(([phone, indices]) => {
+        if (indices.length > 1) {
+          invalidRefs.push(`Phone ${phone} is used in references: ${indices.map(i => i + 1).join(', ')}`);
+        }
+      });
+      
+      // Show all validation errors
+      if (invalidRefs.length > 0) {
+        invalidRefs.forEach(error => toast.error(error));
+        return;
+      }
+      
+      // Final check for applicationId before sending
+      const applicationId = formik.values.applicationId;
+      if (!applicationId) {
+        toast.error('Application ID is required. Please refresh the page.');
+        return;
+      }
+      
+      const referencesData = {
+        application_id: parseInt(applicationId),
+        crnno: formik.values.crnNo || '',
+        additionalRefs: formik.values.additionalRefs
+      };
+      
+      await personalVerificationService.saveReferences(referencesData);
+      toast.success('References saved successfully!');
+      
+    } catch (error) {
+      console.error('Error saving references:', error);
+      toast.error('Failed to save references');
+    } finally {
+      setSubmittingReferences(false);
+    }
+  };
 
   const updateAdditionalRef = (index, field, value) => {
     const updatedRefs = [...formik.values.additionalRefs];
@@ -216,7 +282,7 @@ const handleSaveReferences = async () => {
               <p className={`text-xs ${
                 isDark ? "text-gray-400" : "text-emerald-600"
               }`}>
-                Up to 5 reference contacts (Optional - fill any number, email is optional)
+                Up to 5 reference contacts (Email and Phone must be unique)
               </p>
             </div>
           </div>
@@ -260,6 +326,9 @@ const handleSaveReferences = async () => {
             const hasData = hasAnyData(ref);
             const hasMinData = hasMinimumData(ref);
             const isIncomplete = isPartiallyFilled(ref);
+            const duplicateErrors = getReferenceErrors(index);
+            const hasDuplicateEmail = duplicateErrors.includes('email');
+            const hasDuplicatePhone = duplicateErrors.includes('phone');
             
             return (
               <div 
@@ -272,11 +341,17 @@ const handleSaveReferences = async () => {
                   ref.verified ? 'border-emerald-500 ring-1 ring-emerald-500/20' : 
                   isIncomplete ? 'border-red-500 ring-1 ring-red-500/20' :
                   hasMinData ? 'border-blue-500 ring-1 ring-blue-500/20' : ''
+                } ${
+                  (hasDuplicateEmail || hasDuplicatePhone) ? 'border-orange-500 ring-1 ring-orange-500/20' : ''
                 }`}
               >
                 {/* Serial Number */}
                 <div className={srNoClassName}>
-                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs font-bold">
+                  <span className={`w-6 h-6 flex items-center justify-center rounded-full text-white text-xs font-bold ${
+                    hasDuplicateEmail || hasDuplicatePhone 
+                      ? 'bg-orange-500' 
+                      : 'bg-emerald-500'
+                  }`}>
                     {index + 1}
                   </span>
                 </div>
@@ -304,12 +379,23 @@ const handleSaveReferences = async () => {
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-red-500 focus:border-red-500'
                         : ''
+                    } ${
+                      hasDuplicateEmail
+                        ? isDark
+                          ? 'border-orange-500 focus:border-orange-500'
+                          : 'border-orange-500 focus:border-orange-500'
+                        : ''
                     }`}
                     placeholder="email@example.com (optional)"
                   />
                   {ref.email && ref.email.trim() && (!ref.email.includes('@') || !ref.email.includes('.')) && (
                     <p className="text-xs text-red-500 mt-1 text-center">
                       Must contain @ and .
+                    </p>
+                  )}
+                  {hasDuplicateEmail && (
+                    <p className="text-xs text-orange-500 mt-1 text-center">
+                      Duplicate email
                     </p>
                   )}
                 </div>
@@ -326,6 +412,12 @@ const handleSaveReferences = async () => {
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-red-500 focus:border-red-500'
                         : ''
+                    } ${
+                      hasDuplicatePhone
+                        ? isDark
+                          ? 'border-orange-500 focus:border-orange-500'
+                          : 'border-orange-500 focus:border-orange-500'
+                        : ''
                     }`}
                     placeholder="10 digits *"
                     maxLength={10}
@@ -333,6 +425,11 @@ const handleSaveReferences = async () => {
                   {ref.phone && ref.phone.length > 0 && ref.phone.length !== 10 && (
                     <p className="text-xs text-red-500 mt-1 text-center">
                       {ref.phone.length}/10
+                    </p>
+                  )}
+                  {hasDuplicatePhone && (
+                    <p className="text-xs text-orange-500 mt-1 text-center">
+                      Duplicate phone
                     </p>
                   )}
                 </div>

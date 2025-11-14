@@ -140,6 +140,7 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
           enabled={isVerificationEnabled}
           VerificationIcon={VerificationIcon}
           VerificationButton={VerificationButton}
+          user={user}
         />
         
         <DigitalLoanAgreement 

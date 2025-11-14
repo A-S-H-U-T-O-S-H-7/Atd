@@ -21,6 +21,7 @@ const EmploymentSection = ({ values }) => {
             label="Official Email"
             type="email"
             placeholder="Enter your official email"
+            normalize={value => value ? value.toLowerCase().trim() : value}
             helpText="📧 A verification email will be sent, Please open your email and verify the link"
             required
           />

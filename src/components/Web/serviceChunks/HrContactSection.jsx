@@ -30,6 +30,7 @@ const HRContactSection = () => {
             type="email"
             placeholder="Enter HR email"
             required
+            normalize={value => value ? value.toLowerCase().trim() : value}
           />
         </div>
       </div>

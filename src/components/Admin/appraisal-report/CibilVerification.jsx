@@ -130,9 +130,9 @@ const handleSaveCibilVerification = async () => {
     }
     
     await cibilVerificationService.saveCibilVerificationData(cibilData);
+    toast.success('CIBIL verification saved successfully!');
     
     // Don't call onSectionSave - it would trigger duplicate save
-    // Component handles save directly
   } catch (error) {
     // Errors are handled in service
   } finally {

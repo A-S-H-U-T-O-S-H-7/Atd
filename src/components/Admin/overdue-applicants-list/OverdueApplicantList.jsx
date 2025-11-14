@@ -4,7 +4,6 @@ import { ArrowLeft, Download, Mail } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import OverdueApplicantTable from "./OverdueApplicantListTable";
 import { exportToExcel } from "@/components/utils/exportutil";
-import CallDetailsModal from "../CallDetailsModal";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import OverdueAmountModal from "../application-modals/OverdueAmountModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
@@ -23,7 +22,6 @@ const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
   
   // Modal states
-  const [showCallModal, setShowCallModal] = useState(false);
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [showOverdueModal, setShowOverdueModal] = useState(false);
   const [showLedgerModal, setShowLedgerModal] = useState(false);
@@ -127,18 +125,7 @@ const [searchTerm, setSearchTerm] = useState("");
     }
   ]);
 
-  // Handler functions
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
-
-  const handleCallSubmit = (callData) => {
-    console.log("Call submitted:", callData);
-    setShowCallModal(false);
-    setSelectedApplicant(null);
-  };
-
+  
   const handleAdjustmentClick = (applicant) => {
     setSelectedApplicantForAdjustment(applicant);
     setShowAdjustmentModal(true);
@@ -339,7 +326,6 @@ const handleAdvancedSearch = ({ field, term }) => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={handlePageChange}
-          onCall={handleCall}
           onAdjustment={handleAdjustmentClick}
           onRenew={handleRenew}
           onSendNotice={handleSendNotice}
@@ -351,16 +337,7 @@ const handleAdvancedSearch = ({ field, term }) => {
       </div>
 
       {/* All Modals */}
-      <CallDetailsModal
-        isOpen={showCallModal}
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }}
-        data={selectedApplicant}
-        isDark={isDark}
-        onSubmit={handleCallSubmit}
-      />
+      
 
       <AdjustmentModal
         isOpen={showAdjustmentModal}

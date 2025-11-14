@@ -15,7 +15,6 @@ const PendingTable = ({
   onActionClick,
   onLoanEligibilityClick,  
    onCheckClick, 
-   onCall,
    onSendMail,
 }) => {
 
@@ -107,7 +106,6 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                   onActionClick={onActionClick}
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
-                  onCall={onCall}
                   onSendMail={onSendMail}
                   />
               ))}

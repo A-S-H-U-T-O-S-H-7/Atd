@@ -11,7 +11,6 @@ const DisburseTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onCall,
   onFileView,
   onActionClick, 
   onChequeModalOpen,

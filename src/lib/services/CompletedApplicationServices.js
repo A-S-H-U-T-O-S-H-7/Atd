@@ -69,6 +69,7 @@ export const formatCompletedApplicationForUI = (application) => {
 
   return {
     id: application.application_id,
+    userId: application.user_id,
     srNo: application.application_id,
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,

@@ -4,7 +4,6 @@ import { ArrowLeft, Download } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import OverdueApplicantTable from "./OverdueApplicantTable";
 import { exportToExcel } from "@/components/utils/exportutil";
-import CallDetailsModal from "../CallDetailsModal";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import OverdueAmountModal from "../application-modals/OverdueAmountModal";
 import { useRouter } from "next/navigation";
@@ -17,8 +16,7 @@ const { theme } = useThemeStore();
    const router = useRouter();
 const [searchField, setSearchField] = useState("");
 const [searchTerm, setSearchTerm] = useState("");  const [statusFilter, setStatusFilter] = useState("all");
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [showOverdueModal, setShowOverdueModal] = useState(false);
   const [selectedApplicantForAdjustment,setSelectedApplicantForAdjustment] = useState(null);
@@ -114,16 +112,9 @@ const [searchTerm, setSearchTerm] = useState("");  const [statusFilter, setStatu
   { value: 'dueDate', label: 'Due Date' },
 ];
 
-  const handleCall = applicant => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
+  
 
-  const handleCallSubmit = callData => {
-    console.log("Call submitted:", callData);
-    setShowCallModal(false);
-    setSelectedApplicant(null);
-  };
+  
 
   const handleAdjustmentClick = applicant => {
     setSelectedApplicantForAdjustment(applicant);
@@ -297,7 +288,6 @@ const filteredApplicants = overdueApplicants.filter(applicant => {
         <OverdueApplicantTable
           filteredApplicants={filteredApplicants}
           isDark={isDark}
-          onCall={handleCall}
           onAdjustment={handleAdjustmentClick}
           onRenew={handleRenew}
           onSendNotice={handleSendNotice}
@@ -305,16 +295,7 @@ const filteredApplicants = overdueApplicants.filter(applicant => {
         />
       </div>
 
-      <CallDetailsModal
-        isOpen={showCallModal}
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }}
-        data={selectedApplicant}
-        isDark={isDark}
-        onSubmit={handleCallSubmit}
-      />
+      
     </div>
   );
 };

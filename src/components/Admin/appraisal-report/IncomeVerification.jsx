@@ -159,9 +159,10 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       // Update formik with current family members before saving
       await formik.setFieldValue('familyMembers', localFamilyMembers);
       
-      // Just call onSectionSave - let parent component handle the saving
+      // Call parent component's save handler
       if (onSectionSave) {
         await onSectionSave(formik.values, localFamilyMembers);
+        toast.success('Income verification saved successfully!');
       }
       
     } catch (error) {

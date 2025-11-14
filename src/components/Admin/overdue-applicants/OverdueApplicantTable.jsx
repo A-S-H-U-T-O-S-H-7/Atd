@@ -5,7 +5,6 @@ import OverdueApplicantRow from "./OverdueApplicantRow";
 const OverdueApplicantTable = ({ 
   filteredApplicants,
   isDark,
-  onCall,
   onAdjustment,
   onRenew,
   onSendNotice,
@@ -119,7 +118,6 @@ const OverdueApplicantTable = ({
                   applicant={applicant}
                   index={index}
                   isDark={isDark}
-                  onCall={onCall}
                   onAdjustment={onAdjustment}
                   onRenew={onRenew}
                   onSendNotice={onSendNotice}

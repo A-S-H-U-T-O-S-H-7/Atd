@@ -6,7 +6,6 @@ import AdvancedSearchBar from "../AdvanceSearchBar";
 import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import CompletedTable from "./CompletedTable";
-import CallDetailsModal from "../CallDetailsModal";
 import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
@@ -28,8 +27,6 @@ const CompletedApplication = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
@@ -435,11 +432,6 @@ const CompletedApplication = () => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
-
   if (loading && applications.length === 0) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
@@ -627,7 +619,6 @@ const CompletedApplication = () => {
           onLoanEligibilityClick={handleLoanEligibilityClick}  
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -638,16 +629,7 @@ const CompletedApplication = () => {
         />
       </div>
 
-      {/* Call Details Modal */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
 
       {/* Status Update Modal */}
       <StatusUpdateModal

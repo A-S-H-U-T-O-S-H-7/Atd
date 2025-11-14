@@ -74,8 +74,9 @@ const PersonalDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
               value={formik.values.formNo}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={hasError('formNo') ? errorInputClassName : inputClassName}
+              className={`${hasError('formNo') ? errorInputClassName : inputClassName} bg-gray-50 cursor-not-allowed`}
               placeholder="Auto-generated"
+              readOnly
             />
             {hasError('formNo') && (
               <div className={errorTextClassName}>

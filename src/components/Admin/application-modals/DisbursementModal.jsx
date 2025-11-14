@@ -22,33 +22,35 @@ const DisbursementModal = ({
 
   useEffect(() => {
     if (isOpen && application) {
-      // Pre-fill with application data if available
+      // Pre-fill with application data from API
       setFormData({
-        disburseAmount: application.approvedAmount || "",
-        disbursementDate: new Date().toISOString().split('T')[0],
-        bankName: "",
-        branchName: "",
-        accountNo: "",
-        ifscCode: ""
+        disburseAmount: application.disburseAmount || application.approvedAmount || "",
+        disbursementDate: new Date().toISOString().split('T')[0], // Only editable field
+        bankName: application.customerBank || application.customerAcBank || "",
+        branchName: application.customerBranch || application.customerAcBranch || "",
+        accountNo: application.customerAccount || application.customerAcNo || "",
+        ifscCode: application.customerIfsc || application.customerAcIfsc || ""
       });
     }
   }, [isOpen, application]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    // Only allow changes to disbursementDate
+    if (name === "disbursementDate") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
-    if (!formData.disburseAmount || !formData.disbursementDate || !formData.bankName || 
-        !formData.branchName || !formData.accountNo || !formData.ifscCode) {
-      toast.error('Please fill all required fields.', {
+    // Validation - only check disbursementDate since others are pre-filled
+    if (!formData.disbursementDate) {
+      toast.error('Please select disbursement date.', {
         style: {
           background: isDark ? "#1f2937" : "#ffffff",
           color: isDark ? "#f9fafb" : "#111827",
@@ -145,23 +147,24 @@ const DisbursementModal = ({
                 <label className={`block text-xs font-medium mb-1 ${
                   isDark ? "text-gray-400" : "text-gray-600"
                 }`}>
-                  Disbursement Amount <span className="text-red-500">*</span>
+                  Disbursement Amount
                 </label>
                 <input
                   type="number"
                   name="disburseAmount"
                   value={formData.disburseAmount}
-                  onChange={handleChange}
-                  placeholder="Enter disbursement amount"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-gray-300 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
-                  required
-                  min="0"
-                  step="0.01"
                 />
+                <p className={`text-xs mt-1 ${
+                  isDark ? "text-gray-500" : "text-gray-400"
+                }`}>
+                  Pre-filled from approved amount
+                </p>
               </div>
 
               <div>
@@ -182,6 +185,11 @@ const DisbursementModal = ({
                   }`}
                   required
                 />
+                <p className={`text-xs mt-1 ${
+                  isDark ? "text-gray-500" : "text-gray-400"
+                }`}>
+                  Select disbursement date
+                </p>
               </div>
             </div>
           </div>
@@ -199,88 +207,85 @@ const DisbursementModal = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={`block text-xs font-medium mb-1 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
+                  isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Bank Name :
+                  Bank Name
                 </label>
                 <input
                   type="text"
                   name="bankName"
                   value={formData.bankName}
-                  onChange={handleChange}
-                  placeholder="Enter bank name"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
                   }`}
-                  required
                 />
               </div>
 
               <div>
                 <label className={`block text-xs font-medium mb-1 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
+                  isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Branch Name :
+                  Branch Name
                 </label>
                 <input
                   type="text"
                   name="branchName"
                   value={formData.branchName}
-                  onChange={handleChange}
-                  placeholder="Enter branch name"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
                   }`}
-                  required
                 />
               </div>
 
               <div>
                 <label className={`block text-xs font-medium mb-1 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
+                  isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Account No. :
+                  Account No.
                 </label>
                 <input
                   type="text"
                   name="accountNo"
                   value={formData.accountNo}
-                  onChange={handleChange}
-                  placeholder="Enter account number"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
                   }`}
-                  required
                 />
               </div>
 
               <div>
                 <label className={`block text-xs font-medium mb-1 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
+                  isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  IFSC Code :
+                  IFSC Code
                 </label>
                 <input
                   type="text"
                   name="ifscCode"
                   value={formData.ifscCode}
-                  onChange={handleChange}
-                  placeholder="Enter IFSC code"
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
                   }`}
-                  required
                 />
               </div>
             </div>
+            <p className={`text-xs mt-3 ${
+              isDark ? "text-gray-500" : "text-gray-400"
+            }`}>
+              Bank details are pre-filled from customer application and cannot be modified
+            </p>
           </div>
 
           {/* Actions */}
@@ -306,7 +311,7 @@ const DisbursementModal = ({
                   : "bg-emerald-600 hover:bg-emerald-700"
               }`}
             >
-              {loading ? "Processing..." : "Submit"}
+              {loading ? "Processing..." : "Submit Disbursement"}
             </button>
           </div>
         </form>

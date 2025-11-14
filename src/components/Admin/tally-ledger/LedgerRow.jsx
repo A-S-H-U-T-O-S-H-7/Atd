@@ -7,28 +7,22 @@ import {
 } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
 
-const LedgerRow = ({ item, index, isDark, onCall, onViewTransaction }) => {
+const LedgerRow = ({ item, index, isDark,  onViewTransaction }) => {
 
-  const [showCallModal, setShowCallModal] = useState(false);
   const [showLedgerModal, setShowLedgerModal] = useState(false);
 
   const handleView = (item) => {
     onViewTransaction(true);
   };
 
-  const handleCall = (item) => {
-    onCall(true);
-  };
+  
 
   const handleDownloadPDF = (item) => {
     // Add your PDF download logic here
     console.log('Download PDF for:', item);
   };
 
-  const handleCallSubmit = (callData) => {
-    // Handle call submission logic
-    console.log('Call submitted:', callData);
-  };
+  
 
   const getDueDateStatus = (dueDate) => {
     const today = new Date();
@@ -90,18 +84,15 @@ const LedgerRow = ({ item, index, isDark, onCall, onViewTransaction }) => {
       </td>
 
       {/* Call */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={handleCall}
-          className={`px-3 cursor-pointer py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-              : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
-          }`}
-        >
-          {item.call}
-        </button>
-      </td>
+      <td className={cellStyle}>
+  <CallButton
+    applicant={application}
+    isDark={isDark}
+    size="small"
+    variant="default"
+    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+  />
+</td>
 
       {/* Loan No */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

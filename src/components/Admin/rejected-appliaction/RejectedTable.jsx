@@ -15,7 +15,6 @@ const RejectedTable = ({
   onActionClick,
   onLoanEligibilityClick,  
   onCheckClick, 
-  onCall,
   fileLoading,
   loadingFileName,
   onRestoreApplication
@@ -95,7 +94,6 @@ const RejectedTable = ({
   onActionClick={onActionClick}
   onLoanEligibilityClick={onLoanEligibilityClick}  
   onCheckClick={onCheckClick}
-  onCall={onCall}
   fileLoading={fileLoading}
   loadingFileName={loadingFileName}
   onRestoreApplication={onRestoreApplication}

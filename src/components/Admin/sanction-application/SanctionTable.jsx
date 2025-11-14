@@ -143,7 +143,6 @@ const SanctionTable = ({
                   onCheckClick={onCheckClick}
                   onStatusClick={onStatusClick}
                   onReplaceKYCClick={onReplaceKYCClick}
-                  onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                 />

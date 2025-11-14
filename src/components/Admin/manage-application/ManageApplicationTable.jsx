@@ -25,7 +25,6 @@ const ManageApplicationTable = ({
   onLoanEligibilityClick,  
    onCheckClick, 
    onReplaceKYCClick, 
-   onCall, 
    onDocumentStatusClick,
    fileLoading,
    loadingFileName,
@@ -35,7 +34,7 @@ const ManageApplicationTable = ({
    onCollectionClick,
 }) => {
 
-    const headerStyle = `px-2 py-3 text-left text-sm font-bold border-r ${
+    const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
         isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
 
@@ -165,7 +164,7 @@ const ManageApplicationTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onReplaceKYCClick = {onReplaceKYCClick}
-                  onCall={onCall}
+                  
                   onDocumentStatusClick={onDocumentStatusClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}

@@ -19,6 +19,7 @@ import SanctionLetterDocument from "../documents/SanctionLetterDocument";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import ActionButton from "../action-buttons/ActionButton";
+import CallButton from "../call/CallButton";
 
 const CreditApprovalRow = ({
   application,
@@ -33,7 +34,6 @@ const CreditApprovalRow = ({
   onDisburseEmandateModalOpen,
   onChangeStatusClick,
   onReplaceKYCClick,
-  onCall,
   onActionClick,
   onFileView,
   fileLoading,
@@ -53,9 +53,7 @@ const CreditApprovalRow = ({
     })}`;
   };
 
-  const handleCall = () => {
-    onCall(application);
-  };
+  
 
   // NEW: Bank verification handler
 const handleBankVerificationClick = () => {
@@ -135,17 +133,14 @@ const getLoanStatusClassName = (application) => {
 
       {/* Call */}
       <td className={cellStyle}>
-        <button
-          onClick={handleCall}
-          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-              : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
-          }`}
-        >
-          call
-        </button>
-      </td>
+  <CallButton
+    applicant={application}
+    isDark={isDark}
+    size="small"
+    variant="default"
+    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+  />
+</td>
 
       {/* Loan No. */}
       <td className={cellStyle}>

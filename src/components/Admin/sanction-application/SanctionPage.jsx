@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateRangeFilter from "../DateRangeFilter";
 import SanctionTable from "./SanctionTable";
-
-import CallDetailsModal from "../CallDetailsModal";
-
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";
@@ -45,8 +42,6 @@ const SanctionPage = () => {
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Modal states
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [currentChequeNo, setCurrentChequeNo] = useState('');
@@ -411,10 +406,6 @@ const handleStatusModalClose = () => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
 
   // Handle file view
   const handleFileView = async (fileName, documentCategory) => {
@@ -774,7 +765,6 @@ const handleStatusModalClose = () => {
           onLoanEligibilityClick={handleLoanEligibilityClick}
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -782,16 +772,7 @@ const handleStatusModalClose = () => {
         />
       </div>
 
-      {/* Modals */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
 
       {currentRefundPDCApplication && (
         <RefundPDCModal

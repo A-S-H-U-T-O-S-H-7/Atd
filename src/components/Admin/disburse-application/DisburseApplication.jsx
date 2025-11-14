@@ -15,7 +15,6 @@ import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
 import ChangeStatusModal from "../application-modals/StatusModal";
 import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
-import CallDetailsModal from "../CallDetailsModal";
 import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
@@ -46,8 +45,6 @@ const DisburseApplication = () => {
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Modal states
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [currentChequeNo, setCurrentChequeNo] = useState('');
@@ -606,10 +603,7 @@ const handleDisbursementSubmit = async (applicationId, formData) => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
+  
 
   // Handle file view
   const handleFileView = async (fileName, documentCategory) => {
@@ -999,7 +993,6 @@ const handleDisbursementSubmit = async (applicationId, formData) => {
           onLoanEligibilityClick={handleLoanEligibilityClick}  
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick} 
-          onCall={handleCall}  
           onDocumentStatusClick={handleDocumentVerificationModalOpen}
           onFileView={handleFileView}
           fileLoading={fileLoading}
@@ -1012,16 +1005,7 @@ const handleDisbursementSubmit = async (applicationId, formData) => {
         />
       </div>
 
-      {/* Modals */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
       {currentDisbursementApplication && (
   <DisbursementModal
     isOpen={disbursementModalOpen}

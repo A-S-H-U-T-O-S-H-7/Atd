@@ -296,8 +296,8 @@ const handleStateChange = (e, addressType) => {
                 className={hasError('currentAddressType') ? errorSelectClassName : selectClassName}
               >
                 <option value="">Select Address Type</option>
-                <option value="2">Own</option>
-                <option value="4">Rented</option>
+                <option value="4">Owned</option>
+                <option value="2">Rented</option>
                   
               </select>
               {hasError('currentAddressType') && (
@@ -498,8 +498,8 @@ const handleStateChange = (e, addressType) => {
                 className={hasError('permanentAddressType') ? errorSelectClassName : selectClassName}
               >
                 <option value="">Select Address Type</option>
-                <option value="Own">Own</option>
-                <option value="Rented">Rented</option>
+                <option value="4">Owned</option>
+                <option value="2">Rented</option>
                 
               </select>
               {hasError('permanentAddressType') && (

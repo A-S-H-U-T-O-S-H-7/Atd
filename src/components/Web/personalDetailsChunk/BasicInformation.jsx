@@ -75,6 +75,7 @@ const BasicInformationSection = () => {
           label="Alternative Email"
           type="email"
           placeholder="Enter alternative email"
+          normalize={value => value ? value.toLowerCase() : value}
         />
         <FormField
           name="email"

@@ -11,7 +11,6 @@ const LedgerTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onCall,
   onViewTransaction,
   onAdjustment 
 }) => {
@@ -110,7 +109,6 @@ const LedgerTable = ({
                   item={item}
                   index={index}
                   isDark={isDark}
-                  onCall={onCall}
                   onViewTransaction={onViewTransaction}
                   onAdjustment={onAdjustment}
                 />

@@ -8,11 +8,20 @@ const EMandate = ({ enabled, VerificationIcon, VerificationButton, user }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showEMandateModal, setShowEMandateModal] = useState(false);
 
+  // Get application_id from user object
+  const applicationId = user?.application_id;
+
   const handleEMandateClick = () => {
     if (!enabled) {
       toast.error('E-Mandate is not available at the moment');
       return;
     }
+
+    if (!applicationId) {
+      toast.error('Application ID not found. Please contact support.');
+      return;
+    }
+
     setShowEMandateModal(true);
   };
 
@@ -20,6 +29,11 @@ const EMandate = ({ enabled, VerificationIcon, VerificationButton, user }) => {
     toast.success('E-Mandate completed successfully!');
     console.log('E-Mandate completed successfully');
     setIsLoading(false);
+    setShowEMandateModal(false);
+  };
+
+  const handleEMandateClose = () => {
+    setShowEMandateModal(false);
   };
 
   return (
@@ -28,25 +42,26 @@ const EMandate = ({ enabled, VerificationIcon, VerificationButton, user }) => {
         <VerificationIcon 
           icon={FaVideo}
           title="E-Mandate"
-          enabled={enabled}
+          enabled={enabled && !!applicationId}
           colorScheme="green"
         />
         <VerificationButton
-          enabled={enabled}
-          tooltipText="E-Mandate not available!"
+          enabled={enabled && !!applicationId}
+          tooltipText={!applicationId ? "Application ID not available" : "Complete E-Mandate process"}
           colorScheme="green"
           onClick={handleEMandateClick}
           isLoading={isLoading}
         >
-          Subscribe
+          E-Mandate
         </VerificationButton>
       </div>
 
       <EMandateModal
         isOpen={showEMandateModal}
-        onClose={() => setShowEMandateModal(false)}
+        onClose={handleEMandateClose}
         onSuccess={handleEMandateSuccess}
         user={user}
+        applicationId={applicationId}
       />
     </>
   );

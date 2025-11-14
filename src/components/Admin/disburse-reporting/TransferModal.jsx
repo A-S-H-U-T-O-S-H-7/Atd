@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Building, CreditCard, Calendar, Lock } from "lucide-react";
+import DatePicker from 'react-datepicker';
+import { format, addMonths, isFuture } from 'date-fns';
 import disbursementService from "@/lib/services/disbursementService";
 import toast from 'react-hot-toast';
 
@@ -13,17 +15,25 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     accountType: "SAVING",
     authCode1: "",
     authCode2: "",
-    transactionDate: new Date().toISOString().split('T')[0],
-    dueDate: "",
+    transactionDate: new Date(),
+    dueDate: null,
     atdBankName: "",
     atdBranchName: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [atdBanks, setAtdBanks] = useState([]);
+  const [tenure, setTenure] = useState(12);
 
   // Load ATD banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
+      // Extract tenure
+      const loanTenure = disbursementData.tenure || 12;
+      setTenure(loanTenure);
+
+      // Calculate due date
+      const calculatedDueDate = addMonths(new Date(), loanTenure);
+
       // Set initial form data from disbursementData
       setFormData(prev => ({
         ...prev,
@@ -32,7 +42,8 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
         accountNo: disbursementData.beneficiaryAcNo || "",
         ifscNo: disbursementData.beneficiaryBankIFSC || "",
         accountType: disbursementData.beneficiaryAcType || "SAVING",
-        dueDate: disbursementData.dueDate || ""
+        transactionDate: new Date(),
+        dueDate: calculatedDueDate
       }));
 
       // Load ATD banks
@@ -58,6 +69,17 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     }
   }, [isOpen, disbursementData]);
 
+  // Update due date when transaction date changes
+  useEffect(() => {
+    if (formData.transactionDate) {
+      const calculatedDueDate = addMonths(formData.transactionDate, tenure);
+      setFormData(prev => ({
+        ...prev,
+        dueDate: calculatedDueDate
+      }));
+    }
+  }, [formData.transactionDate, tenure]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -69,6 +91,13 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     if (name === 'atdBankName' && value) {
       loadBankBranch(value);
     }
+  };
+
+  const handleDateChange = (field, date) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: date
+    }));
   };
 
   const loadBankBranch = async (bankId) => {
@@ -103,11 +132,23 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
       return;
     }
 
+    if (isFuture(formData.transactionDate)) {
+      toast.error('Transaction date cannot be in the future');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       
+      // Format dates for API
+      const submissionData = {
+        ...formData,
+        transactionDate: format(formData.transactionDate, 'yyyy-MM-dd'),
+        dueDate: formData.dueDate ? format(formData.dueDate, 'yyyy-MM-dd') : ''
+      };
+      
       // Call the actual API to process transfer
-      const response = await disbursementService.processTransfer(formData, disbursementData);
+      const response = await disbursementService.processTransfer(submissionData, disbursementData);
       
       if (response.success) {
         toast.success('Transfer processed successfully!');
@@ -116,7 +157,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
         if (onSubmit) {
           await onSubmit({
             ...disbursementData,
-            ...formData
+            ...submissionData
           });
         }
         
@@ -346,15 +387,14 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                   <label className={`block text-xs font-medium ${
                     isDark ? "text-gray-300" : "text-gray-600"
                   }`}>
-                    Transaction Date
+                    Transaction Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <input
-                      type="date"
-                      name="transactionDate"
-                      value={formData.transactionDate}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
+                    <DatePicker
+                      selected={formData.transactionDate}
+                      onChange={(date) => handleDateChange('transactionDate', date)}
+                      maxDate={new Date()} // Disable future dates
+                      dateFormat="yyyy-MM-dd"
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
                           ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
@@ -376,24 +416,24 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                     Due Date
                   </label>
                   <div className="relative">
-                    <input
-                      type="date"
-                      name="dueDate"
-                      value={formData.dueDate}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
+                    <DatePicker
+                      selected={formData.dueDate}
+                      onChange={(date) => handleDateChange('dueDate', date)}
+                      dateFormat="yyyy-MM-dd"
+                      readOnly
                       className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
                         isDark 
-                          ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
-                          : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
-                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                          ? "bg-gray-700/50 border-gray-600 text-gray-300 cursor-not-allowed" 
+                          : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
                       }`}
                     />
                     <Calendar className={`absolute right-2 top-2 w-4 h-4 ${
                       isDark ? "text-gray-400" : "text-gray-500"
                     }`} />
                   </div>
+                  <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                    Auto-calculated (Transaction Date + {tenure} months)
+                  </p>
                 </div>
               </div>
 
@@ -471,9 +511,9 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName}
+              disabled={isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName || !formData.transactionDate}
               className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center space-x-2 shadow-lg transform hover:scale-105 ${
-                isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName
+                isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName || !formData.transactionDate
                   ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                   : isDark
                     ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/25"

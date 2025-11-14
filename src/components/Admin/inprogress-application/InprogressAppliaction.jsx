@@ -6,7 +6,6 @@ import AdvancedSearchBar from "../AdvanceSearchBar";
 import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import InProgressTable from "./InprogressTable";
-import CallDetailsModal from "../CallDetailsModal";
 import InProcessStatusModal from "../application-modals/InProcessStatusModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
@@ -28,8 +27,6 @@ const InProgressApplication = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
@@ -322,10 +319,6 @@ const InProgressApplication = () => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
 
   // Clear all filters
   const clearAllFilters = () => {
@@ -543,24 +536,13 @@ const InProgressApplication = () => {
           onLoanEligibilityClick={handleLoanEligibilityClick}  
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
-          onOpenStatusModal={handleOpenStatusModal} // Pass the modal opener function
+          onOpenStatusModal={handleOpenStatusModal} 
         />
       </div>
 
-      {/* Call Details Modal */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
 
       {/* In-Process Status Modal - ADD THIS */}
       <InProcessStatusModal

@@ -163,7 +163,11 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     sanctionMail: application.sanction_mail || "Not Sent",
 
     // Bank verification and disburse approval
-    // Note: API field has typo - it's 'bank_veried' not 'bank_verified'
+    disburseAmount: application.disburse_amount,
+    customerBank: application.customer_ac_bank,
+    customerBranch: application.customer_ac_branch, 
+    customerAccount: application.customer_ac_no,
+    customerIfsc: application.customer_ac_ifsc,
     bankVerification: application.bank_veried === 1 ? "verified" : "not_verified",
     disburseApproval: application.credit_approval === 1 ? "approved" : "not_approved",
     
@@ -265,24 +269,28 @@ export const disburseApprovalService = {
   },
 
   // Submit disbursement
-  submitDisbursement: async (applicationId, formData) => {
-    try {
-      const payload = {
-        loan_status: 9, // Disbursed status
-        disburse_amount: parseFloat(formData.disburseAmount),
-        disburse_date: formData.disbursementDate,
-        customer_bank: formData.bankName,
-        customer_branch: formData.branchName,
-        customer_account: formData.accountNo,
-        customer_ifsc: formData.ifscCode
-      };
-      
-      const response = await api.put(`/crm/disbursement/disburse/${applicationId}`, payload);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+submitDisbursement: async (applicationId, formData) => {
+  try {
+    const payload = {
+      loan_status: 9, // Disbursed status
+      disburse_amount: parseFloat(formData.disburseAmount),
+      disburse_date: formData.disbursementDate,
+      // Include all required bank details from the form data
+      customer_bank: formData.bankName,
+      customer_branch: formData.branchName,
+      customer_account: formData.accountNo,
+      customer_ifsc: formData.ifscCode
+    };
+    
+    console.log('🔄 Disbursement Payload:', payload);
+    
+    const response = await api.put(`/crm/disbursement/disburse/${applicationId}`, payload);
+    return response;
+  } catch (error) {
+    console.error('❌ Disbursement API Error:', error);
+    throw error;
+  }
+},
 
   // Modal functions (same as other pages)
   updateChequeNumber: async (applicationId, chequeNo) => {

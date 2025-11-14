@@ -6,7 +6,6 @@ import AdvancedSearchBar from "../AdvanceSearchBar";
 import { exportToExcel } from "@/components/utils/exportutil";
 import DateRangeFilter from "../DateRangeFilter";
 import PendingTable from "./PendingTable";
-import CallDetailsModal from "../CallDetailsModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { pendingApplicationAPI, formatApplicationForUI } from "@/lib/services/PendingApplicationServices";
 import { ref, getDownloadURL } from "firebase/storage";
@@ -26,8 +25,6 @@ const PendingApplication = () => {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
@@ -406,10 +403,6 @@ const fetchApplications = async (isAutoRefresh = false) => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
 
   if (loading && applications.length === 0) {
     return (
@@ -602,7 +595,6 @@ const fetchApplications = async (isAutoRefresh = false) => {
           loading={loading}
           onLoanEligibilityClick={handleLoanEligibilityClick}  
           onCheckClick={handleCheckClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -610,15 +602,7 @@ const fetchApplications = async (isAutoRefresh = false) => {
         />
       </div>
 
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
     </div>
   );
 };

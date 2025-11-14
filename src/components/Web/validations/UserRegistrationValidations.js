@@ -34,17 +34,15 @@ const PersonalDetailsSchema = Yup.object().shape({
 
  
   alternativeEmail: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format"
-    )
+    .transform((value) => value ? value.toLowerCase().trim() : value)
+    .email("Please enter a valid email address (e.g., example@domain.com)")
     .test(
       "unique-alt-email",
       "Alternative email cannot be same as your registered email",
       function (value) {
         if (!value) return true;
         const { userEmail } = this.options.context || {};
-        return value !== userEmail;
+        return value.toLowerCase() !== userEmail?.toLowerCase();
       }
     )
     .nullable(),
@@ -166,11 +164,13 @@ const PersonalDetailsSchema = Yup.object().shape({
       .required("Family reference mobile number is required"),
 
     email: Yup.string()
-      .email('Invalid email format')
+      .transform((value) => value ? value.toLowerCase().trim() : value)
+      .email("Please enter a valid email address with @ and domain (e.g., example@domain.com)")
       .required('Family reference email is required')
       .test('not-same-as-user', 'Reference email cannot be same as your email', function(value) {
+        if (!value) return true;
         const userEmail = this.from[1].value.email;
-        return value !== userEmail;
+        return value.toLowerCase() !== userEmail?.toLowerCase();
       }),
 
     relation: Yup.string()
@@ -259,18 +259,16 @@ const ServiceDetailsSchema = Yup.object().shape({
     .required("HR phone number is required"),
 
   hrEmail: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format"
-    )
-    .required("HR email is required"),
+  .transform((value) => value ? value.toLowerCase().trim() : value)
+  .email("Invalid email format")
+  .required("HR email is required"),
 
   website: Yup.string()
-    .matches(
-      /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
-      "Invalid website URL"
-    )
-    .nullable(),
+  .matches(
+    /^(www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})([\/\w \.-]*)*\/?$/,
+    "Website must start with www. (e.g., www.example.com)"
+  ),
+  
 
   monthlySalary: Yup.number()
     .min(15000, "Minimum monthly salary is ₹15,000")
@@ -278,11 +276,9 @@ const ServiceDetailsSchema = Yup.object().shape({
     .required("Monthly salary is required"),
 
   officialEmail: Yup.string()
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format"
-    )
-    .required("Official email is required"),
+  .transform((value) => value ? value.toLowerCase().trim() : value)
+  .email("Invalid email format")
+  .required("Official email is required"),
 
   netMonthlySalary: Yup.number()
     .min(10000, "Minimum net monthly salary is ₹10,000")

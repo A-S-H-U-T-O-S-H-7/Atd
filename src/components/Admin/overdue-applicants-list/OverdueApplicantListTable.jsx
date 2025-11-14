@@ -11,7 +11,6 @@ const OverdueApplicantListTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onCall,
   onAdjustment,
   onRenew,
   onSendNotice,
@@ -114,7 +113,6 @@ const OverdueApplicantListTable = ({
                   applicant={applicant}
                   index={index}
                   isDark={isDark}
-                  onCall={onCall}
                   onAdjustment={onAdjustment}
                   onRenew={onRenew}
                   onSendNotice={onSendNotice}

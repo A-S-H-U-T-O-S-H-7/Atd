@@ -123,9 +123,9 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       );
       
       await bankVerificationService.saveBankVerificationData(bankVerificationData);
+      toast.success('Bank verification saved successfully!');
       
       // Don't call onSectionSave - it would trigger duplicate save
-      // Component handles save directly
     } catch (error) {
       // Error handling is done in the service
     } finally {

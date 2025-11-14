@@ -46,7 +46,7 @@ class PersonalVerificationService {
       }
 
       const response = await this.updatePersonalInfo(data);
-      toast.success('Personal information saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       if (error.response?.status === 422) {
@@ -74,7 +74,7 @@ class PersonalVerificationService {
       }
 
       const response = await this.savePersonalRemarks(data);
-      toast.success('Remark saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       if (error.response?.status === 422) {
@@ -136,7 +136,7 @@ class PersonalVerificationService {
       }
 
       await Promise.all(promises);
-      toast.success('Alternative numbers saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return { success: true };
     } catch (error) {
       if (error.response?.status === 422) {
@@ -234,13 +234,7 @@ saveReferences = async (data) => {
 
     // Save to API
     const response = await this.saveAdditionalReferences(referencesData);
-    
-    if (validReferencesCount === 0) {
-      toast.success('Reference data cleared successfully!');
-    } else {
-      toast.success(`${validReferencesCount} reference${validReferencesCount > 1 ? 's' : ''} saved successfully!`);
-    }
-    
+    // Toast shown in component layer to avoid duplicates
     return response;
   } catch (error) {
     if (error.response) {

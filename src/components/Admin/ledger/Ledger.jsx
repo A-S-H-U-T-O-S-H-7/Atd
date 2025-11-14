@@ -5,7 +5,6 @@ import SearchBar from "../SearchBar";
 import LedgerTable from "./LedgerTable";
 import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
-import CallDetailsModal from "../CallDetailsModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useRouter } from "next/navigation";
@@ -20,7 +19,6 @@ const LedgerPage = () => {
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
-  const [showCallModal, setShowCallModal] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [selectedTransactionData, setSelectedTransactionData] = useState(null);
@@ -164,10 +162,7 @@ const [selectedApplicantForAdjustment, setSelectedApplicantForAdjustment] = useS
     }
   };
 
-  const handleCall = (applicant) => {
-  setSelectedApplicant(applicant);
-  setShowCallModal(true);
-};
+  
 
 const handleViewTransaction = (item) => { 
   setSelectedTransactionData(item); 
@@ -293,7 +288,6 @@ const handleAdjustmentSubmit = (adjustmentData) => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
-        onCall={handleCall} 
         onViewTransaction={handleViewTransaction} 
         onAdjustment={handleAdjustmentClick} 
  
@@ -311,12 +305,7 @@ const handleAdjustmentSubmit = (adjustmentData) => {
   onSubmit={handleAdjustmentSubmit}
 />
 
-      <CallDetailsModal 
-      isOpen={showCallModal} 
-      onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} data={selectedApplicant} isDark={isDark}  />
+      
 
         <CustomerTransactionDetails
   isOpen={showTransactionModal}

@@ -4,16 +4,13 @@ const OverdueApplicantRow = ({
   applicant,
   index,
   isDark,
-  onCall,
   onAdjustment,
   onRenew,
   onSendNotice,
   onOverdueAmountClick
 }) => {
 
-  const handleCall = (item) => {
-    onCall(applicant); 
-  };
+ 
 
   const handleAdjustment = (applicant) => {
     onAdjustment(applicant);  
@@ -51,19 +48,15 @@ const OverdueApplicantRow = ({
       </td>
 
       {/* Call */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={handleCall}
-          className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm ${
-            isDark
-              ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300 border border-blue-700"
-              : "bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200"
-          }`}
-        >
-          <Phone size={14} />
-          <span>Call</span>
-        </button>
-      </td>
+      <td className={cellStyle}>
+  <CallButton
+    applicant={applicant}
+    isDark={isDark}
+    size="small"
+    variant="default"
+    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+  />
+</td>
 
       {/* Loan No */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

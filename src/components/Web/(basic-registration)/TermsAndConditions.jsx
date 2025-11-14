@@ -16,11 +16,21 @@ export const TermsAndConditions = () => {
             />
             <label className="text-sm text-gray-700 leading-relaxed">
               I agree to ATD Money's{" "}
-              <Link href="/privacypolicy" className="text-blue-600 hover:underline font-medium">
+              <Link 
+                href="/privacypolicy" 
+                className="text-blue-600 hover:underline font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Privacy Policy
               </Link>
               {" "}and{" "}
-              <Link href="/terms&condition" className="text-blue-600 hover:underline font-medium">
+              <Link 
+                href="/terms&condition" 
+                className="text-blue-600 hover:underline font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Terms & Conditions
               </Link>
               . I consent to receive communications and marketing materials.

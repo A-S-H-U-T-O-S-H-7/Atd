@@ -51,24 +51,24 @@ const LoanDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
 
   // Calculate Collection Amount
   const calculateCollectionAmount = () => {
-    const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
-    const tenure = parseInt(formik.values.tenure) || 0;
+    const approvedAmount = parseFloat(formik.values.amountApproved);
+    const tenure = parseInt(formik.values.tenure);
     const roi = 0.067; 
     
-    if (approvedAmount > 0 && tenure > 0) {
+    if (!isNaN(approvedAmount) && !isNaN(tenure) && approvedAmount > 0 && tenure > 0) {
       const interestAmount = approvedAmount * tenure * (roi / 100);
       const totalAmount = approvedAmount + interestAmount;
       return Math.round(totalAmount); 
     }
-    return approvedAmount;
+    return approvedAmount > 0 ? Math.round(approvedAmount) : 0;
   };
 
   // Calculate Administration Fee Amount
   const calculateAdministrationFee = () => {
-    const approvedAmount = parseFloat(formik.values.amountApproved) || 0;
-    const adminFeePercent = parseFloat(formik.values.administrationFeePercent) || 0;
+    const approvedAmount = parseFloat(formik.values.amountApproved);
+    const adminFeePercent = parseFloat(formik.values.administrationFeePercent);
     
-    if (approvedAmount > 0 && adminFeePercent > 0) {
+    if (!isNaN(approvedAmount) && !isNaN(adminFeePercent) && approvedAmount > 0 && adminFeePercent > 0 && adminFeePercent <= 100) {
       const adminFee = approvedAmount * (adminFeePercent / 100);
       return Math.round(adminFee);
     }
@@ -78,47 +78,64 @@ const LoanDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
   // Calculate GST (18% of Administration Fee)
   const calculateGST = () => {
     const adminFee = calculateAdministrationFee();
-    const gst = adminFee * 0.18;
-    return Math.round(gst);
+    if (!isNaN(adminFee) && adminFee > 0) {
+      const gst = adminFee * 0.18;
+      return Math.round(gst);
+    }
+    return 0;
   };
 
-  // FIXED: Only calculate when fields are empty (don't overwrite API data)
+  // Calculate collection amounts when approved amount or tenure changes
   useEffect(() => {
-    console.log('LoanDetails - Current values:', {
-      administrationFeePercent: formik.values.administrationFeePercent,
-      administrationFeeAmount: formik.values.administrationFeeAmount,
-      gst: formik.values.gst,
-      amountApproved: formik.values.amountApproved
-    });
-
-    // Only calculate if fields are empty (not overwriting existing data)
     const collectionAmount = calculateCollectionAmount();
     
-    if (!formik.values.collectionAmount) {
+    // Update collection amounts if they're empty or if approved amount/tenure changed
+    if (!formik.values.collectionAmount || formik.values.amountApproved || formik.values.tenure) {
       formik.setFieldValue('collectionAmount', collectionAmount.toString());
-    }
-
-    if (!formik.values.emiCollectionAmount) {
       formik.setFieldValue('emiCollectionAmount', collectionAmount.toString());
     }
+  }, [
+    formik.values.amountApproved,
+    formik.values.tenure
+  ]);
 
-    // Only calculate administration fee and GST if percentage is provided AND amounts are empty
-    if (formik.values.administrationFeePercent && (!formik.values.administrationFeeAmount || !formik.values.gst)) {
+  // Calculate percentage from fee amount when loading from API (reverse calculation)
+  useEffect(() => {
+    // If we have fee amount and GST but no percentage, calculate the percentage
+    if ((!formik.values.administrationFeePercent || formik.values.administrationFeePercent === '') && 
+        formik.values.administrationFeeAmount && 
+        formik.values.amountApproved) {
+      
+      const approvedAmount = parseFloat(formik.values.amountApproved);
+      const feeAmount = parseFloat(formik.values.administrationFeeAmount);
+      
+      if (approvedAmount > 0 && feeAmount > 0 && !isNaN(approvedAmount) && !isNaN(feeAmount)) {
+        // Reverse calculate: percentage = (fee / approved) * 100
+        const calculatedPercent = (feeAmount / approvedAmount) * 100;
+        const roundedPercent = Math.round(calculatedPercent);
+        
+        if (roundedPercent > 0 && roundedPercent <= 100) {
+          formik.setFieldValue('administrationFeePercent', roundedPercent.toString());
+        }
+      }
+    }
+  }, [formik.values.administrationFeeAmount, formik.values.amountApproved]);
+
+  // Calculate administration fee and GST whenever percentage or approved amount changes
+  useEffect(() => {
+    // Only recalculate if percentage is provided (don't clear existing API data)
+    if (formik.values.administrationFeePercent && formik.values.administrationFeePercent !== '') {
       const adminFeeAmount = calculateAdministrationFee();
       const gstAmount = calculateGST();
 
-      if (!formik.values.administrationFeeAmount) {
+      if (!isNaN(adminFeeAmount) && !isNaN(gstAmount)) {
         formik.setFieldValue('administrationFeeAmount', adminFeeAmount.toString());
-      }
-
-      if (!formik.values.gst) {
         formik.setFieldValue('gst', gstAmount.toString());
       }
     }
   }, [
-    formik.values.amountApproved,
-    formik.values.tenure,
-    formik.values.administrationFeePercent
+    formik.values.administrationFeePercent,
+    formik.values.amountApproved
   ]);
 
   // Set default loan term to "One Time Payment" if empty
@@ -329,10 +346,7 @@ const LoanDetails = ({ formik, isDark, errors = {}, touched = {}  }) => {
             <select
               name="administrationFeePercent"
               value={formik.values.administrationFeePercent}
-              onChange={(e) => {
-                console.log('Administration Fee % changed to:', e.target.value);
-                formik.handleChange(e);
-              }}
+              onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               className={hasError('administrationFeePercent') ? errorSelectClassName : selectClassName}
             >

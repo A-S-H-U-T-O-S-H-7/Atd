@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Calendar, Building, CheckCircle } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import { format, addMonths, isFuture } from 'date-fns';
 import disbursementService from '@/lib/services/disbursementService';
 import toast from 'react-hot-toast';
 
@@ -13,13 +15,14 @@ const TransactionDetailsModal = ({
   const [formData, setFormData] = useState({
     disbursementAmount: '',
     transactionId: '',
-    transactionDate: '',
-    dueDate: '',
+    transactionDate: null,
+    dueDate: null,
     bankName: '',
     branchName: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
+  const [tenure, setTenure] = useState(12); // Default tenure in months
 
   // Load banks and set initial data when modal opens
   useEffect(() => {
@@ -28,11 +31,15 @@ const TransactionDetailsModal = ({
       setFormData({
         disbursementAmount: disbursementData.disbursedAmount || '',
         transactionId: '',
-        transactionDate: '',
-        dueDate: disbursementData.dueDate || '',
+        transactionDate: null,
+        dueDate: null,
         bankName: '',
         branchName: ''
       });
+
+      // Extract tenure from loan data (you might need to adjust this based on your API response)
+      const loanTenure = disbursementData.tenure || 12;
+      setTenure(loanTenure);
 
       // Load banks list
       const loadBanks = async () => {
@@ -49,10 +56,28 @@ const TransactionDetailsModal = ({
     }
   }, [isOpen, disbursementData]);
 
+  // Calculate due date when transaction date changes
+  useEffect(() => {
+    if (formData.transactionDate) {
+      const calculatedDueDate = addMonths(formData.transactionDate, tenure);
+      setFormData(prev => ({
+        ...prev,
+        dueDate: calculatedDueDate
+      }));
+    }
+  }, [formData.transactionDate, tenure]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleDateChange = (field, date) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: date
     }));
   };
 
@@ -65,6 +90,11 @@ const TransactionDetailsModal = ({
 
     if (!formData.transactionDate) {
       toast.error('Please select Transaction Date');
+      return;
+    }
+
+    if (isFuture(formData.transactionDate)) {
+      toast.error('Transaction date cannot be in the future');
       return;
     }
 
@@ -81,10 +111,17 @@ const TransactionDetailsModal = ({
     try {
       setIsSubmitting(true);
       
+      // Format dates for API
+      const submissionData = {
+        ...formData,
+        transactionDate: format(formData.transactionDate, 'yyyy-MM-dd'),
+        dueDate: formData.dueDate ? format(formData.dueDate, 'yyyy-MM-dd') : ''
+      };
+      
       // Call the actual API to update manual transaction
       const response = await disbursementService.updateTransaction(
         disbursementData.disburse_id,
-        formData,
+        submissionData,
         disbursementData
       );
       
@@ -95,8 +132,8 @@ const TransactionDetailsModal = ({
         setFormData({
           disbursementAmount: disbursementData.disbursedAmount || '',
           transactionId: '',
-          transactionDate: '',
-          dueDate: disbursementData.dueDate || '',
+          transactionDate: null,
+          dueDate: null,
           bankName: '',
           branchName: ''
         });
@@ -105,7 +142,7 @@ const TransactionDetailsModal = ({
         if (onSubmit) {
           await onSubmit({
             ...disbursementData,
-            ...formData,
+            ...submissionData,
             updatedAt: new Date().toISOString()
           });
         }
@@ -126,8 +163,8 @@ const TransactionDetailsModal = ({
     setFormData({
       disbursementAmount: disbursementData?.disbursedAmount || '',
       transactionId: '',
-      transactionDate: '',
-      dueDate: disbursementData?.dueDate || '',
+      transactionDate: null,
+      dueDate: null,
       bankName: '',
       branchName: ''
     });
@@ -279,12 +316,12 @@ const TransactionDetailsModal = ({
                   absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
                   ${isDark ? 'text-gray-400' : 'text-gray-500'}
                 `} />
-                <input
-                  type="date"
-                  id="transactionDate"
-                  value={formData.transactionDate}
-                  onChange={(e) => handleInputChange('transactionDate', e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
+                <DatePicker
+                  selected={formData.transactionDate}
+                  onChange={(date) => handleDateChange('transactionDate', date)}
+                  maxDate={new Date()} // Disable future dates
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="Select transaction date"
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                     ${isDark
@@ -313,21 +350,24 @@ const TransactionDetailsModal = ({
                   absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
                   ${isDark ? 'text-gray-400' : 'text-gray-500'}
                 `} />
-                <input
-                  type="date"
-                  id="dueDate"
-                  value={formData.dueDate}
-                  onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                <DatePicker
+                  selected={formData.dueDate}
+                  onChange={(date) => handleDateChange('dueDate', date)}
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="Auto-calculated from transaction date"
+                  readOnly
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                     ${isDark
-                      ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500 focus:bg-gray-600'
-                      : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:bg-gray-50'
+                      ? 'bg-gray-700/50 border-gray-600 text-gray-300 cursor-not-allowed'
+                      : 'bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed'
                     }
-                    focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
                   `}
                 />
               </div>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                Auto-calculated (Transaction Date + {tenure} months)
+              </p>
             </div>
           </div>
 

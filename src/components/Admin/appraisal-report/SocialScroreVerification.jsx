@@ -117,9 +117,9 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
     }
     
     await socialScoreVerificationService.saveSocialScoreVerificationData(socialData);
+    toast.success('Social score verification saved successfully!');
     
     // Don't call onSectionSave - it would trigger duplicate save
-    // Component handles save directly
   } catch (error) {
     // API errors handled in service
   } finally {

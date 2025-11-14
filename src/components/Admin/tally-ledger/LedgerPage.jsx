@@ -5,7 +5,6 @@ import SearchBar from "../SearchBar";
 import LedgerTable from "./LedgerTable";
 import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
-import CallDetailsModal from "../CallDetailsModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
@@ -18,8 +17,6 @@ const { theme } = useThemeStore();
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
-  const [showCallModal, setShowCallModal] = useState(false);
-    const [selectedApplicant, setSelectedApplicant] = useState(null);
     const [showTransactionModal, setShowTransactionModal] = useState(false);
     const [selectedTransactionData, setSelectedTransactionData] = useState(null);
     const router = useRouter()
@@ -285,12 +282,7 @@ const handleBalanceUpdate = (updateData) => {
         />
       </div>
 
-      <CallDetailsModal 
-      isOpen={showCallModal} 
-      onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} data={selectedApplicant} isDark={isDark}  />
+      
 
         <CustomerTransactionDetails
   isOpen={showTransactionModal}

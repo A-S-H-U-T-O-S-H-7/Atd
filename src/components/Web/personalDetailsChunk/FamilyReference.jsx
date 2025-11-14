@@ -41,6 +41,7 @@ const FamilyReferenceSection = () => {
           type="email"
           placeholder="Enter email"
           required
+          normalize={value => value ? value.toLowerCase() : value}
         />
         
         <FormField

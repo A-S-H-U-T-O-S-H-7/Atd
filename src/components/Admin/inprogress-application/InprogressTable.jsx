@@ -30,7 +30,6 @@ const InProgressTable = ({
   const tableHeaders = [
     { label: "SR. No", width: "100px" },
     { label: "Call", width: "70px" },
-    { label: "Loan No.", width: "80px" },
     { label: "CRN No.", width: "80px" },
     { label: "Account ID", width: "100px" },
     { label: "Enquiry Date", width: "100px" },

@@ -50,9 +50,9 @@ const PersonalVerification = ({ formik, onSectionSave, isDark, saving }) => {
       };
 
       await personalVerificationService.savePersonalInfo(personalData);
+      toast.success('Personal information saved successfully!');
       
       // Don't call onSectionSave - it would trigger duplicate save
-      // Component handles save directly
     } catch (error) {
       // Error handling is done in the service
     } finally {

@@ -37,7 +37,7 @@ const OrganizationSection = () => {
             name="website"
             label="Website"
             placeholder="Enter organization website"
-            helpText="e.g.: https://www.example.com"
+            helpText="e.g.: www.example.com"
           />
         </div>
       </div>

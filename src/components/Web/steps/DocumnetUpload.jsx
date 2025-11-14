@@ -4,7 +4,7 @@ import { Formik, Form, ErrorMessage } from "formik";
 import { BeatLoader } from 'react-spinners';
 import { DocumentUploadSchema } from '../validations/UserRegistrationValidations';
 import { useUser } from '@/lib/UserRegistrationContext';
-import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle, Zap } from 'lucide-react';
+import { Upload, FileText, ChevronLeft, ChevronRight, CheckCircle, X, AlertCircle, Zap, Clock } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -25,12 +25,14 @@ function DocumentUpload() {
     } = useUser();
 
     const [uploadStatus, setUploadStatus] = useState({});
-    const [uploadingFiles, setUploadingFiles] = useState(new Set());
+    const [uploadQueue, setUploadQueue] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState(new Map());
     const [allFilesUploaded, setAllFilesUploaded] = useState(false);
     const [compressingFiles, setCompressingFiles] = useState(new Set());
+    const [currentUploadingFile, setCurrentUploadingFile] = useState(null); // NEW: Track current file being uploaded
 
-    // Document configuration with Firebase bucket mapping - Updated max sizes to 3MB
+    // Document configuration with Firebase bucket mapping
     const documentConfig = {
         photo: { 
             label: 'Selfie', 
@@ -83,8 +85,8 @@ function DocumentUpload() {
         },
         bankStatement: { 
             label: '6 Month Bank Statement', 
-             accept: 'application/pdf',
-            maxSize: 5, // Keep bank statement at 5MB since it's PDF only
+            accept: 'application/pdf',
+            maxSize: 5,
             apiValue: 'statement',
             bucket: 'bank-statement'
         }
@@ -98,6 +100,34 @@ function DocumentUpload() {
         );
         setAllFilesUploaded(allUploaded);
     }, [uploadStatus]);
+
+    // Process upload queue - UPDATED: With current file tracking
+    useEffect(() => {
+        if (uploadQueue.length > 0 && !isUploading) {
+            processNextUpload();
+        }
+    }, [uploadQueue, isUploading]);
+
+    const processNextUpload = async () => {
+        if (uploadQueue.length === 0 || isUploading) return;
+
+        const nextUpload = uploadQueue[0];
+        setIsUploading(true);
+        setCurrentUploadingFile({
+            name: nextUpload.file.name,
+            fieldName: nextUpload.fieldName,
+            label: documentConfig[nextUpload.fieldName]?.label
+        });
+
+        try {
+            await handleSingleUpload(nextUpload.file, nextUpload.fieldName, nextUpload.setFieldValue, nextUpload.currentFile);
+        } finally {
+            // Remove the processed item from queue and allow next upload
+            setUploadQueue(prev => prev.slice(1));
+            setIsUploading(false);
+            setCurrentUploadingFile(null);
+        }
+    };
 
     // Generate file hash for duplicate detection
     const generateFileHash = (file) => {
@@ -123,11 +153,11 @@ function DocumentUpload() {
             setCompressingFiles(prev => new Set([...prev, fieldName]));
             
             const options = {
-                maxSizeMB: 2.8, // Target slightly under 3MB to ensure we stay within limit
-                maxWidthOrHeight: 1920, // Good balance between quality and size
-                useWebWorker: true, // Use web worker for better performance
-                initialQuality: 0.8, // Start with 80% quality
-                alwaysKeepResolution: false, // Allow resolution reduction if needed
+                maxSizeMB: 2.8,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+                initialQuality: 0.8,
+                alwaysKeepResolution: false,
             };
 
             console.log(`🗜️ Compressing ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
@@ -136,7 +166,6 @@ function DocumentUpload() {
             
             console.log(`✅ Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
             
-            // Create new file with original name but compressed content
             const finalFile = new File([compressedFile], file.name, {
                 type: compressedFile.type,
                 lastModified: Date.now(),
@@ -181,10 +210,9 @@ function DocumentUpload() {
             return { valid: false, error: `Invalid file type for ${config.label}. Please select a valid file.` };
         }
 
-        // For images, allow larger initial size since we'll compress
         const maxSizeBytes = isImageFile(file) ? 
-            config.maxSize * 1024 * 1024 * 3 : // Allow 3x size for images (will be compressed)
-            config.maxSize * 1024 * 1024; // Keep original limit for PDFs
+            config.maxSize * 1024 * 1024 * 3 :
+            config.maxSize * 1024 * 1024;
 
         if (file.size > maxSizeBytes) {
             const maxDisplaySize = isImageFile(file) ? 
@@ -204,7 +232,6 @@ function DocumentUpload() {
         const config = documentConfig[fieldName];
         const randomFileName = generateRandomFileName(file.name);
         
-        setUploadingFiles(prev => new Set([...prev, fieldName]));
         setUploadStatus(prev => ({
             ...prev,
             [fieldName]: { status: 'uploading' }
@@ -216,7 +243,7 @@ function DocumentUpload() {
             const uploadResult = await uploadBytes(storageRef, file);
             console.log("✅ File uploaded to Firebase:", randomFileName);
 
-            // Get download URL (optional)
+            // Get download URL
             const downloadURL = await getDownloadURL(uploadResult.ref);
             
             // Step 2: Save filename to your API
@@ -267,17 +294,11 @@ function DocumentUpload() {
                 [fieldName]: { status: 'error', error: errorMsg }
             }));
             return { success: false, error: errorMsg };
-        } finally {
-            setUploadingFiles(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(fieldName);
-                return newSet;
-            });
         }
     };
 
-    // Handle file change with compression
-    const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
+    // Handle single upload
+    const handleSingleUpload = async (file, fieldName, setFieldValue, currentFile = null) => {
         if (!file) return;
 
         const config = documentConfig[fieldName];
@@ -354,6 +375,59 @@ function DocumentUpload() {
         }
     };
 
+    // Handle file change
+    const handleFileChange = async (file, fieldName, setFieldValue, currentFile = null) => {
+        if (!file) return;
+
+        const config = documentConfig[fieldName];
+        
+        // Validate file immediately (before queueing)
+        const validation = validateFile(file, config);
+        if (!validation.valid) {
+            setErrorMessage(validation.error);
+            setTimeout(() => setErrorMessage(''), 3000);
+            return;
+        }
+
+        // Check for duplicates immediately
+        const duplicateCheck = checkForDuplicateFile(file, fieldName);
+        if (duplicateCheck.isDuplicate) {
+            setErrorMessage(
+                `This file "${file.name}" is already uploaded for ${duplicateCheck.existingFieldLabel}. Please select a different file.`
+            );
+            setTimeout(() => setErrorMessage(''), 5000);
+            return;
+        }
+
+        // Remove old file from tracking if replacing
+        if (currentFile) {
+            const oldFileHash = generateFileHash(currentFile);
+            setUploadedFiles(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(oldFileHash);
+                return newMap;
+            });
+        }
+
+        // Set the file in form immediately for better UX
+        setFieldValue(fieldName, file);
+
+        // Add to upload queue instead of uploading immediately
+        setUploadQueue(prev => [...prev, {
+            file,
+            fieldName,
+            setFieldValue,
+            currentFile,
+            timestamp: Date.now()
+        }]);
+
+        // Show queue status message
+        if (uploadQueue.length > 0 || isUploading) {
+            setErrorMessage(`File added to upload queue. ${uploadQueue.length + 1} files waiting...`);
+            setTimeout(() => setErrorMessage(''), 3000);
+        }
+    };
+
     // Format file size
     const formatFileSize = (bytes) => {
         if (bytes === 0) return '0 Bytes';
@@ -368,6 +442,13 @@ function DocumentUpload() {
         setLoader(true);
         setErrorMessage("");
         
+        // Check if there are pending uploads in queue
+        if (uploadQueue.length > 0 || isUploading) {
+            setErrorMessage("Please wait for all files to finish uploading before proceeding.");
+            setLoader(false);
+            return;
+        }
+        
         // Double check if all files are uploaded successfully
         if (!allFilesUploaded) {
             setErrorMessage("Please ensure all documents are uploaded successfully before proceeding.");
@@ -380,24 +461,20 @@ function DocumentUpload() {
         setStep(step + 1);
     };
 
-    // File upload component
+    // File upload component - UPDATED: Cleaner status indicators
     const FileUploadField = ({ fieldName, setFieldValue, values }) => {
         const config = documentConfig[fieldName];
         const file = values[fieldName];
         const status = uploadStatus[fieldName];
-        const isUploading = uploadingFiles.has(fieldName);
+        const isInQueue = uploadQueue.some(item => item.fieldName === fieldName);
         const isCompressing = compressingFiles.has(fieldName);
+        const isCurrentlyUploading = isUploading && uploadQueue[0]?.fieldName === fieldName;
 
         return (
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                     {config.label}
                     <span className="text-red-500 ml-1">*</span>
-                    {/* {isImageFile({type: config.accept.split(',')[0]}) && (
-                        <span className="text-xs text-green-600 ml-2 font-normal">
-                            📱 Auto-compress if needed
-                        </span>
-                    )} */}
                 </label>
                 
                 {!file ? (
@@ -413,14 +490,27 @@ function DocumentUpload() {
                                 }
                             }}
                             className="hidden"
+                            disabled={isUploading || uploadQueue.length > 0}
                         />
                         <label
                             htmlFor={fieldName}
-                            className="flex flex-col items-center justify-center w-full h-32 bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-xl transition-all duration-200 hover:border-teal-400 hover:bg-teal-50/30 cursor-pointer group"
+                            className={`flex flex-col items-center justify-center w-full h-32 bg-white/50 backdrop-blur-sm border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer group ${
+                                isUploading || uploadQueue.length > 0
+                                    ? 'border-gray-200 bg-gray-100 cursor-not-allowed'
+                                    : 'border-gray-300 hover:border-teal-400 hover:bg-teal-50/30'
+                            }`}
                         >
-                            <Upload className="w-8 h-8 text-gray-400 group-hover:text-teal-500 mb-2" />
-                            <span className="text-sm text-gray-600 group-hover:text-teal-600 font-medium">
-                                Choose {config.label}
+                            <Upload className={`w-8 h-8 mb-2 ${
+                                isUploading || uploadQueue.length > 0
+                                    ? 'text-gray-300'
+                                    : 'text-gray-400 group-hover:text-teal-500'
+                            }`} />
+                            <span className={`text-sm font-medium ${
+                                isUploading || uploadQueue.length > 0
+                                    ? 'text-gray-400'
+                                    : 'text-gray-600 group-hover:text-teal-600'
+                            }`}>
+                                {isUploading || uploadQueue.length > 0 ? 'Upload in progress...' : `Choose ${config.label}`}
                             </span>
                             <span className="text-xs text-gray-500 mt-1">
                                 Max {config.maxSize}MB • {
@@ -438,7 +528,11 @@ function DocumentUpload() {
                                 <div className="w-5 h-5 flex items-center justify-center">
                                     <Zap className="w-5 h-5 text-orange-500 animate-pulse" />
                                 </div>
-                            ) : isUploading || status?.status === 'uploading' ? (
+                            ) : isInQueue ? (
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                    <Clock className="w-5 h-5 text-blue-500" />
+                                </div>
+                            ) : isCurrentlyUploading ? (
                                 <div className="w-5 h-5 flex items-center justify-center">
                                     <BeatLoader color="#14b8a6" size={4} />
                                 </div>
@@ -457,15 +551,18 @@ function DocumentUpload() {
                                 <p className="text-xs text-gray-500">
                                     {formatFileSize(file.size)}
                                     {isCompressing && (
-                                        <span className="text-orange-600 ml-2">⚡ Compressing...</span>
+                                        <span className="text-orange-600 ml-2">Compressing...</span>
                                     )}
-                                    {status?.status === 'uploading' && (
-                                        <span className="text-blue-600 ml-2">⏳ Uploading...</span>
+                                    {isInQueue && (
+                                        <span className="text-blue-600 ml-2">In queue...</span>
                                     )}
-                                    {status?.status === 'success' && (
+                                    {isCurrentlyUploading && (
+                                        <span className="text-blue-600 ml-2">Uploading...</span>
+                                    )}
+                                    {status?.status === 'success' && !isInQueue && (
                                         <span className="text-green-600 ml-2">✓ Uploaded</span>
                                     )}
-                                    {status?.status === 'error' && (
+                                    {status?.status === 'error' && !isInQueue && (
                                         <span className="text-red-600 ml-2">✗ Failed</span>
                                     )}
                                 </p>
@@ -484,14 +581,14 @@ function DocumentUpload() {
                                     }
                                 }}
                                 className="hidden"
-                                disabled={isCompressing || isUploading}
+                                disabled={isCompressing || isUploading || isInQueue}
                             />
                             <label
                                 htmlFor={`${fieldName}_replace`}
-                                className={`px-3 py-1 text-xs rounded-lg transition-colors cursor-pointer ${
-                                    isCompressing || isUploading
+                                className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                                    isCompressing || isUploading || isInQueue
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                                        : 'bg-teal-100 text-teal-700 hover:bg-teal-200 cursor-pointer'
                                 }`}
                             >
                                 Replace
@@ -526,6 +623,8 @@ function DocumentUpload() {
 
     return (
         <div className='min-h-screen bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50 p-4 md:p-6'>
+          
+
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -548,6 +647,8 @@ function DocumentUpload() {
                 >
                     {({ setFieldValue, values }) => (
                         <Form className="space-y-6">
+                            {/* REMOVED: The expanding queue status banner */}
+
                             {errorMessage && (
                                 <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl p-4">
                                     <div className="flex items-center gap-2">
@@ -557,12 +658,13 @@ function DocumentUpload() {
                                 </div>
                             )}
 
-                            {/* Upload Progress Indicator */}
+                            {/* Upload Progress Indicator - Always visible but static */}
                             <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl shadow-lg p-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium text-gray-700">Upload Progress</span>
                                     <span className="text-sm text-gray-600">
                                         {Object.values(uploadStatus).filter(status => status?.status === 'success').length} / {Object.keys(documentConfig).length} completed
+                                        {(uploadQueue.length > 0) && ` (${uploadQueue.length} in queue)`}
                                     </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -617,6 +719,7 @@ function DocumentUpload() {
                                             <li>• Salary slips must be from the last 3 consecutive months</li>
                                             <li>• Bank statement should cover the last 6 months (max 5MB)</li>
                                             <li>• Each document must be unique - same file cannot be used for multiple fields</li>
+                                            <li>• Files are uploaded one by one automatically - please wait for each to complete</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -634,7 +737,7 @@ function DocumentUpload() {
                                 </button>
                                 
                                 <button 
-                                    disabled={loader || !allFilesUploaded} 
+                                    disabled={loader || !allFilesUploaded || isUploading || uploadQueue.length > 0} 
                                     type='submit' 
                                     className="inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 order-1 sm:order-2 disabled:cursor-not-allowed"
                                 >

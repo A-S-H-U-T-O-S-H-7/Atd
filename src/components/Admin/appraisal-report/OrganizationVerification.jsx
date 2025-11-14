@@ -112,9 +112,9 @@ const handleSaveOrganizationVerification = async () => {
     );
     
     await organizationVerificationService.saveOrganizationVerificationData(organizationData);
+    toast.success('Organization verification saved successfully!');
     
     // Don't call onSectionSave - it would trigger duplicate save
-    // Service already shows success toast
     
   } catch (error) {
     // Error handling is done in the service

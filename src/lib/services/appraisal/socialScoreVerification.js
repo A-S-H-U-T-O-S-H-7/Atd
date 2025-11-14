@@ -28,7 +28,7 @@ class SocialScoreVerificationService {
       }
 
       const response = await this.saveSocialRemarks(data);
-      toast.success('Social score remark saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       this.handleApiError(error, 'social score remark');
@@ -51,8 +51,7 @@ class SocialScoreVerificationService {
     const assessedData = this.assessSocialScoreFinalReport(data);
     
     const response = await this.saveSocialVerification(assessedData);
-    
-    toast.success('Social verification completed successfully!');
+    // Toast shown in component layer to avoid duplicates
     return response;
   } catch (error) {
     

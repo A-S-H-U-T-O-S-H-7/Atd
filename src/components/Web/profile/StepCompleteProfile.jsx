@@ -212,6 +212,6 @@ export default function StepCompleteProfile({
           userName={user?.fname || 'User'}
         />
       </div>
-    </ProtectedRoute>
+    </ProtectedRoute> 
   );
 }

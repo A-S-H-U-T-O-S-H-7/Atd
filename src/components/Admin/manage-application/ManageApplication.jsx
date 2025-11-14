@@ -15,7 +15,6 @@ import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
 import ChangeStatusModal from "../application-modals/StatusModal";
 import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
-import CallDetailsModal from "../CallDetailsModal";
 import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 import NormalCollectionForm from "./collectionForms/NormalCollectionForm";
 import RecollectionForm from "./collectionForms/RecollectionForm";
@@ -47,8 +46,7 @@ const ManageApplication = () => {
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Modal states
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [currentChequeNo, setCurrentChequeNo] = useState('');
@@ -330,11 +328,6 @@ const ManageApplication = () => {
     }
   };
 
-  // Modal handlers
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
 
   const handleDocumentVerificationModalOpen = (application) => {
     setCurrentDocumentApplication(application);
@@ -1022,7 +1015,7 @@ const ManageApplication = () => {
           onCheckClick={handleCheckClick}
           onDocumentStatusClick={handleDocumentVerificationModalOpen}
           onReplaceKYCClick={handleReplaceKYCClick} 
-          onCall={handleCall}
+          
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -1033,16 +1026,7 @@ const ManageApplication = () => {
         />
       </div>
       
-      {/* Modals */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
 
       {currentDocumentApplication && (
         <DocumentVerificationModal

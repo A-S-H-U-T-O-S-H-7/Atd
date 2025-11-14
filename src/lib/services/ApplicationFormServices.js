@@ -23,11 +23,6 @@ export const formatApplicationForUI = (applicationData) => {
   if (!applicationData?.data) return {};
   
   const data = applicationData.data;
-  console.log('Raw API data for administration fee:', {
-    process_percent: data.process_percent,
-    process_fee: data.process_fee,
-    gst: data.gst
-  });
   
   return {
     // Personal Details
@@ -170,9 +165,9 @@ export const formatApplicationForAPI = (formData) => {
     dw_collection: formData.collectionAmount,
     emi_collection: formData.emiCollectionAmount,
     grace_period: formData.gracePeriod,
-    process_percent: formData.administrationFeePercent || null,
-    process_fee: formData.administrationFeeAmount || null,
-    gst: formData.gst || null,
+    process_percent: formData.administrationFeePercent && formData.administrationFeePercent !== '' ? formData.administrationFeePercent : null,
+    process_fee: formData.administrationFeeAmount && formData.administrationFeeAmount !== '' ? formData.administrationFeeAmount : null,
+    gst: formData.gst && formData.gst !== '' ? formData.gst : null,
     approval_note: formData.approvalNote,
     
     // Bank Details

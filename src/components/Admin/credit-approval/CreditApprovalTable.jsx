@@ -11,7 +11,6 @@ const CreditApprovalTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onCall,
   onFileView,
   onActionClick,
   onChequeModalOpen,
@@ -143,7 +142,6 @@ const CreditApprovalTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onReplaceKYCClick={onReplaceKYCClick}
-                  onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                   // NEW: Pass the bank verification and disburse approval handlers

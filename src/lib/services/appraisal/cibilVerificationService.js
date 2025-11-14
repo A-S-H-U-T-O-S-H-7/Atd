@@ -27,7 +27,7 @@ class CibilVerificationService {
       }
 
       const response = await this.saveCibilRemarks(data);
-      toast.success('CIBIL remark saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       this.handleApiError(error, 'CIBIL remark');
@@ -49,7 +49,7 @@ saveCibilVerificationData = async (data) => {
     const assessedData = this.assessCibilFinalReport(data);
     
     const response = await this.saveCibilVerification(assessedData);
-    toast.success('CIBIL verification completed successfully!');
+    // Toast shown in component layer to avoid duplicates
     return response;
     
   } catch (error) {

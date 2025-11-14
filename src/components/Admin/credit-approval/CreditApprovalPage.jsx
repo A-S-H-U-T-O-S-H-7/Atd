@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateRangeFilter from "../DateRangeFilter";
 import CreditApprovalTable from "./CreditApprovalTable";
-import CallDetailsModal from "../CallDetailsModal";
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";
@@ -42,8 +41,6 @@ const CreditApprovalPage = () => {
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Modal states
-  const [showCallModal, setShowCallModal] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [currentChequeNo, setCurrentChequeNo] = useState('');
@@ -585,11 +582,7 @@ const handleDisburseApproval = async (application) => {
     router.push(`/crm/application-form/${application.id}`);
   };
 
-  const handleCall = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowCallModal(true);
-  };
-
+ 
   // Handle file view
   const handleFileView = async (fileName, documentCategory) => {
     if (!fileName) {
@@ -951,7 +944,6 @@ const handleDisburseApproval = async (application) => {
           onLoanEligibilityClick={handleLoanEligibilityClick}
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -962,16 +954,7 @@ const handleDisburseApproval = async (application) => {
         />
       </div>
 
-      {/* Modals */}
-      <CallDetailsModal 
-        isOpen={showCallModal} 
-        onClose={() => {
-          setShowCallModal(false);
-          setSelectedApplicant(null);
-        }} 
-        data={selectedApplicant} 
-        isDark={isDark}  
-      />
+      
       {currentStatusApplication && (
   <StatusUpdateModal
     isOpen={statusModalOpen}

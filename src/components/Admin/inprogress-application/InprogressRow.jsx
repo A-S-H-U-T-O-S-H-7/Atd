@@ -14,6 +14,7 @@ import AgreementDocument from "../documents/AgreementDocument";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import ActionButton from "../action-buttons/ActionButton";
+import CallButton from "../call/CallButton";
 
 const InProgressRow = ({
   application,
@@ -91,24 +92,14 @@ const InProgressRow = ({
 
       {/* Call */}
       <td className={cellStyle}>
-        <button
-          onClick={handleCall}
-          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-              : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
-          }`}
-        >
-          call
-        </button>
-      </td>
-
-      {/* Loan No */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.loanNo}
-        </span>
-      </td>
+  <CallButton
+    applicant={application}
+    isDark={isDark}
+    size="small"
+    variant="default"
+    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+  />
+</td>
 
       {/* CRN No */}
       <td className={cellStyle}>

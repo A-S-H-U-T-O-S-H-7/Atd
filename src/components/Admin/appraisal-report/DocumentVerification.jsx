@@ -328,21 +328,10 @@ const handleCloseModal = () => {
         return;
       }
 
-      // Service handles formatting internally
-      const documentData = {
-        application_id: formik.values.applicationId,
-        ...formik.values
-      };
-      
-      const result = await personalVerificationService.saveDocumentVerificationData(documentData);
-      
-      if (result?.success) {
+      // Call parent's save handler which calls the service
+      if (onSectionSave) {
+        await onSectionSave();
         toast.success('Document verification saved successfully');
-        if (onSectionSave) {
-          await onSectionSave();
-        }
-      } else {
-        toast.error(result?.message || 'Failed to save document verification');
       }
       
     } catch (error) {

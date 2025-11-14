@@ -46,7 +46,7 @@ class OrganizationVerificationService {
       }
 
       const response = await this.saveOrganizationRemarks(data);
-      toast.success('Organization remark saved successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       if (error.response?.status === 422) {
@@ -77,7 +77,7 @@ class OrganizationVerificationService {
       const assessedData = this.assessOrganizationFinalReport(data);
       
       const response = await this.saveOrganizationVerification(assessedData);
-      toast.success('Organization verification completed successfully!');
+      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       
