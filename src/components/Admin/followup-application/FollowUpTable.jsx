@@ -21,7 +21,7 @@ const FollowUpTable = ({
   onStatusUpdate,
   onBlacklist,
   onActivateAccount,
-  onOpenStatusModal // Add this prop
+  onOpenStatusModal 
 }) => {
 
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
