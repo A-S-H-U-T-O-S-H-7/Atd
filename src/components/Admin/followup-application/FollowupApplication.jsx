@@ -619,7 +619,6 @@ const FollowUpApplication = () => {
           onLoanEligibilityClick={handleLoanEligibilityClick}  
           onCheckClick={handleCheckClick}
           onReplaceKYCClick={handleReplaceKYCClick}
-          onCall={handleCall}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}

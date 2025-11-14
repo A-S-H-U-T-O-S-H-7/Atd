@@ -13,7 +13,6 @@ const FollowUpTable = ({
   onPageChange,
   onFileView,
   onActionClick,
-  onCall,
   onLoanEligibilityClick,  
   onCheckClick, 
   onReplaceKYCClick,
@@ -108,7 +107,6 @@ const FollowUpTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onReplaceKYCClick={onReplaceKYCClick}
-                  onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                   onStatusUpdate={onStatusUpdate}
