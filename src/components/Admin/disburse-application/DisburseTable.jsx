@@ -152,7 +152,6 @@ const DisburseTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onReplaceKYCClick={onReplaceKYCClick}
-                  onCall={onCall}
                   onDocumentStatusClick={onDocumentStatusClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}

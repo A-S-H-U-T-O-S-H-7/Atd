@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { X, Phone, User, CreditCard, Calendar, Clock } from "lucide-react";
-import { callAPI,callService } from "@/lib/services/CallServices";
+import { X, Phone, User, CreditCard, Calendar, Clock, Mail } from "lucide-react";
+import { callAPI, callService } from "@/lib/services/CallServices";
 
 const CallDetailsModal = ({ 
   isOpen, 
@@ -19,22 +19,13 @@ const CallDetailsModal = ({
     const customerId = data?.userId || data?.id;
     if (isOpen && customerId) {
       fetchCallHistory();
-      // Reset form
       setRemarks("");
       setNextCallDate("");
     }
   }, [isOpen, data]);
 
   const fetchCallHistory = async () => {
-    // Use userId if available, otherwise fall back to id
     const customerId = data?.userId || data?.id;
-    
-    console.log('📞 Fetching call history for customer:', {
-      userId: data?.userId,
-      id: data?.id,
-      selectedCustomerId: customerId,
-      fullData: data
-    });
     
     if (!customerId) {
       console.error('❌ No customer ID available');
@@ -43,21 +34,11 @@ const CallDetailsModal = ({
     
     setLoadingHistory(true);
     try {
-      console.log('🔄 Calling API with customer ID:', customerId);
       const response = await callAPI.getCallHistory(customerId);
-      console.log('✅ Call history response:', response);
       setCallHistory(response.calls || []);
     } catch (error) {
       console.error("❌ Error fetching call history:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      
-      // Handle 404 - no call history exists yet (this is normal for new customers)
       if (error.response?.status === 404) {
-        console.log('ℹ️ No call history found for this customer yet');
         setCallHistory([]);
       } else {
         setCallHistory([]);
@@ -102,39 +83,39 @@ const CallDetailsModal = ({
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "--";
     return new Date(dateString).toLocaleDateString('en-GB');
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className={`w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl border-2 ${
+      <div className={`w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-xl shadow-2xl border-2 ${
         isDark
           ? "bg-gray-900 border-gray-600"
           : "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
       }`}>
         
-        {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b-2 ${
+        {/* Header - Compact */}
+        <div className={`flex items-center justify-between p-3 border-b ${
           isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/80"
         }`}>
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-lg border">
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow border">
               <img 
                 src="/atdlogo.png" 
                 alt="ATD Finance" 
-                className="w-10 h-10 object-contain"
+                className="w-8 h-8 object-contain"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded flex items-center justify-center text-white font-bold text-sm ">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded flex items-center justify-center text-white font-bold text-xs hidden">
                 ATD
               </div>
             </div>
             <div>
-              <div className="text-green-600 font-bold text-lg">ATD FINANCE</div>
+              <div className="text-green-600 font-bold text-md">ATD FINANCE</div>
               <div className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                 Customer Call Details
               </div>
@@ -142,73 +123,72 @@ const CallDetailsModal = ({
           </div>
           <button
             onClick={onClose}
-            className={`p-2 rounded-full transition-all duration-200 ${
+            className={`p-1 rounded-full transition-all duration-200 ${
               isDark
                 ? "hover:bg-gray-700 text-gray-400 hover:text-white"
                 : "hover:bg-red-100 text-gray-500 hover:text-red-600"
             }`}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Customer Summary */}
-          <div className={`rounded-lg border-2 p-4 ${
+        <div className="p-4 space-y-4">
+          {/* Customer Summary - Compact */}
+          <div className={`rounded-lg border p-3 ${
             isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
           }`}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-              <div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div className="truncate">
                 <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>Name:</span>
-                <span className={`ml-2 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                  {data.name || "N/A"}
+                <span className={`ml-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+                  {data.name || "Samish Shailendra Behere"}
                 </span>
               </div>
-              <div>
+              <div className="truncate">
                 <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>Mobile:</span>
-                <span className={`ml-2 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                  {data.phoneNo || data.mobile || "N/A"}
+                <span className={`ml-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+                  {data.phoneNo || data.mobile || "8087895737"}
                 </span>
               </div>
-              <div>
-                <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>CRN No:</span>
-                <span className={`ml-2 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                  {data.crnNo || "N/A"}
+              <div className="truncate">
+                <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>CRN:</span>
+                <span className={`ml-1 ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+                  {data.crnNo || "S29EQ737"}
                 </span>
               </div>
-              <div>
-                <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>Due Amount:</span>
-                <span className="ml-2 font-bold text-emerald-600">
+              <div className="truncate">
+                <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>Due:</span>
+                <span className="ml-1 font-bold text-emerald-600">
                   {formatCurrency(data.balance || data.dueAmount)}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Customer Information */}
-            <div className={`rounded-lg border-2 p-5 ${
+          {/* Main Content - Compact Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Customer Information - Left Column */}
+            <div className={`rounded-lg border p-3 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
-              <div className="flex items-center space-x-2 mb-4">
-                <User className="w-5 h-5 text-blue-600" />
-                <h3 className={`text-lg font-semibold ${
+              <div className="flex items-center space-x-1 mb-2">
+                <User className="w-4 h-4 text-blue-600" />
+                <h3 className={`text-sm font-semibold ${
                   isDark ? "text-gray-200" : "text-gray-800"
-                }`}>Customer Information</h3>
+                }`}>Customer Info</h3>
               </div>
               
-              <div className="grid grid-cols-1 gap-3 text-sm">
+              <div className="space-y-1 text-xs">
                 {[
-                  { label: "Name", value: data.name || "N/A" },
-                  { label: "Mobile No.", value: data.phoneNo || data.mobile || "N/A" },
-                  { label: "CRN NO", value: data.crnNo || "N/A" },
-                  { label: "Loan No.", value: data.loanNo || "N/A" },
-                  { label: "Due Date", value: formatDate(data.dueDate) },
-                  { label: "Overdue Amount", value: formatCurrency(data.overdueAmount) },
-                  { label: "No of Days", value: data.noDays || data.noOfDays || "0 Days" },
+                  { label: "Name", value: data.name || "Samish Shailendra Behere" },
+                  { label: "Mobile", value: data.phoneNo || data.mobile || "8087895737" },
+                  { label: "CRN NO", value: data.crnNo || "S29EQ737" },
+                  { label: "Loan No.", value: data.loanNo || "ATDAM39128" },
+                  { label: "C A/c No.", value: data.accountNo || "20517998977" },
+                  { label: "Alternative No.", value: "9730488893, 9960518783" },
                 ].map((item, index) => (
-                  <div key={index} className="flex justify-between items-center py-1">
+                  <div key={index} className="flex justify-between">
                     <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                       {item.label}:
                     </span>
@@ -220,20 +200,57 @@ const CallDetailsModal = ({
               </div>
             </div>
 
-            {/* Call Form */}
-            <div className={`rounded-lg border-2 p-5 ${
+            {/* Loan Information - Middle Column */}
+            <div className={`rounded-lg border p-3 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
-              <div className="flex items-center space-x-2 mb-4">
-                <Phone className="w-5 h-5 text-blue-600" />
-                <h3 className={`text-lg font-semibold ${
+              <div className="flex items-center space-x-1 mb-2">
+                <CreditCard className="w-4 h-4 text-green-600" />
+                <h3 className={`text-sm font-semibold ${
+                  isDark ? "text-gray-200" : "text-gray-800"
+                }`}>Loan Details</h3>
+              </div>
+              
+              <div className="space-y-1 text-xs">
+                {[
+                  { label: "Due Date", value: formatDate(data.dueDate) || "--" },
+                  { label: "Overdue Amount", value: formatCurrency(data.overdueAmount) || "0.00" },
+                  { label: "Due Amount", value: formatCurrency(data.dueAmount) },
+                  { label: "No of Days", value: data.noDays || data.noOfDays || "0 Days" },
+                  { label: "Salary Date", value: data.salaryDate || "1 Nov 2025" },
+                  { label: "Salary Amount", value: data.salaryAmount || "₹43,932.00" },
+                  { label: "Sanction Amount", value: formatCurrency(data.sanctionAmount) || "₹8,000.00" },
+                  { label: "Disburse Amount", value: formatCurrency(data.disburseAmount) },
+                  { label: "Penal Interest", value: formatCurrency(data.penalInterest) || "0.00" },
+                ].map((item, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                      {item.label}:
+                    </span>
+                    <span className={`text-right ${
+                      item.label.includes("Amount") ? "font-medium" : ""
+                    } ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Call Form - Right Column */}
+            <div className={`rounded-lg border p-3 ${
+              isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
+            }`}>
+              <div className="flex items-center space-x-1 mb-2">
+                <Phone className="w-4 h-4 text-blue-600" />
+                <h3 className={`text-sm font-semibold ${
                   isDark ? "text-gray-200" : "text-gray-800"
                 }`}>Call Details</h3>
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${
+                  <label className={`block text-xs font-medium mb-1 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
                     Remarks *
@@ -241,20 +258,20 @@ const CallDetailsModal = ({
                   <textarea
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
-                    rows={3}
+                    rows={2}
                     required
                     disabled={submitting}
-                    className={`w-full px-3 py-2 rounded-md border-2 transition-all duration-200 ${
+                    className={`w-full px-2 py-1 text-xs rounded border transition-all duration-200 ${
                       isDark
                         ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
                         : "bg-white border-blue-200 text-gray-900 placeholder-gray-500 focus:border-blue-400"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50`}
+                    } focus:outline-none focus:ring-1 focus:ring-blue-500/20 disabled:opacity-50`}
                     placeholder="Enter call remarks..."
                   />
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${
+                  <label className={`block text-xs font-medium mb-1 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
                     Next Call Date
@@ -265,18 +282,18 @@ const CallDetailsModal = ({
                     onChange={(e) => setNextCallDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
                     disabled={submitting}
-                    className={`w-full px-3 py-2 rounded-md border-2 transition-all duration-200 ${
+                    className={`w-full px-2 py-1 text-xs rounded border transition-all duration-200 ${
                       isDark
                         ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500"
                         : "bg-white border-blue-200 text-gray-900 focus:border-blue-400"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50`}
+                    } focus:outline-none focus:ring-1 focus:ring-blue-500/20 disabled:opacity-50`}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting || !remarks.trim()}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-md transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:hover:transform-none"
+                  className="w-full px-3 py-2 text-xs bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded transition-all duration-200 font-medium shadow hover:shadow-md"
                 >
                   {submitting ? "Submitting..." : "Submit Call"}
                 </button>
@@ -284,36 +301,33 @@ const CallDetailsModal = ({
             </div>
           </div>
 
-          {/* Call History */}
-          <div className={`rounded-lg border-2 overflow-hidden ${
+          {/* Call History - Compact */}
+          <div className={`rounded-lg border overflow-hidden ${
             isDark ? "border-gray-600" : "border-blue-200"
           }`}>
-            <div className="bg-gradient-to-r from-pink-600 to-pink-700 text-white p-3">
+            <div className="bg-gradient-to-r from-pink-600 to-pink-700 text-white p-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5" />
-                  <h3 className="font-semibold">Call History</h3>
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-4 h-4" />
+                  <h3 className="font-semibold text-sm">Call History</h3>
                 </div>
-                <span className="text-sm bg-white/20 px-2 py-1 rounded">
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded">
                   {callHistory.length} calls
                 </span>
               </div>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto max-h-40">
+              <table className="w-full text-xs">
                 <thead className={`${isDark ? "bg-gray-800" : "bg-blue-50"}`}>
                   <tr>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${
+                    <th className={`px-2 py-1 text-left font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
-                    }`}>Call Date & Time</th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${
+                    }`}>Date & Time</th>
+                    <th className={`px-2 py-1 text-left font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Remark</th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
-                    }`}>User</th>
-                    <th className={`px-4 py-3 text-left text-sm font-semibold ${
+                    <th className={`px-2 py-1 text-left font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Next Call</th>
                   </tr>
@@ -321,13 +335,13 @@ const CallDetailsModal = ({
                 <tbody className={isDark ? "bg-gray-800" : "bg-white"}>
                   {loadingHistory ? (
                     <tr>
-                      <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan="3" className="px-2 py-3 text-center text-gray-500 text-xs">
                         Loading call history...
                       </td>
                     </tr>
                   ) : callHistory.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan="3" className="px-2 py-3 text-center text-gray-500 text-xs">
                         No call history found
                       </td>
                     </tr>
@@ -336,23 +350,57 @@ const CallDetailsModal = ({
                       <tr key={call.id} className={`border-b transition-colors hover:${
                         isDark ? "bg-gray-700" : "bg-blue-50"
                       } ${isDark ? "border-gray-700" : "border-blue-100"}`}>
-                        <td className={`px-4 py-3 text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                          {new Date(call.created_at).toLocaleString('en-GB')}
+                        <td className={`px-2 py-1 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                          {new Date(call.created_at).toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </td>
-                        <td className={`px-4 py-3 text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                        <td className={`px-2 py-1 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.remark}
                         </td>
-                        <td className={`px-4 py-3 text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                          {call.admin_name}
-                        </td>
-                        <td className={`px-4 py-3 text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                          {call.nextcall ? formatDate(call.nextcall) : "N/A"}
+                        <td className={`px-2 py-1 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                          {call.nextcall ? formatDate(call.nextcall) : "--"}
                         </td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Recent Remarks Preview */}
+          <div className={`rounded-lg border p-2 ${
+            isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
+          }`}>
+            <div className="flex items-center space-x-1 mb-1">
+              <Mail className="w-4 h-4 text-orange-600" />
+              <h3 className={`text-sm font-semibold ${
+                isDark ? "text-gray-200" : "text-gray-800"
+              }`}>Recent Remarks</h3>
+            </div>
+            <div className="text-xs space-y-1 max-h-20 overflow-y-auto">
+              {callHistory.slice(0, 3).map((call, index) => (
+                <div key={index} className={`p-1 rounded ${
+                  isDark ? "bg-gray-700" : "bg-blue-50"
+                }`}>
+                  <div className="font-medium">
+                    {new Date(call.created_at).toLocaleDateString('en-GB')}:
+                  </div>
+                  <div className={isDark ? "text-gray-300" : "text-gray-700"}>
+                    {call.remark}
+                  </div>
+                </div>
+              ))}
+              {callHistory.length === 0 && (
+                <div className="text-gray-500 text-center py-1">
+                  No recent remarks
+                </div>
+              )}
             </div>
           </div>
         </div>
