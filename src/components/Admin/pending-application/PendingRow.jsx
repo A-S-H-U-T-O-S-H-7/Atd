@@ -12,6 +12,7 @@ import CibilScoreDocument from "../documents/CibilScoreDocument";
 import ActionButton from "../action-buttons/ActionButton";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
+import CallButton from "../call/CallButton";
 
 const PendingRow = ({
   application,

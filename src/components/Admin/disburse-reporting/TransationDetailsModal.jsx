@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Calendar, Building, CheckCircle } from 'lucide-react';
-import DatePicker from 'react-datepicker';
-import { format, addMonths, isFuture } from 'date-fns';
 import disbursementService from '@/lib/services/disbursementService';
 import toast from 'react-hot-toast';
 
@@ -15,30 +13,30 @@ const TransactionDetailsModal = ({
   const [formData, setFormData] = useState({
     disbursementAmount: '',
     transactionId: '',
-    transactionDate: null,
-    dueDate: null,
+    transactionDate: '', // Keep blank initially
+    dueDate: '',
     bankName: '',
     branchName: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
-  const [tenure, setTenure] = useState(12); // Default tenure in months
+  const [tenure, setTenure] = useState(20); 
 
   // Load banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
-      // Set initial form data from disbursementData
+      // Set initial form data from disbursementData - transactionDate is blank
       setFormData({
         disbursementAmount: disbursementData.disbursedAmount || '',
         transactionId: '',
-        transactionDate: null,
-        dueDate: null,
+        transactionDate: '', // Blank instead of today's date
+        dueDate: '',
         bankName: '',
         branchName: ''
       });
 
-      // Extract tenure from loan data (you might need to adjust this based on your API response)
-      const loanTenure = disbursementData.tenure || 12;
+      // Extract tenure from loan data - IN DAYS
+      const loanTenure = disbursementData.tenure || 20;
       setTenure(loanTenure);
 
       // Load banks list
@@ -56,13 +54,23 @@ const TransactionDetailsModal = ({
     }
   }, [isOpen, disbursementData]);
 
-  // Calculate due date when transaction date changes
+  // Calculate due date when transaction date changes - NOW IN DAYS
   useEffect(() => {
     if (formData.transactionDate) {
-      const calculatedDueDate = addMonths(formData.transactionDate, tenure);
+      const transactionDate = new Date(formData.transactionDate);
+      const calculatedDueDate = new Date(transactionDate);
+      calculatedDueDate.setDate(calculatedDueDate.getDate() + tenure); // Add days
+      
+      const formattedDueDate = calculatedDueDate.toISOString().split('T')[0];
       setFormData(prev => ({
         ...prev,
-        dueDate: calculatedDueDate
+        dueDate: formattedDueDate
+      }));
+    } else {
+      // Clear due date if transaction date is empty
+      setFormData(prev => ({
+        ...prev,
+        dueDate: ''
       }));
     }
   }, [formData.transactionDate, tenure]);
@@ -74,11 +82,28 @@ const TransactionDetailsModal = ({
     }));
   };
 
-  const handleDateChange = (field, date) => {
+  const handleBankChange = async (bankId) => {
     setFormData(prev => ({
       ...prev,
-      [field]: date
+      bankName: bankId,
+      branchName: '' // Reset branch name when bank changes
     }));
+
+    // Load branch name automatically when bank is selected
+    if (bankId) {
+      try {
+        const bankDetails = await disbursementService.getBankDetails(bankId);
+        if (bankDetails && bankDetails.branch_name) {
+          setFormData(prev => ({
+            ...prev,
+            branchName: bankDetails.branch_name
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading bank branch:', error);
+        // Continue without setting branch name
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -93,7 +118,8 @@ const TransactionDetailsModal = ({
       return;
     }
 
-    if (isFuture(formData.transactionDate)) {
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.transactionDate > today) {
       toast.error('Transaction date cannot be in the future');
       return;
     }
@@ -103,25 +129,13 @@ const TransactionDetailsModal = ({
       return;
     }
 
-    if (!formData.branchName.trim()) {
-      toast.error('Please enter Branch Name');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
-      
-      // Format dates for API
-      const submissionData = {
-        ...formData,
-        transactionDate: format(formData.transactionDate, 'yyyy-MM-dd'),
-        dueDate: formData.dueDate ? format(formData.dueDate, 'yyyy-MM-dd') : ''
-      };
       
       // Call the actual API to update manual transaction
       const response = await disbursementService.updateTransaction(
         disbursementData.disburse_id,
-        submissionData,
+        formData,
         disbursementData
       );
       
@@ -132,8 +146,8 @@ const TransactionDetailsModal = ({
         setFormData({
           disbursementAmount: disbursementData.disbursedAmount || '',
           transactionId: '',
-          transactionDate: null,
-          dueDate: null,
+          transactionDate: '', // Reset to blank
+          dueDate: '',
           bankName: '',
           branchName: ''
         });
@@ -142,7 +156,7 @@ const TransactionDetailsModal = ({
         if (onSubmit) {
           await onSubmit({
             ...disbursementData,
-            ...submissionData,
+            ...formData,
             updatedAt: new Date().toISOString()
           });
         }
@@ -163,8 +177,8 @@ const TransactionDetailsModal = ({
     setFormData({
       disbursementAmount: disbursementData?.disbursedAmount || '',
       transactionId: '',
-      transactionDate: null,
-      dueDate: null,
+      transactionDate: '', // Reset to blank
+      dueDate: '',
       bankName: '',
       branchName: ''
     });
@@ -172,6 +186,8 @@ const TransactionDetailsModal = ({
   };
 
   if (!isOpen || !disbursementData) return null;
+
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -234,7 +250,7 @@ const TransactionDetailsModal = ({
         {/* Body */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Disbursement Amount */}
+            {/* Disbursement Amount - Non-editable */}
             <div className="space-y-2">
               <label 
                 htmlFor="disbursementAmount"
@@ -316,12 +332,12 @@ const TransactionDetailsModal = ({
                   absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
                   ${isDark ? 'text-gray-400' : 'text-gray-500'}
                 `} />
-                <DatePicker
-                  selected={formData.transactionDate}
-                  onChange={(date) => handleDateChange('transactionDate', date)}
-                  maxDate={new Date()} // Disable future dates
-                  dateFormat="yyyy-MM-dd"
-                  placeholderText="Select transaction date"
+                <input
+                  type="date"
+                  id="transactionDate"
+                  value={formData.transactionDate}
+                  onChange={(e) => handleInputChange('transactionDate', e.target.value)}
+                  max={today}
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                     ${isDark
@@ -334,7 +350,7 @@ const TransactionDetailsModal = ({
               </div>
             </div>
 
-            {/* Due Date */}
+            {/* Due Date - Non-editable */}
             <div className="space-y-2">
               <label 
                 htmlFor="dueDate"
@@ -350,11 +366,10 @@ const TransactionDetailsModal = ({
                   absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5
                   ${isDark ? 'text-gray-400' : 'text-gray-500'}
                 `} />
-                <DatePicker
-                  selected={formData.dueDate}
-                  onChange={(date) => handleDateChange('dueDate', date)}
-                  dateFormat="yyyy-MM-dd"
-                  placeholderText="Auto-calculated from transaction date"
+                <input
+                  type="date"
+                  id="dueDate"
+                  value={formData.dueDate}
                   readOnly
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
@@ -366,7 +381,7 @@ const TransactionDetailsModal = ({
                 />
               </div>
               <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                Auto-calculated (Transaction Date + {tenure} months)
+                Auto-calculated (Transaction Date + {tenure} days)
               </p>
             </div>
           </div>
@@ -403,7 +418,7 @@ const TransactionDetailsModal = ({
                   <select
                     id="bankName"
                     value={formData.bankName}
-                    onChange={(e) => handleInputChange('bankName', e.target.value)}
+                    onChange={(e) => handleBankChange(e.target.value)}
                     className={`
                       w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                       ${isDark
@@ -421,7 +436,7 @@ const TransactionDetailsModal = ({
                 </div>
               </div>
 
-              {/* Branch Name */}
+              {/* Branch Name - Non-editable */}
               <div className="space-y-2">
                 <label 
                   htmlFor="branchName"
@@ -430,7 +445,7 @@ const TransactionDetailsModal = ({
                     ${isDark ? 'text-gray-300' : 'text-gray-700'}
                   `}
                 >
-                  Branch Name : <span className="text-red-500">*</span>
+                  Branch Name :
                 </label>
                 <div className="relative">
                   <Building className={`
@@ -441,15 +456,14 @@ const TransactionDetailsModal = ({
                     type="text"
                     id="branchName"
                     value={formData.branchName}
-                    onChange={(e) => handleInputChange('branchName', e.target.value)}
-                    placeholder="Enter branch name"
+                    readOnly
+                    placeholder="Auto-filled when bank is selected"
                     className={`
                       w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
                       ${isDark
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
+                        ? 'bg-gray-700/50 border-gray-600 text-gray-300 cursor-not-allowed'
+                        : 'bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed'
                       }
-                      focus:ring-4 focus:ring-emerald-500/20 focus:outline-none
                     `}
                   />
                 </div>
@@ -475,11 +489,11 @@ const TransactionDetailsModal = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting || !formData.transactionId.trim() || !formData.transactionDate || !formData.bankName || !formData.branchName.trim()}
+              disabled={isSubmitting || !formData.transactionId.trim() || !formData.transactionDate || !formData.bankName}
               className={`
                 flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200
                 flex items-center justify-center space-x-2
-                ${isSubmitting || !formData.transactionId.trim() || !formData.transactionDate || !formData.bankName || !formData.branchName.trim()
+                ${isSubmitting || !formData.transactionId.trim() || !formData.transactionDate || !formData.bankName
                   ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                   : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                 }

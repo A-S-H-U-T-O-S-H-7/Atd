@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { X, Building, CreditCard, Calendar, Lock } from "lucide-react";
-import DatePicker from 'react-datepicker';
-import { format, addMonths, isFuture } from 'date-fns';
 import disbursementService from "@/lib/services/disbursementService";
 import toast from 'react-hot-toast';
 
@@ -15,26 +13,40 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     accountType: "SAVING",
     authCode1: "",
     authCode2: "",
-    transactionDate: new Date(),
-    dueDate: null,
+    transactionDate: "",
+    dueDate: "",
     atdBankName: "",
     atdBranchName: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [atdBanks, setAtdBanks] = useState([]);
-  const [tenure, setTenure] = useState(12);
+  const [tenure, setTenure] = useState(0);
 
   // Load ATD banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
-      // Extract tenure
-      const loanTenure = disbursementData.tenure || 12;
+      // Extract tenure from API data - IN DAYS
+      const loanTenure = disbursementData.tenure || 0;
       setTenure(loanTenure);
 
-      // Calculate due date
-      const calculatedDueDate = addMonths(new Date(), loanTenure);
+      // Calculate due date from API transaction date + tenure days
+      let dueDate = "";
+      if (disbursementData.tranDate && loanTenure > 0) {
+        const transactionDate = new Date(disbursementData.tranDate);
+        const calculatedDueDate = new Date(transactionDate);
+        calculatedDueDate.setDate(calculatedDueDate.getDate() + loanTenure);
+        dueDate = calculatedDueDate.toISOString().split('T')[0];
+      }
 
-      // Set initial form data from disbursementData
+      // Extract ATD bank name from sender_acno
+      const extractBankName = (senderAcno) => {
+        if (!senderAcno) return "";
+        // Extract bank name from "ICICI banks-A/c-5399" format
+        const match = senderAcno.match(/^([^-]+)/);
+        return match ? match[1].trim() : senderAcno;
+      };
+
+      // Set initial form data from disbursementData API
       setFormData(prev => ({
         ...prev,
         disbursementAmount: disbursementData.disbursedAmount || "",
@@ -42,22 +54,42 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
         accountNo: disbursementData.beneficiaryAcNo || "",
         ifscNo: disbursementData.beneficiaryBankIFSC || "",
         accountType: disbursementData.beneficiaryAcType || "SAVING",
-        transactionDate: new Date(),
-        dueDate: calculatedDueDate
+        transactionDate: disbursementData.tranDate || "",
+        dueDate: dueDate,
+        atdBankName: extractBankName(disbursementData.senderAcNo) || "",
+        branchName: disbursementData.branchName || "" // You might need to map this from your API
       }));
 
-      // Load ATD banks
+      // Load ATD banks and set branch name
       const loadAtdBanks = async () => {
         try {
           const bankList = await disbursementService.getBanks();
           setAtdBanks(bankList);
           
-          // Set default ATD bank if available
-          if (bankList.length > 0 && !formData.atdBankName) {
-            setFormData(prev => ({
-              ...prev,
-              atdBankName: bankList[0].id.toString()
-            }));
+          // Try to find matching bank and set branch
+          if (bankList.length > 0) {
+            const extractedBankName = extractBankName(disbursementData.senderAcNo);
+            if (extractedBankName) {
+              // Find bank in list and get branch details
+              const matchedBank = bankList.find(bank => 
+                bank.name.toLowerCase().includes(extractedBankName.toLowerCase()) ||
+                extractedBankName.toLowerCase().includes(bank.name.toLowerCase())
+              );
+              
+              if (matchedBank) {
+                try {
+                  const bankDetails = await disbursementService.getBankDetails(matchedBank.id);
+                  if (bankDetails && bankDetails.branch_name) {
+                    setFormData(prev => ({
+                      ...prev,
+                      atdBranchName: bankDetails.branch_name
+                    }));
+                  }
+                } catch (error) {
+                  console.error('Error loading bank branch:', error);
+                }
+              }
+            }
           }
         } catch (error) {
           console.error('Error loading ATD banks:', error);
@@ -69,50 +101,12 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     }
   }, [isOpen, disbursementData]);
 
-  // Update due date when transaction date changes
-  useEffect(() => {
-    if (formData.transactionDate) {
-      const calculatedDueDate = addMonths(formData.transactionDate, tenure);
-      setFormData(prev => ({
-        ...prev,
-        dueDate: calculatedDueDate
-      }));
-    }
-  }, [formData.transactionDate, tenure]);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-
-    // If ATD bank changes, try to load branch details
-    if (name === 'atdBankName' && value) {
-      loadBankBranch(value);
-    }
-  };
-
-  const handleDateChange = (field, date) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: date
-    }));
-  };
-
-  const loadBankBranch = async (bankId) => {
-    try {
-      const bankDetails = await disbursementService.getBankDetails(bankId);
-      if (bankDetails && bankDetails.branch_name) {
-        setFormData(prev => ({
-          ...prev,
-          atdBranchName: bankDetails.branch_name
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading bank branch:', error);
-      // Continue without setting branch name
-    }
   };
 
   const handleSubmit = async () => {
@@ -127,28 +121,11 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
       return;
     }
 
-    if (!formData.atdBankName) {
-      toast.error('Please select ATD Bank');
-      return;
-    }
-
-    if (isFuture(formData.transactionDate)) {
-      toast.error('Transaction date cannot be in the future');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
       
-      // Format dates for API
-      const submissionData = {
-        ...formData,
-        transactionDate: format(formData.transactionDate, 'yyyy-MM-dd'),
-        dueDate: formData.dueDate ? format(formData.dueDate, 'yyyy-MM-dd') : ''
-      };
-      
       // Call the actual API to process transfer
-      const response = await disbursementService.processTransfer(submissionData, disbursementData);
+      const response = await disbursementService.processTransfer(formData, disbursementData);
       
       if (response.success) {
         toast.success('Transfer processed successfully!');
@@ -157,7 +134,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
         if (onSubmit) {
           await onSubmit({
             ...disbursementData,
-            ...submissionData
+            ...formData
           });
         }
         
@@ -175,7 +152,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
 
   if (!isOpen) return null;
 
-  // Compact static display component
+  // Compact static display component for non-editable fields
   const StaticField = ({ label, value, icon: Icon }) => (
     <div className="space-y-1">
       <label className={`block text-xs font-medium ${
@@ -190,6 +167,37 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
       }`}>
         {Icon && <Icon className={`w-3 h-3 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />}
         <span className="text-sm font-medium">{value || "Not specified"}</span>
+      </div>
+    </div>
+  );
+
+  // Non-editable input field component
+  const NonEditableField = ({ label, value, icon: Icon, type = "text" }) => (
+    <div className="space-y-1">
+      <label className={`block text-xs font-medium ${
+        isDark ? "text-gray-300" : "text-gray-600"
+      }`}>
+        {label}
+      </label>
+      <div className="relative">
+        {Icon && (
+          <Icon className={`
+            absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4
+            ${isDark ? "text-gray-400" : "text-gray-500"}
+          `} />
+        )}
+        <input
+          type={type}
+          value={value}
+          readOnly
+          className={`
+            w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-2 rounded-lg border transition-all duration-200 text-sm
+            ${isDark
+              ? "bg-gray-700/50 border-gray-600 text-gray-300 cursor-not-allowed"
+              : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+            }
+          `}
+        />
       </div>
     </div>
   );
@@ -312,29 +320,16 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
               </div>
 
               {/* Account Type */}
-              <div className="space-y-1">
-                <label className={`block text-xs font-medium ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  Account Type
-                </label>
-                <input
-                  type="text"
-                  name="accountType"
-                  value={formData.accountType}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-                    isDark 
-                      ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
-                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                  } focus:outline-none focus:ring-1 focus:ring-emerald-500/20`}
-                />
-              </div>
+              <NonEditableField 
+                label="Account Type"
+                value={formData.accountType}
+                icon={CreditCard}
+              />
             </div>
 
             {/* Right Column - Transfer Details */}
             <div className="space-y-4">
-              {/* Auth Codes */}
+              {/* Auth Codes - ONLY EDITABLE FIELDS */}
               <div className="space-y-3">
                 <div className="space-y-1">
                   <label className={`block text-xs font-medium ${
@@ -381,63 +376,27 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                 </div>
               </div>
 
-              {/* Date Fields */}
+              {/* Date Fields - NON EDITABLE */}
               <div className="space-y-3">
-                <div className="space-y-1">
-                  <label className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    Transaction Date <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <DatePicker
-                      selected={formData.transactionDate}
-                      onChange={(date) => handleDateChange('transactionDate', date)}
-                      maxDate={new Date()} // Disable future dates
-                      dateFormat="yyyy-MM-dd"
-                      className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-                        isDark 
-                          ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
-                          : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
-                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    />
-                    <Calendar className={`absolute right-2 top-2 w-4 h-4 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`} />
-                  </div>
-                </div>
+                <NonEditableField 
+                  label="Transaction Date"
+                  value={formData.transactionDate}
+                  icon={Calendar}
+                  type="date"
+                />
 
-                <div className="space-y-1">
-                  <label className={`block text-xs font-medium ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    Due Date
-                  </label>
-                  <div className="relative">
-                    <DatePicker
-                      selected={formData.dueDate}
-                      onChange={(date) => handleDateChange('dueDate', date)}
-                      dateFormat="yyyy-MM-dd"
-                      readOnly
-                      className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-                        isDark 
-                          ? "bg-gray-700/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                          : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                      }`}
-                    />
-                    <Calendar className={`absolute right-2 top-2 w-4 h-4 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`} />
-                  </div>
-                  <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                    Auto-calculated (Transaction Date + {tenure} months)
-                  </p>
-                </div>
+                <NonEditableField 
+                  label="Due Date"
+                  value={formData.dueDate}
+                  icon={Calendar}
+                  type="date"
+                />
+                <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  Auto-calculated (Transaction Date + {tenure} days)
+                </p>
               </div>
 
-              {/* ATD Bank Details */}
+              {/* ATD Bank Details - NON EDITABLE */}
               <div className={`p-3 rounded-lg border ${
                 isDark 
                   ? "bg-gray-700/30 border-gray-600" 
@@ -455,53 +414,17 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
                 </div>
 
                 <div className="space-y-2">
-                  <div className="space-y-1">
-                    <label className={`block text-xs font-medium ${
-                      isDark ? "text-gray-300" : "text-gray-600"
-                    }`}>
-                      Bank Name <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="atdBankName"
-                      value={formData.atdBankName}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-                        isDark 
-                          ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
-                          : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
-                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      <option value="">--Select ATD Bank--</option>
-                      {atdBanks.map(bank => (
-                        <option key={bank.id} value={bank.id}>{bank.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <NonEditableField 
+                    label="Bank Name"
+                    value={formData.atdBankName}
+                    icon={Building}
+                  />
 
-                  <div className="space-y-1">
-                    <label className={`block text-xs font-medium ${
-                      isDark ? "text-gray-300" : "text-gray-600"
-                    }`}>
-                      Branch Name
-                    </label>
-                    <input
-                      type="text"
-                      name="atdBranchName"
-                      value={formData.atdBranchName}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
-                        isDark 
-                          ? "bg-gray-700 border-gray-600 text-white focus:border-emerald-500" 
-                          : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500"
-                      } focus:outline-none focus:ring-1 focus:ring-emerald-500/20 ${
-                        isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    />
-                  </div>
+                  <NonEditableField 
+                    label="Branch Name"
+                    value={formData.atdBranchName}
+                    icon={Building}
+                  />
                 </div>
               </div>
             </div>
@@ -511,9 +434,9 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName || !formData.transactionDate}
+              disabled={isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim()}
               className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center space-x-2 shadow-lg transform hover:scale-105 ${
-                isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim() || !formData.atdBankName || !formData.transactionDate
+                isSubmitting || !formData.authCode1.trim() || !formData.authCode2.trim()
                   ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                   : isDark
                     ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-500/25"
@@ -522,7 +445,7 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
             >
               {isSubmitting ? (
                 <>
-                  <Loader className="w-4 h-4 animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Processing Transfer...</span>
                 </>
               ) : (
