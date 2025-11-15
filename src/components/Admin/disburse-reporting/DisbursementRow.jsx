@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, Building } from "lucide-react";
+import { Calendar, Building, CheckCircle } from "lucide-react";
 
 const DisbursementRow = ({ 
   item, 
@@ -151,30 +151,42 @@ const DisbursementRow = ({
 
       {/* Transaction */}
       <td className={cellStyle}>
-        <button
-          onClick={() => handleTransaction(item)}
-          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-              : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
-          }`}
-        >
-          Transaction
-        </button>
+        {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
+          <div className="flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-green-500" />
+          </div>
+        ) : (
+          <button
+            onClick={() => handleTransaction(item)}
+            className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+              isDark
+                ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
+                : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
+            }`}
+          >
+            Transaction
+          </button>
+        )}
       </td>
 
-      {/* Transfer */}
+      {/* ICICI Transaction */}
       <td className={cellStyle}>
-        <button
-          onClick={() => handleTransfer(item)}
-          className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-indigo-900/50 text-indigo-300 border-indigo-700 hover:bg-indigo-800"
-              : "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200"
-          }`}
-        >
-          Transfer
-        </button>
+        {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
+          <div className="flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-green-500" />
+          </div>
+        ) : (
+          <button
+            onClick={() => handleTransfer(item)}
+            className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+              isDark
+                ? "bg-indigo-900/50 text-indigo-300 border-indigo-700 hover:bg-indigo-800"
+                : "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200"
+            }`}
+          >
+            Transfer
+          </button>
+        )}
       </td>
 
       {/* ICICI Transaction Status */}

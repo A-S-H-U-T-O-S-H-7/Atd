@@ -30,15 +30,39 @@ const TransactionDetailsModal = ({
       const loanTenure = disbursementData.tenure || 0;
       setTenure(loanTenure);
 
-      // Set initial form data from disbursementData - transactionDate is blank
-      setFormData({
+      // Check if transaction already exists
+      const hasExistingTransaction = disbursementData.tranRefNo && disbursementData.tranRefNo !== 'N/A';
+      
+      // Set initial form data from disbursementData
+      // Pre-fill with existing transaction data if available
+      const initialFormData = {
         disbursementAmount: disbursementData.disbursedAmount || '',
-        transactionId: '',
-        transactionDate: '', // Blank instead of today's date
-        dueDate: '',
-        bankName: '',
-        branchName: ''
-      });
+        transactionId: hasExistingTransaction ? disbursementData.tranRefNo : '',
+        transactionDate: hasExistingTransaction && disbursementData.tranDate && disbursementData.tranDate !== 'N/A' ? disbursementData.tranDate : '',
+        dueDate: hasExistingTransaction && disbursementData.dueDate && disbursementData.dueDate !== 'N/A' ? disbursementData.dueDate : '',
+        bankName: disbursementData.atdBankId || '',
+        branchName: disbursementData.atdBranchName || ''
+      };
+      
+      setFormData(initialFormData);
+      
+      // If bank is pre-filled, load its branch details
+      if (initialFormData.bankName && !initialFormData.branchName) {
+        const loadBranchForPrefilledBank = async () => {
+          try {
+            const bankDetails = await disbursementService.getBankDetails(initialFormData.bankName);
+            if (bankDetails && bankDetails.branch_name) {
+              setFormData(prev => ({
+                ...prev,
+                branchName: bankDetails.branch_name
+              }));
+            }
+          } catch (error) {
+            console.error('Error loading bank branch for pre-filled bank:', error);
+          }
+        };
+        loadBranchForPrefilledBank();
+      }
 
       // Load banks list
       const loadBanks = async () => {
