@@ -102,6 +102,7 @@ export const formatDisbursementDataForUI = (apiData) => {
     tranDate: item.transaction_date || 'N/A',
     sanctionedAmount: item.sanction_amount || '0.00',
     disbursedAmount: item.disburse_amount || '0.00',
+    tenure: item.tenure || 0,
     senderAcNo: item.sender_acno || 'N/A',
     senderName: item.sender_name || 'ATD FINANCIAL SERVICES PVT LTD',
     transaction: item.transaction_type || 'NEFT',

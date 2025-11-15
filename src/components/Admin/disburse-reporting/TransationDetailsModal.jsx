@@ -20,11 +20,16 @@ const TransactionDetailsModal = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
-  const [tenure, setTenure] = useState(20); 
+  const [tenure, setTenure] = useState(0); // Initialize with 0
 
   // Load banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
+      // Extract tenure from loan data - IN DAYS
+      // The tenure should come from the API response directly
+      const loanTenure = disbursementData.tenure || 0;
+      setTenure(loanTenure);
+
       // Set initial form data from disbursementData - transactionDate is blank
       setFormData({
         disbursementAmount: disbursementData.disbursedAmount || '',
@@ -34,10 +39,6 @@ const TransactionDetailsModal = ({
         bankName: '',
         branchName: ''
       });
-
-      // Extract tenure from loan data - IN DAYS
-      const loanTenure = disbursementData.tenure || 20;
-      setTenure(loanTenure);
 
       // Load banks list
       const loadBanks = async () => {
@@ -56,12 +57,13 @@ const TransactionDetailsModal = ({
 
   // Calculate due date when transaction date changes - NOW IN DAYS
   useEffect(() => {
-    if (formData.transactionDate) {
+    if (formData.transactionDate && tenure > 0) {
       const transactionDate = new Date(formData.transactionDate);
       const calculatedDueDate = new Date(transactionDate);
       calculatedDueDate.setDate(calculatedDueDate.getDate() + tenure); // Add days
       
       const formattedDueDate = calculatedDueDate.toISOString().split('T')[0];
+      
       setFormData(prev => ({
         ...prev,
         dueDate: formattedDueDate
@@ -228,7 +230,7 @@ const TransactionDetailsModal = ({
                   text-sm
                   ${isDark ? 'text-gray-400' : 'text-gray-600'}
                 `}>
-                  of {disbursementData?.beneficiaryAcName}
+                  of {disbursementData?.beneficiaryAcName} (Tenure: {tenure} days)
                 </p>
               </div>
             </div>
