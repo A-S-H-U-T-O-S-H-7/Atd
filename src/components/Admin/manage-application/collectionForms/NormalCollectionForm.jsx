@@ -262,35 +262,41 @@ const NormalCollectionForm = ({
     }
   };
 
-  const handleSubmit = async () => {
-    if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
-      alert('Please fill all required fields.');
-      return;
-    }
+ const handleSubmit = async () => {
+  if (!collectionData) {
+    alert('Collection data is still loading. Please wait...');
+    return;
+  }
 
-    if (formData.collectionBy === "by bank" && !formData.bankName) {
-      alert('Please select a bank.');
-      return;
-    }
+  if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
+    alert('Please fill all required fields.');
+    return;
+  }
 
-    try {
-      setLoading(true);
-      
-      await collectionService.submitNormalCollection(application.id, formData);
-      
-      if (onCollectionSubmit) {
-        await onCollectionSubmit(application.id, formData);
-      }
-      
-      alert('Collection processed successfully!');
-      onClose();
-    } catch (error) {
-      console.error("Collection error:", error);
-      alert(`Failed to process collection: ${error.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
+  if (formData.collectionBy === "by bank" && !formData.bankName) {
+    alert('Please select a bank.');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    
+    // Pass collectionData as the third parameter
+    await collectionService.submitNormalCollection(application.id, formData, collectionData);
+    
+    if (onCollectionSubmit) {
+      await onCollectionSubmit(application.id, formData);
     }
-  };
+    
+    alert('Collection processed successfully!');
+    onClose();
+  } catch (error) {
+    console.error("Collection error:", error);
+    alert(`Failed to process collection: ${error.message || 'Please try again.'}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (!isOpen) return null;
 

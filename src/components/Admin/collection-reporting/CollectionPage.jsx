@@ -1,151 +1,95 @@
 "use client";
-import React, { useState } from "react";
-import { ArrowLeft, Download, Calendar, FileText } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Download, Calendar } from "lucide-react";
 import CollectionTable from "./CollectionTable";
 import DateFilter from "../AgentDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-
+import collectionReportingService from "@/lib/services/CollectionReportingServices";
+import Swal from "sweetalert2";
 
 const CollectionPage = () => {
   const { theme } = useThemeStore();
- const isDark = theme === "dark";
+  const isDark = theme === "dark";
   const [currentPage, setCurrentPage] = useState(1);
   const [dueDateSearch, setDueDateSearch] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
+  const [collectionData, setCollectionData] = useState([]);
+  const [filteredCollectionData, setFilteredCollectionData] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState(null);
   const router = useRouter();
-
-
-  // Sample collection data - replace with your actual data
-  const [collectionData, setCollectionData] = useState([
-    {
-      id: 1,
-      sn: 1,
-      collectionDate: "05-07-2025",
-      crnNo: "s16BG436",
-      loanNo: "ATDAM35683",
-      name: "Swapnil Vijay Sahasrabuddh",
-      adminFee: 1980.00,
-      gst: 356.00,
-      sanctionAmount: 18000.00,
-      disburseDate: "11-06-2025",
-      transactionDate: "11-06-2025",
-      dueDate: "29-06-2025",
-      interest: 292.00,
-      penalty: 424,
-      gstPenalty: 76,
-      penalInterest: 637,
-      renewalCharge: 0,
-      bounceCharge: 0.00,
-      collectionAmount: 19566.00,
-      totalAmount: 19429.00,
-      agent: "vinu",
-      userBy: "-"
-    },
-    {
-      id: 2,
-      sn: 2,
-      collectionDate: "09-06-2025",
-      crnNo: "s15BG425",
-      loanNo: "ATDAM35641",
-      name: "V Srinivasan",
-      adminFee: 1319.00,
-      gst: 238.00,
-      sanctionAmount: 11000.00,
-      disburseDate: "09-06-2025",
-      transactionDate: "09-06-2025",
-      dueDate: "07-07-2025",
-      interest: 214.00,
-      penalty: 0,
-      gstPenalty: 0,
-      penalInterest: 0,
-      renewalCharge: 0,
-      bounceCharge: 0.00,
-      collectionAmount: 11214.00,
-      totalAmount: 11214.00,
-      agent: "vinu",
-      userBy: "-"
-    },
-    {
-      id: 3,
-      sn: 3,
-      collectionDate: "07-06-2025",
-      crnNo: "s14BG414",
-      loanNo: "ATDAM35602",
-      name: "Chet Bahadur",
-      adminFee: 1080.00,
-      gst: 194.00,
-      sanctionAmount: 9000.00,
-      disburseDate: "07-06-2025",
-      transactionDate: "07-06-2025",
-      dueDate: "06-07-2025",
-      interest: 181.00,
-      penalty: 0,
-      gstPenalty: 0,
-      penalInterest: 0,
-      renewalCharge: 0,
-      bounceCharge: 0.00,
-      collectionAmount: 9181.00,
-      totalAmount: 9181.00,
-      agent: "vinu",
-      userBy: "-"
-    }
-  ]);
-
-  // Sample agents - replace with your actual agent data
-  const agents = [
-    { id: "all", name: "All Agents" },
-    { id: "vinu", name: "Vinu" },
-    { id: "agent2", name: "Agent 2" },
-    { id: "agent3", name: "Agent 3" }
-  ];
-
-  const searchOptions = [
-  { value: 'name', label: 'Name' },
-  { value: 'loanNo', label: 'Loan No' },
-  { value: 'crnNo', label: 'CRN No' },
-  { value: 'agent', label: 'Agent' }
-];
 
   const itemsPerPage = 10;
 
-  const filteredCollectionData = collectionData.filter(item => {
-  // Advanced search filter
-  const matchesAdvancedSearch = (() => {
-    if (!advancedSearch.field || !advancedSearch.term) return true;
-    
-    const fieldValue = item[advancedSearch.field]?.toString().toLowerCase() || '';
-    return fieldValue.includes(advancedSearch.term.toLowerCase());
-  })();
+  // Fetch agents on component mount
+  useEffect(() => {
+    fetchAgents();
+  }, []);
 
-  // Keep your existing filters
-  const matchesDueDate = dueDateSearch === "" || item.dueDate.includes(dueDateSearch);
-  const matchesAgent = selectedAgent === "all" || item.agent === selectedAgent;
-  
-  // Date range filtering (keep existing logic)
-  const matchesDateRange = (() => {
-    if (!dateRange.from && !dateRange.to) return true;
-    
-    const itemDate = new Date(item.collectionDate.split('-').reverse().join('-'));
-    const fromDate = dateRange.from ? new Date(dateRange.from) : null;
-    const toDate = dateRange.to ? new Date(dateRange.to) : null;
-    
-    if (fromDate && toDate) {
-      return itemDate >= fromDate && itemDate <= toDate;
-    } else if (fromDate) {
-      return itemDate >= fromDate;
-    } else if (toDate) {
-      return itemDate <= toDate;
+  // Fetch collection data when filters change
+  useEffect(() => {
+    fetchCollectionData();
+  }, [currentPage, selectedAgent, dateRange, advancedSearch, dueDateSearch]);
+
+  const fetchAgents = async () => {
+    try {
+      const agentsList = await collectionReportingService.getAgents();
+      setAgents(agentsList);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+      setAgents([
+        { id: "all", name: "All Agents" },
+        { id: "vinu", name: "Vinu" }
+      ]);
     }
-    return true;
-  })();
+  };
 
-  return matchesAdvancedSearch && matchesDueDate && matchesAgent && matchesDateRange;
-});
+  const fetchCollectionData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const filters = collectionReportingService.mapFiltersToAPI({
+        dateRange,
+        selectedAgent,
+        advancedSearch,
+        dueDateSearch,
+        page: currentPage,
+        per_page: itemsPerPage
+      });
+
+      const response = await collectionReportingService.getCollectionData(filters);
+      
+      setCollectionData(response.data);
+      setFilteredCollectionData(response.data);
+      
+      // Update current page based on API response
+      if (response.pagination && response.pagination.current_page !== currentPage) {
+        setCurrentPage(response.pagination.current_page);
+      }
+    } catch (error) {
+      console.error("Error fetching collection data:", error);
+      setError(error.message || "Failed to fetch collection data");
+      setCollectionData([]);
+      setFilteredCollectionData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchOptions = [
+    { value: 'name', label: 'Name' },
+    { value: 'loanNo', label: 'Loan No' },
+    { value: 'crnNo', label: 'CRN No' },
+    { value: 'agent', label: 'Agent' }
+  ];
 
   const totalPages = Math.ceil(filteredCollectionData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -154,17 +98,17 @@ const CollectionPage = () => {
   // Calculate totals for current page data
   const calculateTotals = () => {
     return paginatedCollectionData.reduce((totals, item) => ({
-      adminFee: totals.adminFee + item.adminFee,
-      gst: totals.gst + item.gst,
-      sanctionAmount: totals.sanctionAmount + item.sanctionAmount,
-      interest: totals.interest + item.interest,
-      penalty: totals.penalty + item.penalty,
-      gstPenalty: totals.gstPenalty + item.gstPenalty,
-      penalInterest: totals.penalInterest + item.penalInterest,
-      renewalCharge: totals.renewalCharge + item.renewalCharge,
-      bounceCharge: totals.bounceCharge + item.bounceCharge,
-      collectionAmount: totals.collectionAmount + item.collectionAmount,
-      totalAmount: totals.totalAmount + item.totalAmount
+      adminFee: totals.adminFee + (item.adminFee || 0),
+      gst: totals.gst + (item.gst || 0),
+      sanctionAmount: totals.sanctionAmount + (item.sanctionAmount || 0),
+      interest: totals.interest + (item.interest || 0),
+      penalty: totals.penalty + (item.penalty || 0),
+      gstPenalty: totals.gstPenalty + (item.gstPenalty || 0),
+      penalInterest: totals.penalInterest + (item.penalInterest || 0),
+      renewalCharge: totals.renewalCharge + (item.renewalCharge || 0),
+      bounceCharge: totals.bounceCharge + (item.bounceCharge || 0),
+      collectionAmount: totals.collectionAmount + (item.collectionAmount || 0),
+      totalAmount: totals.totalAmount + (item.totalAmount || 0)
     }), {
       adminFee: 0,
       gst: 0,
@@ -180,33 +124,101 @@ const CollectionPage = () => {
     });
   };
 
-  const handleExport = (type) => {
-    const exportData = filteredCollectionData.map(item => ({
-      'SN': item.sn,
-      'Collection Date': item.collectionDate,
-      'CRN No': item.crnNo,
-      'Loan No': item.loanNo,
-      'Name': item.name,
-      'Admin Fee': item.adminFee,
-      'GST': item.gst,
-      'Sanction Amount': item.sanctionAmount,
-      'Disburse Date': item.disburseDate,
-      'Transaction Date': item.transactionDate,
-      'Due Date': item.dueDate,
-      'Interest': item.interest,
-      'Penalty': item.penalty,
-      'GST Penalty': item.gstPenalty,
-      'Penal Interest': item.penalInterest,
-      'Renewal Charge': item.renewalCharge,
-      'Bounce Charge': item.bounceCharge,
-      'Collection Amount': item.collectionAmount,
-      'Total Amount': item.totalAmount,
-      'Agent': item.agent,
-      'User By': item.userBy
-    }));
+  const handleExport = async () => {
+    const result = await Swal.fire({
+      title: 'Export Collection Report?',
+      text: 'This will export all collection data with current filters.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
 
-    if (type === 'excel') {
-      exportToExcel(exportData, 'collection-data');
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      setExporting(true);
+      setError(null);
+      
+      const filters = collectionReportingService.mapFiltersToAPI({
+        dateRange,
+        selectedAgent,
+        advancedSearch,
+        dueDateSearch
+      });
+
+      // Remove pagination parameters for export
+      delete filters.per_page;
+      delete filters.page;
+
+      const response = await collectionReportingService.exportCollection(filters);
+      
+      if (response.success) {
+        const headers = [
+          'Sr. No.', 'Collection Date', 'CRN No', 'Loan No', 'Name', 
+          'Admin Fee', 'GST', 'Sanction Amount', 'Disburse Date', 
+          'Transaction Date', 'Due Date', 'Interest', 'Penalty', 
+          'GST Penalty', 'Penal Interest', 'Renewal Charge', 
+          'Bounce Charge', 'Collection Amount', 'Total Amount', 
+          'Agent', 'User By'
+        ];
+
+        const dataRows = response.data.map((item, index) => [
+          index + 1,
+          item.collection_date ? new Date(item.collection_date).toLocaleDateString('en-GB') : 'N/A',
+          item.crnno || 'N/A',
+          item.loan_no || 'N/A',
+          item.fullname || 'N/A',
+          parseFloat(item.admin_fee) || 0,
+          parseFloat(item.gst) || 0,
+          parseFloat(item.sanction_amount) || 0,
+          item.disburse_date ? new Date(item.disburse_date).toLocaleDateString('en-GB') : 'N/A',
+          item.transaction_date ? new Date(item.transaction_date).toLocaleDateString('en-GB') : 'N/A',
+          item.due_date ? new Date(item.due_date).toLocaleDateString('en-GB') : 'N/A',
+          parseFloat(item.interest) || 0,
+          parseFloat(item.penality) || 0,
+          parseFloat(item.penal_interest_gst) || 0,
+          parseFloat(item.penal_interest) || 0,
+          parseFloat(item.renewal_charge) || 0,
+          parseFloat(item.bounce_charge) || 0,
+          parseFloat(item.collection_amount) || 0,
+          parseFloat(item.total_due_amount) || 0,
+          item.collection_by || 'N/A',
+          item.collection_by || '-'
+        ]);
+
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, `collection-report-${new Date().toISOString().split('T')[0]}`);
+        
+        await Swal.fire({
+          title: 'Export Successful!',
+          text: 'Collection report has been exported to Excel successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      } else {
+        throw new Error('Failed to export data');
+      }
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      await Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -214,6 +226,7 @@ const CollectionPage = () => {
     setAdvancedSearch(searchData);
     setCurrentPage(1);
   };
+
   const handleSearch = () => {
     setCurrentPage(1); 
   };
@@ -224,10 +237,21 @@ const CollectionPage = () => {
     setCurrentPage(1);
   };
 
-  const handleCollectionReportByTransactionDate = () => {
-    // Handle collection report by transaction date
-    console.log('Collection Report by Transaction Date');
-  };
+
+  if (loading && collectionData.length === 0) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${
+        isDark ? "bg-gray-900" : "bg-emerald-50/30"
+      }`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+          <p className={`mt-4 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            Loading collection data...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -239,12 +263,12 @@ const CollectionPage = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
-              onClick={()=> router.back()}
-               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                isDark
-                  ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                  : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-              }`}>
+                onClick={() => router.back()}
+                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}>
                 <ArrowLeft className={`w-5 h-5 ${
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
@@ -252,36 +276,43 @@ const CollectionPage = () => {
               <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
-                Collection Report
+                Collection Report {filteredCollectionData.length > 0 && `(${filteredCollectionData.length})`}
               </h1>
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={handleCollectionReportByTransactionDate}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <FileText size={16} />
-                <span>Collection Report By Transaction Date</span>
-              </button>
-              <button
-                onClick={() => handleExport('excel')}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
-            </div>
+            {/* Export Button */}
+            <button
+              onClick={handleExport}
+              disabled={exporting || filteredCollectionData.length === 0}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                isDark
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              } ${exporting || filteredCollectionData.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              <Download size={16} />
+              <span>{exporting ? "Exporting..." : "Export"}</span>
+            </button>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className={`mb-4 p-4 rounded-xl border ${
+              isDark 
+                ? "bg-red-900/50 border-red-700 text-red-300" 
+                : "bg-red-50 border-red-300 text-red-700"
+            }`}>
+              <div className="flex justify-between items-center">
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError(null)}
+                  className={`ml-4 ${isDark ? "text-red-400 hover:text-red-300" : "text-red-700 hover:text-red-900"}`}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Date and Agent Filter */}
           <DateFilter
@@ -297,11 +328,11 @@ const CollectionPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <AdvancedSearchBar
-  searchOptions={searchOptions}
-  onSearch={handleAdvancedSearch}
-  placeholder="Search collection data..."
-  defaultSearchField="name"
-/>
+                searchOptions={searchOptions}
+                onSearch={handleAdvancedSearch}
+                placeholder="Search collection data..."
+                defaultSearchField="name"
+              />
             </div>
 
             <div>
@@ -325,13 +356,18 @@ const CollectionPage = () => {
           </div>
 
           {/* Total Return Amount */}
-          <div className="mb-4">
-            <p className={`text-lg font-semibold ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
-            }`}>
-              Total Return Amount: ₹{calculateTotals().totalAmount.toFixed(2)}
-            </p>
-          </div>
+          {filteredCollectionData.length > 0 && (
+            <div className="mb-4">
+              <p className={`text-lg font-semibold ${
+                isDark ? "text-emerald-400" : "text-emerald-600"
+              }`}>
+                Total Return Amount: ₹{calculateTotals().totalAmount.toFixed(2)}
+              </p>
+              <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                Showing {paginatedCollectionData.length} of {filteredCollectionData.length} records
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -344,6 +380,7 @@ const CollectionPage = () => {
           isDark={isDark}
           onPageChange={setCurrentPage}
           totals={calculateTotals()}
+          loading={loading}
         />
       </div>
     </div>

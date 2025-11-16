@@ -105,9 +105,7 @@ const { theme } = useThemeStore();
 
   // Simplified validation schema - only validate required user inputs
   const validationSchema = Yup.object({
-    maximumLimit: Yup.number()
-      .min(0, 'Maximum limit must be positive')
-      .required('Maximum limit is required'),
+    
     finalRecommended: Yup.number()
       .min(0, 'Final recommended amount must be positive')
       .required('Final recommended amount is required'),
@@ -137,13 +135,13 @@ const { theme } = useThemeStore();
        const approvedAmount = parseFloat(values.finalRecommended);
         const maxLimit = parseFloat(values.maximumLimit);
         
-        if (isNaN(approvedAmount) || isNaN(maxLimit)) {
+        if (isNaN(approvedAmount) ) {
             showToast('Please enter valid numbers', 'error');
             setSubmitting(false);
             return;
         }
         
-        if (approvedAmount <= 0 || maxLimit <= 0) {
+        if (approvedAmount <= 0 ) {
             showToast('Amounts must be greater than 0', 'error');
             setSubmitting(false);
             return;

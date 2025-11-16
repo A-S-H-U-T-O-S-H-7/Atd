@@ -32,34 +32,53 @@ export const collectionService = {
     }
   },
 
-  // Submit collection
-  submitCollection: async (applicationId, collectionData) => {
+  // Submit normal collection (UPDATED - PUT method with collectionData parameter)
+  submitNormalCollection: async (applicationId, formData, collectionData) => {
     try {
-      const response = await api.post(`/crm/collection/submit/${applicationId}`, collectionData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+      // Calculate values
+      const penaltyAmount = parseFloat(formData.penaltyInput || 0);
+      const penalInterest = parseFloat(formData.penalInterest || 0);
+      const bounceCharge = parseFloat(formData.bounceCharge || 0);
+      
+      // Calculate penal interest components
+      const penalInterestBase = penalInterest > 0 ? penalInterest / 1.18 : 0;
+      const penalInterestGST = penalInterest > 0 ? penalInterest - penalInterestBase : 0;
+      
+      // Calculate total due amount (base due + all charges)
+      const baseDueAmount = parseFloat(collectionData?.dw_collection || 0);
+      const normalInterest = parseFloat(formData.normalInterest || 0);
+      const totalDueAmount = baseDueAmount + normalInterest + penaltyAmount + penalInterest + bounceCharge;
 
-  // Submit normal collection
-  submitNormalCollection: async (applicationId, formData) => {
-    try {
       const payload = {
+        sanction_amount: parseFloat(collectionData?.approved_amount || 0),
+        disburse_date: collectionData?.disburse_date || "",
+        transaction_date: collectionData?.transaction_date || "",
+        due_date: collectionData?.duedate || "",
+        principal_amount: parseFloat(collectionData?.approved_amount || 0),
+        process_fee: parseFloat(collectionData?.process_fee || 0),
+        interest: parseFloat(formData.normalInterest || 0),
+        due_amount: baseDueAmount,
         collection_date: formData.collectionDate,
-        penalty_amount: formData.penaltyInput || "0",
-        penal_interest: formData.penalInterest || "0",
-        bounce_charge: formData.bounceCharge || "0",
+        panality: penaltyAmount,
+        panality_interest: penalInterestBase, // Base amount without GST
+        penal_interest_gst: penalInterestGST,
+        bounce_charge: bounceCharge,
+        total_due_amount: totalDueAmount,
+        collection_bank_name: formData.bankName || "",
+        disbursed_bank: collectionData?.bank_name || "",
+        collected_amount: parseFloat(formData.collectionAmount),
+        collected_transaction_id: formData.transactionId || "",
         collection_by: formData.collectionBy,
-        bank_name: formData.bankName || "",
-        transaction_id: formData.transactionId || "",
-        collection_amount: formData.collectionAmount,
         status: formData.status
       };
 
-      const response = await api.post(`/crm/collection/normal/${applicationId}`, payload);
+      console.log("Submitting collection payload:", payload);
+
+      // Use PUT method as per your API specification
+      const response = await api.put(`/crm/collection/add-collection/${applicationId}`, payload);
       return response;
     } catch (error) {
+      console.error("Collection service error:", error);
       throw error;
     }
   },
