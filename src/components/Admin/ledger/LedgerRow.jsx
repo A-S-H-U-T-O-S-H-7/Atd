@@ -6,8 +6,9 @@ import {
   Eye,
 } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
+import CallButton from "../call/CallButton";
 
-const LedgerRow = ({ item, index, isDark, onCall, onViewTransaction, onAdjustment }) => {
+const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction, onAdjustment }) => {
 
   const handleView = (item) => {
     onViewTransaction(true);
@@ -86,7 +87,7 @@ const LedgerRow = ({ item, index, isDark, onCall, onViewTransaction, onAdjustmen
       </td>
 
       {/* Call */}
-      <td className={cellStyle}>
+      <td className="text-md">
   <CallButton
     applicant={application}
     isDark={isDark}

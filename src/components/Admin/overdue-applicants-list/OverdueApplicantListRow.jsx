@@ -3,6 +3,7 @@ import {
   Phone,
   Mail
 } from "lucide-react";
+import CallButton from "../call/CallButton";
 
 const OverdueApplicantListRow = ({
   applicant,
@@ -45,7 +46,7 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Call */}
-      <td className={cellStyle}>
+      <td className="text-md">
   <CallButton
     applicant={applicant}
     isDark={isDark}
