@@ -13,6 +13,7 @@ import ActionButton from "../action-buttons/ActionButton";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import CRNLink from "../CRNLink";
+import CallButton from "../call/CallButton";
 
 const FollowUpRow = ({
   application,
