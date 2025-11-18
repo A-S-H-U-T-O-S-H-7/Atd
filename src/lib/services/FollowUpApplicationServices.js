@@ -70,6 +70,8 @@ export const formatFollowUpApplicationForUI = (application) => {
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,
     accountId: application.accountId,
+        userId: application.user_id,
+
 
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),

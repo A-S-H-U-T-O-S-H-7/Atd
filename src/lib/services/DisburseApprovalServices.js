@@ -75,6 +75,8 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
+    userId: application.user_id,
+
 
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
