@@ -594,13 +594,6 @@ const getLoanStatusClassName = (application) => {
         </span>
       </td>
 
-      {/* Disbursal Account */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.disbursalAccount}
-        </span>
-      </td>
-
       {/* Customer A/c Verified */}
       <td className={cellStyle}>
         <div className="flex items-center justify-center">

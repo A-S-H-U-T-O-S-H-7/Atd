@@ -93,21 +93,7 @@ export default function Profile() {
 
   return (
     <>
-      {isViewingApplicant && (
-        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white px-4 py-2 z-50 flex items-center justify-between">
-          <span className="font-semibold">
-            👁️ Viewing Applicant: {user.fname} {user.lname} ({user.crnno})
-          </span>
-          <button
-            onClick={handleBackToAdmin}
-            className="bg-white text-amber-600 px-4 py-1 rounded-lg font-medium hover:bg-amber-50 transition-colors"
-          >
-            Back to Admin
-          </button>
-        </div>
-      )}
-
-      <div className={isViewingApplicant ? 'pt-12' : ''}>
+      <div className={isViewingApplicant ? 'pt-1' : ''}>
         {(!userStep || userStep === 1) && <StepOneProfile {...commonProps} />}
         {userStep > 1 && userStep < 6 && <StepInProgressProfile {...commonProps} />}
         {userStep >= 6 && <StepCompleteProfile {...commonProps} />}

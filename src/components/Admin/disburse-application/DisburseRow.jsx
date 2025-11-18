@@ -22,6 +22,7 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
+import toast from "react-hot-toast";
 
 const DisburseRow = ({
   application,
@@ -592,13 +593,6 @@ const DisburseRow = ({
       <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.loanTerm}
-        </span>
-      </td>
-
-      {/* Disbursal Account */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.disbursalAccount}
         </span>
       </td>
 

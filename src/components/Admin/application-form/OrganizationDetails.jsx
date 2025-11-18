@@ -181,26 +181,38 @@ const OrganizationDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
           </div>
 
           {/* Website */}
-          <div>
-            <label className={hasError('website') ? errorLabelClassName : labelClassName}>
-              Website
-            </label>
-            <input
-              type="text"
-              name="website"
-              value={formik.values.website}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              className={hasError('website') ? errorInputClassName : inputClassName}
-              placeholder="Enter website URL"
-            />
-            {hasError('website') && (
-              <div className={errorTextClassName}>
-                <AlertTriangle className="w-3 h-3" />
-                <span>{errors.website}</span>
-              </div>
-            )}
-          </div>
+<div>
+  <label className={hasError('website') ? errorLabelClassName : labelClassName}>
+    Website
+  </label>
+  <input
+    type="text" 
+    name="website"
+    value={formik.values.website}
+    onChange={(e) => {
+      let value = e.target.value;
+      
+      // Ensure it starts with https://
+      if (!value.startsWith('https://')) {
+        // If user is typing from beginning, prepend https://
+        if (value === '' || !value.includes('://')) {
+          value = 'https://' + value.replace(/^https?:\/\//, '');
+        }
+      }
+      
+      formik.setFieldValue('website', value);
+    }}
+    onBlur={formik.handleBlur}
+    className={hasError('website') ? errorInputClassName : inputClassName}
+    placeholder="https://example.com"
+  />
+  {hasError('website') && (
+    <div className={errorTextClassName}>
+      <AlertTriangle className="w-3 h-3" />
+      <span>{errors.website}</span>
+    </div>
+  )}
+</div>
 
           {/* Official Mail Id */}
           <div>

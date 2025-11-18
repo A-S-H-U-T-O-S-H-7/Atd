@@ -20,7 +20,14 @@ import { RegistrationValidationSchema, formatPanNumber, formatAadharNumber, form
 // Custom DatePicker Component with portal for proper z-index
 const DOBDatePicker = ({ field, form, ...props }) => {
   const handleChange = (date) => {
-    form.setFieldValue(field.name, date ? date.toISOString().split('T')[0] : '');
+    if (date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      form.setFieldValue(field.name, `${year}-${month}-${day}`);
+    } else {
+      form.setFieldValue(field.name, '');
+    }
   };
 
   const hasError = form.errors[field.name] && form.touched[field.name];

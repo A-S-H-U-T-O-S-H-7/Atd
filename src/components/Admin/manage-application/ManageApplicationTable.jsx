@@ -95,9 +95,7 @@ const ManageApplicationTable = ({
         { label: "ICICI Emandate Status", width: "180px" },
         { label: "Bank A/c Verification", width: "180px" },
         { label: "Disburse Approval", width: "160px" },
-        //here i sthe space for Disburse and collection
   
-        { label: "Loan Status", width: "120px" },
         { label: "Collection", width: "150px" },
 
         // { label: "Change Status", width: "200px" },

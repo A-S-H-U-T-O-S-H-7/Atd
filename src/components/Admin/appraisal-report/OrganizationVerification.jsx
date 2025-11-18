@@ -420,7 +420,7 @@ const handleSendMailToHR = async () => {
     <div className={valueClassName}>
       {formik.values.website && formik.values.website !== "N/A" ? (
         <a
-        href={organizationVerificationService.formatWebsiteUrl(formik.values.website)}
+          href={formik.values.website.startsWith('http') ? formik.values.website : `https://${formik.values.website}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`block font-medium w-full truncate ${

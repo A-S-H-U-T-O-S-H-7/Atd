@@ -6,14 +6,29 @@ import { useAuth } from '@/lib/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const [isViewingApplicant, setIsViewingApplicant] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated()) {
-      router.push('/userlogin');
+    // Check if admin is viewing an applicant
+    const viewUserToken = sessionStorage.getItem('view_user_token');
+    const viewUserData = sessionStorage.getItem('view_user_data');
+    
+    if (viewUserToken && viewUserData) {
+      setIsViewingApplicant(true);
+      setCheckingAuth(false);
+    } else {
+      setIsViewingApplicant(false);
+      setCheckingAuth(false);
+      
+      // Only redirect if not in admin viewing mode and not authenticated
+      if (!loading && !isAuthenticated()) {
+        router.push('/userlogin');
+      }
     }
   }, [loading, isAuthenticated, router]);
 
-  if (loading) {
+  if (loading || checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -24,7 +39,8 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated()) {
+  // Allow access if viewing as admin or authenticated as user
+  if (!isViewingApplicant && !isAuthenticated()) {
     return null;
   }
 

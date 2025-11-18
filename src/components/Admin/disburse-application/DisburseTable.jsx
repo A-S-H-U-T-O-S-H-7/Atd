@@ -86,7 +86,6 @@ const DisburseTable = ({
     { label: "Original Documents Received", width: "120px" },
     { label: "Disburse Behalf of E-mandate", width: "120px" },
     { label: "Loan Term", width: "100px" },
-    { label: "Disbursal Account", width: "160px" },
     { label: "Customer A/c Verified", width: "100px" },
     { label: "Sanction Letter", width: "140px" },
     { label: "Emandate Status", width: "100px" },

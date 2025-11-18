@@ -752,15 +752,6 @@ const ApplicationRow = ({
         </div>
       </td>
 
-      {/* Loan Status */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-orange-400" : "text-orange-600"
-        }`}>
-          {application.loanStatus}
-        </span>
-      </td>
-
       {/* Collection */}
       <td className={cellStyle}>
         <div className="flex items-center justify-center">
