@@ -1,7 +1,7 @@
 export const APPLICATION_STATUS = {
   PENDING: { id: 1, name: "Pending" },
   COMPLETED: { id: 2, name: "Completed" },
-  REJECTED: { id: 3, name: "Rejected" },
+  REJECTED: { id: 3, name: "Rejected" }, 
   FOLLOW_UP: { id: 4, name: "Follow Up" },
   PROCESSING: { id: 5, name: "Processing" },
   SANCTION: { id: 6, name: "Sanction" },

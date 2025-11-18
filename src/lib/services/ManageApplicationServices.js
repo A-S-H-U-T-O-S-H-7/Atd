@@ -75,6 +75,7 @@ export const formatManageApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
+    userId: application.user_id,
 
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
@@ -105,7 +106,7 @@ export const formatManageApplicationForUI = (application) => {
     // Loan information
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
-    adminFee: "0.00",
+    adminFee: application.process_fee,
     roi: application.roi,
     tenure: application.tenure,
     loanTerm: application.loan_term === 4 ? "One Time Payment" : "Daily",

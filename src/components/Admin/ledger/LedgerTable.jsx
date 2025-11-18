@@ -12,7 +12,9 @@ const LedgerTable = ({
   isDark,
   onPageChange,
   onViewTransaction,
-  onAdjustment 
+  onAdjustment,
+  loading,
+  totalItems
 }) => {
   return (
     <>
@@ -72,12 +74,7 @@ const LedgerTable = ({
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "220px" }}>
-                  EMI
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "220px" }}>
+                }`} style={{ minWidth: "120px" }}>
                   Adjustment
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
@@ -87,14 +84,15 @@ const LedgerTable = ({
                 </th> 
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "220px" }}>
-                  Overdue Amnt.
+                }`} style={{ minWidth: "120px" }}>
+                  Overdue Amt.
                 </th>
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "220px" }}>
+                }`} style={{ minWidth: "100px" }}>
                   Settled
                 </th>
+                
                 <th className={`px-6 py-5 text-left text-sm font-bold ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "100px" }}>
@@ -118,7 +116,7 @@ const LedgerTable = ({
         </div>
         
         {/* Empty State */}
-        {paginatedLedgerData.length === 0 && (
+        {paginatedLedgerData.length === 0 && !loading && (
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <FileText className="w-16 h-16 opacity-50" />
@@ -127,14 +125,25 @@ const LedgerTable = ({
             </div>
           </div>
         )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className="flex flex-col items-center space-y-4">
+              <FileText className="w-16 h-16 opacity-50" />
+              <p className="text-lg font-medium">Loading ledger data...</p>
+            </div>
+          </div>
+        )}
+
         {/* Pagination */}
       {totalPages > 0 && (
-        <div className="mt-8">
+        <div >
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={onPageChange}
-            totalItems={filteredLedgerData.length}  
+            totalItems={totalItems || filteredLedgerData.length}  
             itemsPerPage={itemsPerPage}   
           />
         </div>

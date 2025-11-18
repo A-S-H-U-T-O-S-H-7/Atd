@@ -6,7 +6,6 @@ import confetti from 'canvas-confetti';
 // Components
 import Header from './Header';
 import ProfileCard from './ProfileCard';
-import InformationCards from './InformationCard';
 import CongratulationsModal from './CongratulationsModal';
 import BackgroundElements from './BackgroundElements';
 import ReviewSection from './ReviewSection';
@@ -19,6 +18,7 @@ import LoanStatusTracker from './LoanProgressTracker';
 import CreditScoreSection from './CreditScore';
 import LoanButtons from './LoanButtons';
 import ReferBlock from './ReferBlock';
+import LoanInformation from './LoanHistoryInformation';
 
 export default function StepCompleteProfile({ 
   user, 
@@ -175,7 +175,7 @@ export default function StepCompleteProfile({
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border border-pink-200 rounded-xl bg-gradient-to-br from-rose-100 via-teal-50 to-cyan-200 px-4 py-4">
-                  <InformationCards user={user} />
+                  <LoanInformation user={user}/>
                   <div className='border rounded-full overflow-hidden mt-2 border-rose-300'>
                     <CreditScoreSection 
                       className="rounded-full" 
@@ -185,6 +185,7 @@ export default function StepCompleteProfile({
                     />
                   </div>
                 </div>
+
 
                 {currentStatusLabel !== 'applied' && currentStatusLabel !== 'inprogress' && currentStatusLabel !== 'sanctioned' && (
                   <ReferBlock user={user} />

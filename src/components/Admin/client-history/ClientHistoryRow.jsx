@@ -9,7 +9,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
 
   const formatEmail = (email) => {
     if (!email || email === "--") return "--";
-    return email.length > 30 ? email.substring(0, 30) + "..." : email;
+    return email.length > 40 ? email.substring(0, 40) + "..." : email;
   };
 
   return (

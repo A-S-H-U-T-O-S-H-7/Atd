@@ -3,8 +3,8 @@ import { X, User } from "lucide-react";
 import ClientProfile from "./ClientViewProfile";
 import ClientTables from "./ClientViewTables";
 
-const ClientViewModal = ({ isOpen, onClose, clientData, isDark }) => {
-  if (!isOpen || !clientData) return null;
+const ClientViewModal = ({ isOpen, onClose, clientData, isDark, loading }) => {
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -35,7 +35,7 @@ const ClientViewModal = ({ isOpen, onClose, clientData, isDark }) => {
                 <p className={`text-sm ${
                   isDark ? "text-gray-400" : "text-gray-600"
                 }`}>
-                  {clientData.name} - {clientData.crnNo}
+                  {clientData ? `${clientData.name} - ${clientData.crnNo}` : "Loading..."}
                 </p>
               </div>
             </div>
@@ -54,10 +54,27 @@ const ClientViewModal = ({ isOpen, onClose, clientData, isDark }) => {
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-          <div className="p-6 space-y-8">
-            <ClientProfile clientData={clientData} isDark={isDark} />
-            <ClientTables clientData={clientData} isDark={isDark} />
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+                <p className={`mt-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                  Loading client details...
+                </p>
+              </div>
+            </div>
+          ) : clientData ? (
+            <div className="p-6 space-y-8">
+              <ClientProfile clientData={clientData} isDark={isDark} />
+              <ClientTables clientData={clientData} isDark={isDark} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <p className={`${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                No client data available
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

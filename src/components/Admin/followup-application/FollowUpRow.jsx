@@ -12,6 +12,7 @@ import CibilScoreDocument from "../documents/CibilScoreDocument";
 import ActionButton from "../action-buttons/ActionButton";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
+import CRNLink from "../CRNLink";
 
 const FollowUpRow = ({
   application,
@@ -153,9 +154,16 @@ const FollowUpRow = ({
 
       {/* CRN No */}
       <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.crnNo}
-        </span>
+      <CRNLink 
+        crnNo={application.crnNo} 
+        userId={application.userId}
+        onSuccess={(data) => {
+          toast.success('Profile loaded');
+        }}
+        onError={(error) => {
+          toast.error(error);
+        }}
+      />
       </td>
 
       {/* Account ID */}

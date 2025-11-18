@@ -63,7 +63,7 @@ export const formatSanctionApplicationForUI = (application) => {
 
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
-    adminFee: "0.00",
+    adminFee: application.process_fee,
     roi: application.roi,
     tenure: application.tenure,
     loanTerm: application.loan_term === 4 ? "One Time Payment" : "Daily",

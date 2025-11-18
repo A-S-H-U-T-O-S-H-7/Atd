@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { X, Eye, CreditCard, Calendar, User,  MapPin, Phone} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Eye, CreditCard, Calendar, User, MapPin, Phone} from "lucide-react";
+import { formatLedgerDetailsForUI } from "@/lib/services/LedgerServices";
 
 const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBalance }) => {
   const [updateForm, setUpdateForm] = useState({
@@ -12,67 +13,18 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
     remark: ''
   });
 
-  if (!isOpen || !data) return null;
+  const [transactions, setTransactions] = useState([]);
+  const [summary, setSummary] = useState({});
 
-  // Sample customer data
-  const customerData = {
-    name: "Bhavikkumar Pravinbhai Patel",
-    address: "Nikhil CHS, Thakur Complex, Near Childrens Academy School, Kandivali East",
-    loanNo: "ATDAM35743",
-    crnNo: "B12AS086",
-    dueDate: "16-07-2025",
-    phone: "+91 98765 43210",
-    email: "bhavikkumar@email.com"
-  };
-
-  // Sample ledger transaction data
-  const Transactions = [
-    {
-      date: "17/06/2025",
-      particular: "DISBURSE AMOUNT",
-      debit: 32620,
-      credit: 0,
-      balance: 32620
-    },
-    {
-      date: "17/06/2025",
-      particular: "PROCESSING FEE",
-      debit: 2280,
-      credit: 0,
-      balance: 34900
-    },
-    {
-      date: "17/06/2025",
-      particular: "PROCESSING FEE GST",
-      debit: 410,
-      credit: 0,
-      balance: 35310
-    },
-    {
-      date: "17/06/2025",
-      particular: "DOCUMENTATION CHARGES",
-      debit: 2280,
-      credit: 0,
-      balance: 37590
-    },
-    {
-      date: "17/06/2025",
-      particular: "DOCUMENTATION CHARGES GST",
-      debit: 410,
-      credit: 0,
-      balance: 38000
-    },
-    {
-      date: "17/06/2025",
-      particular: "INTEREST",
-      debit: 764,
-      credit: 0,
-      balance: 38764
+  useEffect(() => {
+    if (data && data.ledgerDetails) {
+      const formattedData = formatLedgerDetailsForUI(data.ledgerDetails);
+      setTransactions(formattedData.transactions);
+      setSummary(formattedData.summary);
     }
-  ];
+  }, [data]);
 
-  const totalDebit = Transactions.reduce((sum, transaction) => sum + transaction.debit, 0);
-  const totalCredit = Transactions.reduce((sum, transaction) => sum + transaction.credit, 0);
+  if (!isOpen || !data) return null;
 
   const handleUpdateSubmit = () => {
     if (updateForm.date && updateForm.remark) {
@@ -96,6 +48,10 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
       [field]: value
     }));
   };
+
+  const totalDebit = transactions.reduce((sum, transaction) => sum + transaction.debit, 0);
+  const totalCredit = transactions.reduce((sum, transaction) => sum + transaction.credit, 0);
+  const finalBalance = transactions.length > 0 ? transactions[transactions.length - 1].balance : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/30 backdrop-blur-sm bg-opacity-50 ">
@@ -158,19 +114,19 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                 <div className="flex items-center space-x-2">
                   <User className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span className={`font-semibold text-sm ${isDark ? "text-gray-100" : "text-gray-800"}`}>
-                    {customerData.name}
+                    {data.name}
                   </span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                    {customerData.address}
+                    {data.address}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Phone className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                    {customerData.phone}
+                    {data.phoneNo}
                   </span>
                 </div>
               </div>
@@ -178,23 +134,60 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                 <div className="flex items-center space-x-2">
                   <CreditCard className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-                    Loan: {customerData.loanNo}
+                    Loan: {data.loanNo}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                    CRN: {customerData.crnNo}
-                  </span>
-                </div>
+                {data.crnno && (
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                      CRN: {data.crnno}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center space-x-2">
                   <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                    Due: {customerData.dueDate}
+                    Due: {data.dueDate}
                   </span>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Summary Card */}
+          {summary && (
+            <div className={`rounded-lg p-4 border ${
+              isDark
+                ? "bg-gray-700/50 border-emerald-600/30"
+                : "bg-emerald-50/50 border-emerald-200"
+            }`}>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>Total Debit</p>
+                  <p className={`text-lg font-bold ${isDark ? "text-red-400" : "text-red-600"}`}>
+                    ₹{(summary.total_debits || totalDebit).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>Total Credit</p>
+                  <p className={`text-lg font-bold ${isDark ? "text-green-400" : "text-green-600"}`}>
+                    ₹{(summary.total_credits || totalCredit).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>Balance</p>
+                  <p className={`text-lg font-bold ${
+                    (summary.balance || finalBalance) < 0 
+                      ? isDark ? "text-green-400" : "text-green-600"
+                      : isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                    ₹{Math.abs(summary.balance || finalBalance).toLocaleString()}
+                    {(summary.balance || finalBalance) < 0 }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Ledger Transactions Table - Compact */}
           <div className={`rounded-lg overflow-hidden border ${
@@ -226,9 +219,9 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                   </tr>
                 </thead>
                 <tbody>
-                  {Transactions.map((transaction, index) => (
+                  {transactions.map((transaction, index) => (
                     <tr
-                      key={index}
+                      key={transaction.id || index}
                       className={`border-b transition-all duration-200 ${
                         isDark
                           ? "border-emerald-700 hover:bg-gray-700/30"
@@ -258,41 +251,16 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                         {transaction.credit > 0 ? transaction.credit.toLocaleString() : "0"}
                       </td>
                       <td className={`px-3 py-2 text-xs text-right font-bold ${
-                        isDark ? "text-emerald-400" : "text-emerald-600"
+                        transaction.balance < 0 
+                          ? isDark ? "text-green-400" : "text-green-600"
+                          : isDark ? "text-emerald-400" : "text-emerald-600"
                       }`}>
-                        {transaction.balance.toLocaleString()}
+                        {Math.abs(transaction.balance).toLocaleString()}
+                        {transaction.balance < 0 }
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className={`${
-                  isDark
-                    ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-                    : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
-                } border-t`}>
-                  <tr>
-                    <td colSpan="2" className={`px-3 py-2 text-xs font-bold ${
-                      isDark ? "text-gray-100" : "text-gray-800"
-                    }`}>
-                      Total
-                    </td>
-                    <td className={`px-3 py-2 text-xs text-right font-bold ${
-                      isDark ? "text-red-400" : "text-red-600"
-                    }`}>
-                      {totalDebit.toLocaleString()}
-                    </td>
-                    <td className={`px-3 py-2 text-xs text-right font-bold ${
-                      isDark ? "text-green-400" : "text-green-600"
-                    }`}>
-                      {totalCredit.toLocaleString()}
-                    </td>
-                    <td className={`px-3 py-2 text-xs text-right font-bold ${
-                      isDark ? "text-emerald-400" : "text-emerald-600"
-                    }`}>
-                      {Transactions[Transactions.length - 1]?.balance.toLocaleString()}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
@@ -329,12 +297,6 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                 />
               </div>
 
-              
-
-              
-
-              
-
               {/* Adjustment Dropdown */}
               <div>
                 <label className={`block text-xs font-medium mb-1 ${
@@ -355,7 +317,6 @@ const CustomerTransactionDetails = ({ isOpen, onClose, data, isDark, onUpdateBal
                   <option value="PENALTY">PENALTY</option>
                   <option value="PENAL INTEREST">PENAL INTEREST</option>
                   <option value="ADJUSTMENT">ADJUSTMENT</option>
-
                 </select>
               </div>
 

@@ -1,59 +1,92 @@
 import { useState } from "react";
-import { Eye, } from "lucide-react";
+import { Eye } from "lucide-react";
 import LoanDetailsModal from "./LoanDetailsModal";
+import { getStatusName } from "@/utils/applicationStatus";
 
 const ClientTables = ({ clientData, isDark }) => {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
 
-  // Sample reference data
-  const referenceData = [
-    {
-      id: 1,
-      name: "Sapna",
-      email: "daisysapna96@gmail.com",
-      mobile: "8808008322"
-    },
-    {
-      id: 2,
-      name: "Ajit",
-      email: "ajit.spet201212@gmail.com",
-      mobile: "7474120028"
-    },
-    {
-      id: 3,
-      name: "Dinesh",
-      email: "dinesh199023@gmail.com",
-      mobile: "9415843578"
-    },
-    {
-      id: 4,
-      name: "Rohit",
-      email: "singh.rohit1345@gmail.com",
-      mobile: "8850871736"
-    },
-    {
-      id: 5,
-      name: "Tarun",
-      email: "tarun.jamwal@gmail.com",
-      mobile: "9165253608"
+  // Transform references data from API
+  const transformReferences = (references) => {
+    if (!references || references.length === 0) return [];
+    
+    const refData = references[0]; 
+    const transformed = [];
+    
+    for (let i = 1; i <= 6; i++) {
+      const refName = refData[`refName${i}`];
+      const refPhone = refData[`refPhone${i}`];
+      const refEmail = refData[`refEmail${i}`];
+      
+      if (refName && refPhone) {
+        transformed.push({
+          id: i,
+          name: refName,
+          email: refEmail || "Not Available",
+          mobile: refPhone
+        });
+      }
     }
-  ];
+    
+    return transformed;
+  };
 
-  // Sample loan history data
-  const loanHistoryData = [
-    {
-      loanNo: "ATDAM36428",
-      sanctionAmount: "3,000.00",
-      transactionDate: "2025-07-11",
-      dueDate: "2025-08-09",
-      collectionDate: "-",
-      status: "Disbursed"
+  // Transform loan data from API
+  const transformLoans = (loans) => {
+    if (!loans || loans.length === 0) return [];
+    
+    return loans.map((loan, index) => ({
+      loanNo: loan.loan_no,
+      sanctionAmount: loan.approved_amount,
+      transactionDate: loan.transaction_date,
+      dueDate: loan.duedate,
+      collectionDate: loan.collection_date || "-",
+      status: getStatusName(loan.loan_status), // Use the utility function
+      statusCode: loan.loan_status, // Keep the original status code for reference
+      disburseAmount: loan.disburse_amount,
+      collectionAmount: loan.collection_amount
+    }));
+  };
+
+  // Get status badge color based on status
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case "Disbursed":
+      case "Completed":
+      case "Closed":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+      case "Processing":
+      case "Ready To Verify":
+      case "Ready To Disbursed":
+        return "bg-orange-100 text-orange-800";
+      case "Rejected":
+      case "Cancelled":
+      case "Closed By Admin":
+        return "bg-red-100 text-red-800";
+      case "Follow Up":
+      case "Sanction":
+      case "Transaction":
+      case "Collection":
+      case "Re-Collection":
+        return "bg-blue-100 text-blue-800";
+      case "Defaulter":
+        return "bg-purple-100 text-purple-800";
+      case "Return":
+      case "Renewal":
+      case "EMI":
+        return "bg-teal-100 text-teal-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  ];
+  };
+
+  const referenceData = transformReferences(clientData.references);
+  const loanHistoryData = transformLoans(clientData.loans);
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Not Available";
+    if (!dateString || dateString === "-") return "Not Available";
     return new Date(dateString).toLocaleDateString('en-IN', {
       day: '2-digit',
       month: '2-digit',
@@ -79,8 +112,7 @@ const ClientTables = ({ clientData, isDark }) => {
             ? "bg-emerald-700 border-emerald-600/30"
             : "bg-emerald-50 border-emerald-200"
         }`}>
-          <div className="flex  items-center space-x-2">
-           
+          <div className="flex items-center space-x-2">
             <h3 className={`text-lg font-semibold ${
               isDark ? "text-white" : "text-gray-900"
             }`}>
@@ -119,34 +151,44 @@ const ClientTables = ({ clientData, isDark }) => {
             <tbody className={`divide-y ${
               isDark ? "divide-gray-700" : "divide-gray-200"
             }`}>
-              {referenceData.map((ref, index) => (
-                <tr key={ref.id} className={`${
-                  index % 2 === 0
-                    ? isDark ? "bg-gray-800" : "bg-white"
-                    : isDark ? "bg-gray-700/50" : "bg-gray-50"
-                }`}>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                    isDark ? "text-gray-300" : "text-gray-900"
+              {referenceData.length > 0 ? (
+                referenceData.map((ref, index) => (
+                  <tr key={ref.id} className={`${
+                    index % 2 === 0
+                      ? isDark ? "bg-gray-800" : "bg-white"
+                      : isDark ? "bg-gray-700/50" : "bg-gray-50"
                   }`}>
-                    {ref.id}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                    isDark ? "text-white" : "text-gray-900"
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-900"
+                    }`}>
+                      {ref.id}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                      isDark ? "text-white" : "text-gray-900"
+                    }`}>
+                      {ref.name}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {ref.email}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {ref.mobile}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className={`px-6 py-4 text-center text-sm ${
+                    isDark ? "text-gray-400" : "text-gray-500"
                   }`}>
-                    {ref.name}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    {ref.email}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    {ref.mobile}
+                    No reference data available
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -158,13 +200,12 @@ const ClientTables = ({ clientData, isDark }) => {
           ? "bg-gray-800 border-emerald-600/30"
           : "bg-white border-emerald-200"
       }`}>
-        <div className={`px-6  py-4 border-b ${
+        <div className={`px-6 py-4 border-b ${
           isDark
             ? "bg-indigo-400 border-emerald-600/30"
             : "bg-emerald-50 border-emerald-200"
         }`}>
           <div className="flex items-center space-x-2">
-           
             <h3 className={`text-lg font-semibold ${
               isDark ? "text-white" : "text-gray-900"
             }`}>
@@ -218,62 +259,66 @@ const ClientTables = ({ clientData, isDark }) => {
             <tbody className={`divide-y ${
               isDark ? "divide-gray-700" : "divide-gray-200"
             }`}>
-              {loanHistoryData.map((loan, index) => (
-                <tr key={loan.loanNo} className={`${
-                  index % 2 === 0
-                    ? isDark ? "bg-gray-800" : "bg-white"
-                    : isDark ? "bg-gray-700/50" : "bg-gray-50"
-                }`}>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
+              {loanHistoryData.length > 0 ? (
+                loanHistoryData.map((loan, index) => (
+                  <tr key={loan.loanNo} className={`${
+                    index % 2 === 0
+                      ? isDark ? "bg-gray-800" : "bg-white"
+                      : isDark ? "bg-gray-700/50" : "bg-gray-50"
                   }`}>
-                    {loan.loanNo}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
-                    isDark ? "text-white" : "text-gray-900"
-                  }`}>
-                    ₹{loan.sanctionAmount}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    {formatDate(loan.transactionDate)}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    {formatDate(loan.dueDate)}
-                  </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    {loan.collectionDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      loan.status === 'Disbursed'
-                        ? 'bg-orange-100 text-orange-800'
-                        : loan.status === 'Completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
+                      isDark ? "text-emerald-400" : "text-emerald-600"
                     }`}>
-                      {loan.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button 
-                      onClick={() => handleViewLoan(loan)}
-                      className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-                        isDark
-                          ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
-                          : "bg-blue-100 text-blue-600 hover:bg-blue-200"
-                      }`}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
+                      {loan.loanNo}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
+                      isDark ? "text-white" : "text-gray-900"
+                    }`}>
+                      ₹{loan.sanctionAmount}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {formatDate(loan.transactionDate)}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {formatDate(loan.dueDate)}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                      isDark ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {loan.collectionDate}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(loan.status)}`}>
+                        {loan.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <button 
+                        onClick={() => handleViewLoan(loan)}
+                        className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+                          isDark
+                            ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
+                            : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                        }`}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className={`px-6 py-4 text-center text-sm ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    No loan history available
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -285,6 +330,7 @@ const ClientTables = ({ clientData, isDark }) => {
         onClose={() => setIsLoanModalOpen(false)}
         loanData={selectedLoan}
         isDark={isDark}
+        clientData={clientData}
       />
     </>
   );

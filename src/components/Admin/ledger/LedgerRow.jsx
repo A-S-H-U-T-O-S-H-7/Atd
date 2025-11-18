@@ -11,23 +11,21 @@ import CallButton from "../call/CallButton";
 const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction, onAdjustment }) => {
 
   const handleView = (item) => {
-    onViewTransaction(true);
+    onViewTransaction(item);
   };
 
   const handleAdjustment = (item) => {
     onAdjustment(item);  
   };
 
-  
-
   const handleDownloadPDF = (item) => {
     // Add your PDF download logic here
     console.log('Download PDF for:', item);
   };
 
- 
-
   const getDueDateStatus = (dueDate) => {
+    if (!dueDate) return { status: 'normal', days: 0, color: 'green' };
+    
     const today = new Date();
     const due = new Date(dueDate.split('-').reverse().join('-'));
     const diffTime = due - today;
@@ -61,6 +59,18 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
     }
   };
 
+  // Format balance display 
+  const formatBalance = (balance) => {
+    const amount = parseFloat(balance || 0);
+    return `₹${amount.toLocaleString()}`;
+  };
+
+  // Format overdue amount display 
+  const formatOverdue = (overdue) => {
+    const amount = parseFloat(overdue || 0);
+    return `₹${amount.toLocaleString()}`;
+  };
+
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
@@ -76,7 +86,7 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       }`}
     >
       {/* SN */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
           isDark
             ? "bg-emerald-900/50 text-emerald-300"
@@ -87,18 +97,18 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       </td>
 
       {/* Call */}
-      <td className="text-md">
-  <CallButton
-    applicant={application}
-    isDark={isDark}
-    size="small"
-    variant="default"
-    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
-  />
-</td>
+      <td className={`text-md border-r px-1 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <CallButton
+          applicant={item}
+          isDark={isDark}
+          size="small"
+          variant="default"
+          className="px-2 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+        />
+      </td>
 
       {/* Loan No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <CreditCard className={`w-4 h-4 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -112,7 +122,7 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       </td>
 
       {/* Due Date */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <Calendar className={`w-4 h-4 ${
@@ -121,22 +131,24 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
             <span className={`text-sm font-medium ${
               isDark ? "text-gray-200" : "text-gray-800"
             }`}>
-              {item.dueDate}
+              {item.dueDate || 'N/A'}
             </span>
           </div>
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getDueDateColor(dueDateStatus.status)}`}>
-            {dueDateStatus.status === 'overdue' 
-              ? `${dueDateStatus.days} days overdue`
-              : dueDateStatus.status === 'warning'
-              ? `${dueDateStatus.days} days left`
-              : 'On track'
-            }
-          </span>
+          {item.dueDate && (
+            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getDueDateColor(dueDateStatus.status)}`}>
+              {dueDateStatus.status === 'overdue' 
+                ? `${dueDateStatus.days} days overdue`
+                : dueDateStatus.status === 'warning'
+                ? `${dueDateStatus.days} days left`
+                : 'On track'
+              }
+            </span>
+          )}
         </div>
       </td>
 
       {/* Name */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-3">
           <div>
             <p className={`text-sm font-semibold ${
@@ -144,12 +156,17 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
             }`}>
               {item.name}
             </p>
+            {item.crnno && (
+              <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                CRN: {item.crnno}
+              </p>
+            )}
           </div>
         </div>
       </td>
 
       {/* Address */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-start space-x-2">
           <MapPin className={`w-4 h-4 mt-1 flex-shrink-0 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -163,7 +180,7 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       </td>
 
       {/* Phone No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <p className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
@@ -174,7 +191,7 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       </td>
 
       {/* Email */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <p className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
@@ -184,19 +201,8 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
         </div>
       </td>
 
-      {/* EMI */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <p className={`text-sm font-bold ${
-            isDark ? "text-pink-200" : "text-pink-800"
-          }`}>
-            {item.emi}
-          </p>    
-        </div>
-      </td>
-
       {/* Adjustment */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => handleAdjustment(item)}
           className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
@@ -210,40 +216,46 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
       </td>
 
       {/* Balance */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-bold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
+            parseFloat(item.balance || 0) < 0 
+              ? isDark ? "text-green-400" : "text-green-600"
+              : isDark ? "text-emerald-400" : "text-emerald-600"
           }`}>
-            ₹{parseInt(item.balance).toLocaleString()}
+            {formatBalance(item.balance)}
           </span>
         </div>
       </td>
 
       {/* Overdue Amount */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-bold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
+            isDark ? "text-red-400" : "text-red-600"
           }`}>
-            {item.overdueamount}
+            {formatOverdue(item.over_due)}
           </span>
         </div>
       </td>
 
       {/* Settled */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <span className={`text-sm font-bold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
+            item.settled 
+              ? isDark ? "text-green-400" : "text-green-600"
+              : isDark ? "text-yellow-400" : "text-yellow-600"
           }`}>
-            {item.settled}
+            {item.settled ? 'Yes' : 'No'}
           </span>
         </div>
       </td>
 
+      
+
       {/* Action */}
-      <td className="px-6 py-4">
+      <td className="px-2 py-4">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => handleView(item)}
@@ -252,7 +264,7 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
                 ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"
                 : "bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200"
             }`}
-            title="View Details"
+            title="View Transaction Details"
           >
             <Eye className="w-4 h-4" />
           </button>

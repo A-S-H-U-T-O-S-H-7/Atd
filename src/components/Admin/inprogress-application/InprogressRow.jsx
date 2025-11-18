@@ -15,6 +15,7 @@ import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
+import CRNLink from "../CRNLink";
 
 const InProgressRow = ({
   application,
@@ -103,9 +104,16 @@ const InProgressRow = ({
 
       {/* CRN No */}
       <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.crnNo}
-        </span>
+      <CRNLink 
+        crnNo={application.crnNo} 
+        userId={application.userId}
+        onSuccess={(data) => {
+          toast.success('Profile loaded');
+        }}
+        onError={(error) => {
+          toast.error(error);
+        }}
+      />
       </td>
 
       {/* Account ID */}
