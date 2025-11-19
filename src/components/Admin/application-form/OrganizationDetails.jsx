@@ -180,13 +180,13 @@ const OrganizationDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
             )}
           </div>
 
-          {/* Website */}
+{/* Website */}
 <div>
   <label className={hasError('website') ? errorLabelClassName : labelClassName}>
     Website
   </label>
   <div className="relative">
-    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-200">
+    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
       https://
     </div>
     <input
@@ -194,8 +194,10 @@ const OrganizationDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
       name="website"
       value={formik.values.website.replace('https://', '')}
       onChange={(e) => {
-        const value = 'https://' + e.target.value;
-        formik.setFieldValue('website', value);
+        let value = e.target.value;
+        // Remove any accidentally entered https:// from user input
+        value = value.replace(/^https?:\/\//, '');
+        formik.setFieldValue('website', 'https://' + value);
       }}
       onBlur={formik.handleBlur}
       className={`pl-16 w-full ${

@@ -107,7 +107,7 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     // Loan information
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
-    adminFee: application.process_fee,
+    adminFee: (parseFloat(application.process_fee || 0) + parseFloat(application.gst || 0)).toFixed(2),
     roi: application.roi,
     tenure: application.tenure,
     loanTerm: application.loan_term === 4 ? "One Time Payment" : "Daily",

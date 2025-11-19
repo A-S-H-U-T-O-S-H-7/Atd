@@ -120,6 +120,12 @@ export const formatApplicationForUI = (applicationData) => {
 
 // Format data for API submission
 export const formatApplicationForAPI = (formData) => {
+  // Ensure website has https:// prefix before sending to API
+  let websiteValue = formData.website || '';
+  if (websiteValue && !websiteValue.startsWith('http')) {
+    websiteValue = 'https://' + websiteValue;
+  }
+
   return {
     crnno: formData.crnNo,
     account_id: formData.accountId,
@@ -191,7 +197,7 @@ export const formatApplicationForAPI = (formData) => {
     contact_person: formData.contactPerson,
     mobile_no: formData.mobileNo,
     hr_mail: formData.hrMail,
-    website: formData.website,
+    website: websiteValue, // ← Use the modified website value here
     office_mail: formData.officialEmail,
     gross_montly_salary: formData.grossMonthlySalary || "0",
     work_since_mm: formData.workSinceMm,
