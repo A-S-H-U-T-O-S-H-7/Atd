@@ -328,12 +328,8 @@ const DocumentUploadSchema = Yup.object().shape({
         ["image/jpeg", "image/jpg", "image/png", "application/pdf"].includes(
           value.type
         )
-    )
-    .test(
-      "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
     ),
+    
    
   aadharBack: Yup.mixed()
     .required("Aadhar Back is required")

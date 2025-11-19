@@ -185,27 +185,25 @@ const OrganizationDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
   <label className={hasError('website') ? errorLabelClassName : labelClassName}>
     Website
   </label>
-  <input
-    type="text" 
-    name="website"
-    value={formik.values.website}
-    onChange={(e) => {
-      let value = e.target.value;
-      
-      // Ensure it starts with https://
-      if (!value.startsWith('https://')) {
-        // If user is typing from beginning, prepend https://
-        if (value === '' || !value.includes('://')) {
-          value = 'https://' + value.replace(/^https?:\/\//, '');
-        }
-      }
-      
-      formik.setFieldValue('website', value);
-    }}
-    onBlur={formik.handleBlur}
-    className={hasError('website') ? errorInputClassName : inputClassName}
-    placeholder="https://example.com"
-  />
+  <div className="relative">
+    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-200">
+      https://
+    </div>
+    <input
+      type="text" 
+      name="website"
+      value={formik.values.website.replace('https://', '')}
+      onChange={(e) => {
+        const value = 'https://' + e.target.value;
+        formik.setFieldValue('website', value);
+      }}
+      onBlur={formik.handleBlur}
+      className={`pl-16 w-full ${
+        hasError('website') ? errorInputClassName : inputClassName
+      }`}
+      placeholder="example.com"
+    />
+  </div>
   {hasError('website') && (
     <div className={errorTextClassName}>
       <AlertTriangle className="w-3 h-3" />
