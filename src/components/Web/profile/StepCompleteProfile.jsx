@@ -19,6 +19,8 @@ import CreditScoreSection from './CreditScore';
 import LoanButtons from './LoanButtons';
 import ReferBlock from './ReferBlock';
 import LoanInformation from './LoanHistoryInformation';
+import LoanApplicationModal from './LoanApplicationModal';
+
 
 export default function StepCompleteProfile({ 
   user, 
@@ -29,6 +31,9 @@ export default function StepCompleteProfile({
   showProfileLoading,
   setShowProfileLoading 
 }) {
+
+    const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+
   // Loan status mapping
   const LOAN_STATUS = {
     APPLIED: 2,
@@ -76,6 +81,14 @@ export default function StepCompleteProfile({
   const currentStatusLabel = getLoanStatusLabel(currentStatus);
   
   const handleClientHistory = () => router.push('/client-history');
+  const handleLoanApplicationSuccess = () => {
+    // You can add any post-success logic here
+    // For example, refresh user data or show a toast notification
+    console.log('Loan application submitted successfully');
+  };
+   const handleApplyNewLoan = () => {
+    setIsLoanModalOpen(true);
+  };
   
   const handleLogout = async () => {
     await logout();
@@ -158,8 +171,10 @@ export default function StepCompleteProfile({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <ProfileCard user={user} loanStatus={currentStatusLabel} />
-              <LoanButtons loanStatus={currentStatus} />
-              {/* ReviewSection - Only visible on lg screens and above */}
+             <LoanButtons 
+                loanStatus={currentStatus} 
+                onApplyNewLoan={handleApplyNewLoan}
+              />              {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">
                 <ReviewSection />
               </div>
@@ -212,7 +227,13 @@ export default function StepCompleteProfile({
           onClose={() => setShowCongratulationsModal(false)}
           userName={user?.fname || 'User'}
         />
+        <LoanApplicationModal
+        isOpen={isLoanModalOpen}
+        onClose={() => setIsLoanModalOpen(false)}
+        onSuccess={handleLoanApplicationSuccess}
+      />
       </div>
+
     </ProtectedRoute> 
   );
 }

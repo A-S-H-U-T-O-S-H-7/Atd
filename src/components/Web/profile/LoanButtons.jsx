@@ -1,6 +1,7 @@
+// components/LoanButtons.jsx
 import { Info } from 'lucide-react';
 
-export default function LoanButtons({ loanStatus = 2 }) {
+const LoanButtons = ({ loanStatus = 2, onApplyNewLoan }) => {
   const getLoanStatusLabel = (statusCode) => {
     switch (parseInt(statusCode)) {
       case 2: return 'applied';
@@ -39,13 +40,12 @@ export default function LoanButtons({ loanStatus = 2 }) {
 
   const handleApplyNewLoan = () => {
     if (isNewLoanEnabled) {
-      console.log('Apply for New Loan clicked');
-      // Add your new loan application logic here
+      onApplyNewLoan();
     }
   };
 
   return (
-    <div className="flex flex-row items-center justify-center border border-teal-200 my-5 rounded-md md:rounded-xl px-1 md:px-3 py-3 md:py-5 bg-white  gap-4">
+    <div className="flex flex-row items-center justify-center border border-teal-200 my-5 rounded-md md:rounded-xl px-1 md:px-3 py-3 md:py-5 bg-white gap-4">
       {/* Pay Now Button */}
       <Tooltip 
         text={!isPayNowEnabled ? "Pay Now is available only after loan disbursement" : ""}
@@ -89,4 +89,6 @@ export default function LoanButtons({ loanStatus = 2 }) {
       </Tooltip>
     </div>
   );
-}
+};
+
+export default LoanButtons;

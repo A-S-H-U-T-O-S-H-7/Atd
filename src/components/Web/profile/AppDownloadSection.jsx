@@ -13,12 +13,12 @@ function AppDownloadSection() {
                 <h2 className="text-white text-2xl md:text-3xl font-bold text-center ">
                   Download the ATD Money App
                 </h2>
-                <p className="text-gray-300 text-center max-w-xl z-10">
+                <p className="text-gray-300 text-center max-w-xl ">
                   Get instant personal loans with low interest rates. Download our app now from your favorite store and get started in minutes!
                 </p>
 
                 {/* Store Buttons */}
-                <div className="flex flex-col sm:flex-row gap-6 z-10">
+                <div className="flex flex-col sm:flex-row gap-6 ">
                   {/* Google Play */}
                   <button className="group flex items-center gap-3 px-6 py-3 border border-green-600 rounded-xl cursor-pointer bg-white hover:bg-green-50 transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500">
                     <img 
