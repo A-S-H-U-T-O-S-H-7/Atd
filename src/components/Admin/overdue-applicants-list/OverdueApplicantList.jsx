@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, Mail } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import OverdueApplicantTable from "./OverdueApplicantListTable";
@@ -9,16 +9,19 @@ import OverdueAmountModal from "../application-modals/OverdueAmountModal";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
+import { overdueApplicantService } from "@/lib/services/OverdueApplicantServices";
 
 // Main Overdue Applicant Management Component
 const OverdueApplicantList = () => {
-const { theme } = useThemeStore();
- const isDark = theme === "dark";
- const [searchField, setSearchField] = useState("");
-const [searchTerm, setSearchTerm] = useState("");
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const [searchField, setSearchField] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(100);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Now configurable
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const router = useRouter();
   
   // Modal states
@@ -27,12 +30,12 @@ const [searchTerm, setSearchTerm] = useState("");
   const [showLedgerModal, setShowLedgerModal] = useState(false);
  
   const SearchOptions = [
-  { value: 'loanNo', label: 'Loan No.' },
-  { value: 'name', label: 'Name' },
-  { value: 'phoneNo', label: 'Phone Number' },
-  { value: 'email', label: 'Email' },
-  { value: 'dueDate', label: 'Due Date' },
-];
+    { value: 'loan_no', label: 'Loan No.' },
+    { value: 'fullname', label: 'Name' },
+    { value: 'phone', label: 'Phone Number' },
+    { value: 'email', label: 'Email' },
+    { value: 'duedate', label: 'Due Date' },
+  ];
   
   // Selected applicant states
   const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -40,92 +43,110 @@ const [searchTerm, setSearchTerm] = useState("");
   const [selectedApplicantForOverdue, setSelectedApplicantForOverdue] = useState(null);
   const [selectedApplicantForLedger, setSelectedApplicantForLedger] = useState(null);
 
-  const [overdueApplicants, setOverdueApplicants] = useState([
-    {
-      id: 1158,
-      srNo: 1,
-      call: true,
-      loanNo: "ATDAM35685",
-      dueDate: "27-06-2025",
-      name: "Prabhat Kumar",
-      phoneNo: "9892139975",
-      email: "prabhat88.india@gmail.com",
-      adjustment: "Adjustment",
-      balance: 16182.0,
-      overdueAmt: 16182.0,
-      upiPayments: 16182.0,
-      demandNotice: "Send Notice",
-      status: "Adjustment",
-      sreAssignDate: "25-06-2025"
-    },
-    {
-      id: 1157,
-      srNo: 2,
-      call: true,
-      loanNo: "ATDAM35675",
-      dueDate: "26-06-2025",
-      name: "Sachin Satish Hegshetye",
-      phoneNo: "9987209129",
-      email: "sachin.hegshetye@gmail.com",
-      adjustment: "Adjustment",
-      balance: 3034.0,
-      overdueAmt: 3034.0,
-      upiPayments: 3034.0,
-      demandNotice: "Send Notice",
-      status: "Adjustment",
-      sreAssignDate: "25-06-2025"
-    },
-    {
-      id: 1156,
-      srNo: 3,
-      call: true,
-      loanNo: "ATDAM35673",
-      dueDate: "27-06-2025",
-      name: "YESHAS HASSAN CHIDAMBARA",
-      phoneNo: "9538591172",
-      email: "yeshas1991@gmail.com",
-      adjustment: "Adjustment",
-      balance: 19229.0,
-      overdueAmt: 19229.0,
-      upiPayments: 19229.0,
-      demandNotice: "Send Notice",
-      status: "Adjustment"
-    },
-    {
-      id: 1155,
-      srNo: 4,
-      call: true,
-      loanNo: "ATDAM35407",
-      dueDate: "21-06-2025",
-      name: "Vikas Dhyani",
-      phoneNo: "9582063690",
-      email: "vikas92dh@gmail.com",
-      adjustment: "Adjustment",
-      balance: 9126.0,
-      overdueAmt: 9975.0,
-      upiPayments: 9975.0,
-      demandNotice: "Send Notice",
-      status: "Overdue"
-    },
-    {
-      id: 1154,
-      srNo: 5,
-      call: true,
-      loanNo: "ATDAM35403",
-      dueDate: "24-06-2025",
-      name: "Gaurav Jain",
-      phoneNo: "9351084161",
-      email: "gaurav9253@gmail.com",
-      adjustment: "Adjustment",
-      balance: 20321.0,
-      overdueAmt: 20321.0,
-      upiPayments: 20321.0,
-      demandNotice: "Send Notice",
-      status: "Adjustment"
-    }
-  ]);
+  const [overdueApplicants, setOverdueApplicants] = useState([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current_page: 1,
+    per_page: 10,
+    total_pages: 0
+  });
 
-  
+  // Fetch overdue applicants
+  const fetchOverdueApplicants = async (page = 1, searchParams = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        page,
+        per_page: itemsPerPage,
+        ...searchParams
+      };
+
+      // Map search field to API field names if needed
+      if (searchField && searchTerm) {
+        params.search_by = searchField;
+        params.search_value = searchTerm;
+      }
+
+      const response = await overdueApplicantService.getOverdueApplicants(params);
+      
+      if (response.success) {
+        // Transform API data to match your UI structure
+        const transformedData = response.data.map((applicant, index) => ({
+          id: applicant.application_id,
+          srNo: (page - 1) * itemsPerPage + index + 1,
+          call: true,
+          loanNo: applicant.loan_no,
+          dueDate: formatDate(applicant.duedate),
+          name: applicant.fullname,
+          phoneNo: applicant.phone,
+          email: applicant.email,
+          adjustment: "Adjustment",
+          balance: parseFloat(applicant.ledger_balance),
+          overdueAmt: parseFloat(applicant.overdue_details?.overdue?.total_due || applicant.ledger_balance),
+          upiPayments: parseFloat(applicant.total_collection),
+          demandNotice: "Send Notice",
+          status: applicant.ovedays > 0 ? "Overdue" : "Adjustment",
+          sreAssignDate: applicant.last_collection_date ? formatDate(applicant.last_collection_date) : "N/A",
+          // API specific fields
+          application_id: applicant.application_id,
+          overdue_details: applicant.overdue_details,
+          ovedays: applicant.ovedays,
+          approved_amount: parseFloat(applicant.approved_amount),
+          roi: parseFloat(applicant.roi),
+          tenure: applicant.tenure
+        }));
+
+        setOverdueApplicants(transformedData);
+        setPagination(response.pagination);
+        setCurrentPage(response.pagination.current_page);
+      }
+    } catch (err) {
+      console.error("Error fetching overdue applicants:", err);
+      setError("Failed to fetch overdue applicants. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); 
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchOverdueApplicants();
+  }, [itemsPerPage]);
+
+  // Handle search
+  const handleAdvancedSearch = ({ field, term }) => {
+    setSearchField(field);
+    setSearchTerm(term);
+    setCurrentPage(1);
+    fetchOverdueApplicants(1, {
+      search_by: field,
+      search_value: term
+    });
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    fetchOverdueApplicants(page, {
+      search_by: searchField,
+      search_value: searchTerm
+    });
+  };
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
   const handleAdjustmentClick = (applicant) => {
     setSelectedApplicantForAdjustment(applicant);
     setShowAdjustmentModal(true);
@@ -180,53 +201,52 @@ const [searchTerm, setSearchTerm] = useState("");
     // Add your bulk email logic here
   };
 
-  const handleExport = (type) => {
-    const exportData = filteredApplicants.map(applicant => ({
-      "SR No": applicant.srNo,
-      "Loan No": applicant.loanNo,
-      "Due Date": applicant.dueDate,
-      Name: applicant.name,
-      "Phone No": applicant.phoneNo,
-      Email: applicant.email,
-      Balance: applicant.balance,
-      "Overdue Amount": applicant.overdueAmt,
-      "UPI Payments": applicant.upiPayments,
-      Status: applicant.status
-    }));
+  const handleExport = async (type) => {
+    try {
+      setLoading(true);
+      const response = await overdueApplicantService.exportOverdueApplicants({
+        search_by: searchField,
+        search_value: searchTerm
+      });
 
-    if (type === "excel") {
-      exportToExcel(exportData, "overdue_applicants");
-    } else if (type === "overdue_ref") {
-      exportToExcel(exportData, "overdue_reference_export");
+      if (response.success) {
+        const exportData = response.data.map(applicant => ({
+          "SR No": applicant.application_id,
+          "Loan No": applicant.loan_no,
+          "Due Date": formatDate(applicant.duedate),
+          "Name": applicant.fullname,
+          "Phone No": applicant.phone,
+          "Email": applicant.email,
+          "Balance": parseFloat(applicant.ledger_balance),
+          "Overdue Amount": parseFloat(applicant.overdue_details?.overdue?.total_due || applicant.ledger_balance),
+          "UPI Payments": parseFloat(applicant.total_collection),
+          "Status": applicant.ovedays > 0 ? "Overdue" : "Adjustment",
+          "Approved Amount": parseFloat(applicant.approved_amount),
+          "ROI": `${(parseFloat(applicant.roi) * 100).toFixed(1)}%`,
+          "Days Overdue": applicant.ovedays
+        }));
+
+        if (type === "excel") {
+          exportToExcel(exportData, "overdue_applicants");
+        } else if (type === "overdue_ref") {
+          exportToExcel(exportData, "overdue_reference_export");
+        }
+      }
+    } catch (err) {
+      console.error("Error exporting data:", err);
+      setError("Failed to export data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  //  filter logic:
-const filteredApplicants = overdueApplicants.filter(applicant => {
-  const matchesSearch = !searchField || !searchTerm || 
-    applicant[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase());
-  
-  const matchesStatus = statusFilter === "all" || 
-    applicant.status.toLowerCase() === statusFilter.toLowerCase();
-  
-  return matchesSearch && matchesStatus;
-});
-
-const handleAdvancedSearch = ({ field, term }) => {
-  setSearchField(field);
-  setSearchTerm(term);
-};  
-
-  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedApplicants = filteredApplicants.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  // Filter logic for local filtering (if still needed)
+  const filteredApplicants = overdueApplicants.filter(applicant => {
+    const matchesStatus = statusFilter === "all" || 
+      applicant.status.toLowerCase() === statusFilter.toLowerCase();
+    
+    return matchesStatus;
+  });
 
   return (
     <div
@@ -240,7 +260,7 @@ const handleAdvancedSearch = ({ field, term }) => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
-              onClick={()=>router.back()}
+                onClick={() => router.back()}
                 className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${isDark
                   ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"}`}
@@ -264,22 +284,24 @@ const handleAdvancedSearch = ({ field, term }) => {
             <div className="flex space-x-2">
               <button
                 onClick={() => handleExport("excel")}
+                disabled={loading}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${isDark
                   ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-green-500 hover:bg-green-600 text-white"}`}
+                  : "bg-green-500 hover:bg-green-600 text-white"} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Download size={16} />
-                <span>Export</span>
+                <span>{loading ? "Exporting..." : "Export"}</span>
               </button>
 
               <button
                 onClick={() => handleExport("overdue_ref")}
+                disabled={loading}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${isDark
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-blue-500 hover:bg-blue-600 text-white"}`}
+                  : "bg-blue-500 hover:bg-blue-600 text-white"} ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <Download size={16} />
-                <span>Overdue Ref. Export</span>
+                <span>{loading ? "Exporting..." : "Overdue Ref. Export"}</span>
               </button>
 
               <button
@@ -294,16 +316,47 @@ const handleAdvancedSearch = ({ field, term }) => {
             </div>
           </div>
 
-          {/* Search and Total Records */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Search and Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="md:col-span-2">
               <AdvancedSearchBar 
-  searchOptions={SearchOptions}
-  onSearch={handleAdvancedSearch}
-  isDark={isDark}
-/>
+                searchOptions={SearchOptions}
+                onSearch={handleAdvancedSearch}
+                isDark={isDark}
+              />
             </div>
+            
+            {/* Items Per Page Dropdown */}
+            <div className="flex items-center space-x-2">
+              <label className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                Show:
+              </label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className={`px-3 py-2 rounded-lg border text-sm ${
+                  isDark 
+                    ? "bg-gray-800 border-gray-600 text-white" 
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+
+            
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className={`mb-4 p-3 rounded-lg ${isDark ? "bg-red-900/50 text-red-300" : "bg-red-100 text-red-700"}`}>
+              {error}
+            </div>
+          )}
 
           {/* Total Records Display */}
           <div
@@ -312,17 +365,18 @@ const handleAdvancedSearch = ({ field, term }) => {
               : "bg-emerald-50 text-emerald-700"}`}
           >
             <span className="font-semibold">
-              Total Records: {filteredApplicants.length}
+              Total Records: {pagination.total}
+              {loading && " (Loading...)"}
             </span>
           </div>
         </div>
 
         {/* Table */}
         <OverdueApplicantTable
-          paginatedApplicants={paginatedApplicants}
+          paginatedApplicants={filteredApplicants}
           filteredApplicants={filteredApplicants}
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={pagination.total_pages}
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={handlePageChange}
@@ -333,12 +387,11 @@ const handleAdvancedSearch = ({ field, term }) => {
           onView={handleView}
           onChargeICICI={handleChargeICICI}
           onSREAssign={handleSREAssign}
+          loading={loading}
         />
       </div>
 
       {/* All Modals */}
-      
-
       <AdjustmentModal
         isOpen={showAdjustmentModal}
         onClose={() => {

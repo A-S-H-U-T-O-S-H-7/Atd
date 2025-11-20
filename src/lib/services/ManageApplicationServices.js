@@ -77,6 +77,9 @@ export const formatManageApplicationForUI = (application) => {
     loanNo: application.loan_no || `LN${application.application_id}`,
     userId: application.user_id,
 
+    verify: application.verify, 
+    isVerified: application.verify === 1,
+
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),

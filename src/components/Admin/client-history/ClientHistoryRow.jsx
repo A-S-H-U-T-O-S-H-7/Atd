@@ -50,14 +50,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
         </div>
       </td>
 
-      {/* Loan No */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span className={`text-sm font-mono ${
-          isDark ? "text-emerald-400" : "text-emerald-600"
-        }`}>
-          {item.loanNo}
-        </span>
-      </td>
+      
 
       {/* Father Name */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

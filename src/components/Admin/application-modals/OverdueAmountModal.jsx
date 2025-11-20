@@ -1,40 +1,19 @@
-import React from "react";
+// Updated OverdueAmountModal with applicant name color change
 import { X } from "lucide-react";
 
 const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
-  if (!isOpen) return null;
+  if (!isOpen || !applicant) return null;
+
+  const overdueDetails = applicant.overdue_details?.overdue;
+  const renewalDetails = applicant.overdue_details?.renewal;
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2
-    }).format(amount);
+    }).format(amount || 0);
   };
-
-  // Calculate days passed from due date
-  const calculateDaysPassed = (dueDate) => {
-    const today = new Date();
-    const dateParts = dueDate.split('-');
-    const formattedDate = `${dateParts[1]}/${dateParts[0]}/${dateParts[2]}`;
-    const dueDateObj = new Date(formattedDate);
-    const daysDiff = Math.ceil((today - dueDateObj) / (1000 * 60 * 60 * 24));
-    return daysDiff > 0 ? daysDiff : 0;
-  };
-
-  // Sample calculations - you can adjust these based on your business logic
-  const daysPassed = calculateDaysPassed(applicant.dueDate);
-  const sanctionAmount = applicant.balance || 9000.00;
-  const interestAmount = (sanctionAmount * 0.02) || 156.78; // 2% interest
-  const penalty = 500.00;
-  const penalInterest = 319.00;
-  const collection = 1000.00;
-  const totalDueAmount = sanctionAmount + interestAmount + penalty + penalInterest - collection;
-
-  // Renewal calculations
-  const processingFee = sanctionAmount * 0.15 || 1274.00; // 15% processing fee
-  const renewalFee = (sanctionAmount * 0.02) + (sanctionAmount * 0.02 * 0.18) || 212.40; // 2% + 18% GST
-  const totalPayableAmount = processingFee + interestAmount + penalty + penalInterest + renewalFee;
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
@@ -46,7 +25,7 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">
-            Overdue Amount of {applicant.name}
+            Overdue Amount of <span className="text-blue-600">{applicant.name}</span>
           </h2>
           <button
             onClick={onClose}
@@ -60,81 +39,99 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Overdue Details */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">No of days passed :</span>
-              <span className="text-sm font-semibold">{daysPassed} Days</span>
+          {/* Days Badge */}
+          <div className="flex justify-center">
+            <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              applicant.ovedays > 30 
+                ? "bg-red-100 text-red-700 border border-red-300"
+                : applicant.ovedays > 15 
+                ? "bg-orange-100 text-orange-700 border border-orange-300"
+                : "bg-green-100 text-green-700 border border-green-300"
+            }`}>
+              {applicant.ovedays} Days Passed
             </div>
-            
+          </div>
+
+          {/* Overdue Details */}
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Sanction Amount :</span>
-              <span className="text-sm font-semibold">{sanctionAmount.toFixed(2)}</span>
+              <span className="text-sm font-semibold">{formatCurrency(overdueDetails?.sanction_amount)}</span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Interest :</span>
-              <span className="text-sm font-semibold">{interestAmount.toFixed(2)}</span>
+              <span className="text-sm font-semibold">{formatCurrency(overdueDetails?.interest)}</span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Penalty :</span>
-              <span className="text-sm font-semibold">{penalty.toFixed(2)}</span>
+              <span className="text-sm font-semibold">{formatCurrency(overdueDetails?.penality)}</span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Penal Interest :</span>
-              <span className="text-sm font-semibold">{penalInterest.toFixed(2)} (Including 18% GST)</span>
+              <span className="text-sm font-semibold">{formatCurrency(overdueDetails?.penal_interest)}</span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Collection :</span>
-              <span className="text-sm font-semibold">{collection.toFixed(2)}</span>
+              <span className="text-sm font-semibold text-green-600">{formatCurrency(overdueDetails?.collection)}</span>
             </div>
             
-            <hr className={`my-3 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
+            <hr className={`my-2 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
             
-            <div className="flex justify-between items-center font-bold">
+            {/* Total Due Highlight */}
+            <div className={`flex justify-between items-center font-bold p-2 rounded ${
+              isDark ? "bg-red-900/30 border border-red-700" : "bg-red-50 border border-red-200"
+            }`}>
               <span className="text-sm">Total Due Amount :</span>
-              <span className="text-sm">{totalDueAmount.toFixed(2)}</span>
+              <span className={`text-sm ${isDark ? "text-red-300" : "text-red-600"}`}>
+                {formatCurrency(overdueDetails?.total_due)}
+              </span>
             </div>
           </div>
 
           {/* Renewal Case Section */}
-          <div className="mt-6">
-            <h3 className="text-base font-semibold mb-3">Renewal Case</h3>
+          <div className="mt-4">
+            <h3 className="text-base font-semibold mb-2">Renewal of {applicant.name}</h3>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Processing Fee :</span>
-                <span className="text-sm font-semibold">{processingFee.toFixed(2)}</span>
+                <span className="text-sm font-semibold">{formatCurrency(renewalDetails?.process_fee)}</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Interest :</span>
-                <span className="text-sm font-semibold">{interestAmount.toFixed(2)}</span>
+                <span className="text-sm font-semibold">{formatCurrency(renewalDetails?.interest)}</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Penalty :</span>
-                <span className="text-sm font-semibold">{penalty.toFixed(2)}</span>
+                <span className="text-sm font-semibold">{formatCurrency(renewalDetails?.penality)}</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Penal Interest :</span>
-                <span className="text-sm font-semibold">{penalInterest.toFixed(2)} (Including 18% GST)</span>
+                <span className="text-sm font-semibold">{formatCurrency(renewalDetails?.penal_interest)}</span>
               </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Renewal Fee :</span>
-                <span className="text-sm font-semibold">{renewalFee.toFixed(2)} (2% of sanction amount + GST)</span>
+                <span className="text-sm font-semibold">{formatCurrency(renewalDetails?.renewal_fee)}</span>
               </div>
               
-              <hr className={`my-3 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
+              <hr className={`my-2 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
               
-              <div className="flex justify-between items-center font-bold">
+              {/* Total Payable Highlight */}
+              <div className={`flex justify-between items-center font-bold p-2 rounded ${
+                isDark ? "bg-green-900/30 border border-green-700" : "bg-green-50 border border-green-200"
+              }`}>
                 <span className="text-sm">Total Payable Amount :</span>
-                <span className="text-sm">{totalPayableAmount.toFixed(2)}</span>
+                <span className={`text-sm ${isDark ? "text-green-300" : "text-green-600"}`}>
+                  {formatCurrency(renewalDetails?.total_renewal_charges)}
+                </span>
               </div>
             </div>
           </div>

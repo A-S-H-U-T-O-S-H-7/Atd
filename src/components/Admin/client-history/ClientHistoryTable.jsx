@@ -38,11 +38,7 @@ const ClientHistoryTable = ({
                 }`} style={{ minWidth: "180px" }}>
                   Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "130px" }}>
-                  Loan No
-                </th>
+                
                 <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "180px" }}>
