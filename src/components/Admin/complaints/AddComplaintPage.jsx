@@ -4,6 +4,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import ComplaintFormFields from './ComplaintsFormFields';
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
+import { complaintService } from '@/lib/services/ComplaintService';
+import { toast } from 'react-hot-toast';
 
 const AddComplaintPage = () => {
   const { theme } = useThemeStore();
@@ -17,23 +19,70 @@ const AddComplaintPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  // Validation function
+  const validateForm = () => {
+    if (!complaintDate) {
+      toast.error('Please select complaint date');
+      return false;
+    }
+    if (!customerName?.trim()) {
+      toast.error('Please enter customer name');
+      return false;
+    }
+    if (!mobileNo?.trim()) {
+      toast.error('Please enter mobile number');
+      return false;
+    }
+    if (!email?.trim()) {
+      toast.error('Please enter email address');
+      return false;
+    }
+    if (!loanAcNo?.trim()) {
+      toast.error('Please enter loan account number');
+      return false;
+    }
+    if (!loanProvider) {
+      toast.error('Please select loan provider');
+      return false;
+    }
+
+    // Mobile number validation
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(mobileNo)) {
+      toast.error('Please enter a valid 10-digit mobile number');
+      return false;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      const payload = {
+      const complaintData = {
         complaintDate,
-        customerName,
-        mobileNo,
-        email,
-        loanAcNo,
-        loanProvider,
+        customerName: customerName.trim(),
+        mobileNo: mobileNo.trim(),
+        email: email.trim(),
+        loanAcNo: loanAcNo.trim(),
+        loanProvider
       };
       
-      console.log('Adding Complaint:', payload);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call the service to add complaint
+      await complaintService.addComplaint(complaintData);
       
       // Reset form after successful submission
       setComplaintDate('');
@@ -43,26 +92,26 @@ const AddComplaintPage = () => {
       setLoanAcNo('');
       setLoanProvider('');
       
-      alert('Complaint added successfully!');
+      // Optional: Redirect to complaints list after success
+      // router.push('/complaints');
+      
     } catch (error) {
-      console.error('Error adding complaint:', error);
-      alert('Failed to add complaint. Please try again.');
+      // Error handling is already done in the service
+      console.error('Error in handleSubmit:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 `}
-    >
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-3 md:px-54 md:py-3 md:pt-10">
         {/* Header */}
-        <div className=" mb-5 md:mb-10">
+        <div className="mb-5 md:mb-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
               <button
-              onClick={()=> router.back()}
+                onClick={() => router.back()}
                 className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
                   isDark
                     ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
@@ -125,7 +174,7 @@ const AddComplaintPage = () => {
             <div className="space-y-4">
               {/* Form Fields */}
               <ComplaintFormFields
-              isDark={isDark}
+                isDark={isDark}
                 complaintDate={complaintDate}
                 setComplaintDate={setComplaintDate}
                 customerName={customerName}

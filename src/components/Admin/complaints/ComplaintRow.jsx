@@ -130,7 +130,7 @@ const ComplaintRow = ({
             ? "text-emerald-400"
             : "text-emerald-600"}`}
         >
-          {complaint.loanNo}
+          {complaint.loanNo || "N/A"}
         </span>
       </td>
 
@@ -145,7 +145,7 @@ const ComplaintRow = ({
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
           >
-            {complaint.loanBelongTo}
+            {complaint.loanBelongTo || "N/A"}
           </span>
         </div>
       </td>
@@ -195,7 +195,7 @@ const ComplaintRow = ({
         <span
           className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
         >
-          {complaint.complaintFor}
+          {complaint.complaintFor || "N/A"}
         </span>
       </td>
 
@@ -206,7 +206,7 @@ const ComplaintRow = ({
             ? "text-gray-200"
             : "text-gray-700"}`}
         >
-          {complaint.assignedTo}
+          {complaint.assignedTo || "N/A"}
         </span>
       </td>
 
@@ -221,7 +221,7 @@ const ComplaintRow = ({
           <span
             className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}
           >
-            {complaint.complaintAssignDate}
+            {complaint.open_date || complaint.complaintAssignDate || "N/A"}
           </span>
         </div>
       </td>

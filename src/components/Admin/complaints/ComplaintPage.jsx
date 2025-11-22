@@ -1,6 +1,6 @@
-"use client";
-import React, { useState } from "react";
-import { ArrowLeft, Download } from "lucide-react";
+'use client';
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import SearchBar from "../SearchBar";
 import ComplaintTable from "./ComplaintTable";
 import ComplaintDetailModal from "./ComplaintDetails";
@@ -8,90 +8,50 @@ import UploadModal from "./UploadModal";
 import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
+import complaintService from "@/lib/services/ComplaintService";
 
-// Main Complaint Management Component
 const ComplaintPage = () => {
-const { theme } = useThemeStore();
- const isDark = theme === "dark";
-   const [currentPage, setCurrentPage] = useState(1);
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
-  const router = useRouter()
-  
-  const [complaints, setComplaints] = useState([
-    {
-      id: 1,
-      srNo: 1,
-      complaintDate: "20-06-2025",
-      name: "DHANANJANEYA NAIDU YARAMALANAYUNI",
-      mobileNo: "9986959379",
-      email: "dhanayaramala@gmail.com",
-      loanNo: "ATDAM33604",
-      loanBelongTo: "Atmoney/",
-      status: "Close",
-      complaintDetails: "I sincerely apologize for the delay in repaying my loan. The delay happened due to a serious health emergency with my mother. I expect to receive my salary by the end of this month. I am also trying to arrange funds through other sources. However, I am committed to clearing this loan at the earliest.",
-      complaintFor: "Other",
-      assignedTo: "Kisan Sahoo",
-      complaintAssignDate: "20/06/2025",
-      complaintResolution: "Dear Sir, Greetings from ATD Money!! We received your mail for the allegation to our employee however we denied the allegation as mentioned by you in trail mail. This is to inform you that we never harass or threaten our customers. We do only follow up calls to our customers.You can take action if you are getting such types of calls. Also please send us if you have any recordings so that we will take appropriate action. As per our bank we can extend your EMI for next month if you pay some amount as discussed.",
-      complaintCloseDate: "20/06/2025",
-      finalRemarks: "",
-      hasComplaintDocs: true,
-      hasResolutionDocs: true,
-      phone: "9986959379",
-      date: "20-06-2025"
-    },
-    {
-      id: 2,
-      srNo: 2,
-      complaintDate: "18-06-2025",
-      name: "RAJESH KUMAR SHARMA",
-      mobileNo: "9876543210",
-      email: "rajesh.sharma@gmail.com",
-      loanNo: "ATDAM33605",
-      loanBelongTo: "Atmoney/",
-      status: "Open",
-      complaintDetails: "The interest rate charged is higher than what was initially discussed. I was told it would be 12% per annum but I'm being charged 18%. This is misleading and I request immediate correction of the interest rate as per the initial agreement.",
-      complaintFor: "Interest Rate Issue",
-      assignedTo: "Priya Singh",
-      complaintAssignDate: "18/06/2025",
-      complaintResolution: "",
-      complaintCloseDate: "",
-      finalRemarks: "",
-      hasComplaintDocs: false,
-      hasResolutionDocs: false,
-      phone: "9876543210",
-      date: "18-06-2025"
-    },
-    {
-      id: 3,
-      srNo: 3,
-      complaintDate: "15-06-2025",
-      name: "SUNITA DEVI PATEL",
-      mobileNo: "8765432109",
-      email: "sunita.patel@gmail.com",
-      loanNo: "ATDAM33606",
-      loanBelongTo: "Atmoney/",
-      status: "Open",
-      complaintDetails: "I have been receiving harassment calls from your collection team at odd hours including late night and early morning. This is causing distress to my family. Please ensure your team follows proper collection practices and calls only during appropriate hours.",
-      complaintFor: "Collection Harassment",
-      assignedTo: "Amit Verma",
-      complaintAssignDate: "15/06/2025",
-      complaintResolution: "",
-      complaintCloseDate: "",
-      finalRemarks: "",
-      hasComplaintDocs: true,
-      hasResolutionDocs: false,
-      phone: "8765432109",
-      date: "15-06-2025"
-    },
-    
-  ]);
+  const [complaints, setComplaints] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current_page: 1,
+    per_page: 10,
+    total_pages: 0
+  });
+  const router = useRouter();
 
-  const itemsPerPage = 10;
+  // Fetch complaints from API
+  const fetchComplaints = async (page = 1, search = '', status = '') => {
+    setIsLoading(true);
+    try {
+      const response = await complaintService.getComplaints(page, search, status);
+      setComplaints(response.data || []);
+      setPagination(response.pagination || {
+        total: 0,
+        current_page: 1,
+        per_page: 10,
+        total_pages: 0
+      });
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
+      setComplaints([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchComplaints(currentPage, searchTerm, statusFilter);
+  }, [currentPage, searchTerm, statusFilter]);
 
   const handleUploadClick = (complaint) => {
     setSelectedComplaint(complaint);
@@ -104,64 +64,105 @@ const { theme } = useThemeStore();
   };
 
   const handleFileView = (complaint, docType) => {
-    // Mock file viewing - replace with actual file URL
-    const fileUrl = `https://example.com/documents/${complaint.id}/${docType}`;
-    window.open(fileUrl, '_blank');
+    // Find document by type and open URL
+    const document = complaint.documents?.find(doc => doc.type === docType);
+    if (document?.url) {
+      window.open(document.url, '_blank');
+    } else {
+      toast.error('Document not found');
+    }
   };
 
-  const handleUpload = (complaintId, file, docType) => {
-    // Handle file upload logic here
-    console.log('Uploading file:', file, 'for complaint:', complaintId, 'type:', docType);
+  const handleUpload = async (complaintId, file, docType) => {
+    try {
+      await complaintService.uploadDocument(complaintId, file, docType);
+      // Refresh complaints after upload
+      fetchComplaints(currentPage, searchTerm, statusFilter);
+    } catch (error) {
+      console.error('Error in handleUpload:', error);
+    }
   };
 
-  const handleComplaintUpdate = (complaintId, updateData) => {
-    setComplaints(prevComplaints =>
-      prevComplaints.map(complaint =>
-        complaint.id === complaintId
-          ? { ...complaint, ...updateData }
-          : complaint
-      )
-    );
-  };
+  const handleComplaintUpdate = async (complaintId, updateData) => {
+  // Update complaints list
+  setComplaints(prevComplaints =>
+    prevComplaints.map(complaint =>
+      complaint.id === complaintId
+        ? { ...complaint, ...updateData }
+        : complaint
+    )
+  );
+  
+  // Update selected complaint for instant modal update
+  if (selectedComplaint && selectedComplaint.id === complaintId) {
+    setSelectedComplaint(prev => ({ ...prev, ...updateData }));
+  }
+  
+  // Refresh from API
+  fetchComplaints(currentPage, searchTerm, statusFilter);
+};
 
   const handleExport = (type) => {
-    const exportData = filteredComplaints.map(complaint => ({
-      'SR No': complaint.srNo,
-      'Complaint Date': complaint.complaintDate,
+    const exportData = complaints.map(complaint => ({
+      'SR No': complaint.id,
+      'Complaint Date': complaint.complaint_date,
       'Name': complaint.name,
-      'Mobile No': complaint.mobileNo,
+      'Mobile No': complaint.phone,
       'Email': complaint.email,
-      'Loan No': complaint.loanNo,
+      'Loan No': complaint.loan_no,
+      'Loan Belong To': complaint.loan_belong_to,
       'Status': complaint.status,
-      'Complaint Details': complaint.complaintDetails,
-      'Assigned To': complaint.assignedTo,
-      'Resolution': complaint.complaintResolution
+      'Complaint Details': complaint.complaint_details,
+      'Complaint For': complaint.complaint_for,
+      'Assigned To': complaint.complaint_assign_to,
+      'Resolution': complaint.resolution_remarks,
+      'Close Date': complaint.close_date,
+      'Final Remarks': complaint.final_remarks
     }));
 
     if (type === 'excel') {
       exportToExcel(exportData, 'complaints');
-    } else if (type === 'pdf') {
-      exportToPDF(exportData, 'Complaints Report');
     }
   };
 
-  // Filter complaints
-  const filteredComplaints = complaints.filter(complaint => {
-    const matchesSearch = 
-      complaint.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.loanNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.complaintDetails.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      complaint.mobileNo.includes(searchTerm);
+  const handleRefresh = () => {
+    fetchComplaints(currentPage, searchTerm, statusFilter);
+  };
 
-    const matchesStatus = statusFilter === "all" || complaint.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedComplaints = filteredComplaints.slice(startIndex, startIndex + itemsPerPage);
+  // Transform API data to match component expectations
+ const transformedComplaints = complaints.map(complaint => ({
+  id: complaint.id,
+  srNo: complaint.id,
+  complaintDate: complaint.complaint_date,
+  name: complaint.name,
+  mobileNo: complaint.phone,
+  email: complaint.email,
+  loanNo: complaint.loan_no,
+  loanBelongTo: complaint.loan_belong_to,
+  status: complaint.status,
+  complaintDetails: complaint.complaint_details,
+  complaintFor: complaint.complaint_for,
+  assignedTo: complaint.complaint_assign_to,
+  complaintResolution: complaint.resolution_remarks,
+  complaintCloseDate: complaint.close_date,
+  finalRemarks: complaint.final_remarks,
+  hasComplaintDocs: complaint.documents?.some(doc => doc.type === 'complaint') || false,
+  hasResolutionDocs: complaint.documents?.some(doc => doc.type === 'resolution') || false,
+  phone: complaint.phone,
+  date: complaint.complaint_date,
+  documents: complaint.documents || [],
+  // Add these fields for proper mapping
+  loan_belong_to: complaint.loan_belong_to,
+  complaint_date: complaint.complaint_date,
+  complaint_details: complaint.complaint_details,
+  complaint_assign_to: complaint.complaint_assign_to,
+  complaint_for: complaint.complaint_for,
+  resolution_remarks: complaint.resolution_remarks,
+  close_date: complaint.close_date,
+  final_remarks: complaint.final_remarks,
+  open_date: complaint.open_date, // Add this for assign date
+  loan_no: complaint.loan_no // Add this for loan number
+}));
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -173,12 +174,13 @@ const { theme } = useThemeStore();
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
-              onClick={()=>router.back()}
-               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                isDark
-                  ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                  : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-              }`}>
+                onClick={() => router.back()}
+                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
                 <ArrowLeft className={`w-5 h-5 ${
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
@@ -188,10 +190,25 @@ const { theme } = useThemeStore();
               } bg-clip-text text-transparent`}>
                 List Of Complaints
               </h1>
+              {isLoading && (
+                <RefreshCw className="w-5 h-5 animate-spin text-emerald-500" />
+              )}
             </div>
             
-            {/* Export Buttons */}
+            {/* Action Buttons */}
             <div className="flex space-x-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                <span>Refresh</span>
+              </button>
               <button
                 onClick={() => handleExport('excel')}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
@@ -226,6 +243,7 @@ const { theme } = useThemeStore();
               } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
             >
               <option value="all">All Status</option>
+              <option value="pending">Pending</option>
               <option value="open">Open</option>
               <option value="close">Close</option>
             </select>
@@ -234,16 +252,17 @@ const { theme } = useThemeStore();
 
         {/* Table */}
         <ComplaintTable
-          paginatedComplaints={paginatedComplaints}
-          filteredComplaints={filteredComplaints}
+          paginatedComplaints={transformedComplaints}
+          filteredComplaints={transformedComplaints}
           currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
+          totalPages={pagination.total_pages}
+          itemsPerPage={pagination.per_page}
           isDark={isDark}
           onPageChange={setCurrentPage}
           onUploadClick={handleUploadClick}
           onDetailClick={handleDetailClick}
           onFileView={handleFileView}
+          isLoading={isLoading}
         />
       </div>
 

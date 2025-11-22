@@ -1,18 +1,31 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import complaintService from "@/lib/services/ComplaintService";
 
 const UploadModal = ({ isOpen, onClose, complaint, onUpload, isDark }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [documentType, setDocumentType] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
-    if (selectedFile && documentType) {
+  const handleSubmit = async () => {
+    if (!selectedFile || !documentType) {
+      toast.error("Please select both document type and file");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await complaintService.uploadDocument(complaint.id, selectedFile, documentType);
       onUpload(complaint.id, selectedFile, documentType);
       setSelectedFile(null);
       setDocumentType("");
       onClose();
+    } catch (error) {
+      console.error('Error uploading document:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -42,7 +55,7 @@ const UploadModal = ({ isOpen, onClose, complaint, onUpload, isDark }) => {
         <div className="p-6 space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-              Document File Type:
+              Document Type:
             </label>
             <select
               value={documentType}
@@ -54,8 +67,8 @@ const UploadModal = ({ isOpen, onClose, complaint, onUpload, isDark }) => {
               } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
             >
               <option value="">Select Document Type</option>
-              <option value="complaint_document">Complaint Document</option>
-              <option value="resolution_document">Resolution Document</option>
+              <option value="complaint">Complaint Document</option>
+              <option value="resolution">Resolution Document</option>
             </select>
           </div>
           
@@ -76,14 +89,14 @@ const UploadModal = ({ isOpen, onClose, complaint, onUpload, isDark }) => {
           
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || !documentType}
+            disabled={!selectedFile || !documentType || isUploading}
             className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
-              !selectedFile || !documentType
+              !selectedFile || !documentType || isUploading
                 ? isDark ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : isDark ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-600 hover:bg-emerald-700 text-white"
             }`}
           >
-            Upload
+            {isUploading ? 'Uploading...' : 'Upload Document'}
           </button>
         </div>
       </div>
