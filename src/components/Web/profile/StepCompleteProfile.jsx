@@ -20,6 +20,7 @@ import LoanButtons from './LoanButtons';
 import ReferBlock from './ReferBlock';
 import LoanInformation from './LoanHistoryInformation';
 import LoanApplicationModal from './LoanApplicationModal';
+import PaymentModal from './PaymentModal';
 
 
 export default function StepCompleteProfile({ 
@@ -33,6 +34,7 @@ export default function StepCompleteProfile({
 }) {
 
     const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
   // Loan status mapping
   const LOAN_STATUS = {
@@ -88,6 +90,10 @@ export default function StepCompleteProfile({
   };
    const handleApplyNewLoan = () => {
     setIsLoanModalOpen(true);
+  };
+
+  const handlePayNow = () => {
+    setIsPaymentModalOpen(true);
   };
   
   const handleLogout = async () => {
@@ -174,7 +180,9 @@ export default function StepCompleteProfile({
              <LoanButtons 
                 loanStatus={currentStatus} 
                 onApplyNewLoan={handleApplyNewLoan}
-              />              {/* ReviewSection - Only visible on lg screens and above */}
+                onPayNow={handlePayNow}
+              /> 
+              {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">
                 <ReviewSection />
               </div>
@@ -232,6 +240,11 @@ export default function StepCompleteProfile({
         onClose={() => setIsLoanModalOpen(false)}
         onSuccess={handleLoanApplicationSuccess}
       />
+
+      <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+        />
       </div>
 
     </ProtectedRoute> 

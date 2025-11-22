@@ -1,7 +1,7 @@
 // components/LoanButtons.jsx
 import { Info } from 'lucide-react';
 
-const LoanButtons = ({ loanStatus = 2, onApplyNewLoan }) => {
+const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow }) => {
   const getLoanStatusLabel = (statusCode) => {
     switch (parseInt(statusCode)) {
       case 2: return 'applied';
@@ -32,9 +32,8 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan }) => {
   );
 
   const handlePayNow = () => {
-    if (isPayNowEnabled) {
-      console.log('Pay Now clicked');
-      // Add your pay now logic here
+    if (isPayNowEnabled && onPayNow) {
+      onPayNow();
     }
   };
 
