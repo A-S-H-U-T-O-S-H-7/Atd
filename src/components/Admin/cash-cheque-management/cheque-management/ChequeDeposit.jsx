@@ -1,108 +1,50 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import SearchBar from "../../SearchBar";
 import ChequeDepositTable from "./ChequeDepositTable";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
+import { ChequeService, formatDepositsForTable } from "@/lib/services/ChequeService";
 
 const ChequeDepositPage = () => {
-const { theme } = useThemeStore();
- const isDark = theme === "dark";
-   const router = useRouter();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedDeposit, setSelectedDeposit] = useState(null);
-  
-  const [deposits, setDeposits] = useState([
-    {
-      id: 1,
-      loanNo: "ATDAM00282",
-      chequeNo: "000029",
-      bankName: "ICICI BANK",
-      depositDate: "17-02-2020",
-      amount: 27357,
-      user: "prashant",
-      status: "bounced",
-      name: "Rajesh Kumar",
-      fatherName: "Ram Kumar",
-      relation: "Self",
-      chequePresented: "Repayment Cheque",
-      otherAddress: "123 Main Street, City",
-      companyBankName: "ICICI BANK",
-      companyBankBranch: "Central Branch",
-      companyBankAC: "123456789",
-      companyBankIFSC: "ICIC0001234",
-      customerBankName: "HDFC BANK",
-      customerBankBranch: "South Branch",
-      customerBankAC: "987654321",
-      customerBankIFSC: "HDFC0009876",
-      chequeReceivedDate: "15-02-2020",
-      chequeDepositDate: "17-02-2020",
-      interest: 12.5,
-      penalInterest: 2.5,
-      penalty: 500
-    },
-    {
-      id: 2,
-      loanNo: "ATDAM01250",
-      chequeNo: "324043",
-      bankName: "ICICI BANK",
-      depositDate: "17-02-2020",
-      amount: 28580,
-      user: "satyendra",
-      status: "received",
-      name: "Priya Sharma",
-      fatherName: "Mohan Sharma",
-      relation: "Daughter",
-      chequePresented: "Repayment Cheque",
-      otherAddress: "456 Park Avenue, Town",
-      companyBankName: "ICICI BANK",
-      companyBankBranch: "North Branch",
-      companyBankAC: "111222333",
-      companyBankIFSC: "ICIC0001111",
-      customerBankName: "SBI BANK",
-      customerBankBranch: "East Branch",
-      customerBankAC: "444555666",
-      customerBankIFSC: "SBIN0004445",
-      chequeReceivedDate: "14-02-2020",
-      chequeDepositDate: "17-02-2020",
-      interest: 10.0,
-      penalInterest: 3.0,
-      penalty: 750
-    },
-    {
-      id: 3,
-      loanNo: "ATDAM02042",
-      chequeNo: "000127",
-      bankName: "ICICI BANK",
-      depositDate: "17-02-2020",
-      amount: 42192,
-      user: "prashant",
-      status: "bounced",
-      name: "Amit Patel",
-      fatherName: "Suresh Patel",
-      relation: "Son",
-      chequePresented: "Repayment Cheque",
-      otherAddress: "789 Garden Road, Village",
-      companyBankName: "ICICI BANK",
-      companyBankBranch: "West Branch",
-      companyBankAC: "777888999",
-      companyBankIFSC: "ICIC0007778",
-      customerBankName: "AXIS BANK",
-      customerBankBranch: "Central Branch",
-      customerBankAC: "123789456",
-      customerBankIFSC: "UTIB0001237",
-      chequeReceivedDate: "16-02-2020",
-      chequeDepositDate: "17-02-2020",
-      interest: 15.0,
-      penalInterest: 4.0,
-      penalty: 1000
-    }
-  ]); 
+  const [deposits, setDeposits] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const itemsPerPage = 10;
+
+  // Fetch deposits on component mount
+  useEffect(() => {
+    fetchDeposits();
+  }, []);
+
+  const fetchDeposits = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await ChequeService.getChequeDeposits();
+      
+      if (response.success && response.data) {
+        const formattedDeposits = formatDepositsForTable(response.data);
+        setDeposits(formattedDeposits);
+      } else {
+        setError("Failed to load deposits");
+      }
+    } catch (error) {
+      console.error("Error fetching deposits:", error);
+      setError("Failed to load deposits. Please try again.");
+      setDeposits([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddDeposit = () => {
     router.push("/crm/cheque-management/manage-cheque-deposit");
@@ -111,7 +53,6 @@ const { theme } = useThemeStore();
   const handleEditClick = (deposit) => {
     router.push(`/crm/cheque-management/manage-cheque-deposit?id=${deposit.id}`);
   };
-
 
   // Filter deposits
   const filteredDeposits = deposits.filter(deposit => {
@@ -141,12 +82,13 @@ const { theme } = useThemeStore();
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button
-              onClick={()=>router.back()}
-               className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                isDark
-                  ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                  : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-              }`}>
+                onClick={() => router.back()}
+                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
                 <ArrowLeft className={`w-5 h-5 ${
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
@@ -182,6 +124,7 @@ const { theme } = useThemeStore();
               />
             </div>
 
+            {/* FIXED: Status filter options to match API values */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -192,11 +135,23 @@ const { theme } = useThemeStore();
               } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
             >
               <option value="all">All Status</option>
-              <option value="received">Received</option>
+              <option value="delivered">Delivered</option>
+              <option value="pending">Pending</option>
               <option value="bounced">Bounced</option>
             </select>
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className={`mb-6 p-4 rounded-xl border-2 ${
+            isDark 
+              ? "bg-red-900/20 border-red-600/50 text-red-200" 
+              : "bg-red-50 border-red-300 text-red-700"
+          }`}>
+            {error}
+          </div>
+        )}
 
         {/* Table */}
         <ChequeDepositTable
@@ -208,10 +163,9 @@ const { theme } = useThemeStore();
           isDark={isDark}
           onPageChange={setCurrentPage}
           onEditClick={handleEditClick}
+          loading={loading}
         />
       </div>
-
-    
     </div>
   );
 };

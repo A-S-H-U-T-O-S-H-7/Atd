@@ -6,7 +6,8 @@ const SearchFilter = ({
   selectedMonth, 
   setSelectedMonth, 
   selectedYear, 
-  setSelectedYear, 
+  setSelectedYear,
+  availableYears = [], // ✅ Now receives years as prop
   onSearch, 
   isDark 
 }) => {
@@ -14,8 +15,6 @@ const SearchFilter = ({
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-
-  const years = ["2023", "2024", "2025"];
 
   return (
     <div className={`p-6 rounded-2xl border-2 mb-8 ${
@@ -41,7 +40,7 @@ const SearchFilter = ({
             onChange={(e) => setSelectedMonth(e.target.value)}
             className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
               isDark
-                ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+                ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                 : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
             } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
           >
@@ -63,12 +62,12 @@ const SearchFilter = ({
             onChange={(e) => setSelectedYear(e.target.value)}
             className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
               isDark
-                ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+                ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                 : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
             } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
           >
             <option value="--Select Year--">--Select Year--</option>
-            {years.map(year => (
+            {availableYears.map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
           </select>

@@ -8,15 +8,26 @@ const ChequeDepositRow = ({
   onEditClick
 }) => {
   const getStatusColor = status => {
-    switch (status.toLowerCase()) {
+    const statusLower = status?.toLowerCase();
+    
+    switch (statusLower) {
+      case "delivered":
       case "received":
+      case "completed":
         return isDark
           ? "bg-green-900/50 text-green-300 border-green-700"
           : "bg-green-100 text-green-800 border-green-200";
       case "bounced":
+      case "returned":
+      case "failed":
         return isDark
           ? "bg-red-900/50 text-red-300 border-red-700"
           : "bg-red-100 text-red-800 border-red-200";
+      case "pending":
+      case "processing":
+        return isDark
+          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
+          : "bg-yellow-100 text-yellow-800 border-yellow-200";
       default:
         return isDark
           ? "bg-gray-700 text-gray-300 border-gray-600"
@@ -113,11 +124,7 @@ const ChequeDepositRow = ({
       {/* Amount */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          <IndianRupee
-            className={`w-4 h-4 ${isDark
-              ? "text-green-400"
-              : "text-green-600"}`}
-          />
+          
           <span
             className={`text-sm font-bold ${isDark
               ? "text-green-400"
@@ -146,7 +153,7 @@ const ChequeDepositRow = ({
         </div>
       </td>
 
-      {/* Status */}
+      {/* Status - Show actual status from API */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getStatusColor(

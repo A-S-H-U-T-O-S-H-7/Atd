@@ -108,45 +108,10 @@ const GuidelineFormFields = ({
           />
         </div>
 
-        {/* Status */}
-        {isEditMode && (
-          <div className="space-y-1">
-            <label className={labelClasses}>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className={iconClasses} />
-                <span>Status</span>
-              </div>
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className={inputClasses}
-            >
-              <option value="Pending">Pending</option>
-              <option value="Closed">Closed</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Implemented">Implemented</option>
-            </select>
-          </div>
-        )}
+        
       </div>
 
-      {/* Row 4: Remarks */}
-      <div className="space-y-1">
-        <label className={labelClasses}>
-          <div className="flex items-center space-x-2">
-            <MessageSquare className={iconClasses} />
-            <span>Remarks</span>
-          </div>
-        </label>
-        <textarea
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          placeholder="Enter any additional remarks or notes"
-          rows="2"
-          className={inputClasses}
-        />
-      </div>
+      
 
       {/* Required Fields Note */}
       <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} flex items-center space-x-1`}>

@@ -1,113 +1,99 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import ExpensesTable from "./ExpensesTable";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-
+import { expenseService, formatExpenseForUI } from "@/lib/services/ExpenseService";
+import { toast } from 'react-hot-toast';
 
 const ManageExpensesPage = () => {
-const { theme } = useThemeStore();
- const isDark = theme === "dark";
-   const router = useRouter();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [yearFilter, setYearFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("all");
-  
-  const [expenses, setExpenses] = useState([
-    {
-      id: 1,
-      month: "January",
-      year: 2019,
-      salary: 200000,
-      mobileExpenses: 20000,
-      convence: 20000,
-      interest: 15000,
-      electricity: 2000,
-      rent: 10000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 20000,
-      total: 287000
-    },
-    {
-      id: 2,
-      month: "February",
-      year: 2019,
-      salary: 250000,
-      mobileExpenses: 5000,
-      convence: 6000,
-      interest: 15000,
-      electricity: 2000,
-      rent: 10000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 4000,
-      total: 292000
-    },
-    {
-      id: 3,
-      month: "December",
-      year: 2018,
-      salary: 260000,
-      mobileExpenses: 4000,
-      convence: 4000,
-      interest: 4000,
-      electricity: 4000,
-      rent: 4000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 5000,
-      total: 285000
-    },
-    {
-      id: 4,
-      month: "October",
-      year: 2021,
-      salary: 251907,
-      mobileExpenses: 5000,
-      convence: 0,
-      interest: 87555,
-      electricity: 9237,
-      rent: 35000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 197747,
-      total: 586446
-    },
-    {
-      id: 5,
-      month: "November",
-      year: 2020,
-      salary: 160599,
-      mobileExpenses: 5000,
-      convence: 0,
-      interest: 50000,
-      electricity: 7000,
-      rent: 20000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 72420,
-      total: 315019
-    },
-    {
-      id: 6,
-      month: "November",
-      year: 2021,
-      salary: 256233,
-      mobileExpenses: 5000,
-      convence: 0,
-      interest: 81790,
-      electricity: 7000,
-      rent: 35000,
-      promotionAdvertisement: 0,
-      cibil: 0,
-      others: 215459,
-      total: 600482
-    }
-  ]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [availableYears, setAvailableYears] = useState([]); // ✅ Separate state for years
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current_page: 1,
+    per_page: 10,
+    total_pages: 1
+  });
 
   const itemsPerPage = 10;
+
+  // ✅ Fetch available years on mount (only once)
+  useEffect(() => {
+    fetchAvailableYears();
+  }, []);
+
+  // ✅ Fetch expenses when filters change
+  useEffect(() => {
+    fetchExpenses();
+  }, [currentPage, yearFilter, monthFilter]);
+
+  // ✅ Fetch all available years (without filters)
+  const fetchAvailableYears = async () => {
+    try {
+      // Fetch all expenses without pagination to get unique years
+      const response = await expenseService.getExpenses({ per_page: 1000 }); // Get large number
+      
+      if (response.success) {
+        const formattedExpenses = response.data.map(formatExpenseForUI);
+        const years = [...new Set(formattedExpenses.map(expense => expense.year))].sort((a, b) => b - a);
+        setAvailableYears(years);
+      }
+    } catch (error) {
+      console.error('Error fetching years:', error);
+      // Fallback: Generate years from current year
+      const currentYear = new Date().getFullYear();
+      const fallbackYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
+      setAvailableYears(fallbackYears);
+    }
+  };
+
+  // Helper to convert month name to number
+  const getMonthNumberForAPI = (monthName) => {
+    if (monthName === "all") return null;
+    const months = {
+      'january': '01', 'february': '02', 'march': '03',
+      'april': '04', 'may': '05', 'june': '06',
+      'july': '07', 'august': '08', 'september': '09',
+      'october': '10', 'november': '11', 'december': '12'
+    };
+    return months[monthName.toLowerCase()];
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        per_page: itemsPerPage,
+        ...(yearFilter !== "all" && { year: yearFilter }),
+        ...(monthFilter !== "all" && { month: getMonthNumberForAPI(monthFilter) })
+      };
+
+      const response = await expenseService.getExpenses(params);
+      
+      if (response.success) {
+        const formattedExpenses = response.data.map(formatExpenseForUI);
+        setExpenses(formattedExpenses);
+        setPagination(response.pagination);
+      } else {
+        toast.error('Failed to fetch expenses');
+      }
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      toast.error('Error loading expenses');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddExpense = () => {
     router.push("/crm/manage-expenses/expenses-management");
@@ -117,19 +103,7 @@ const { theme } = useThemeStore();
     router.push(`/crm/manage-expenses/expenses-management?id=${expense.id}`);
   };
 
-  // Get unique years for filter
-  const availableYears = [...new Set(expenses.map(expense => expense.year))].sort((a, b) => b - a);
-
-  // Filter expenses
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesYear = yearFilter === "all" || expense.year.toString() === yearFilter;
-    const matchesMonth = monthFilter === "all" || expense.month.toLowerCase() === monthFilter.toLowerCase();
-    return matchesYear && matchesMonth;
-  });
-
-  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedExpenses = filteredExpenses.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = pagination.total_pages;
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -177,7 +151,10 @@ const { theme } = useThemeStore();
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <select
               value={yearFilter}
-              onChange={(e) => setYearFilter(e.target.value)}
+              onChange={(e) => {
+                setYearFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
                 isDark
                   ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -192,7 +169,10 @@ const { theme } = useThemeStore();
 
             <select
               value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
+              onChange={(e) => {
+                setMonthFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
                 isDark
                   ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -218,14 +198,16 @@ const { theme } = useThemeStore();
 
         {/* Table */}
         <ExpensesTable
-          paginatedExpenses={paginatedExpenses}
-          filteredExpenses={filteredExpenses}
+          paginatedExpenses={loading ? [] : expenses}
           currentPage={currentPage}
           totalPages={totalPages}
+          totalItems={pagination.total}
           itemsPerPage={itemsPerPage}
           isDark={isDark}
+          loading={loading}
           onPageChange={setCurrentPage}
           onEditClick={handleEditClick}
+          onRefresh={fetchExpenses}
         />
       </div>
     </div>

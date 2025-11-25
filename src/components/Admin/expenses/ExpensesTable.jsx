@@ -5,11 +5,12 @@ import Pagination from "../Pagination";
 
 const ExpensesTable = ({ 
   paginatedExpenses,
-  filteredExpenses,
   currentPage,
   totalPages,
+  totalItems, // Changed from filteredExpenses
   itemsPerPage,
   isDark,
+  loading, // Add this prop
   onPageChange,
   onEditClick
 }) => {
@@ -93,54 +94,67 @@ const ExpensesTable = ({
                 }`} style={{ minWidth: "120px" }}>
                   Total
                 </th>
-                <th className={`px-4 py-5 text-left text-sm font-bold  ${
-                 isDark ? "text-gray-100" : "text-gray-700"
+                <th className={`px-4 py-5 text-left text-sm font-bold ${
+                  isDark ? "text-gray-100" : "text-gray-700"
                 }`} style={{ minWidth: "80px" }}>
                   Action
                 </th>
               </tr>
             </thead>
             <tbody>
-              {paginatedExpenses.map((expense, index) => (
-                <ExpenseRow
-                  key={expense.id}
-                  expense={expense}
-                  index={index}
-                  isDark={isDark}
-                  onEditClick={onEditClick}
-                />
-              ))}
+              {loading ? (
+                <tr>
+                  <td colSpan="14" className="text-center py-12">
+                    <div className={`flex flex-col items-center space-y-4 ${
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    }`}>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+                      <p className="text-sm font-medium">Loading expenses...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedExpenses.length > 0 ? (
+                paginatedExpenses.map((expense, index) => (
+                  <ExpenseRow
+                    key={expense.id}
+                    expense={expense}
+                    index={(currentPage - 1) * itemsPerPage + index} // Fix serial number
+                    isDark={isDark}
+                    onEditClick={onEditClick}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="14">
+                    <div className={`text-center py-12 ${
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    }`}>
+                      <div className="flex flex-col items-center space-y-4">
+                        <Calculator className="w-16 h-16 opacity-50" />
+                        <p className="text-lg font-medium">No expenses found</p>
+                        <p className="text-sm">Try adjusting your filter criteria</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-          
         </div>
         
-        {/* Empty State */}
-        {paginatedExpenses.length === 0 && (
-          <div className={`text-center py-12 ${isDark ? "text-gray-800" : "text-gray-500"}`}>
-            <div className="flex flex-col items-center space-y-4">
-              <Calculator className="w-16 h-16 opacity-50" />
-              <p className="text-lg font-medium">No expenses found</p>
-              <p className="text-sm">Try adjusting your filter criteria</p>
-            </div>
+        {/* Pagination */}
+        {totalPages > 1 && !loading && (
+          <div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              totalItems={totalItems}  
+              itemsPerPage={itemsPerPage}   
+            />
           </div>
         )}
-        {/* Pagination */}
-      {totalPages > 0 && (
-        <div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            totalItems={filteredExpenses.length}  
-            itemsPerPage={itemsPerPage}   
-          />
-        </div>
-      )}
-        
       </div>
-
-      
     </>
   );
 };

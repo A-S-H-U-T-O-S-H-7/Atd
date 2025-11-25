@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import GuidelineFormFields from './GuidelineFormFields';
 import Swal from "sweetalert2";
 import { useThemeStore } from '@/lib/store/useThemeStore';
+import { rbiGuidelineService, formatGuidelineForAPI } from '@/lib/services/RBIGuidelineService';
+import { toast } from 'react-hot-toast';
 
 const ManageGuidelinePage = () => {
-const { theme } = useThemeStore();
- const isDark = theme === "dark";
-   const router = useRouter();
+  const { theme } = useThemeStore();
+  const isDark = theme === "dark";
+  const router = useRouter();
   const searchParams = useSearchParams();
   const guidelineId = searchParams.get('id');
   const isEditMode = Boolean(guidelineId);
@@ -25,7 +27,7 @@ const { theme } = useThemeStore();
 
   // Load guideline data for editing
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && guidelineId) {
       loadGuidelineData();
     }
   }, [isEditMode, guidelineId]);
@@ -34,35 +36,49 @@ const { theme } = useThemeStore();
     try {
       setIsLoading(true);
       
-      // Simulate API call to fetch guideline data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await rbiGuidelineService.getGuidelineById(guidelineId);
       
-      // Mock data - replace with actual API call
-      const mockData = {
-        guidelineDate: '2023-02-16',
-        referenceNo: 'Dos.CO.FMG. No. S339/23.08.003/2022-23',
-        subject: 'Fraudulent letters/emails conveying imposition of monetary penalties purported to be issued by RBI',
-        cautionAdviceNo: '4149',
-        remarks: 'Implementation in progress',
-        status: 'Pending'
-      };
+      console.log('API Response for edit:', response); // Debug log
       
-      setGuidelineDate(mockData.guidelineDate);
-      setReferenceNo(mockData.referenceNo);
-      setSubject(mockData.subject);
-      setCautionAdviceNo(mockData.cautionAdviceNo);
-      setRemarks(mockData.remarks);
-      setStatus(mockData.status);
+      let guideline = null;
+      
+      if (response.data?.status && response.data?.data) {
+        guideline = response.data.data;
+      } else if (response.data) {
+        guideline = response.data;
+      } else if (response.status && response.guideline) {
+        guideline = response.guideline;
+      }
+      
+      if (!guideline) {
+        throw new Error('Invalid response structure from API');
+      }
+      
+      // Set form fields with proper fallbacks
+      setGuidelineDate(guideline.rbi_date || '');
+      setReferenceNo(guideline.reference_no || '');
+      setSubject(guideline.subject || '');
+      setCautionAdviceNo(guideline.advice_no || '');
+      setRemarks(guideline.remarks || '');
+      setStatus(guideline.status || 'Pending');
+      
+      console.log('Form data set:', { // Debug log
+        rbi_date: guideline.rbi_date,
+        reference_no: guideline.reference_no,
+        subject: guideline.subject,
+        advice_no: guideline.advice_no,
+        remarks: guideline.remarks,
+        status: guideline.status
+      });
       
     } catch (error) {
       console.error('Error loading guideline data:', error);
-      await Swal.fire({
-        title: "Error!",
-        text: "Failed to load guideline data. Please try again.",
-        icon: "error",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#000000"
-      });
+      const errorMessage = error.response?.data?.message || error.message || "Failed to load guideline data";
+      toast.error(errorMessage);
+      
+      setTimeout(() => {
+        router.push('/crm/rbi-guidelines');
+      }, 2000);
     } finally {
       setIsLoading(false);
     }
@@ -84,53 +100,50 @@ const { theme } = useThemeStore();
     setIsSubmitting(true);
     
     try {
-      const payload = {
+      const formData = {
         guidelineDate,
         referenceNo,
         subject,
         cautionAdviceNo,
         remarks,
-        status,
-        addedBy: 'ADMIN USER', // This should come from user context
-        lastModify: new Date().toISOString(),
-        ...(isEditMode && { id: guidelineId })
+        status: isEditMode ? status : 'Pending' // Always set status for edits
       };
+
+      const apiData = formatGuidelineForAPI(formData);
+      console.log('Submitting data:', { isEditMode, guidelineId, apiData }); // Debug log
+
+      let response;
+
+      if (isEditMode) {
+        response = await rbiGuidelineService.updateGuideline(guidelineId, apiData);
+      } else {
+        response = await rbiGuidelineService.addGuideline(apiData);
+      }
       
-      console.log(isEditMode ? 'Updating Guideline:' : 'Adding Guideline:', payload);
+      console.log('Submit response:', response); // Debug log
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const isSuccess = response.data?.status || response.status;
       
-      // Success message
-      await Swal.fire({
-        title: "Success!",
-        text: `Guideline ${isEditMode ? 'updated' : 'added'} successfully!`,
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#000000"
-      });
-      
-      // Navigate back to guidelines list
-      router.push('crm/rbi-guidelines');
+      if (isSuccess) {
+        const message = isEditMode ? 'Guideline updated successfully!' : 'Guideline added successfully!';
+        toast.success(message);
+        
+        router.push('/crm/rbi-guidelines');
+      } else {
+        throw new Error(response.data?.message || response.message || `Failed to ${isEditMode ? 'update' : 'add'} guideline`);
+      }
       
     } catch (error) {
       console.error('Error saving guideline:', error);
-      await Swal.fire({
-        title: "Error!",
-        text: `Failed to ${isEditMode ? 'update' : 'add'} guideline. Please try again.`,
-        icon: "error",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#ffffff" : "#000000"
-      });
+      const errorMessage = error.response?.data?.message || error.message || `Failed to ${isEditMode ? 'update' : 'add'} guideline`;
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleBack = () => {
-    router.back()
+    router.back();
   };
 
   if (isLoading) {
@@ -145,7 +158,7 @@ const { theme } = useThemeStore();
   }
 
   return (
-    <div className={`h-screen flex flex-col transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={` flex flex-col transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header - Fixed height */}
       <div className="flex-shrink-0 p-3 md:px-6 lg:px-12">
         <div className="flex items-center justify-between">
@@ -158,19 +171,11 @@ const { theme } = useThemeStore();
                   : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
               }`}
             >
-              <ArrowLeft
-                className={`w-4 h-4 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`}
-              />
+              <ArrowLeft className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
             </button>
-            <h1
-              className={`text-xl md:text-2xl font-bold bg-gradient-to-r ${
-                isDark
-                  ? "from-emerald-400 to-teal-400"
-                  : "from-gray-800 to-black"
-              } bg-clip-text text-transparent`}
-            >
+            <h1 className={`text-xl md:text-2xl font-bold bg-gradient-to-r ${
+              isDark ? "from-emerald-400 to-teal-400" : "from-gray-800 to-black"
+            } bg-clip-text text-transparent`}>
               {isEditMode ? 'Edit Guideline' : 'Add Guideline'}
             </h1>
           </div>
@@ -179,33 +184,21 @@ const { theme } = useThemeStore();
 
       {/* Main Content - Flexible height */}
       <div className="flex-1 p-3 md:px-6 lg:px-12 pb-4 overflow-hidden">
-        <div
-          className={`h-full rounded-xl shadow-xl border flex flex-col ${
-            isDark
-              ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-              : "bg-white border-emerald-300 shadow-emerald-500/10"
-          }`}
-        >
+        <div className={`h-full rounded-xl shadow-xl border flex flex-col ${
+          isDark
+            ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
+            : "bg-white border-emerald-300 shadow-emerald-500/10"
+        }`}>
           {/* Form Header - Fixed height */}
-          <div
-            className={`flex-shrink-0 px-4 py-3 border-b ${
-              isDark
-                ? "bg-gradient-to-r from-gray-900 to-gray-900 border-emerald-600/50"
-                : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
-            }`}
-          >
-            <h2
-              className={`text-base font-bold ${
-                isDark ? "text-gray-100" : "text-gray-700"
-              }`}
-            >
+          <div className={`flex-shrink-0 px-4 py-3 border-b ${
+            isDark
+              ? "bg-gradient-to-r from-gray-900 to-gray-900 border-emerald-600/50"
+              : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
+          }`}>
+            <h2 className={`text-base font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
               {isEditMode ? 'Edit Guideline Details' : 'Guideline Details'}
             </h2>
-            <p
-              className={`text-xs mt-1 ${
-                isDark ? "text-gray-300" : "text-gray-600"
-              }`}
-            >
+            <p className={`text-xs mt-1 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
               {isEditMode 
                 ? 'Update the guideline information below' 
                 : 'Fill in the details to register a new RBI guideline'

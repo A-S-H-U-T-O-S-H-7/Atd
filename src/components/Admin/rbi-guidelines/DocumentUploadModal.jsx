@@ -10,14 +10,28 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setSelectedFile(file);
+    if (file) {
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('File size must be less than 10MB');
+        return;
+      }
+      setSelectedFile(file);
+    }
   };
 
   const handleSubmit = async () => {
     if (selectedFileType && selectedFile) {
       setIsUploading(true);
+      
       try {
-        await onUploadDocument(guideline.id, selectedFileType, selectedFile);
+        // Map frontend document types to backend expected values
+        const backendDocumentType = selectedFileType === "rbi-guidelines" 
+          ? "RBI Guideline" 
+          : "Resolution";
+        
+        await onUploadDocument(guideline.id, backendDocumentType, selectedFile);
         handleCancel();
       } catch (error) {
         console.error("Upload error:", error);
@@ -57,11 +71,14 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
               isDark ? "text-gray-100" : "text-gray-700"
             }`}
           >
-            Uploads of {guideline?.subject}
+            Upload Document
           </h2>
           <button
             onClick={handleCancel}
+            disabled={isUploading}
             className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${
+              isUploading ? 'opacity-50 cursor-not-allowed' : ''
+            } ${
               isDark
                 ? "hover:bg-gray-700 text-gray-300"
                 : "hover:bg-gray-100 text-gray-600"
@@ -73,22 +90,42 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
 
         {/* Content */}
         <div className="px-6 py-6">
+          {/* Guideline Subject */}
+          <div className="mb-4">
+            <h3
+              className={`text-sm font-semibold mb-2 ${
+                isDark ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              Guideline Subject:
+            </h3>
+            <p
+              className={`text-sm leading-relaxed ${
+                isDark ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              {guideline?.subject}
+            </p>
+          </div>
+
+          {/* Document Type Selection */}
           <div className="mb-6">
             <label
               className={`block text-sm font-semibold mb-2 ${
                 isDark ? "text-gray-200" : "text-gray-700"
               }`}
             >
-              Document File Type:
+              Document Type: <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedFileType}
               onChange={(e) => setSelectedFileType(e.target.value)}
+              disabled={isUploading}
               className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
                 isDark
                   ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                   : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
+              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <option value="">Select Document Type</option>
               <option value="rbi-guidelines">RBI Guidelines</option>
@@ -96,18 +133,20 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
             </select>
           </div>
 
+          {/* File Upload */}
           <div className="mb-6">
             <label
               className={`block text-sm font-semibold mb-2 ${
                 isDark ? "text-gray-200" : "text-gray-700"
               }`}
             >
-              Document File:
+              Select File: <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
                 type="file"
                 onChange={handleFileChange}
+                disabled={isUploading}
                 className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
                   isDark
                     ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
@@ -116,8 +155,8 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
                   isDark
                     ? "file:bg-emerald-600 file:text-white"
                     : "file:bg-emerald-100 file:text-emerald-700"
-                }`}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,image/*,application/pdf"
               />
             </div>
             {selectedFile && (
@@ -126,12 +165,17 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
                   isDark ? "text-gray-400" : "text-gray-600"
                 }`}
               >
-                Selected: {selectedFile.name}
+                Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
               </p>
             )}
+            <p
+              className={`text-xs mt-1 ${
+                isDark ? "text-gray-500" : "text-gray-500"
+              }`}
+            >
+              Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max 10MB)
+            </p>
           </div>
-
-          
 
           {/* Buttons */}
           <div className="flex items-center justify-end space-x-3">
@@ -171,7 +215,7 @@ const DocumentUploadModal = ({ isOpen, onClose, guideline, isDark, onUploadDocum
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  <span>Upload</span>
+                  <span>Upload Document</span>
                 </>
               )}
             </button>
