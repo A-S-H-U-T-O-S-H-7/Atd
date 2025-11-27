@@ -2,8 +2,6 @@
 import React, { useState } from "react";
 import { Phone } from "lucide-react";
 import CallDetailsModal from "./CallDetailsModal";
-import { callAPI,callService } from "@/lib/services/CallServices";
-import Swal from 'sweetalert2';
 
 const CallButton = ({ 
   applicant, 
@@ -20,55 +18,12 @@ const CallButton = ({
     setShowCallModal(true);
   };
 
-  const handleCallSubmit = async (callData) => {
-    try {
-      setSubmitting(true);
-      
-      const formattedData = callService.prepareCallData(
-        callData.remarks, 
-        callData.nextCallDate
-      );
-      
-      // Use userId if available, otherwise fall back to id
-      const applicantId = applicant?.userId || applicant?.id;
-      
-      if (!applicantId) {
-        throw new Error('Customer ID not found. Please ensure the applicant has a valid user ID.');
+  const handleCallSubmit = async (success, response) => {
+    if (success) {
+      // Call the callback if provided
+      if (onCallSubmitted) {
+        onCallSubmitted(response);
       }
-      
-      console.log('Submitting call for customer ID:', applicantId);
-      const response = await callAPI.addCallRemark(applicantId, formattedData);
-      
-      if (response.success) {
-        Swal.fire({
-          title: 'Success!',
-          text: 'Call remark recorded successfully',
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-        });
-        
-        // Call the callback if provided
-        if (onCallSubmitted) {
-          onCallSubmitted(response);
-        }
-        
-        return true; // Success
-      }
-    } catch (error) {
-      console.error("Error submitting call:", error);
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to submit call details. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-      throw error;
-    } finally {
-      setSubmitting(false);
     }
   };
 

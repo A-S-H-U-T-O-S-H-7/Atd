@@ -15,6 +15,9 @@ class PersonalVerificationService {
   saveAdditionalReferences = (data) => 
     api.post("/crm/appraisal/personal/reference", data);
 
+  getReferences = (applicationId) => 
+    api.get(`/crm/appraisal/refference/${applicationId}`);
+
   // Personal Info APIs
   updatePersonalInfo = (data) => 
     api.post("/crm/appraisal/personal", data);

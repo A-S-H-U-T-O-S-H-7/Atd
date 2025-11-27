@@ -41,7 +41,8 @@ export const blacklistService = {
       console.log('✅ API Response:', response);
       console.log('✅ Response Data:', response.data);
 
-      if (!response.data.success) {
+      // FIX: Check response.success instead of response.data.success
+      if (!response.success) {
         console.error('❌ API returned success: false');
         console.error('❌ API message:', response.message);
         throw new Error(response.message || 'Blacklist failed');
@@ -72,7 +73,7 @@ export const blacklistService = {
       console.error('Error object:', error);
       console.error('Error response:', error.response);
       console.error('Error status:', error.response?.status);
-      console.error('Error data:', error.response);
+      console.error('Error data:', error.response?.data);
       console.error('Error message:', error.message);
       
       let errorMessage = 'Failed to blacklist application. Please try again.';
@@ -84,11 +85,15 @@ export const blacklistService = {
           errorMessage = 'Authentication failed. Please login again.';
         } else if (error.response.status === 403) {
           errorMessage = 'You do not have permission to blacklist applications.';
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
         } else if (error.response.message) {
           errorMessage = error.response.message;
         }
       } else if (error.request) {
         errorMessage = 'Network error. Please check your connection.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       if (showConfirmation) {
@@ -128,8 +133,9 @@ export const debugBlacklist = async (applicationId) => {
   try {
     // Use the imported api instance
     const testResponse = await api.put(`/crm/application/black-list/${applicationId}`);
-    console.log('✅ Manual test response:', testResponse.data);
-    return testResponse.data;
+    console.log('✅ Manual test response:', testResponse);
+    console.log('✅ Manual test response data:', testResponse.data);
+    return testResponse;
   } catch (testError) {
     console.log('❌ Manual test error:', testError);
     console.log('❌ Manual test error response:', testError.response?.data);

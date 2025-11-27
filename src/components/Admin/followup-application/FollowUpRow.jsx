@@ -470,14 +470,6 @@ const FollowUpRow = ({
     applicationId={application.id}
     application={application}
     isDark={isDark}
-    size="default"
-    variant="default"
-    onSuccess={() => {
-      if (onBlacklist) onBlacklist(application.id);
-    }}
-    onError={(error, errorMessage) => {
-      console.error('Blacklist failed:', errorMessage);
-    }}
   />
 </td>
     </tr>

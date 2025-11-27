@@ -23,7 +23,6 @@ const CallDetailsModal = ({
     const customerId = data?.userId || data?.id;
     
     if (!customerId) {
-      console.error('❌ No customer ID available');
       return;
     }
     
@@ -33,7 +32,6 @@ const CallDetailsModal = ({
       setCallHistory(response.calls || []);
       setCustomerDetails(response.details || null);
     } catch (error) {
-      console.error("❌ Error fetching call history:", error);
       if (error.response?.status === 404) {
         setCallHistory([]);
         setCustomerDetails(null);
@@ -59,7 +57,6 @@ const CallDetailsModal = ({
     e.preventDefault();
     setSubmitError("");
     
-    // Validate remarks
     if (!remarks.trim()) {
       setSubmitError("Please enter remarks");
       return;
@@ -72,74 +69,25 @@ const CallDetailsModal = ({
         setSubmitError("Customer ID is missing");
         return;
       }
-
-      console.log("🔄 Preparing call data...");
       
-      // Try multiple data formats to find what works
-      const formatsToTry = [
-        // Format 1: Using service function (original)
-        callService.prepareCallData(remarks.trim(), nextCallDate),
-        // Format 2: Alternative field names
-        {
-          remark: remarks.trim(),
-          next_call_date: nextCallDate || null
-        },
-        // Format 3: Simple object
-        {
-          remark: remarks.trim(),
-          nextcall: nextCallDate || null
-        },
-        // Format 4: With customer_id included
-        {
-          customer_id: customerId,
-          remark: remarks.trim(),
-          nextcall: nextCallDate || null
-        }
-      ];
-
-      let lastError = null;
+      const callData = {
+        remark: remarks.trim(),
+        nextcall: nextCallDate || null
+      };
       
-      for (let i = 0; i < formatsToTry.length; i++) {
-        const callData = formatsToTry[i];
-        console.log(`📤 Attempt ${i + 1} - Submitting:`, callData);
-        
-        try {
-          const response = await callAPI.addCallRemark(customerId, callData);
-          console.log(`✅ Success with format ${i + 1}:`, response);
-          
-          // Refresh call history
-          await fetchCallHistory();
-          
-          // Reset form
-          setRemarks("");
-          setNextCallDate("");
-          setSubmitError("");
-          
-          // Call parent onSubmit callback if provided
-          if (onSubmit) {
-            onSubmit(true, response.data);
-          }
-          
-          return; // Exit if successful
-          
-        } catch (error) {
-          lastError = error;
-          console.log(`❌ Format ${i + 1} failed:`, error.response?.data);
-          
-          // If it's not a validation error, stop trying
-          if (error.response?.status !== 422) {
-            break;
-          }
-        }
+      const response = await callAPI.addCallRemark(customerId, callData);
+      
+      await fetchCallHistory();
+      
+      setRemarks("");
+      setNextCallDate("");
+      setSubmitError("");
+      
+      if (onSubmit) {
+        onSubmit(true, response.data);
       }
       
-      // If we get here, all formats failed
-      throw lastError;
-      
     } catch (error) {
-      console.error("❌ All submission attempts failed:", error);
-      
-      // Enhanced error handling
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         const firstError = Object.values(errors)[0]?.[0] || "Validation failed";
@@ -154,7 +102,6 @@ const CallDetailsModal = ({
         setSubmitError(error.message || "Failed to submit call. Please try again.");
       }
       
-      // Call parent onSubmit callback with error
       if (onSubmit) {
         onSubmit(false, error);
       }
@@ -176,7 +123,6 @@ const CallDetailsModal = ({
     return new Date(dateString).toLocaleDateString('en-GB');
   };
 
-  // Get actual data from API response or fallback to props
   const getCustomerData = (field) => {
     if (customerDetails && customerDetails[field] !== undefined) {
       return customerDetails[field];
@@ -184,7 +130,6 @@ const CallDetailsModal = ({
     return data[field] || "--";
   };
 
-  // Function to highlight important numbers
   const renderHighlightedNumber = (value, label) => {
     if (!value || value === "--") return value;
     
@@ -228,6 +173,11 @@ const CallDetailsModal = ({
     }
     
     return value;
+  };
+
+  // Get today's date in YYYY-MM-DD format for max attribute
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0];
   };
 
   if (!isOpen) return null;
@@ -413,7 +363,7 @@ const CallDetailsModal = ({
                     value={remarks}
                     onChange={(e) => {
                       setRemarks(e.target.value);
-                      setSubmitError(""); // Clear error when user types
+                      setSubmitError("");
                     }}
                     rows={3}
                     required
@@ -439,7 +389,7 @@ const CallDetailsModal = ({
                     type="date"
                     value={nextCallDate}
                     onChange={(e) => setNextCallDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    max={getTodayDate()} // Only allow past and present dates, no future dates
                     disabled={submitting}
                     className={`w-full px-3 py-2 text-sm rounded border transition-all duration-200 ${
                       isDark

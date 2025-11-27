@@ -1,20 +1,21 @@
-// components/appraisal/ReferenceVerification.js
-import React, { useState } from 'react';
-import { Users, Save, Loader2, Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Save, Loader2, Eye, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
 import ReferenceModal from './ReferenceModal';
 
 const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [submittingReferences, setSubmittingReferences] = useState(false);
-  const [showReferencesModal, setShowReferencesModal] = useState(false); 
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
+  const [loadingReferences, setLoadingReferences] = useState(false);
+  const [fetchedReferences, setFetchedReferences] = useState([]);
   
   // Consistent styling with other components
   const secondaryButtonClassName = `px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm border ${
-  isDark
-    ? "bg-gradient-to-r from-pink-200 to-rose-300 text-pink-800 border-pink-700 hover:from-pink-300 hover:to-rose-400 text-pink-900  shadow-lg shadow-pink-900/20"
-    : "bg-gradient-to-r from-pink-400 to-rose-500 text-white border-pink-400 hover:from-pink-300 hover:to-rose-400 text-pink-800  shadow-sm shadow-pink-500/20"
-} `;
+    isDark
+      ? "bg-gradient-to-r from-pink-200 to-rose-300 text-pink-800 border-pink-700 hover:from-pink-300 hover:to-rose-400 text-pink-900 shadow-lg shadow-pink-900/20"
+      : "bg-gradient-to-r from-pink-400 to-rose-500 text-white border-pink-400 hover:from-pink-300 hover:to-rose-400 text-pink-800 shadow-sm shadow-pink-500/20"
+  }`;
 
   const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm text-center ${
     isDark
@@ -62,17 +63,86 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
     { value: 'other', label: 'Other' }
   ];
 
-  // Check if a reference has minimum required data (name and phone)
+  // Fetch references when modal opens
+const handleShowReferences = async () => {
+  const applicationId = formik.values.applicationId;
+  
+  if (!applicationId) {
+    toast.error('Application ID is required to fetch references');
+    return;
+  }
+
+  setLoadingReferences(true);
+  try {
+    // FIX: Since axios returns response.data directly, we get the actual API response
+    const response = await personalVerificationService.getReferences(applicationId);
+    console.log('API Response:', response); // This will be the actual API response
+    
+    // Now response is the actual API data, so we check response.success directly
+    if (response && response.success) {
+      setFetchedReferences(response.reference || []);
+      setShowReferencesModal(true);
+      
+      if (response.reference && response.reference.length > 0) {
+        toast.success(`Loaded ${response.reference.length} references`);
+      } else {
+        toast.info('No references found');
+      }
+    } else {
+      toast.error(response?.message || 'Failed to fetch references');
+    }
+  } catch (error) {
+    console.error('Error fetching references:', error);
+    console.error('Error details:', error.response?.data); 
+    toast.error('Failed to fetch references');
+  } finally {
+    setLoadingReferences(false);
+  }
+};
+
+// Refresh references
+const handleRefreshReferences = async () => {
+  const applicationId = formik.values.applicationId;
+  
+  if (!applicationId) {
+    toast.error('Application ID is required');
+    return;
+  }
+
+  setLoadingReferences(true);
+  try {
+    // FIX: Since axios returns response.data directly
+    const response = await personalVerificationService.getReferences(applicationId);
+    
+    // Now response is the actual API data
+    if (response && response.success) {
+      setFetchedReferences(response.reference || []);
+      
+      if (response.reference && response.reference.length > 0) {
+        toast.success(`Refreshed ${response.reference.length} references`);
+      } else {
+        toast.info('No references found');
+      }
+    } else {
+      toast.error(response?.message || 'Failed to refresh references');
+    }
+  } catch (error) {
+    console.error('Error refreshing references:', error);
+    console.error('Error details:', error.response?.data);
+    toast.error('Failed to refresh references');
+  } finally {
+    setLoadingReferences(false);
+  }
+};
+
+  // Existing validation functions
   const hasMinimumData = (ref) => {
-    // Phone must be exactly 10 digits
     const isValidPhone = ref.phone && ref.phone.trim().length === 10 && /^\d{10}$/.test(ref.phone.trim());
-    // Email validation if provided (must contain @ and .)
     const isValidEmail = !ref.email || !ref.email.trim() || (ref.email.includes('@') && ref.email.includes('.'));
     
     return ref.name && ref.name.trim().length > 0 && isValidPhone && isValidEmail;
   };
 
-  // Check if a reference has any data at all
   const hasAnyData = (ref) => {
     return (ref.name && ref.name.trim()) || 
            (ref.email && ref.email.trim()) || 
@@ -81,12 +151,10 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
            ref.verified;
   };
 
-  // Check if a reference is partially filled (has some data but not minimum)
   const isPartiallyFilled = (ref) => {
     return hasAnyData(ref) && !hasMinimumData(ref);
   };
 
-  // Check for duplicate emails and phones
   const getDuplicateErrors = () => {
     const refs = formik.values.additionalRefs || [];
     const errors = {
@@ -94,7 +162,6 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
       phones: {}
     };
 
-    // Track occurrences of each email and phone
     refs.forEach((ref, index) => {
       if (ref.email && ref.email.trim()) {
         const email = ref.email.trim().toLowerCase();
@@ -116,7 +183,6 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
     return errors;
   };
 
-  // Check if a specific reference has duplicate issues
   const getReferenceErrors = (index) => {
     const errors = getDuplicateErrors();
     const ref = formik.values.additionalRefs[index];
@@ -149,28 +215,24 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
       const duplicateErrors = getDuplicateErrors();
       
       refs.forEach((ref, index) => {
-        // Check if reference has any data
         const hasAnyData = (ref.name && ref.name.trim()) || 
                           (ref.email && ref.email.trim()) || 
                           (ref.phone && ref.phone.trim()) || 
                           ref.relation;
         
         if (hasAnyData) {
-          // Validate phone if provided
           if (ref.phone && ref.phone.trim()) {
             if (ref.phone.trim().length !== 10 || !/^\d{10}$/.test(ref.phone.trim())) {
               invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
             }
           }
           
-          // Validate email if provided
           if (ref.email && ref.email.trim()) {
             if (!ref.email.includes('@') || !ref.email.includes('.')) {
               invalidRefs.push(`Reference ${index + 1}: Email must contain @ and .`);
             }
           }
           
-          // Check if minimum data (name and phone) is present
           if (!ref.name || !ref.name.trim() || !ref.phone || !ref.phone.trim()) {
             invalidRefs.push(`Reference ${index + 1}: Both name and phone are required`);
           }
@@ -190,13 +252,11 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
         }
       });
       
-      // Show all validation errors
       if (invalidRefs.length > 0) {
         invalidRefs.forEach(error => toast.error(error));
         return;
       }
       
-      // Final check for applicationId before sending
       const applicationId = formik.values.applicationId;
       if (!applicationId) {
         toast.error('Application ID is required. Please refresh the page.');
@@ -223,25 +283,19 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const updateAdditionalRef = (index, field, value) => {
     const updatedRefs = [...formik.values.additionalRefs];
     
-    // Validation for phone field - only allow exactly 10 digits
     if (field === 'phone') {
-      // Remove all non-digit characters
       const digitsOnly = value.replace(/\D/g, '');
-      // Limit to 10 digits
       const limitedValue = digitsOnly.slice(0, 10);
       updatedRefs[index] = {
         ...updatedRefs[index],
         [field]: limitedValue
       };
-    } 
-    // Validation for email field - basic validation
-    else if (field === 'email') {
+    } else if (field === 'email') {
       updatedRefs[index] = {
         ...updatedRefs[index],
         [field]: value
       };
-    }
-    else {
+    } else {
       updatedRefs[index] = {
         ...updatedRefs[index],
         [field]: value
@@ -470,15 +524,25 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
         {/* Buttons Section */}
         <div className="mt-6 flex justify-between">
           {/* Show References Button - Left Side */}
-          <button
-            type="button"
-            onClick={() => setShowReferencesModal(true)}
-            disabled={submittingReferences || saving}
-            className={secondaryButtonClassName}
-          >
-            <Eye className="w-4 h-4" />
-            <span>Show References</span>
-          </button>
+          <div className="flex space-x-2">
+            <button
+              type="button"
+              onClick={handleShowReferences}
+              disabled={loadingReferences || submittingReferences || saving}
+              className={secondaryButtonClassName}
+            >
+              {loadingReferences ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+              <span>
+                {loadingReferences ? 'Loading...' : 'Show References'}
+              </span>
+            </button>
+            
+            
+          </div>
 
           {/* Save References Button - Right Side */}
           <button
@@ -508,8 +572,10 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
       <ReferenceModal
         isOpen={showReferencesModal}
         onClose={() => setShowReferencesModal(false)}
-        references={formik.values.additionalRefs || []}
+        references={fetchedReferences}
         isDark={isDark}
+        loading={loadingReferences}
+        onRefresh={handleRefreshReferences}
       />
     </div>
   );
