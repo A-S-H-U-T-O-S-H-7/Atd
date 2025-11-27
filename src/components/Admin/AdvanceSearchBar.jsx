@@ -1,20 +1,27 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { useThemeStore } from '@/lib/store/useThemeStore';
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 const AdvancedSearchBar = ({ 
   searchOptions = [],
   onSearch,
   placeholder = "Enter search term...",
   className = "",
-  defaultSearchField
+  defaultSearchField,
+  isDark = false
 }) => {
- const { theme } = useThemeStore();
-   const isDark = theme === "dark";
   const [selectedField, setSelectedField] = useState(defaultSearchField || searchOptions[0]?.value || '');
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Check mobile screen
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -28,30 +35,39 @@ const AdvancedSearchBar = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = () => {
-    if (searchTerm.trim() && onSearch) {
-      onSearch({
-        field: selectedField,
-        term: searchTerm.trim()
-      });
-    }
-  };
+  // Debounced search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() && onSearch) {
+        onSearch({
+          field: selectedField,
+          term: searchTerm.trim()
+        });
+      }
+    }, 500);
 
-  const handleClear = () => {
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, selectedField, onSearch]);
+
+  const handleClear = useCallback(() => {
     setSearchTerm('');
     setSelectedField(defaultSearchField || searchOptions[0]?.value || '');
-    // Optionally call onSearch with empty values to clear results
     if (onSearch) {
       onSearch({
         field: defaultSearchField || searchOptions[0]?.value || '',
         term: ''
       });
     }
-  };
+  }, [defaultSearchField, searchOptions, onSearch]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      if (searchTerm.trim() && onSearch) {
+        onSearch({
+          field: selectedField,
+          term: searchTerm.trim()
+        });
+      }
     }
   };
 
@@ -62,25 +78,25 @@ const AdvancedSearchBar = ({
 
   const getPlaceholderText = () => {
     const option = searchOptions.find(opt => opt.value === selectedField);
-    return option ? `Enter ${option.label.toLowerCase()}...` : placeholder;
+    return option ? `Search by ${option.label.toLowerCase()}...` : placeholder;
   };
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full ${className}`}>
       {/* Dropdown for field selection */}
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative w-full md:w-auto" ref={dropdownRef}>
         <button
           type="button"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className={`px-4 py-3 rounded-lg border transition-all duration-200 flex items-center gap-2 min-w-[120px] justify-between ${
+          className={`w-full px-4 py-3 rounded-lg border transition-all duration-200 flex items-center justify-between ${
             isDark 
               ? 'bg-gray-800 border-gray-600 text-white hover:bg-gray-700' 
               : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
           } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
         >
-          <span className="text-sm font-medium">{getSelectedLabel()}</span>
+          <span className="text-sm font-medium truncate">{getSelectedLabel()}</span>
           <svg 
-            className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 transition-transform duration-200 flex-shrink-0 ml-2 ${isDropdownOpen ? 'rotate-180' : ''}`}
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -91,7 +107,7 @@ const AdvancedSearchBar = ({
 
         {/* Dropdown menu */}
         {isDropdownOpen && (
-          <div className={`absolute top-full left-0 mt-1 w-full rounded-lg border shadow-lg z-50 ${
+          <div className={`absolute top-full left-0 mt-1 w-full rounded-lg border shadow-lg z-50 max-h-60 overflow-y-auto ${
             isDark 
               ? 'bg-gray-800 border-gray-600' 
               : 'bg-white border-gray-300'
@@ -118,14 +134,14 @@ const AdvancedSearchBar = ({
       </div>
 
       {/* Search input */}
-      <div className="flex-1 relative">
+      <div className="flex-1 min-w-0">
         <input
           type="text"
           placeholder={getPlaceholderText()}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyPress={handleKeyPress}
-          className={`w-full pl-4 pr-4 py-3 rounded-lg border transition-all duration-200 ${
+          className={`w-full px-4 py-3 rounded-lg border transition-all duration-200 ${
             isDark 
               ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-400' 
               : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
@@ -133,47 +149,54 @@ const AdvancedSearchBar = ({
         />
       </div>
 
-      
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 w-full md:w-auto">
+        {/* Clear button */}
+        <button
+          type="button"
+          onClick={handleClear}
+          disabled={!searchTerm.trim()}
+          className={`flex-1 md:flex-none px-4 py-3 rounded-lg font-medium transition-all duration-200 focus:ring-2 focus:ring-gray-500/20 focus:outline-none ${
+            !searchTerm.trim()
+              ? (isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+              : (isDark ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-500 text-white hover:bg-gray-600')
+          }`}
+          title="Clear search"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span className={isMobile ? 'hidden' : 'block'}>Clear</span>
+          </div>
+        </button>
 
-      {/* Search button */}
-      <button
-        type="button"
-        onClick={handleSearch}
-        disabled={!searchTerm.trim()}
-        className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none ${
-          !searchTerm.trim()
-            ? (isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
-            : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-xl transform hover:scale-105'
-        }`}
-      >
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <span>Search</span>
-        </div>
-      </button>
-
-
-      {/* Clear button */}
-      <button
-        type="button"
-        onClick={handleClear}
-        disabled={!searchTerm.trim()}
-        className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 focus:ring-2 focus:ring-gray-500/20 focus:outline-none ${
-          !searchTerm.trim()
-            ? (isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
-            : (isDark ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-500 text-white hover:bg-gray-600')
-        }`}
-        title="Clear search"
-      >
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          <span>Clear</span>
-        </div>
-      </button>
+        {/* Search button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (searchTerm.trim() && onSearch) {
+              onSearch({
+                field: selectedField,
+                term: searchTerm.trim()
+              });
+            }
+          }}
+          disabled={!searchTerm.trim()}
+          className={`flex-1 md:flex-none px-4 md:px-6 py-3 rounded-lg font-medium transition-all duration-200 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none ${
+            !searchTerm.trim()
+              ? (isDark ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+              : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-xl'
+          }`}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span className={isMobile ? 'hidden' : 'block'}>Search</span>
+          </div>
+        </button>
+      </div>
     </div>
   );
 };

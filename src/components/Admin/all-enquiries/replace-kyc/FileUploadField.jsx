@@ -71,6 +71,10 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
     toast.success('File removed from upload queue');
   };
 
+  const handleFileReplace = () => {
+    openFileDialog();
+  };
+
   const hasFile = document?.available || document?.newFile;
   const fileName = document?.newFile?.name || document?.fileName || "Unknown file";
   const isExisting = document?.available;
@@ -125,18 +129,18 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
             )}
           </div>
           
-          {hasFile ? (
+          {hasFile && (
             <div className="flex items-center gap-1 flex-shrink-0">
               {isExisting && (
                 <button
                   type="button"
                   onClick={handleFileView}
                   disabled={viewLoading}
-                  className={`p-1.5 cursor-pointer rounded-md transition-all ${
+                  className={`p-2 cursor-pointer rounded-lg transition-all ${
                     isDark 
-                      ? "hover:bg-orange-500/20 text-orange-400 hover:text-orange-300" 
-                      : "hover:bg-orange-100 text-orange-600 hover:text-orange-700"
-                  } ${viewLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
+                      ? "hover:bg-orange-500/20 text-orange-400 hover:text-orange-300 border border-orange-500/30" 
+                      : "hover:bg-orange-100 text-orange-600 hover:text-orange-700 border border-orange-200"
+                  } ${viewLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
                   title="View file"
                 >
                   {viewLoading ? (
@@ -147,31 +151,14 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
                 </button>
               )}
               
-              <button
-                type="button"
-                onClick={openFileDialog}
-                className={`p-1.5 rounded-md transition-all hover:scale-110 ${
-                  isDark 
-                    ? isExisting
-                      ? "hover:bg-blue-500/20 text-blue-400 hover:text-blue-300"
-                      : "hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300"
-                    : isExisting
-                      ? "hover:bg-blue-100 text-blue-600 hover:text-blue-700"
-                      : "hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700"
-                }`}
-                title={isExisting ? "Replace file" : "Change file"}
-              >
-                <Upload className="w-4 h-4" />
-              </button>
-              
               {document?.newFile && (
                 <button
                   type="button"
                   onClick={handleFileDelete}
-                  className={`p-1.5 rounded-md transition-all hover:scale-110 ${
+                  className={`p-2 rounded-lg transition-all hover:scale-105 ${
                     isDark 
-                      ? "hover:bg-red-500/20 text-red-400 hover:text-red-300" 
-                      : "hover:bg-red-100 text-red-600 hover:text-red-700"
+                      ? "hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/30" 
+                      : "hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200"
                   }`}
                   title="Remove file"
                 >
@@ -179,41 +166,57 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
                 </button>
               )}
             </div>
-          ) : (
-            <Upload className={`w-5 h-5 flex-shrink-0 ${
-              isDark ? "text-gray-500" : "text-gray-400"
-            }`} />
           )}
         </div>
         
         {hasFile ? (
-          <div className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${
-            isDark
-              ? isExisting
-                ? "bg-blue-500/10 border border-blue-500/30"
-                : "bg-emerald-500/10 border border-emerald-500/30"
-              : isExisting
-                ? "bg-blue-100/50 border border-blue-200"
-                : "bg-emerald-100/50 border border-emerald-200"
-          }`}>
-            <FileText className={`w-5 h-5 flex-shrink-0 ${
-              isExisting 
-                ? isDark ? "text-blue-400" : "text-blue-500"
+          <button
+            type="button"
+            onClick={handleFileReplace}
+            className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-all hover:scale-[1.02] ${
+              isDark
+                ? isExisting
+                  ? "bg-blue-500/15 border border-blue-500/40 hover:bg-blue-500/20 hover:border-blue-400"
+                  : "bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-400"
+                : isExisting
+                  ? "bg-blue-100/70 border border-blue-300 hover:bg-blue-200/80 hover:border-blue-400"
+                  : "bg-emerald-100/70 border border-emerald-300 hover:bg-emerald-200/80 hover:border-emerald-400"
+            }`}
+          >
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <FileText className={`w-5 h-5 flex-shrink-0 ${
+                isExisting 
+                  ? isDark ? "text-blue-400" : "text-blue-600"
+                  : isDark ? "text-emerald-400" : "text-emerald-600"
+              }`} />
+              <div className="flex-1 min-w-0 text-left">
+                <span className={`text-sm font-semibold block ${
+                  isExisting
+                    ? isDark ? "text-blue-300" : "text-blue-800"
+                    : isDark ? "text-emerald-300" : "text-emerald-800"
+                }`}>
+                  {isExisting ? "✓ Uploaded" : "✓ Ready to upload"}
+                </span>
+                <span className={`text-xs block truncate ${
+                  isExisting
+                    ? isDark ? "text-blue-400/80" : "text-blue-600/80"
+                    : isDark ? "text-emerald-400/80" : "text-emerald-600/80"
+                }`}>
+                  Click to {isExisting ? 'replace' : 'change'} file
+                </span>
+              </div>
+            </div>
+            <Upload className={`w-4 h-4 flex-shrink-0 ${
+              isExisting
+                ? isDark ? "text-blue-400" : "text-blue-600"
                 : isDark ? "text-emerald-400" : "text-emerald-600"
             }`} />
-            <span className={`text-xs font-medium ${
-              isExisting
-                ? isDark ? "text-blue-300" : "text-blue-700"
-                : isDark ? "text-emerald-300" : "text-emerald-700"
-            }`}>
-              {isExisting ? "✓ Uploaded" : "✓ Ready to upload"}
-            </span>
-          </div>
+          </button>
         ) : (
           <button
             type="button"
             onClick={openFileDialog}
-            className={`w-full text-center py-3 px-2 rounded-md border-2 border-dashed transition-all ${
+            className={`w-full text-center py-2 px-2 rounded-md border-2 border-dashed transition-all ${
               isDark
                 ? "border-gray-600 hover:border-emerald-500 hover:bg-emerald-500/5"
                 : "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50"

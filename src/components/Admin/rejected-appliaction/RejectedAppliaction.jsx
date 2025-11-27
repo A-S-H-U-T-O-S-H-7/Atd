@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, RefreshCw } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw, Search, FilterX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import { exportToExcel } from "@/components/utils/exportutil";
@@ -20,8 +20,6 @@ const RejectedApplication = () => {
   const isDark = theme === "dark";
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [loanStatusFilter, setLoanStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
@@ -29,8 +27,8 @@ const RejectedApplication = () => {
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
-  // Advanced Search States
-  const [searchField, setSearchField] = useState("");
+  // Search States
+  const [searchField, setSearchField] = useState("accountId");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
   
@@ -57,9 +55,9 @@ const RejectedApplication = () => {
     };
 
     // Add search parameters
-    if (searchField && searchTerm) {
+    if (searchTerm.trim()) {
       params.search_by = searchField;
-      params.search_value = searchTerm;
+      params.search_value = searchTerm.trim();
     }
 
     // Add date filters
@@ -70,6 +68,7 @@ const RejectedApplication = () => {
       params.to_date = dateFilter.end;
     }
 
+    console.log('API Params:', params); // Debug log
     return params;
   };
 
@@ -86,17 +85,29 @@ const RejectedApplication = () => {
       const params = buildApiParams();
       const response = await rejectedApplicationAPI.getRejectedApplications(params);
       
+      console.log('API Response:', response); // Debug log
+      
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
-      if (actualResponse && actualResponse.success && actualResponse.data) {
-        const formattedApplications = actualResponse.data.map(formatRejectedApplicationForUI);
+      if (actualResponse && actualResponse.success) {
+        const applicationsData = actualResponse.data || [];
+        const formattedApplications = applicationsData.map(formatRejectedApplicationForUI);
         setApplications(formattedApplications);
-        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalCount(actualResponse.pagination?.total || applicationsData.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
+        
+        if (applicationsData.length === 0) {
+          setError("No applications found with current filters");
+        }
       } else {
-        setError("Failed to fetch applications - Invalid response");
+        setApplications([]);
+        setTotalCount(0);
+        setError("No applications found");
       }
     } catch (err) {
+      console.error('Fetch error:', err);
+      setApplications([]);
+      setTotalCount(0);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
@@ -104,32 +115,10 @@ const RejectedApplication = () => {
     }
   };
 
-  // Load data on component mount and when filters change
+  // Load data when filters or page changes
   useEffect(() => {
     fetchApplications();
-  }, [currentPage, searchField, searchTerm, dateFilter]);
-
-  // Auto-refresh functionality
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    }, 60000); // 1 minute
-  
-    return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
-  
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
+  }, [currentPage, searchTerm, dateFilter]);
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
@@ -144,7 +133,22 @@ const RejectedApplication = () => {
     setCurrentPage(1);
   };
 
-  // Export to Excel with API integration
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchField("accountId");
+    setSearchTerm("");
+    setDateFilter({ start: "", end: "" });
+    setCurrentPage(1);
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters = searchTerm || dateFilter.start || dateFilter.end;
+
+  // Show empty state
+  const showEmptyState = !loading && applications.length === 0;
+
+
+  // Export to Excel
   const handleExportToExcel = async () => {
     const result = await Swal.fire({
       title: 'Export Applications?',
@@ -159,14 +163,11 @@ const RejectedApplication = () => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       setExporting(true);
       
-      // Build export params without pagination
       const exportParams = { ...buildApiParams() };
       delete exportParams.per_page;
       delete exportParams.page;
@@ -256,101 +257,70 @@ const RejectedApplication = () => {
     }
   };
 
-// Handle restore application
-const handleRestoreApplication = async (applicationId) => {
-  try {
-    const result = await Swal.fire({
-      title: 'Restore Application?',
-      text: 'This will move the application back to pending status.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#10b981',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Restore!',
-      cancelButtonText: 'Cancel',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-
-    if (!result.isConfirmed) return;
-
-    // Call the restore API
-    const response = await rejectedApplicationService.restoreApplication(applicationId);
-    
-    // Check response structure - handle different possible formats
-    if (response && (response.success === true || response.message)) {
-      await Swal.fire({
-        title: 'Application Restored!',
-        text: response.message || 'Application has been restored successfully.',
-        icon: 'success',
+  // Handle restore application
+  const handleRestoreApplication = async (applicationId) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Restore Application?',
+        text: 'This will move the application back to pending status.',
+        icon: 'question',
+        showCancelButton: true,
         confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Restore!',
+        cancelButtonText: 'Cancel',
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
       });
 
-      // Refresh applications
-      fetchApplications();
-    } else {
-      // If response doesn't have expected structure but API call was successful
-      await Swal.fire({
-        title: 'Application Restored!',
-        text: 'Application has been restored successfully.',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+      if (!result.isConfirmed) return;
+
+      const response = await rejectedApplicationService.restoreApplication(applicationId);
       
-      // Refresh applications anyway
-      fetchApplications();
+      if (response && (response.success === true || response.message)) {
+        await Swal.fire({
+          title: 'Application Restored!',
+          text: response.message || 'Application has been restored successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+
+        fetchApplications();
+      } else {
+        await Swal.fire({
+          title: 'Application Restored!',
+          text: 'Application has been restored successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+        
+        fetchApplications();
+      }
+    } catch (error) {
+      let errorMessage = 'Failed to restore application. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      await Swal.fire({
+        title: 'Restore Failed!',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
     }
-  } catch (error) {
-    let errorMessage = 'Failed to restore application. Please try again.';
-    
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    await Swal.fire({
-      title: 'Restore Failed!',
-      text: errorMessage,
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-  }
-};
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchField("");
-    setSearchTerm("");
-    setStatusFilter("all");
-    setLoanStatusFilter("all");
-    setDateFilter({ start: "", end: "" });
-    setCurrentPage(1);
   };
 
-  // Client-side filtering
-  const filteredApplications = applications.filter(app => {
-    const appStatus = (app.status || '').toLowerCase().trim();
-    const appLoanStatus = (app.loanStatus || '').toLowerCase().trim();
-    const filterStatus = statusFilter.toLowerCase().trim();
-    const filterLoanStatus = loanStatusFilter.toLowerCase().trim();
-    
-    const matchesStatus = statusFilter === "all" || appStatus === filterStatus;
-    const matchesLoanStatus = loanStatusFilter === "all" || appLoanStatus === filterLoanStatus;
-    
-    return matchesStatus && matchesLoanStatus;
-  });
-
-  // Pagination
-  const paginatedApplications = filteredApplications.map((app, index) => ({
-    ...app,
-    srNo: (currentPage - 1) * itemsPerPage + index + 1
-  }));
+  
 
   // Navigation handlers
   const handleLoanEligibilityClick = (application) => {
@@ -367,8 +337,6 @@ const handleRestoreApplication = async (applicationId) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(application));
     router.push(`/crm/application-form/${application.id}`);
   };
-
- 
 
   if (loading && applications.length === 0) {
     return (
@@ -393,10 +361,10 @@ const handleRestoreApplication = async (applicationId) => {
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
-      <div className="p-0 md:p-4">
+      <div className="p-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center space-x-4">
               <button 
                 onClick={() => router.back()}
@@ -421,7 +389,7 @@ const handleRestoreApplication = async (applicationId) => {
             <button
               onClick={handleExportToExcel}
               disabled={exporting || applications.length === 0}
-              className={`flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+              className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                 exporting || applications.length === 0
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:shadow-lg"
@@ -436,22 +404,24 @@ const handleRestoreApplication = async (applicationId) => {
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              <span className="hidden sm:inline">
-                {exporting ? "Exporting..." : "Export"}
-              </span>
+              <span>Export</span>
             </button>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-              <button 
-                onClick={() => setError(null)}
-                className="ml-2 text-red-800 hover:text-red-900"
-              >
-                ×
-              </button>
+            <div className={`mb-4 p-4 rounded-lg border ${
+              isDark ? "bg-red-900/20 border-red-700 text-red-300" : "bg-red-50 border-red-200 text-red-700"
+            }`}>
+              <div className="flex justify-between items-center">
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError(null)}
+                  className={`ml-2 ${isDark ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-800"}`}
+                >
+                  ×
+                </button>
+              </div>
             </div>
           )}
 
@@ -462,23 +432,23 @@ const handleRestoreApplication = async (applicationId) => {
             showSourceFilter={false}
           />
 
-          {/* Search Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="md:col-span-2">
-              <AdvancedSearchBar 
-                searchOptions={SearchOptions}
-                onSearch={handleAdvancedSearch}
-                isDark={isDark}
-              />
-            </div>
+          {/* Search Bar */}
+          <div className="mb-6">
+            <AdvancedSearchBar 
+              searchOptions={SearchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              defaultSearchField="accountId"
+              className="mb-4"
+            />
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || dateFilter.start || dateFilter.end || statusFilter !== "all" || loanStatusFilter !== "all") && (
+          {(searchTerm || dateFilter.start || dateFilter.end) && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
@@ -506,26 +476,12 @@ const handleRestoreApplication = async (applicationId) => {
                       To: {dateFilter.end}
                     </span>
                   )}
-                  {statusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Status: {statusFilter}
-                    </span>
-                  )}
-                  {loanStatusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Loan Status: {loanStatusFilter}
-                    </span>
-                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Showing {filteredApplications.length} of {totalCount} applications
+                    Showing {applications.length} of {totalCount} applications
                   </span>
                   <button
                     onClick={clearAllFilters}
@@ -545,8 +501,11 @@ const handleRestoreApplication = async (applicationId) => {
 
         {/* Table */}
         <RejectedTable
-          paginatedApplications={paginatedApplications}
-          filteredApplications={filteredApplications}
+          paginatedApplications={applications.map((app, index) => ({
+            ...app,
+            srNo: (currentPage - 1) * itemsPerPage + index + 1
+          }))}
+          filteredApplications={applications}
           currentPage={currentPage}
           totalPages={totalPages}
           itemsPerPage={itemsPerPage}
@@ -562,8 +521,6 @@ const handleRestoreApplication = async (applicationId) => {
           onRestoreApplication={handleRestoreApplication}
         />
       </div>
-
-      
     </div>
   );
 };

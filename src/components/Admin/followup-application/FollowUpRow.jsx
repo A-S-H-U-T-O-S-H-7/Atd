@@ -15,6 +15,7 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import CRNLink from "../CRNLink";
 import CallButton from "../call/CallButton";
 import toast from "react-hot-toast";
+import BlacklistButton from "../action-buttons/BlacklistButton";
 
 const FollowUpRow = ({
   application,
@@ -28,9 +29,8 @@ const FollowUpRow = ({
   fileLoading,
   loadingFileName,
   onStatusUpdate,
-  onBlacklist,
   onActivateAccount,
-  onOpenStatusModal // Add this prop
+  onOpenStatusModal 
 }) => {
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
@@ -58,11 +58,7 @@ const FollowUpRow = ({
     }
   };
 
-  const handleBlacklist = () => {
-    if (onBlacklist && application.id) {
-      onBlacklist(application.id);
-    }
-  };
+  
 
   // ADD THIS FUNCTION
   const handleOpenStatusModal = () => {
@@ -469,21 +465,21 @@ const FollowUpRow = ({
       </td>
 
       {/* BlackList */}
-      <td className={cellStyle}>
-        <button
-          onClick={handleBlacklist}
-          disabled={application.isBlacklisted}
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
-            application.isBlacklisted
-              ? "bg-red-100 text-red-800 cursor-not-allowed"
-              : isDark
-                ? "bg-red-900/50 border hover:bg-red-800 text-red-300"
-                : "bg-red-100 border hover:bg-red-200 text-red-700"
-          }`}
-        >
-          {application.isBlacklisted ? "Blacklisted" : "BlackList"}
-        </button>
-      </td>
+<td className={cellStyle}>
+  <BlacklistButton
+    applicationId={application.id}
+    application={application}
+    isDark={isDark}
+    size="default"
+    variant="default"
+    onSuccess={() => {
+      if (onBlacklist) onBlacklist(application.id);
+    }}
+    onError={(error, errorMessage) => {
+      console.error('Blacklist failed:', errorMessage);
+    }}
+  />
+</td>
     </tr>
   );
 };

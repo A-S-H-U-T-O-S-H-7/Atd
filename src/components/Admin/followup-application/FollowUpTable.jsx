@@ -19,8 +19,7 @@ const FollowUpTable = ({
   fileLoading,
   loadingFileName,
   onStatusUpdate,
-  onBlacklist,
-  onActivateAccount,
+    onActivateAccount,
   onOpenStatusModal 
 }) => {
 
@@ -110,9 +109,8 @@ const FollowUpTable = ({
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                   onStatusUpdate={onStatusUpdate}
-                  onBlacklist={onBlacklist}
                   onActivateAccount={onActivateAccount}
-                  onOpenStatusModal={onOpenStatusModal} // Pass the modal opener
+                  onOpenStatusModal={onOpenStatusModal} 
                 />
               ))}
             </tbody>

@@ -12,7 +12,8 @@ const LegalTable = ({
   isDark,
   onPageChange,
   onCreateNotice,    
-  onCriminalCase
+  onCriminalCase,
+  isLoading = false
 }) => {
   return (
     <>
@@ -88,22 +89,35 @@ const LegalTable = ({
               </tr>
             </thead>
             <tbody>
-              {paginatedLegals.map((legal, index) => (
-                <LegalRow
-                  key={legal.id}
-                  legal={legal}
-                  index={index}
-                  isDark={isDark}
-                  onCreateNotice={onCreateNotice}    
-                  onCriminalCase={onCriminalCase}
-                />
-              ))}
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" className="px-4 py-8 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <Loader className="w-5 h-5 animate-spin" />
+                      <span className={isDark ? "text-gray-300" : "text-gray-600"}>
+                        Loading legal cases...
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedLegals.map((legal, index) => (
+                  <LegalRow
+                    key={legal.id}
+                    legal={legal}
+                    index={index}
+                    isDark={isDark}
+                    onCreateNotice={onCreateNotice}    
+                    onCriminalCase={onCriminalCase}
+                  />
+                ))
+              )}
             </tbody>
           </table>
         </div>
         
         {/* Empty State */}
-        {paginatedLegals.length === 0 && (
+        {!isLoading && paginatedLegals.length === 0 && (
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <FileText className="w-16 h-16 opacity-50" />
@@ -113,7 +127,7 @@ const LegalTable = ({
           </div>
         )}
         
-        {totalPages > 0 && (
+        {!isLoading && totalPages > 0 && (
           <div className="mt-8">
             <Pagination
               currentPage={currentPage}

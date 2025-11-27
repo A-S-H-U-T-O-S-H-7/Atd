@@ -1,18 +1,20 @@
 // components/appraisal/ReferenceVerification.js
 import React, { useState } from 'react';
-import { Users, Save, Loader2 } from 'lucide-react';
+import { Users, Save, Loader2, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
+import ReferenceModal from './ReferenceModal';
 
 const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [submittingReferences, setSubmittingReferences] = useState(false);
+  const [showReferencesModal, setShowReferencesModal] = useState(false); 
   
   // Consistent styling with other components
-  const fieldClassName = `p-3 rounded-lg border transition-all duration-200 ${
-    isDark
-      ? "bg-gray-800/60 border-gray-600 hover:border-emerald-500/40 shadow-lg"
-      : "bg-emerald-50/80 border-emerald-200 hover:border-emerald-300 shadow-sm"
-  }`;
+  const secondaryButtonClassName = `px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-sm border ${
+  isDark
+    ? "bg-gradient-to-r from-pink-200 to-rose-300 text-pink-800 border-pink-700 hover:from-pink-300 hover:to-rose-400 text-pink-900  shadow-lg shadow-pink-900/20"
+    : "bg-gradient-to-r from-pink-400 to-rose-500 text-white border-pink-400 hover:from-pink-300 hover:to-rose-400 text-pink-800  shadow-sm shadow-pink-500/20"
+} `;
 
   const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm text-center ${
     isDark
@@ -465,8 +467,20 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
           })}
         </div>
 
-        {/* Save Button at Bottom Right */}
-        <div className="mt-6 flex justify-end">
+        {/* Buttons Section */}
+        <div className="mt-6 flex justify-between">
+          {/* Show References Button - Left Side */}
+          <button
+            type="button"
+            onClick={() => setShowReferencesModal(true)}
+            disabled={submittingReferences || saving}
+            className={secondaryButtonClassName}
+          >
+            <Eye className="w-4 h-4" />
+            <span>Show References</span>
+          </button>
+
+          {/* Save References Button - Right Side */}
           <button
             type="button"
             onClick={handleSaveReferences}
@@ -489,6 +503,14 @@ const ReferenceVerification = ({ formik, onSectionSave, isDark, saving }) => {
           </button>
         </div>
       </div>
+
+      {/* Reference Modal */}
+      <ReferenceModal
+        isOpen={showReferencesModal}
+        onClose={() => setShowReferencesModal(false)}
+        references={formik.values.additionalRefs || []}
+        isDark={isDark}
+      />
     </div>
   );
 };

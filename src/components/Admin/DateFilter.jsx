@@ -94,10 +94,8 @@ const DateFilter = ({ isDark, onFilterChange }) => {
           >
             <option value="all">All Sources</option>
             <option value="Website">Website</option>
-            <option value="Mobile App">Mobile App</option>
-            <option value="Web Portal">Web Portal</option>
-            <option value="iOS App">iOS App</option>
-            <option value="Android App">Android App</option>
+            <option value="iOS">iOS</option>
+            <option value="Android">Android</option>
           </select>
         </div>
 

@@ -25,10 +25,12 @@ export const callAPI = {
 export const callService = {
     // Format call data for UI display
     formatCallForUI: (call) => {
+        if (!call) return null;
+        
         return {
             id: call.id,
             customerId: call.customer_id,
-            name: call.name || "Customer",
+            name: call.name?.trim() || "Customer",
             mobile: call.mobile,
             crnNo: call.crnno,
             loanNo: call.loan_no,
@@ -45,7 +47,7 @@ export const callService = {
             penalInterest: call.penal_interest,
             penalty: call.penality,
             alternateNo: call.alternate_no,
-            refDetails: call.ref_details || [],
+            refDetails: Array.isArray(call.ref_details) ? call.ref_details : [],
             companyAccountDetails: call.company_account_details || {},
             remark: call.remark,
             nextCall: call.nextcall,
@@ -57,14 +59,24 @@ export const callService = {
 
     // Format call history for UI
     formatCallHistoryForUI: (callHistory) => {
+        if (!callHistory) return null;
+        
+        const callDate = new Date(callHistory.created_at);
         return {
             id: callHistory.id,
             remark: callHistory.remark,
             nextCall: callHistory.nextcall,
             callDate: callHistory.created_at,
             adminName: callHistory.admin_name,
-            formattedDate: new Date(callHistory.created_at).toLocaleDateString('en-GB'),
-            formattedTime: new Date(callHistory.created_at).toLocaleTimeString('en-GB', {
+            formattedDate: callDate.toLocaleDateString('en-GB'),
+            formattedTime: callDate.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            formattedDateTime: callDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             })
@@ -73,6 +85,8 @@ export const callService = {
 
     // Format customer details for UI
     formatCustomerDetailsForUI: (details) => {
+        if (!details) return null;
+        
         return {
             name: details.name,
             mobile: details.mobile,
@@ -91,23 +105,55 @@ export const callService = {
             penalInterest: details.penal_interest,
             penalty: details.penality,
             alternateNo: details.alternate_no,
-            refDetails: details.ref_details || [],
+            refDetails: Array.isArray(details.ref_details) ? details.ref_details : [],
             companyAccountDetails: details.company_account_details || {}
         };
     },
 
-    // Prepare call data for API submission
+    // Prepare call data for API submission - FIXED VERSION
     prepareCallData: (remark, nextCallDate = "") => {
-        return {
-            remark: remark,
-            nextcall: nextCallDate || ""
+        const callData = {
+            remark: remark?.trim() || ""
         };
+        
+        // Only add nextcall if it has a value
+        if (nextCallDate && nextCallDate.trim()) {
+            callData.nextcall = nextCallDate.trim();
+        }
+        
+        return callData;
+    },
+
+    // Alternative method that might work better
+    prepareCallDataV2: (remark, nextCallDate = "") => {
+        return {
+            remark: remark?.trim() || "",
+            next_call_date: nextCallDate || null  // Try different field name
+        };
+    },
+
+    // Format multiple calls for UI
+    formatCallsForUI: (calls) => {
+        if (!Array.isArray(calls)) return [];
+        return calls.map(call => this.formatCallForUI(call)).filter(Boolean);
+    },
+
+    // Format multiple call history items for UI
+    formatCallHistoriesForUI: (callHistories) => {
+        if (!Array.isArray(callHistories)) return [];
+        return callHistories.map(history => this.formatCallHistoryForUI(history)).filter(Boolean);
     }
 };
 
 // Utility functions
 export const formatCurrency = (amount) => {
-    return `₹${parseFloat(amount || 0).toLocaleString("en-IN", {
+    if (amount === null || amount === undefined) return "₹0.00";
+    
+    const numericAmount = typeof amount === 'string' 
+        ? parseFloat(amount.replace(/,/g, '')) 
+        : Number(amount);
+    
+    return `₹${numericAmount.toLocaleString("en-IN", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     })}`;
@@ -115,7 +161,30 @@ export const formatCurrency = (amount) => {
 
 export const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-GB');
+    
+    try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString('en-GB');
+    } catch (error) {
+        return "N/A";
+    }
+};
+
+export const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A";
+    
+    try {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? "N/A" : date.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return "N/A";
+    }
 };
 
 export const getCallStatus = (status) => {
@@ -126,4 +195,25 @@ export const getCallStatus = (status) => {
         "missed": "Missed"
     };
     return statusMap[status] || "Completed";
+};
+
+// Additional utility for handling API responses
+export const handleCallAPIResponse = (response) => {
+    if (!response || !response.data) {
+        throw new Error("Invalid API response");
+    }
+    
+    const { success, message, data, calls, details } = response.data;
+    
+    if (!success) {
+        throw new Error(message || "API call failed");
+    }
+    
+    return {
+        success,
+        message,
+        data,
+        calls: Array.isArray(calls) ? calls : [],
+        details: details || null
+    };
 };

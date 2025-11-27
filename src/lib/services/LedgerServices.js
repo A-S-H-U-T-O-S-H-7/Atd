@@ -49,6 +49,112 @@ export const ledgerAPI = {
     }
   },
 
+  // Download individual ledger entry as PDF
+  downloadIndividualLedgerPDF: async (applicationId, applicantName, loanNo) => {
+    try {
+      // Use the SAME export API but with individual entry parameters
+      const params = {
+        export_type: 'pdf',
+        individual_entry: true,
+        application_id: applicationId,
+        report_type: 'customer_statement'
+      };
+
+      const response = await api.get("/crm/ledger/export", {
+        params: params,
+        responseType: 'blob'
+      });
+      
+      // Create PDF blob
+      const blob = new Blob([response], { 
+        type: 'application/pdf' 
+      });
+      
+      // Download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ledger-${loanNo}-${applicantName}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Individual PDF download error:', error);
+      throw new Error('Failed to download PDF statement');
+    }
+  },
+
+  // Print individual ledger entry
+ downloadIndividualLedgerPDF: async (applicationId, applicantName, loanNo) => {
+    try {
+      // Use the SAME export API but with individual entry parameters
+      const params = {
+        export_type: 'pdf',
+        individual_entry: true,
+        application_id: applicationId,
+        report_type: 'customer_statement'
+      };
+
+      const response = await api.get("/crm/ledger/export", {
+        params: params,
+        responseType: 'blob'
+      });
+      
+      // Create PDF blob
+      const blob = new Blob([response], { 
+        type: 'application/pdf' 
+      });
+      
+      // Download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ledger-${loanNo}-${applicantName}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Individual PDF download error:', error);
+      throw new Error('Failed to download PDF statement');
+    }
+  },
+
+  printIndividualLedger: async (applicationId) => {
+    try {
+      const params = {
+        export_type: 'pdf', 
+        individual_entry: true,
+        application_id: applicationId,
+        report_type: 'customer_statement',
+        print: true
+      };
+
+      const response = await api.get("/crm/ledger/export", {
+        params: params,
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Open PDF in new tab for printing
+      const printWindow = window.open(url);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Print error:', error);
+      throw new Error('Failed to open print view');
+    }
+  },
+
+
+
   // Settle loan
   settleLoan: async (applicationId) => {
     try {

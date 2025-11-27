@@ -3,6 +3,7 @@ import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
+import blacklistService from "./BlackListService";
 
 export const followUpApplicationAPI = {
   // Get all follow-up applications with filters
@@ -33,14 +34,7 @@ export const followUpApplicationAPI = {
     }
   },
 
-  blacklistApplication: async (applicationId) => {
-    try {
-      const response = await api.put(`/crm/application/black-list/${applicationId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+ 
 
   activateAccount: async (applicationId) => {
     try {
@@ -177,7 +171,7 @@ export const followUpService = {
   updateStatus: async (applicationId, status, remark = "") => {
     try {
       const statusData = {
-        status: getStatusId(status), // USE IMPORTED FUNCTION
+        status: getStatusId(status),
         remark: remark
       };
       const response = await followUpApplicationAPI.updateApplicationStatus(applicationId, statusData);
@@ -187,13 +181,8 @@ export const followUpService = {
     }
   },
 
-  blacklist: async (applicationId) => {
-    try {
-      const response = await followUpApplicationAPI.blacklistApplication(applicationId);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  blacklist: async (applicationId, options = {}) => {
+    return await blacklistService.blacklistApplication(applicationId, options);
   },
 
   activateAccount: async (applicationId) => {

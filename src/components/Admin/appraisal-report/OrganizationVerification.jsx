@@ -307,31 +307,42 @@ const handleSendMailToHR = async () => {
           </div>
 
           {/* Company Name Box */}
-          <div className={`p-2 rounded-lg border h-full flex flex-col justify-between ${
-            isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
-          }`}>
-            <div>
-              <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Company Name
-              </div>
-              <div className={`text-base font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                {formik.values.organizationName || "N/A"}
-              </div>
-            </div>
-            <a
-              href="https://www.mca.gov.in/content/mca/global/en/home.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`mt-3 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 ${
-                isDark 
-                  ? "bg-blue-600 hover:bg-blue-500 text-white" 
-                  : "bg-blue-500 hover:bg-blue-600 text-white"
-              }`}
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>Verify on MCA</span>
-            </a>
-          </div>
+<div className={`p-3 rounded-lg border h-full flex flex-col justify-between ${
+  isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
+}`}>
+  <div>
+    <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+      Company Name
+    </div>
+    <div className={`text-base font-semibold mb-2 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+      {formik.values.organizationName || "N/A"}
+    </div>
+    
+    {/* Organization Address */}
+    <div className={`text-sm mt-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+      <div className={`text-xs font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+        Organization Address:
+      </div>
+      <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+        {formik.values.organisation_address || "At/po-iswarpur via- Bahanga,Dist-Balasore"}
+      </div>
+    </div>
+  </div>
+  
+  <a
+    href="https://www.mca.gov.in/content/mca/global/en/mca/master-data/MDS.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`mt-3 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center space-x-2 ${
+      isDark 
+        ? "bg-blue-600 hover:bg-blue-500 text-white" 
+        : "bg-blue-500 hover:bg-blue-600 text-white"
+    }`}
+  >
+    <ExternalLink className="w-4 h-4" />
+    <span>Verify on MCA</span>
+  </a>
+</div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

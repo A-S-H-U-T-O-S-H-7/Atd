@@ -253,7 +253,7 @@ const handleSaveCibilVerification = async () => {
     
     return (
       <div>
-        <label className={labelClassName}>CIBIL Score (500)</label>
+        <label className={labelClassName}>CIBIL Score (&gt;500)</label>
         <div className="space-y-2">
           <input
             type="number"
@@ -261,7 +261,7 @@ const handleSaveCibilVerification = async () => {
             onChange={handleScoreChange}
             onBlur={handleScoreBlur}
             className={inputClassName}
-            placeholder="746"
+            placeholder="Enter Score (e.g. 746)"
           />
           <select
             value={localStatus}

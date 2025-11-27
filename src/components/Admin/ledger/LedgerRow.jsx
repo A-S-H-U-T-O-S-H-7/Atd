@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import {
   Calendar,
@@ -6,9 +7,13 @@ import {
   Eye,
 } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
+import { RefreshCw } from "lucide-react";
 import CallButton from "../call/CallButton";
+import Swal from 'sweetalert2';
+import { exportService } from "@/lib/services/LedgerServices";
 
-const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction, onAdjustment }) => {
+const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => {
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const handleView = (item) => {
     onViewTransaction(item);
@@ -18,9 +23,71 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
     onAdjustment(item);  
   };
 
-  const handleDownloadPDF = (item) => {
-    // Add your PDF download logic here
-    console.log('Download PDF for:', item);
+  // PDF Action Handler
+  const handlePDFAction = async (item) => {
+    const result = await Swal.fire({
+      title: 'PDF Statement',
+      text: `Choose action for ${item.name}'s ledger statement`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Download PDF',
+      cancelButtonText: 'Cancel',
+      showDenyButton: true,
+      denyButtonText: 'Print',
+      confirmButtonColor: '#10b981',
+      denyButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (result.isConfirmed) {
+      // Download PDF
+      setPdfLoading(true);
+      try {
+        await exportService.downloadIndividualLedgerPDF(
+          item.application_id, 
+          item.name, 
+          item.loanNo
+        );
+        
+        await Swal.fire({
+          title: 'PDF Downloaded!',
+          text: `PDF statement for ${item.name} has been downloaded.`,
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        await Swal.fire({
+          title: 'Download Failed!',
+          text: error.message || 'Failed to download PDF. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      } finally {
+        setPdfLoading(false);
+      }
+    } else if (result.isDenied) {
+      // Print PDF
+      try {
+        await exportService.printIndividualLedger(item.application_id);
+      } catch (error) {
+        await Swal.fire({
+          title: 'Print Failed!',
+          text: error.message || 'Failed to open print view. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      }
+    }
   };
 
   const getDueDateStatus = (dueDate) => {
@@ -59,13 +126,11 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
     }
   };
 
-  // Format balance display 
   const formatBalance = (balance) => {
     const amount = parseFloat(balance || 0);
     return `₹${amount.toLocaleString()}`;
   };
 
-  // Format overdue amount display 
   const formatOverdue = (overdue) => {
     const amount = parseFloat(overdue || 0);
     return `₹${amount.toLocaleString()}`;
@@ -252,8 +317,6 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
         </div>
       </td>
 
-      
-
       {/* Action */}
       <td className="px-2 py-4">
         <div className="flex items-center space-x-2">
@@ -268,16 +331,24 @@ const LedgerRow = ({ item, index, application, isDark, onCall, onViewTransaction
           >
             <Eye className="w-4 h-4" />
           </button>
+
           <button
-            onClick={() => handleDownloadPDF(item)}
-            className={`p-2 cursor-pointer rounded-md transition-all duration-200 hover:scale-105 flex items-center justify-center shadow-sm ${
-              isDark
-                ? "bg-red-800/80 text-white hover:bg-red-700 border border-red-700"
-                : "bg-red-500/10 text-red-700 hover:bg-red-100 border border-red-300"
+            onClick={() => handlePDFAction(item)}
+            disabled={pdfLoading}
+            className={`p-2 cursor-pointer rounded-md transition-all duration-200 hover:scale-105 flex items-center justify-center ${
+              pdfLoading 
+                ? "opacity-50 cursor-not-allowed"
+                : isDark
+                  ? "bg-red-800/80 text-white hover:bg-red-700 border border-red-700"
+                  : "bg-red-500/10 text-red-700 hover:bg-red-100 border border-red-300"
             }`}
-            title="Download PDF"
+            title={pdfLoading ? "Processing..." : "PDF Statement Options"}
           >
-            <FaFilePdf className="w-5 h-5" />
+            {pdfLoading ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <FaFilePdf className="w-4 h-4" />
+            )}
           </button>
         </div>
       </td>
