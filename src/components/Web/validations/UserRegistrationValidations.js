@@ -269,6 +269,9 @@ const ServiceDetailsSchema = Yup.object().shape({
     "Website must start with www. (e.g., www.example.com)"
   ),
   
+  employerContactConsent: Yup.boolean()
+    .oneOf([true], "You must confirm that NBFC can contact your employer in case of default or non-response")
+    .required("Employer contact consent is required"),
 
   monthlySalary: Yup.number()
     .min(15000, "Minimum monthly salary is ₹15,000")

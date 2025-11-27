@@ -57,36 +57,35 @@ const ClientHistoryPage = () => {
   };
 
   const handleViewClick = async (client) => {
-    try {
-      setLoading(true);
-      const response = await clientService.getClientDetails(client.id);
+  try {
+    setLoading(true);
+    const response = await clientService.getClientDetails(client.id);
+    
+    if (response.success) {
+      // Transform the detailed client data
+      const clientDetails = {
+        ...client,
+        dob: response.details.dob,
+        selfie: response.details.selfie,
+        gender: response.details.gender,
+        location: response.details.address,
+        panNo: response.details.pan_no,
+        aadharNo: response.details.aadhar_no,
+        // Add loan information if available
+        loans: response.loans || [],
+        references: response.references || []
+      };
       
-      if (response.success) {
-        // Transform the detailed client data
-        const clientDetails = {
-          ...client,
-          // Add additional details from the API response
-          dob: response.details.dob,
-          selfie: response.details.selfie,
-          gender: response.details.gender,
-          location: response.details.address,
-          panNo: response.details.pan_no,
-          aadharNo: response.details.aadhar_no,
-          // Add loan information if available
-          loans: response.loans || [],
-          references: response.references || []
-        };
-        
-        setSelectedClient(clientDetails);
-        setIsViewModalOpen(true);
-      }
-    } catch (err) {
-      setError("Failed to fetch client details");
-      console.error("Error fetching client details:", err);
-    } finally {
-      setLoading(false);
+      setSelectedClient(clientDetails);
+      setIsViewModalOpen(true);
     }
-  };
+  } catch (err) {
+    setError("Failed to fetch client details");
+    console.error("Error fetching client details:", err);
+  } finally {
+    setLoading(false); // This will reset the loading state for all buttons
+  }
+};
 
   const handleCloseModal = () => {
     setIsViewModalOpen(false);

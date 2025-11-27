@@ -21,5 +21,27 @@ export const clientService = {
       console.error('Error fetching client details:', error);
       throw error;
     }
+  },
+
+  // Get loan details by application ID
+  getLoanDetails: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/ledger/detail/${applicationId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching loan details:', error);
+      throw error;
+    }
+  },
+
+  // Get client loans list
+  getClientLoans: async (clientId) => {
+    try {
+      const response = await api.get(`/crm/clients/loans/${clientId}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching client loans:', error);
+      throw error;
+    }
   }
 };

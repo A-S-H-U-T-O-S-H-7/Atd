@@ -88,6 +88,7 @@ function ServiceDetails() {
   ...serviceData,
   organizationName: serviceData.organizationName || user?.organisation_name || '',
   netMonthlySalary: serviceData.netMonthlySalary || user?.net_monthly_salary || '',
+  employerContactConsent: serviceData.employerContactConsent || false,
   // Add these missing fields with proper fallbacks
   monthlySalary: serviceData.monthlySalary || '',
   existingEmi: serviceData.existingEmi || '',

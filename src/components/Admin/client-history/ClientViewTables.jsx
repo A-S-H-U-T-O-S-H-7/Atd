@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import LoanDetailsModal from "./LoanDetailsModal";
 import { getStatusName } from "@/utils/applicationStatus";
+import { clientService } from "@/lib/services/ClientHistoryService";
+import { formatLedgerDetailsForUI } from "@/lib/services/LedgerServices";
 
 const ClientTables = ({ clientData, isDark }) => {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingLoanId, setLoadingLoanId] = useState(null);
 
   // Transform references data from API
   const transformReferences = (references) => {
@@ -32,18 +36,19 @@ const ClientTables = ({ clientData, isDark }) => {
     return transformed;
   };
 
-  // Transform loan data from API
+  // Transform loan data from API - FIXED VERSION
   const transformLoans = (loans) => {
     if (!loans || loans.length === 0) return [];
     
     return loans.map((loan, index) => ({
-      loanNo: loan.loan_no,
-      sanctionAmount: loan.approved_amount,
+      application_id: loan.application_id, // Make sure this is correctly mapped
+      loanNo: loan.loan_no || `LOAN-${index + 1}`,
+      sanctionAmount: loan.approved_amount || loan.sanction_amount,
       transactionDate: loan.transaction_date,
-      dueDate: loan.duedate,
+      dueDate: loan.duedate || loan.due_date,
       collectionDate: loan.collection_date || "-",
-      status: getStatusName(loan.loan_status), // Use the utility function
-      statusCode: loan.loan_status, // Keep the original status code for reference
+      status: getStatusName(loan.loan_status),
+      statusCode: loan.loan_status,
       disburseAmount: loan.disburse_amount,
       collectionAmount: loan.collection_amount
     }));
@@ -94,9 +99,65 @@ const ClientTables = ({ clientData, isDark }) => {
     });
   };
 
-  const handleViewLoan = (loan) => {
-    setSelectedLoan(loan);
-    setIsLoanModalOpen(true);
+  const handleViewLoan = async (loan) => {
+    try {
+      setLoading(true);
+      setLoadingLoanId(loan.application_id);
+      
+      const response = await clientService.getLoanDetails(loan.application_id);
+      
+      let transactions = [];
+      
+      // Directly handle the API response structure
+      if (response && response.ledger && Array.isArray(response.ledger)) {
+        transactions = response.ledger.map((transaction, index) => ({
+          id: transaction.id || index,
+          date: formatDate(transaction.create_date),
+          particular: transaction.particular || "Transaction",
+          debit: transaction.trx_type === 'debit' ? parseFloat(transaction.trx_amount) || 0 : 0,
+          credit: transaction.trx_type === 'credit' ? parseFloat(transaction.trx_amount) || 0 : 0,
+          balance: 0
+        }));
+        
+        // Calculate running balance
+        let runningBalance = 0;
+        transactions.forEach(transaction => {
+          runningBalance = runningBalance + transaction.debit - transaction.credit;
+          transaction.balance = runningBalance;
+        });
+      }
+          
+      const loanWithDetails = {
+        ...loan,
+        transactions: transactions,
+        clientName: clientData.name || clientData.fullname,
+        address: clientData.location || clientData.address,
+        crnno: clientData.crnNo || clientData.crnno,
+        loanNo: loan.loanNo,
+        sanctionAmount: loan.sanctionAmount || loan.approved_amount,
+        dueDate: loan.dueDate || loan.duedate,
+        status: loan.status
+      };
+      
+      setSelectedLoan(loanWithDetails);
+      setIsLoanModalOpen(true);
+      
+    } catch (error) {
+      console.error("Error fetching loan details:", error);
+      // Fallback with basic data
+      const loanWithClientInfo = {
+        ...loan,
+        clientName: clientData.name || clientData.fullname,
+        address: clientData.location || clientData.address, 
+        crnno: clientData.crnNo || clientData.crnno,
+        transactions: []
+      };
+      setSelectedLoan(loanWithClientInfo);
+      setIsLoanModalOpen(true);
+    } finally {
+      setLoading(false);
+      setLoadingLoanId(null);
+    }
   };
 
   return (
@@ -299,13 +360,20 @@ const ClientTables = ({ clientData, isDark }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <button 
                         onClick={() => handleViewLoan(loan)}
-                        className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-                          isDark
-                            ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
-                            : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                        disabled={loading && loadingLoanId === loan.application_id}
+                        className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center justify-center ${
+                          loading && loadingLoanId === loan.application_id
+                            ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                            : isDark
+                              ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
+                              : "bg-blue-100 text-blue-600 hover:bg-blue-200"
                         }`}
                       >
-                        <Eye className="w-4 h-4" />
+                        {loading && loadingLoanId === loan.application_id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                     </td>
                   </tr>
