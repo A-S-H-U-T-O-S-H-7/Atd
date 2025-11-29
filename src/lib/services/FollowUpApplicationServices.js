@@ -64,7 +64,7 @@ export const formatFollowUpApplicationForUI = (application) => {
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,
     accountId: application.accountId,
-        userId: application.user_id,
+    userId: application.user_id,
 
 
     // Date and time information
@@ -181,8 +181,8 @@ export const followUpService = {
     }
   },
 
-  blacklist: async (applicationId, options = {}) => {
-    return await blacklistService.blacklistApplication(applicationId, options);
+  blacklist: async (userId, options = {}) => {
+    return await blacklistService.blacklistApplication(userId, options);
   },
 
   activateAccount: async (applicationId) => {

@@ -1,11 +1,10 @@
 "use client";
 import React, { useState } from 'react';
-import { Ban, Loader2 } from 'lucide-react';
+import { Ban, Loader2, CheckCircle2 } from 'lucide-react';
 import blacklistService from '@/lib/services/BlackListService';
-import { debugBlacklist } from '@/lib/services/BlackListService';
 
 const BlacklistButton = ({
-  applicationId,
+  userId,
   application,
   isDark = false,
   size = 'default',
@@ -23,36 +22,25 @@ const BlacklistButton = ({
   );
 
   const handleBlacklist = async () => {
-    if (!applicationId || isBlacklisted || disabled) return;
-
-    console.log('🧪 Starting blacklist process...');
-    console.log('Application ID:', applicationId);
-    console.log('Application object:', application);
+    if (!userId || isBlacklisted || disabled) {
+      return;
+    }
 
     setLoading(true);
     
     try {
-      // First, test with the actual service (not debug)
-      console.log('🚀 Calling blacklist service...');
-      
-      const result = await blacklistService.blacklistApplication(applicationId, {
+      await blacklistService.blacklistApplication(userId, {
         isDark,
         showConfirmation: true,
         onSuccess: (data) => {
-          console.log('✅ Blacklist success in service:', data);
           setIsBlacklisted(true);
           if (onSuccess) onSuccess(data);
         },
         onError: (error, errorMessage) => {
-          console.log('❌ Blacklist error in service:', errorMessage);
           if (onError) onError(error, errorMessage);
         }
       });
-      
-      console.log('🎯 Blacklist completed:', result);
-      
     } catch (error) {
-      console.error('💥 Final error in button:', error);
       if (onError) onError(error, 'Blacklist process failed');
     } finally {
       setLoading(false);
@@ -61,38 +49,62 @@ const BlacklistButton = ({
 
   // Size classes
   const sizeClasses = {
-    small: 'px-3 py-1 text-xs',
-    default: 'px-4 py-2 text-sm',
+    small: 'px-3 py-1.5 text-xs',
+    default: 'px-2 py-1 text-sm',
     large: 'px-5 py-3 text-base'
   };
 
-  // Variant classes
+  const iconSizes = {
+    small: 'w-3 h-3',
+    default: 'w-4 h-4',
+    large: 'w-4 h-4'
+  };
+
+  // Variant classes for active state
   const variantClasses = {
     default: isDark 
-      ? 'bg-red-900/50 border border-red-700 hover:bg-red-800 text-red-300' 
-      : 'bg-red-100 border border-red-200 hover:bg-red-200 text-red-700',
+      ? 'bg-gradient-to-r from-rose-200 to-red-300 border border-red-600 hover:bg-red-300 text-red-800' 
+      : 'bg-gradient-to-r from-rose-100 to-red-200 border border-red-600 hover:bg-red-300 text-red-600',
+
     outline: isDark
-      ? 'border border-red-600 hover:bg-red-900/30 text-red-400'
-      : 'border border-red-300 hover:bg-red-50 text-red-600',
+      ? 'border border-red-500 hover:bg-red-900/40 text-red-300'
+      : 'border border-red-500 hover:bg-red-50 text-red-600',
     solid: 'bg-red-600 hover:bg-red-700 text-white border border-red-600'
   };
 
-  const baseClasses = `rounded font-medium transition-colors duration-200 cursor-pointer flex items-center justify-center space-x-2 ${
+  // Variant classes for blacklisted state
+  const blacklistedVariantClasses = {
+    default: isDark 
+      ? 'bg-gradient-to-r from-red-500 to-red-600 border border-red-600 text-red-100' 
+      : 'bg-gradient-to-r from-red-500 to-red-600 border border-red-600 text-red-100',
+    outline: isDark
+      ? 'border border-gray-500 bg-red-800/50 text-gray-400'
+      : 'border border-gray-400 bg-red-100 text-gray-600',
+    solid: 'bg-gray-500 border border-gray-500 text-white'
+  };
+
+  const baseClasses = `rounded-md font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
     sizeClasses[size]
-  } ${variantClasses[variant]} ${
-    disabled || isBlacklisted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
   } ${className}`;
+
+  const activeClasses = `${baseClasses} ${
+    variantClasses[variant]
+  } ${
+    disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md active:scale-95'
+  }`;
+
+  const blacklistedClasses = `${baseClasses} ${
+    blacklistedVariantClasses[variant]
+  } cursor-default opacity-100`;
 
   if (isBlacklisted) {
     return (
       <button
         disabled
-        className={`${baseClasses} ${
-          isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600'
-        }`}
+        className={blacklistedClasses}
       >
-        {showIcon && <Ban className="w-3 h-3" />}
-        <span>Blacklisted</span>
+        {showIcon && <CheckCircle2 className={`${iconSizes[size]} flex-shrink-0`} />}
+        <span className="font-semibold">Blacklisted</span>
       </button>
     );
   }
@@ -101,14 +113,14 @@ const BlacklistButton = ({
     <button
       onClick={handleBlacklist}
       disabled={loading || disabled}
-      className={baseClasses}
+      className={activeClasses}
     >
       {loading ? (
-        <Loader2 className="w-3 h-3 animate-spin" />
+        <Loader2 className={`${iconSizes[size]} animate-spin flex-shrink-0`} />
       ) : (
-        showIcon && <Ban className="w-3 h-3" />
+        showIcon && <Ban className={`${iconSizes[size]} flex-shrink-0`} />
       )}
-      <span>
+      <span className="font-semibold">
         {loading ? 'Processing...' : (children || 'Blacklist')}
       </span>
     </button>

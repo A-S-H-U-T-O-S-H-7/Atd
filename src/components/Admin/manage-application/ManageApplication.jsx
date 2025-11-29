@@ -890,36 +890,7 @@ const ManageApplication = () => {
               />
             </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
-                isDark
-                  ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                  : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="inactive">Inactive</option>
-            </select>
-
-            <select
-              value={loanStatusFilter}
-              onChange={(e) => setLoanStatusFilter(e.target.value)}
-              className={`px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
-                isDark
-                  ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                  : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-              } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
-            >
-              <option value="all">All Loan Status</option>
-              <option value="disbursed">Disbursed</option>
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="closed">Closed</option>
-            </select>
+    
           </div>
 
           {/* Filter Summary */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, Mail } from "lucide-react";
+import { Calendar, Mail, Ban } from "lucide-react";
 import PhotoDocument from "../documents/PhotoDocument";
 import PanCardDocument from "../documents/PanCardDocument";
 import AddressProofDocument from "../documents/AddressProofDocument";
@@ -32,6 +32,9 @@ const FollowUpRow = ({
   onActivateAccount,
   onOpenStatusModal 
 }) => {
+  // Check if user is blacklisted
+  const isBlacklisted = application.blacklist === 1 || application.isBlacklisted === true;
+  
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -44,6 +47,23 @@ const FollowUpRow = ({
   
   // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
+
+  // Blacklisted row styles
+  const blacklistedRowBg = isDark 
+    ? "bg-red-950/20 border-l-4 border-l-red-500" 
+    : "bg-red-50/80 border-l-4 border-l-red-500";
+  
+  const blacklistedHoverBg = isDark
+    ? "hover:bg-red-900/30"
+    : "hover:bg-red-100/90";
+
+  const normalRowBg = index % 2 === 0
+    ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+    : "";
+
+  const normalHoverBg = isDark
+    ? "hover:bg-gray-700/50"
+    : "hover:bg-emerald-50/50";
 
   const formatCurrency = amount => {
     return `${parseFloat(amount).toLocaleString("en-IN", {
@@ -99,32 +119,37 @@ const FollowUpRow = ({
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-emerald-50/50"
+        isBlacklisted 
+          ? `${blacklistedRowBg} ${blacklistedHoverBg}`
+          : `${normalRowBg} ${normalHoverBg}`
       } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
+        isDark
+          ? "border-emerald-700"
+          : "border-emerald-300"
       }`}
     >
       {/* SR No */}
       <td className={cellStyle}>
-        <span className={`font-medium ${textPrimary}`}>
-          {application.srNo}
-        </span>
+        <div className="flex items-center justify-center space-x-1">
+          {isBlacklisted && (
+            <Ban className={`w-3 h-3 ${isDark ? "text-red-400" : "text-red-500"}`} />
+          )}
+          <span className={`font-medium ${textPrimary}`}>
+            {application.srNo}
+          </span>
+        </div>
       </td>
 
       {/* Call */}
       <td className={cellStyle}>
-  <CallButton
-    applicant={application}
-    isDark={isDark}
-    size="small"
-    variant="default"
-    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
-  />
-</td>
+        <CallButton
+          applicant={application}
+          isDark={isDark}
+          size="small"
+          variant="default"
+          className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+        />
+      </td>
 
       {/* Application Source */}
       <td className={cellStyle}>
@@ -152,16 +177,16 @@ const FollowUpRow = ({
 
       {/* CRN No */}
       <td className={cellStyle}>
-      <CRNLink 
-        crnNo={application.crnNo} 
-        userId={application.userId}
-        onSuccess={(data) => {
-          toast.success('Profile loaded');
-        }}
-        onError={(error) => {
-          toast.error(error);
-        }}
-      />
+        <CRNLink 
+          crnNo={application.crnNo} 
+          userId={application.userId}
+          onSuccess={(data) => {
+            toast.success('Profile loaded');
+          }}
+          onError={(error) => {
+            toast.error(error);
+          }}
+        />
       </td>
 
       {/* Account ID */}
@@ -465,13 +490,13 @@ const FollowUpRow = ({
       </td>
 
       {/* BlackList */}
-<td className={cellStyle}>
-  <BlacklistButton
-    applicationId={application.id}
-    application={application}
-    isDark={isDark}
-  />
-</td>
+      <td className={cellStyle}>
+        <BlacklistButton
+          userId={application.userId}
+          application={application}
+          isDark={isDark}
+        />
+      </td>
     </tr>
   );
 };

@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, RefreshCw, Search, FilterX } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
+import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
-import DateRangeFilter from "../DateRangeFilter";
 import RejectedTable from "./RejectedTable";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
@@ -23,14 +23,13 @@ const RejectedApplication = () => {
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Search States
-  const [searchField, setSearchField] = useState("accountId");
+  const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   
   // Data states
   const [applications, setApplications] = useState([]);
@@ -39,12 +38,15 @@ const RejectedApplication = () => {
 
   const itemsPerPage = 10;
 
+  // Updated Search Options with all fields
   const SearchOptions = [
     { value: 'accountId', label: 'Account ID' },
-    { value: 'crnno', label: 'CRN No.' },
+    { value: 'crnno', label: 'CRN No' },
     { value: 'name', label: 'Name' },
     { value: 'phone', label: 'Phone Number' },
     { value: 'email', label: 'Email' },
+    { value: 'city', label: 'City' },
+    { value: 'state', label: 'State' },
   ];
 
   // Build API parameters
@@ -55,37 +57,33 @@ const RejectedApplication = () => {
     };
 
     // Add search parameters
-    if (searchTerm.trim()) {
+    if (searchField && searchTerm.trim()) {
       params.search_by = searchField;
       params.search_value = searchTerm.trim();
     }
 
     // Add date filters
-    if (dateFilter.start) {
-      params.from_date = dateFilter.start;
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
     }
-    if (dateFilter.end) {
-      params.to_date = dateFilter.end;
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
     }
 
-    console.log('API Params:', params); // Debug log
+    console.log('API Params:', params);
     return params;
   };
 
   // Fetch applications
-  const fetchApplications = async (isAutoRefresh = false) => {
+  const fetchApplications = async () => {
     try {
-      if (isAutoRefresh) {
-        setIsAutoRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
       const params = buildApiParams();
       const response = await rejectedApplicationAPI.getRejectedApplications(params);
       
-      console.log('API Response:', response); // Debug log
+      console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
@@ -111,42 +109,49 @@ const RejectedApplication = () => {
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
-      setIsAutoRefreshing(false);
     }
   };
 
   // Load data when filters or page changes
   useEffect(() => {
     fetchApplications();
-  }, [currentPage, searchTerm, dateFilter]);
+  }, [currentPage]);
+
+  // Handle search and date filter changes
+  useEffect(() => {
+    if (currentPage === 1) {
+      fetchApplications();
+    } else {
+      setCurrentPage(1);
+    }
+  }, [searchField, searchTerm, dateRange]);
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
+      return;
+    }
+    
     setSearchField(field);
-    setSearchTerm(term);
+    setSearchTerm(term.trim());
     setCurrentPage(1);
   };
 
-  // Handle Date Filter Change
-  const handleDateFilterChange = (filterData) => {
-    setDateFilter(filterData.dateRange);
+  // Handle Date Filter
+  const handleDateFilter = (filters) => {
+    setDateRange(filters.dateRange || { start: "", end: "" });
     setCurrentPage(1);
   };
 
   // Clear all filters
   const clearAllFilters = () => {
-    setSearchField("accountId");
+    setSearchField("");
     setSearchTerm("");
-    setDateFilter({ start: "", end: "" });
+    setDateRange({ start: "", end: "" });
     setCurrentPage(1);
   };
-
-  // Check if any filter is active
-  const hasActiveFilters = searchTerm || dateFilter.start || dateFilter.end;
-
-  // Show empty state
-  const showEmptyState = !loading && applications.length === 0;
-
 
   // Export to Excel
   const handleExportToExcel = async () => {
@@ -320,8 +325,6 @@ const RejectedApplication = () => {
     }
   };
 
-  
-
   // Navigation handlers
   const handleLoanEligibilityClick = (application) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(application));
@@ -361,10 +364,10 @@ const RejectedApplication = () => {
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
-      <div className="p-4">
+      <div className="p-0 md:p-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button 
                 onClick={() => router.back()}
@@ -386,69 +389,82 @@ const RejectedApplication = () => {
               </h1>
             </div>
             
-            <button
-              onClick={handleExportToExcel}
-              disabled={exporting || applications.length === 0}
-              className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                exporting || applications.length === 0
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-lg"
-              } ${
-                isDark
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
-              }`}
-            >
-              {exporting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              <span>Export</span>
-            </button>
+            {/* Export and Refresh */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchApplications()}
+                disabled={loading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              
+              <button
+                onClick={handleExportToExcel}
+                disabled={exporting || applications.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting || applications.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span>{exporting ? 'Exporting...' : 'Export'}</span>
+              </button>
+            </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error Message
           {error && (
             <div className={`mb-4 p-4 rounded-lg border ${
-              isDark ? "bg-red-900/20 border-red-700 text-red-300" : "bg-red-50 border-red-200 text-red-700"
+              isDark ? "bg-red-900/20 border-red-700 text-red-300" : "bg-red-100 border-red-400 text-red-700"
             }`}>
               <div className="flex justify-between items-center">
                 <span>{error}</span>
                 <button 
                   onClick={() => setError(null)}
-                  className={`ml-2 ${isDark ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-800"}`}
+                  className={`ml-2 ${isDark ? "text-red-400 hover:text-red-300" : "text-red-800 hover:text-red-900"}`}
                 >
                   ×
                 </button>
               </div>
             </div>
-          )}
+          )} */}
 
-          {/* Date Filter */}
-          <DateRangeFilter 
-            isDark={isDark}
-            onFilterChange={handleDateFilterChange}
+          {/* Date Filter - Using reusable component without source filter */}
+          <DateFilter 
+            isDark={isDark} 
+            onFilterChange={handleDateFilter}
+            dateField="rejected_date"
             showSourceFilter={false}
+            buttonLabels={{
+              apply: "Apply",
+              clear: "Clear"
+            }}
           />
 
-          {/* Search Bar */}
-          <div className="mb-6">
+          {/* Search and Filters */}
+          <div className="mb-6 grid grid-cols-2">
             <AdvancedSearchBar 
               searchOptions={SearchOptions}
               onSearch={handleAdvancedSearch}
               isDark={isDark}
-              defaultSearchField="accountId"
-              className="mb-4"
+              placeholder="Search rejected applications..."
+              buttonText="Search"
             />
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || dateFilter.start || dateFilter.end) && (
+          {(searchTerm || dateRange.start || dateRange.end) && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
@@ -456,24 +472,24 @@ const RejectedApplication = () => {
                     Active Filters:
                   </span>
                   {searchTerm && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
                       {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
                     </span>
                   )}
-                  {dateFilter.start && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.start && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      From: {dateFilter.start}
+                      From: {new Date(dateRange.start).toLocaleDateString('en-GB')}
                     </span>
                   )}
-                  {dateFilter.end && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.end && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      To: {dateFilter.end}
+                      To: {new Date(dateRange.end).toLocaleDateString('en-GB')}
                     </span>
                   )}
                 </div>
@@ -481,11 +497,11 @@ const RejectedApplication = () => {
                   <span className={`text-sm font-medium ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Showing {applications.length} of {totalCount} applications
+                    Showing {applications.length} of {totalCount}
                   </span>
                   <button
                     onClick={clearAllFilters}
-                    className={`text-sm px-3 py-1 rounded-md ${
+                    className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isDark 
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"

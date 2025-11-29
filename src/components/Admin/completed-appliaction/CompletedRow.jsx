@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, Mail, Clock } from "lucide-react";
+import { Calendar, Mail, Clock, Ban } from "lucide-react";
 import PhotoDocument from "../documents/PhotoDocument";
 import PanCardDocument from "../documents/PanCardDocument";
 import AddressProofDocument from "../documents/AddressProofDocument";
@@ -15,6 +15,7 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import BlacklistButton from "../action-buttons/BlacklistButton";
 
 const CompletedRow = ({
   application,
@@ -30,8 +31,11 @@ const CompletedRow = ({
   onStatusUpdate,
   onBlacklist,
   onActivateAccount,
-  onOpenStatusModal // Add this prop
+  onOpenStatusModal
 }) => {
+  // Check if user is blacklisted
+  const isBlacklisted = application.blacklist === 1 || application.isBlacklisted === true;
+  
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -44,6 +48,23 @@ const CompletedRow = ({
   
   // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
+
+  // Blacklisted row styles
+  const blacklistedRowBg = isDark 
+    ? "bg-red-950/20 border-l-4 border-l-red-500" 
+    : "bg-red-50/80 border-l-4 border-l-red-500";
+  
+  const blacklistedHoverBg = isDark
+    ? "hover:bg-red-900/30"
+    : "hover:bg-red-100/90";
+
+  const normalRowBg = index % 2 === 0
+    ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+    : "";
+
+  const normalHoverBg = isDark
+    ? "hover:bg-gray-700/50"
+    : "hover:bg-emerald-50/50";
 
   const formatCurrency = amount => {
     return `${parseFloat(amount).toLocaleString("en-IN", {
@@ -83,32 +104,37 @@ const CompletedRow = ({
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-emerald-50/50"
+        isBlacklisted 
+          ? `${blacklistedRowBg} ${blacklistedHoverBg}`
+          : `${normalRowBg} ${normalHoverBg}`
       } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
+        isDark
+          ? "border-emerald-700"
+          : "border-emerald-300"
       }`}
     >
-      {/* SR No */}
+      {/* SR No - Fixed: Clean column without extra elements */}
       <td className={cellStyle}>
-        <span className={`font-medium ${textPrimary}`}>
-          {application.srNo}
-        </span>
+        <div className="flex items-center justify-center space-x-1">
+          {isBlacklisted && (
+            <Ban className={`w-3 h-3 ${isDark ? "text-red-400" : "text-red-500"}`} />
+          )}
+          <span className={`font-medium ${textPrimary}`}>
+            {application.srNo}
+          </span>
+        </div>
       </td>
 
       {/* Call */}
       <td className={cellStyle}>
-  <CallButton
-    applicant={application}
-    isDark={isDark}
-    size="small"
-    variant="default"
-    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
-  />
-</td>
+        <CallButton
+          applicant={application}
+          isDark={isDark}
+          size="small"
+          variant="default"
+          className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+        />
+      </td>
 
       {/* Application Source */}
       <td className={cellStyle}>
@@ -137,15 +163,15 @@ const CompletedRow = ({
       {/* CRN No */}
       <td className={cellStyle}>
         <CRNLink 
-  crnNo={application.crnNo} 
-  userId={application.userId}
-  onSuccess={(data) => {
-    toast.success('Profile loaded');
-  }}
-  onError={(error) => {
-    toast.error(error);
-  }}
-/>
+          crnNo={application.crnNo} 
+          userId={application.userId}
+          onSuccess={(data) => {
+            toast.success('Profile loaded');
+          }}
+          onError={(error) => {
+            toast.error(error);
+          }}
+        />
       </td>
 
       {/* Account ID */}
@@ -480,19 +506,11 @@ const CompletedRow = ({
 
       {/* BlackList */}
       <td className={cellStyle}>
-        <button
-          onClick={handleBlacklist}
-          disabled={application.isBlacklisted}
-          className={`px-3 py-1 cursor-pointer rounded text-sm font-medium transition-colors duration-200 ${
-            application.isBlacklisted
-              ? "bg-red-100 text-red-800 cursor-not-allowed"
-              : isDark
-                ? "bg-red-900/50 border hover:bg-red-800 text-red-300"
-                : "bg-red-100 border hover:bg-red-200 text-red-700"
-          }`}
-        >
-          {application.isBlacklisted ? "Blacklisted" : "BlackList"}
-        </button>
+        <BlacklistButton
+          userId={application.userId}
+          application={application}
+          isDark={isDark}
+        />
       </td>
     </tr>
   );
