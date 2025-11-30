@@ -43,10 +43,10 @@ export const rejectedApplicationAPI = {
 
 // Format application data for UI
 export const formatRejectedApplicationForUI = (application) => {
-  // Format dates
-  const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
-  
-  // Create permanent address from available fields
+  const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
+  const completeDate = application.complete_date ? new Date(application.complete_date) : null;
+  const rejectedDate = application.created_at ? new Date(application.created_at) : null;
+
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
 
@@ -59,9 +59,12 @@ export const formatRejectedApplicationForUI = (application) => {
     accountId: application.accountId,
 
     // Date and time information
-    enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
-    createdAt: application.created_at,
-    updatedAt: application.updated_at,
+    enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
+    enquiryDateTime: application.enquiry_date, 
+    completeDate: completeDate ? completeDate.toLocaleDateString('en-GB') : 'N/A',
+    completeTime: application.complete_time || 'N/A',
+    rejectedDate: rejectedDate ? rejectedDate.toLocaleDateString('en-GB') : 'N/A', // USING created_at as rejected date
+    rejectedDateTime: application.created_at,
 
     // Personal information
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',

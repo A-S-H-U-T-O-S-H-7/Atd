@@ -39,7 +39,7 @@ export const inProgressApplicationAPI = {
 // Format application data for UI
 export const formatInProgressApplicationForUI = (application) => {
   // Format dates
-  const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
+  const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
   const updatedDate = application.updated_at ? new Date(application.updated_at) : new Date();
   
   // Create addresses
@@ -61,9 +61,8 @@ export const formatInProgressApplicationForUI = (application) => {
 
 
     // Date and time information
-    enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
-    enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    updatedDate: updatedDate.toLocaleDateString('en-GB'),
+    enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
+    enquiryDateTime: application.enquiry_date,
     updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
 
     // Personal information

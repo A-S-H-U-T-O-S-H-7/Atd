@@ -191,22 +191,14 @@ const CompletedRow = ({
         </div>
       </td>
 
-      {/* Enquiry Time */}
-      <td className={cellStyle}>
-        <div className="flex items-center space-x-2">
-          <Clock className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.enquiryTime}
-          </span>
-        </div>
-      </td>
+      
 
       {/* Completed Date */}
       <td className={cellStyle}>
         <div className="flex items-center space-x-2">
           <Calendar className={iconAccent} />
           <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.completedDate}
+            {application.completeDate}
           </span>
         </div>
       </td>
@@ -216,7 +208,7 @@ const CompletedRow = ({
         <div className="flex items-center space-x-2">
           <Clock className={iconAccent} />
           <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.completedTime}
+            {application.completeTime}
           </span>
         </div>
       </td>

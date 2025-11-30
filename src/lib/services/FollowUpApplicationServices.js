@@ -48,7 +48,7 @@ export const followUpApplicationAPI = {
 
 export const formatFollowUpApplicationForUI = (application) => {
   // Format dates
-  const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
+  const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
   
   // Create addresses
   const permanentAddress = application.address || 
@@ -68,8 +68,8 @@ export const formatFollowUpApplicationForUI = (application) => {
 
 
     // Date and time information
-    enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
-    createdAt: application.created_at,
+    enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
+    enquiryDateTime: application.enquiry_date, 
     updatedAt: application.updated_at,
 
     // Personal information

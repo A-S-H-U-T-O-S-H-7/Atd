@@ -41,7 +41,6 @@ const CompletedTable = ({
     { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "100px" },
 
-    { label: "Enquiry Time", width: "110px" },
     { label: "Complete Date", width: "100px" },
     { label: "Complete Time", width: "100px" },
 

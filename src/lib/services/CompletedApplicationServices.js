@@ -56,11 +56,37 @@ export const completedApplicationAPI = {
   }
 };
 
-// Format application data for UI
+// Format application data for UI 
 export const formatCompletedApplicationForUI = (application) => {
-  const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
-  const completedDate = application.updated_at ? new Date(application.updated_at) : new Date();
-  
+   const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
+  const completeDate = application.complete_date ? new Date(application.complete_date) : null;
+
+   const getTimeFromDateTime = (dateTimeString) => {
+    if (!dateTimeString) return 'N/A';
+    try {
+      const date = new Date(dateTimeString);
+      return date.toLocaleTimeString('en-GB', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true 
+      });
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const getDateFromDateTime = (dateTimeString) => {
+    if (!dateTimeString) return 'N/A';
+    try {
+      const date = new Date(dateTimeString);
+      return date.toLocaleDateString('en-GB');
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
   
@@ -74,12 +100,15 @@ export const formatCompletedApplicationForUI = (application) => {
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,
     accountId: application.accountId,
-    enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
-    enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    completedDate: completedDate.toLocaleDateString('en-GB'),
-    completedTime: completedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    createdAt: application.created_at,
-    updatedAt: application.updated_at,
+
+    enquiryDate: getDateFromDateTime(application.enquiry_date),
+    enquiryTime: getTimeFromDateTime(application.enquiry_date),
+    enquiryDateTime: application.enquiry_date,
+    
+    completeDate: getDateFromDateTime(application.complete_date),
+    completeTime: getTimeFromDateTime(application.complete_time || application.complete_date),
+    completeDateTime: application.complete_date,
+
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
     firstName: application.fname || '',
     lastName: application.lname || '',

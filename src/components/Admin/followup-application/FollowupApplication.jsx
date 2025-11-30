@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
+import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
-import DateRangeFilter from "../DateRangeFilter";
 import FollowUpTable from "./FollowUpTable";
 import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
@@ -21,23 +21,20 @@ const FollowUpApplication = () => {
   const isDark = theme === "dark";
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [loanStatusFilter, setLoanStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
-  // Status Modal States - ADD THESE
+  // Status Modal States
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
 
-  // Advanced Search States
+  // Search States
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   
   // Data states
   const [applications, setApplications] = useState([]);
@@ -46,18 +43,21 @@ const FollowUpApplication = () => {
 
   const itemsPerPage = 10;
 
-  // Status options for follow-up applications - ADD THIS
+  // Status options for follow-up applications
   const statusOptions = [
-  { value: "Processing", label: "Processing" },
-  { value: "Rejected", label: "Rejected" }
-];
+    { value: "Processing", label: "Processing" },
+    { value: "Rejected", label: "Rejected" }
+  ];
 
+  // Search Options
   const SearchOptions = [
     { value: 'accountId', label: 'Account ID' },
-    { value: 'crnno', label: 'CRN No.' },
+    { value: 'crnno', label: 'CRN No' },
     { value: 'name', label: 'Name' },
     { value: 'phone', label: 'Phone Number' },
     { value: 'email', label: 'Email' },
+    { value: 'city', label: 'City' },
+    { value: 'state', label: 'State' },
   ];
 
   // Build API parameters
@@ -68,83 +68,76 @@ const FollowUpApplication = () => {
     };
 
     // Add search parameters
-    if (searchField && searchTerm) {
+    if (searchField && searchTerm.trim()) {
       params.search_by = searchField;
-      params.search_value = searchTerm;
+      params.search_value = searchTerm.trim();
     }
 
-    // Add date filters
-    if (dateFilter.start) {
-      params.from_date = dateFilter.start;
+    // Add date filters - using followup_date
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
     }
-    if (dateFilter.end) {
-      params.to_date = dateFilter.end;
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
     }
 
+    console.log('API Params:', params);
     return params;
   };
 
   // Fetch applications
-  const fetchApplications = async (isAutoRefresh = false) => {
+  const fetchApplications = async () => {
     try {
-      if (isAutoRefresh) {
-        setIsAutoRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
       const params = buildApiParams();
       const response = await followUpApplicationAPI.getFollowUpApplications(params);
       
+      console.log('API Response:', response);
+      
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
-      if (actualResponse && actualResponse.success && actualResponse.data) {
-        const formattedApplications = actualResponse.data.map(formatFollowUpApplicationForUI);
+      if (actualResponse && actualResponse.success) {
+        const applicationsData = actualResponse.data || [];
+        const formattedApplications = applicationsData.map(formatFollowUpApplicationForUI);
         setApplications(formattedApplications);
-        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalCount(actualResponse.pagination?.total || applicationsData.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
+        
+        if (applicationsData.length === 0) {
+          setError("No applications found with current filters");
+        }
       } else {
-        console.error("❌ Invalid API Response structure:", actualResponse);
-        setError("Failed to fetch applications - Invalid response");
+        setApplications([]);
+        setTotalCount(0);
+        setError("No applications found");
       }
     } catch (err) {
-      console.error("❌ Error details:", err);
+      console.error('Fetch error:', err);
+      setApplications([]);
+      setTotalCount(0);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
-      setIsAutoRefreshing(false);
     }
   };
 
-  // Load data on component mount and when filters change
+  // Load data when filters or page changes
   useEffect(() => {
     fetchApplications();
-  }, [currentPage, searchField, searchTerm, dateFilter]);
+  }, [currentPage]);
 
-  // Auto-refresh functionality
+  // Handle search and date filter changes
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    }, 60000); // 1 minute
-  
-    return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
-  
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
+    if (currentPage === 1) {
+      fetchApplications();
+    } else {
+      setCurrentPage(1);
+    }
+  }, [searchField, searchTerm, dateRange]);
 
-  // Handle Status Update - UPDATE THIS FUNCTION
+  // Handle Status Update
   const handleStatusUpdate = async (applicationId, status, remark = "") => {
     try {
       await followUpService.updateStatus(applicationId, status, remark);
@@ -156,13 +149,13 @@ const FollowUpApplication = () => {
     }
   };
 
-  // Open Status Modal - ADD THIS FUNCTION
+  // Open Status Modal
   const handleOpenStatusModal = (application) => {
     setSelectedApplication(application);
     setShowStatusModal(true);
   };
 
-  // Close Status Modal - ADD THIS FUNCTION
+  // Close Status Modal
   const handleCloseStatusModal = () => {
     setShowStatusModal(false);
     setSelectedApplication(null);
@@ -170,18 +163,32 @@ const FollowUpApplication = () => {
 
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
+      return;
+    }
+    
     setSearchField(field);
-    setSearchTerm(term);
+    setSearchTerm(term.trim());
     setCurrentPage(1);
   };
 
-  // Handle Date Filter Change
-  const handleDateFilterChange = (filterData) => {
-    setDateFilter(filterData.dateRange);
+  // Handle Date Filter
+  const handleDateFilter = (filters) => {
+    setDateRange(filters.dateRange || { start: "", end: "" });
     setCurrentPage(1);
   };
 
-  // Export to Excel with API integration
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchField("");
+    setSearchTerm("");
+    setDateRange({ start: "", end: "" });
+    setCurrentPage(1);
+  };
+
+  // Export to Excel
   const handleExportToExcel = async () => {
     const result = await Swal.fire({
       title: 'Export Applications?',
@@ -196,14 +203,11 @@ const FollowUpApplication = () => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       setExporting(true);
       
-      // Build export params without pagination
       const exportParams = { ...buildApiParams() };
       delete exportParams.per_page;
       delete exportParams.page;
@@ -255,7 +259,6 @@ const FollowUpApplication = () => {
         throw new Error("Failed to export data");
       }
     } catch (err) {
-      console.error("Export error:", err);
       await Swal.fire({
         title: 'Export Failed!',
         text: 'Failed to export data. Please try again.',
@@ -287,7 +290,6 @@ const FollowUpApplication = () => {
         alert('Popup blocked! Please allow popups for this site.');
       }
     } catch (error) {
-      console.error("Failed to load file:", error);
       alert(`Failed to load file: ${fileName}. Please check if file exists.`);
     } finally {
       setFileLoading(false);
@@ -337,35 +339,6 @@ const FollowUpApplication = () => {
       });
     }
   };
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchField("");
-    setSearchTerm("");
-    setStatusFilter("all");
-    setLoanStatusFilter("all");
-    setDateFilter({ start: "", end: "" });
-    setCurrentPage(1);
-  };
-
-  // Client-side filtering
-  const filteredApplications = applications.filter(app => {
-    const appStatus = (app.status || '').toLowerCase().trim();
-    const appLoanStatus = (app.loanStatus || '').toLowerCase().trim();
-    const filterStatus = statusFilter.toLowerCase().trim();
-    const filterLoanStatus = loanStatusFilter.toLowerCase().trim();
-    
-    const matchesStatus = statusFilter === "all" || appStatus === filterStatus;
-    const matchesLoanStatus = loanStatusFilter === "all" || appLoanStatus === filterLoanStatus;
-    
-    return matchesStatus && matchesLoanStatus;
-  });
-
-  // Pagination
-  const paginatedApplications = filteredApplications.map((app, index) => ({
-    ...app,
-    srNo: (currentPage - 1) * itemsPerPage + index + 1
-  }));
 
   // Navigation handlers
   const handleLoanEligibilityClick = (application) => {
@@ -436,67 +409,65 @@ const FollowUpApplication = () => {
               </h1>
             </div>
             
-            <button
-              onClick={handleExportToExcel}
-              disabled={exporting || applications.length === 0}
-              className={`flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                exporting || applications.length === 0
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-lg"
-              } ${
-                isDark
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
-              }`}
-            >
-              {exporting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">
-                {exporting ? "Exporting..." : "Export"}
-              </span>
-            </button>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-              <button 
-                onClick={() => setError(null)}
-                className="ml-2 text-red-800 hover:text-red-900"
+            {/* Export and Refresh */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchApplications()}
+                disabled={loading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                ×
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              
+              <button
+                onClick={handleExportToExcel}
+                disabled={exporting || applications.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting || applications.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span>{exporting ? 'Exporting...' : 'Export'}</span>
               </button>
             </div>
-          )}
+          </div>
 
-          {/* Date Filter */}
-          <DateRangeFilter 
-            isDark={isDark}
-            onFilterChange={handleDateFilterChange}
+          {/* Date Filter - Using followup_date field */}
+          <DateFilter 
+            isDark={isDark} 
+            onFilterChange={handleDateFilter}
+            dateField="enquiry_date"
             showSourceFilter={false}
+            buttonLabels={{
+              apply: "Apply",
+              clear: "Clear"
+            }}
           />
 
-          {/* Search Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="md:col-span-2">
-              <AdvancedSearchBar 
-                searchOptions={SearchOptions}
-                onSearch={handleAdvancedSearch}
-                isDark={isDark}
-              />
-            </div>
+          {/* Search and Filters */}
+          <div className="mb-6 grid grid-cols-2">
+            <AdvancedSearchBar 
+              searchOptions={SearchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              placeholder="Search follow-up applications..."
+              buttonText="Search"
+            />
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || dateFilter.start || dateFilter.end || statusFilter !== "all" || loanStatusFilter !== "all") && (
+          {(searchTerm || dateRange.start || dateRange.end) && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
@@ -504,38 +475,24 @@ const FollowUpApplication = () => {
                     Active Filters:
                   </span>
                   {searchTerm && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
                       {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
                     </span>
                   )}
-                  {dateFilter.start && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.start && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      From: {dateFilter.start}
+                      From: {new Date(dateRange.start).toLocaleDateString('en-GB')}
                     </span>
                   )}
-                  {dateFilter.end && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.end && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      To: {dateFilter.end}
-                    </span>
-                  )}
-                  {statusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Status: {statusFilter}
-                    </span>
-                  )}
-                  {loanStatusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Loan Status: {loanStatusFilter}
+                      To: {new Date(dateRange.end).toLocaleDateString('en-GB')}
                     </span>
                   )}
                 </div>
@@ -543,11 +500,11 @@ const FollowUpApplication = () => {
                   <span className={`text-sm font-medium ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Showing {filteredApplications.length} of {totalCount} applications
+                    Showing {applications.length} of {totalCount}
                   </span>
                   <button
                     onClick={clearAllFilters}
-                    className={`text-sm px-3 py-1 rounded-md ${
+                    className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isDark 
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -563,8 +520,11 @@ const FollowUpApplication = () => {
 
         {/* Table */}
         <FollowUpTable
-          paginatedApplications={paginatedApplications}
-          filteredApplications={filteredApplications}
+          paginatedApplications={applications.map((app, index) => ({
+            ...app,
+            srNo: (currentPage - 1) * itemsPerPage + index + 1
+          }))}
+          filteredApplications={applications}
           currentPage={currentPage}
           totalPages={totalPages}
           itemsPerPage={itemsPerPage}
@@ -580,12 +540,11 @@ const FollowUpApplication = () => {
           loadingFileName={loadingFileName}
           onStatusUpdate={handleStatusUpdate}
           onActivateAccount={handleActivateAccount}
-          onOpenStatusModal={handleOpenStatusModal} 
+          onOpenStatusModal={handleOpenStatusModal}
         />
       </div>
 
-
-      {/* Status Update Modal - ADD THIS */}
+      {/* Status Update Modal */}
       <StatusUpdateModal
         isOpen={showStatusModal}
         onClose={handleCloseStatusModal}

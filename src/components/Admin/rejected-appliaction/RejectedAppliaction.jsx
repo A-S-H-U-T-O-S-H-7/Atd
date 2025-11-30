@@ -440,7 +440,7 @@ const RejectedApplication = () => {
           <DateFilter 
             isDark={isDark} 
             onFilterChange={handleDateFilter}
-            dateField="rejected_date"
+            dateField="enquiry_date"
             showSourceFilter={false}
             buttonLabels={{
               apply: "Apply",

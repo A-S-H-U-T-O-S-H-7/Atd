@@ -68,6 +68,8 @@ export const formatApplicationForUI = (application) => {
                            `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
 
     const loanStatus = getStatusName(application.loan_status);
+    const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
+
     
     return {
         // Basic identifiers
@@ -78,8 +80,8 @@ export const formatApplicationForUI = (application) => {
         accountId: application.accountId,
 
         // Date and time
-        enquiryDate: application.created_at ? new Date(application.created_at).toLocaleDateString('en-GB') : 
-                    new Date().toLocaleDateString('en-GB'),
+        enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
+
 
         // Personal information
         name: application.name,

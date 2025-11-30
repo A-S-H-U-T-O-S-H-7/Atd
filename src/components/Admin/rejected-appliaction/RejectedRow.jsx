@@ -27,7 +27,7 @@ const RejectedRow = ({
   onRestoreApplication
 }) => {
   // Common cell styles
-  const cellBase = "px-6 py-4 border-r";
+  const cellBase = "px-2 py-2 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
@@ -135,15 +135,25 @@ const RejectedRow = ({
         </span>
       </td>
 
-      {/* Enquiry Date */}
       <td className={cellStyle}>
-        <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.enquiryDate}
-          </span>
-        </div>
-      </td>
+  <div className="flex items-center space-x-2">
+    <Calendar className={iconAccent} />
+    <span className={`text-sm font-medium ${textSecondary}`}>
+      {application.enquiryDate}
+    </span>
+  </div>
+</td>
+
+{/* Complete Date */}
+<td className={cellStyle}>
+  <div className="flex items-center space-x-2">
+    <Calendar className={iconAccent} />
+    <span className={`text-sm font-medium ${textSecondary}`}>
+      {application.completeDate}
+    </span>
+  </div>
+</td>
+
 
       {/* Name */}
       <td className={cellStyle}>
