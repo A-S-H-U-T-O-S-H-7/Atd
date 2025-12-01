@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
-import DateRangeFilter from "../DateRangeFilter";
+import DateFilter from "../DateFilter";
+import { exportToExcel } from "@/components/utils/exportutil";
 import CreditApprovalTable from "./CreditApprovalTable";
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
@@ -12,17 +13,15 @@ import OriginalDocumentsModal from "../application-modals/OriginalDocumentsModal
 import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
 import ChangeStatusModal from "../application-modals/StatusModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
+import StatusUpdateModal from "../application-modals/StatusUpdateModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   creditApprovalService,
   formatCreditApprovalApplicationForUI,
   fileService
 } from "@/lib/services/CreditApprovalServices";
-import { exportToExcel } from "@/components/utils/exportutil";
-import toast from 'react-hot-toast';
-import Swal from "sweetalert2";
-import StatusUpdateModal from "../application-modals/StatusUpdateModal";
-
+import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
 
 const CreditApprovalPage = () => {
   const { theme } = useThemeStore();
@@ -31,12 +30,9 @@ const CreditApprovalPage = () => {
   
   // State management
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [loanStatusFilter, setLoanStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
@@ -57,12 +53,12 @@ const CreditApprovalPage = () => {
   const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
-const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
+  const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   
   // Data states
   const [applications, setApplications] = useState([]);
@@ -71,19 +67,21 @@ const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
 
   const itemsPerPage = 10;
 
+  // Status options
   const statusOptions = [
-  { value: "Ready To Disbursed", label: "Ready To Disbursed" }
-];
+    { value: "Ready To Disbursed", label: "Ready To Disbursed" }
+  ];
 
+  // Search Options
   const SearchOptions = [
-    { value: 'loanNo', label: 'Loan No.' },
-    { value: 'crnNo', label: 'CRN No.' },
     { value: 'accountId', label: 'Account ID' },
+    { value: 'loan_no', label: 'Loan No' },
+    { value: 'crnno', label: 'CRN No' },
     { value: 'name', label: 'Name' },
-    { value: 'phoneNo', label: 'Phone Number' },
+    { value: 'phone', label: 'Phone Number' },
     { value: 'email', label: 'Email' },
-    { value: 'appliedAmount', label: 'Applied Amount' },
-    { value: 'approvedAmount', label: 'Approved Amount' },
+    { value: 'city', label: 'City' },
+    { value: 'state', label: 'State' },
   ];
 
   // Build API parameters
@@ -94,233 +92,199 @@ const [currentStatusApplication, setCurrentStatusApplication] = useState(null);
     };
 
     // Add search parameters
-    if (searchField && searchTerm) {
+    if (searchField && searchTerm.trim()) {
       params.search_by = searchField;
-      params.search_value = searchTerm;
+      params.search_value = searchTerm.trim();
     }
 
     // Add date filters
-    if (dateFilter.start) {
-      params.from_date = dateFilter.start;
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
     }
-    if (dateFilter.end) {
-      params.to_date = dateFilter.end;
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
     }
 
+    console.log('API Params:', params);
     return params;
   };
 
   // Fetch applications
-  const fetchApplications = async (isAutoRefresh = false) => {
+  const fetchApplications = async () => {
     try {
-      if (isAutoRefresh) {
-        setIsAutoRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
       const params = buildApiParams();
-      console.log('🔵 [Credit Approval] API Request Params:', params);
-      
       const response = await creditApprovalService.getApplications(params);
-      console.log('🟢 [Credit Approval] Raw API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
-      console.log('🟡 [Credit Approval] Processed Response:', actualResponse);
       
-      if (actualResponse && actualResponse.success && actualResponse.data) {
-        console.log('📊 [Credit Approval] Raw Data Array:', actualResponse.data);
-        console.log('📈 [Credit Approval] Total Records:', actualResponse.data.length);
-        console.log('📋 [Credit Approval] Pagination Info:', actualResponse.pagination);
-        
-        // Log first record in detail if available
-        if (actualResponse.data.length > 0) {
-          console.log('🔍 [Credit Approval] First Record (Raw):', actualResponse.data[0]);
-        }
-        
-        const formattedApplications = actualResponse.data.map(formatCreditApprovalApplicationForUI);
-        console.log('✅ [Credit Approval] Formatted Applications:', formattedApplications);
-        
-        // Log first formatted record if available
-        if (formattedApplications.length > 0) {
-          console.log('🎨 [Credit Approval] First Record (Formatted):', formattedApplications[0]);
-        }
-        
+      if (actualResponse && actualResponse.success) {
+        const applicationsData = actualResponse.data || [];
+        const formattedApplications = applicationsData.map(formatCreditApprovalApplicationForUI);
         setApplications(formattedApplications);
-        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalCount(actualResponse.pagination?.total || applicationsData.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
+        
+        if (applicationsData.length === 0) {
+          setError("No applications found with current filters");
+        }
       } else {
-        console.error("❌ Invalid API Response structure:", actualResponse);
-        setError("Failed to fetch applications - Invalid response");
+        setApplications([]);
+        setTotalCount(0);
+        setError("No applications found");
       }
     } catch (err) {
-      console.error("❌ Error details:", err);
+      console.error('Fetch error:', err);
+      setApplications([]);
+      setTotalCount(0);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
-      setIsAutoRefreshing(false);
     }
   };
 
-  // Load data on component mount and when filters change
+  // Load data when filters or page changes
   useEffect(() => {
     fetchApplications();
-  }, [currentPage, searchField, searchTerm, dateFilter]);
+  }, [currentPage]);
 
-  // Auto-refresh functionality
+  // Handle search and date filter changes
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    }, 60000); // 1 minute
-  
-    return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
-  
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentPage, searchField, searchTerm, dateFilter]);
+    if (currentPage === 1) {
+      fetchApplications();
+    } else {
+      setCurrentPage(1);
+    }
+  }, [searchField, searchTerm, dateRange]);
 
+  // Handle Status Update
   const handleStatusUpdate = async (applicationId, status, remark) => {
-  try {
-    await creditApprovalService.updateLoanStatus(applicationId, status, remark);
-    fetchApplications();
-  } catch (error) {
-    toast.error('Failed to update loan status');
-    throw error;
-  }
-};
+    try {
+      await creditApprovalService.updateLoanStatus(applicationId, status, remark);
+      fetchApplications();
+    } catch (error) {
+      toast.error('Failed to update loan status');
+      throw error;
+    }
+  };
 
-const handleStatusModalOpen = (application) => {
-  setCurrentStatusApplication(application);
-  setStatusModalOpen(true);
-};
+  const handleStatusModalOpen = (application) => {
+    setCurrentStatusApplication(application);
+    setStatusModalOpen(true);
+  };
 
-const handleStatusModalClose = () => {
-  setStatusModalOpen(false);
-  setCurrentStatusApplication(null);
-};
+  const handleStatusModalClose = () => {
+    setStatusModalOpen(false);
+    setCurrentStatusApplication(null);
+  };
 
-  // NEW: Bank Verification Handler with SweetAlert Confirmation
-const handleBankVerification = async (application) => {
-  if (application.bankVerification === "verified") {
-    toast.success('Bank verification already completed!');
-    return;
-  }
+  // Bank Verification Handler
+  const handleBankVerification = async (application) => {
+    if (application.bankVerification === "verified") {
+      toast.success('Bank verification already completed!');
+      return;
+    }
 
-  const result = await Swal.fire({
-    title: 'Confirm Bank Verification?',
-    text: `Are you sure you want to verify bank account for ${application.name}?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#10b981',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, Verify!',
-    cancelButtonText: 'Cancel',
-    background: isDark ? "#1f2937" : "#ffffff",
-    color: isDark ? "#f9fafb" : "#111827",
-  });
-
-  if (!result.isConfirmed) {
-    return;
-  }
-
-  try {
-    await creditApprovalService.updateBankVerification(application.id);
-    
-    // Update UI immediately
-    setApplications(prev => prev.map(app => 
-      app.id === application.id 
-        ? { ...app, bankVerification: "verified" }
-        : app
-    ));
-    
-    await Swal.fire({
-      title: 'Verified!',
-      text: 'Bank verification completed successfully!',
-      icon: 'success',
+    const result = await Swal.fire({
+      title: 'Confirm Bank Verification?',
+      text: `Are you sure you want to verify bank account for ${application.name}?`,
+      icon: 'question',
+      showCancelButton: true,
       confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Verify!',
+      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
-  } catch (error) {
-    console.error('Error updating bank verification:', error);
-    await Swal.fire({
-      title: 'Error!',
-      text: 'Failed to update bank verification',
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-  }
-};
 
-// NEW: Disburse Approval Handler with SweetAlert Confirmation
-const handleDisburseApproval = async (application) => {
-  if (application.disburseApproval === "approved") {
-    toast.success('Disburse approval already completed!');
-    return;
-  }
+    if (!result.isConfirmed) return;
 
-  const result = await Swal.fire({
-    title: 'Confirm Disburse Approval?',
-    text: `Are you sure you want to approve disbursement for ${application.name}?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#10b981',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, Approve!',
-    cancelButtonText: 'Cancel',
-    background: isDark ? "#1f2937" : "#ffffff",
-    color: isDark ? "#f9fafb" : "#111827",
-  });
+    try {
+      await creditApprovalService.updateBankVerification(application.id);
+      
+      setApplications(prev => prev.map(app => 
+        app.id === application.id 
+          ? { ...app, bankVerification: "verified" }
+          : app
+      ));
+      
+      await Swal.fire({
+        title: 'Verified!',
+        text: 'Bank verification completed successfully!',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } catch (error) {
+      console.error('Error updating bank verification:', error);
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Failed to update bank verification',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    }
+  };
 
-  if (!result.isConfirmed) {
-    return;
-  }
+  // Disburse Approval Handler
+  const handleDisburseApproval = async (application) => {
+    if (application.disburseApproval === "approved") {
+      toast.success('Disburse approval already completed!');
+      return;
+    }
 
-  try {
-    await creditApprovalService.updateDisburseApproval(application.id);
-    
-    // Update UI immediately
-    setApplications(prev => prev.map(app => 
-      app.id === application.id 
-        ? { ...app, disburseApproval: "approved" }
-        : app
-    ));
-    
-    await Swal.fire({
-      title: 'Approved!',
-      text: 'Disburse approval completed successfully!',
-      icon: 'success',
+    const result = await Swal.fire({
+      title: 'Confirm Disburse Approval?',
+      text: `Are you sure you want to approve disbursement for ${application.name}?`,
+      icon: 'question',
+      showCancelButton: true,
       confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Approve!',
+      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
-  } catch (error) {
-    console.error('Error updating disburse approval:', error);
-    await Swal.fire({
-      title: 'Error!',
-      text: 'Failed to update disburse approval',
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-  }
-};
 
-  // Modal handlers (same as sanction page)
+    if (!result.isConfirmed) return;
+
+    try {
+      await creditApprovalService.updateDisburseApproval(application.id);
+      
+      setApplications(prev => prev.map(app => 
+        app.id === application.id 
+          ? { ...app, disburseApproval: "approved" }
+          : app
+      ));
+      
+      await Swal.fire({
+        title: 'Approved!',
+        text: 'Disburse approval completed successfully!',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } catch (error) {
+      console.error('Error updating disburse approval:', error);
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Failed to update disburse approval',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    }
+  };
+
+  // Modal handlers
   const handleChequeModalOpen = (application, chequeNumber) => {
     setCurrentApplication(application);
     setCurrentChequeNo(chequeNumber);
@@ -337,7 +301,6 @@ const handleDisburseApproval = async (application) => {
     try {
       await creditApprovalService.updateChequeNumber(currentApplication.id, newChequeNo);
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentApplication.id 
           ? { ...app, chequeNo: newChequeNo }
@@ -347,13 +310,10 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success('Cheque number updated successfully!');
     } catch (error) {
-      console.error('Error saving cheque number:', error);
       toast.error('Failed to update cheque number');
       throw error;
     }
   };
-
-  // ... (Add all other modal handlers exactly like sanction page - they're the same)
 
   const handleOriginalDocumentsModalOpen = (application) => {
     setCurrentOriginalDocumentsApplication(application);
@@ -373,7 +333,6 @@ const handleDisburseApproval = async (application) => {
         receivedDate
       );
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentOriginalDocumentsApplication.id 
           ? { 
@@ -387,7 +346,6 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success(isReceived ? 'Original documents received!' : 'Documents status updated!');
     } catch (error) {
-      console.error('Error saving original documents status:', error);
       toast.error('Failed to update documents status');
       throw error;
     }
@@ -405,10 +363,8 @@ const handleDisburseApproval = async (application) => {
 
   const handleRefundPDCSubmit = async (refundStatus) => {
     try {
-      // Implement refund PDC API call here
       console.log('Refund PDC status saved:', refundStatus);
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentRefundPDCApplication.id 
           ? { ...app, refundPdc: refundStatus }
@@ -418,7 +374,6 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success('Refund PDC status updated successfully!');
     } catch (error) {
-      console.error('Error saving refund PDC status:', error);
       toast.error('Failed to update refund PDC status');
       throw error;
     }
@@ -438,7 +393,6 @@ const handleDisburseApproval = async (application) => {
     try {
       await creditApprovalService.updateStatusChange(currentChangeStatusApplication.id, updateData);
       
-      // Update UI immediately based on changes
       setApplications(prev => prev.map(app => 
         app.id === currentChangeStatusApplication.id 
           ? { 
@@ -457,7 +411,6 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success('Status updated successfully!');
     } catch (error) {
-      console.error('Error saving status changes:', error);
       toast.error('Failed to update status');
       throw error;
     }
@@ -477,7 +430,6 @@ const handleDisburseApproval = async (application) => {
     try {
       await creditApprovalService.updateEmandateStatus(currentDisburseEmandateApplication.id, selectedOption);
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentDisburseEmandateApplication.id 
           ? { ...app, receivedDisburse: selectedOption }
@@ -487,7 +439,6 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success('E-mandate status updated successfully!');
     } catch (error) {
-      console.error('Error saving disburse e-mandate option:', error);
       toast.error('Failed to update e-mandate status');
       throw error;
     }
@@ -511,7 +462,6 @@ const handleDisburseApproval = async (application) => {
         pickedDate
       );
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentCourierPickedApplication.id 
           ? { 
@@ -525,7 +475,6 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success(isPicked ? 'Courier pickup recorded!' : 'Courier status updated!');
     } catch (error) {
-      console.error('Error saving courier picked status:', error);
       toast.error('Failed to update courier status');
       throw error;
     }
@@ -545,7 +494,6 @@ const handleDisburseApproval = async (application) => {
     try {
       await creditApprovalService.updateSendToCourier(currentCourierApplication.id, courierDate);
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentCourierApplication.id 
           ? { ...app, sendToCourier: "Yes", courierDate: courierDate }
@@ -555,74 +503,39 @@ const handleDisburseApproval = async (application) => {
       await fetchApplications();
       toast.success('Courier scheduled successfully!');
     } catch (error) {
-      console.error('Error saving courier date:', error);
       toast.error('Failed to schedule courier');
       throw error;
     }
   };
 
-  // Navigation handlers
-  const handleLoanEligibilityClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/loan-eligibility/${application.id}`);
-  };
-
-  const handleCheckClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/appraisal-report/${application.id}`);
-  };
-
-  const handleReplaceKYCClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/replace-kyc/${application.id}`);
-  };
-
-  const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
-
- 
-  // Handle file view
-  const handleFileView = async (fileName, documentCategory) => {
-    if (!fileName) {
-      alert('No file available');
+  // Handle Advanced Search
+  const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
       return;
     }
     
-    setFileLoading(true);
-    setLoadingFileName(fileName);
-    
-    try {
-      const url = await fileService.viewFile(fileName, documentCategory);
-      
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Popup blocked! Please allow popups for this site.');
-      }
-    } catch (error) {
-      console.error("Failed to load file:", error);
-      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
-    } finally {
-      setFileLoading(false);
-      setLoadingFileName('');
-    }
-  };
-
-  // Handle Advanced Search
-  const handleAdvancedSearch = ({ field, term }) => {
     setSearchField(field);
-    setSearchTerm(term);
+    setSearchTerm(term.trim());
     setCurrentPage(1);
   };
 
-  // Handle Date Filter Change
-  const handleDateFilterChange = (filterData) => {
-    setDateFilter(filterData.dateRange);
+  // Handle Date Filter
+  const handleDateFilter = (filters) => {
+    setDateRange(filters.dateRange || { start: "", end: "" });
     setCurrentPage(1);
   };
 
-  // NEW: Export to Excel for Credit Approval
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchField("");
+    setSearchTerm("");
+    setDateRange({ start: "", end: "" });
+    setCurrentPage(1);
+  };
+
+  // Export to Excel
   const handleExportToExcel = async () => {
     const result = await Swal.fire({
       title: 'Export Applications?',
@@ -637,14 +550,11 @@ const handleDisburseApproval = async (application) => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       setExporting(true);
       
-      // Build export params without pagination
       const exportParams = { ...buildApiParams() };
       delete exportParams.per_page;
       delete exportParams.page;
@@ -707,7 +617,6 @@ const handleDisburseApproval = async (application) => {
         throw new Error("Failed to export data");
       }
     } catch (err) {
-      console.error("Export error:", err);
       await Swal.fire({
         title: 'Export Failed!',
         text: 'Failed to export data. Please try again.',
@@ -721,34 +630,51 @@ const handleDisburseApproval = async (application) => {
     }
   };
 
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchField("");
-    setSearchTerm("");
-    setStatusFilter("all");
-    setLoanStatusFilter("all");
-    setDateFilter({ start: "", end: "" });
-    setCurrentPage(1);
+  // Navigation handlers
+  const handleLoanEligibilityClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/loan-eligibility/${application.id}`);
   };
 
-  // Client-side filtering
-  const filteredApplications = applications.filter(app => {
-    const appStatus = (app.status || '').toLowerCase().trim();
-    const appLoanStatus = (app.loanStatus || '').toLowerCase().trim();
-    const filterStatus = statusFilter.toLowerCase().trim();
-    const filterLoanStatus = loanStatusFilter.toLowerCase().trim();
-    
-    const matchesStatus = statusFilter === "all" || appStatus === filterStatus;
-    const matchesLoanStatus = loanStatusFilter === "all" || appLoanStatus === filterLoanStatus;
-    
-    return matchesStatus && matchesLoanStatus;
-  });
+  const handleCheckClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/appraisal-report/${application.id}`);
+  };
 
-  // Pagination
-  const paginatedApplications = filteredApplications.map((app, index) => ({
-    ...app,
-    srNo: (currentPage - 1) * itemsPerPage + index + 1
-  }));
+  const handleReplaceKYCClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/replace-kyc/${application.id}`);
+  };
+
+  const handleActionClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/application-form/${application.id}`);
+  };
+
+  // Handle file view
+  const handleFileView = async (fileName, documentCategory) => {
+    if (!fileName) {
+      alert('No file available');
+      return;
+    }
+    
+    setFileLoading(true);
+    setLoadingFileName(fileName);
+    
+    try {
+      const url = await fileService.viewFile(fileName, documentCategory);
+      
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site.');
+      }
+    } catch (error) {
+      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+    } finally {
+      setFileLoading(false);
+      setLoadingFileName('');
+    }
+  };
 
   if (loading && applications.length === 0) {
     return (
@@ -797,68 +723,65 @@ const handleDisburseApproval = async (application) => {
               </h1>
             </div>
             
-            {/* NEW: Export Button */}
-            <button
-              onClick={handleExportToExcel}
-              disabled={exporting || applications.length === 0}
-              className={`flex items-center space-x-2 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                exporting || applications.length === 0
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:shadow-lg"
-              } ${
-                isDark
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
-              }`}
-            >
-              {exporting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">
-                {exporting ? "Exporting..." : "Export"}
-              </span>
-            </button>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-              <button 
-                onClick={() => setError(null)}
-                className="ml-2 text-red-800 hover:text-red-900"
+            {/* Export and Refresh */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchApplications()}
+                disabled={loading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                ×
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              
+              <button
+                onClick={handleExportToExcel}
+                disabled={exporting || applications.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting || applications.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span>{exporting ? 'Exporting...' : 'Export'}</span>
               </button>
             </div>
-          )}
+          </div>
 
           {/* Date Filter */}
-          <DateRangeFilter 
-            isDark={isDark}
-            onFilterChange={handleDateFilterChange}
+          <DateFilter 
+            isDark={isDark} 
+            onFilterChange={handleDateFilter}
+            dateField="enquiry_date"
             showSourceFilter={false}
+            buttonLabels={{
+              apply: "Apply",
+              clear: "Clear"
+            }}
           />
 
-          {/* Search and Status Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="md:col-span-2">
-              <AdvancedSearchBar 
-                searchOptions={SearchOptions}
-                onSearch={handleAdvancedSearch}
-                isDark={isDark}
-              />
-            </div>
+          {/* Search and Filters */}
+          <div className="mb-6 grid grid-cols-2">
+            <AdvancedSearchBar 
+              searchOptions={SearchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              placeholder="Search credit approval applications..."
+              buttonText="Search"
+            />
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || dateFilter.start || dateFilter.end || statusFilter !== "all" || loanStatusFilter !== "all") && (
+          {(searchTerm || dateRange.start || dateRange.end) && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
@@ -866,38 +789,24 @@ const handleDisburseApproval = async (application) => {
                     Active Filters:
                   </span>
                   {searchTerm && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
                       {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
                     </span>
                   )}
-                  {dateFilter.start && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.start && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      From: {dateFilter.start}
+                      From: {new Date(dateRange.start).toLocaleDateString('en-GB')}
                     </span>
                   )}
-                  {dateFilter.end && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                  {dateRange.end && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      To: {dateFilter.end}
-                    </span>
-                  )}
-                  {statusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Status: {statusFilter}
-                    </span>
-                  )}
-                  {loanStatusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Loan Status: {loanStatusFilter}
+                      To: {new Date(dateRange.end).toLocaleDateString('en-GB')}
                     </span>
                   )}
                 </div>
@@ -905,11 +814,11 @@ const handleDisburseApproval = async (application) => {
                   <span className={`text-sm font-medium ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Showing {filteredApplications.length} of {totalCount} applications
+                    Showing {applications.length} of {totalCount}
                   </span>
                   <button
                     onClick={clearAllFilters}
-                    className={`text-sm px-3 py-1 rounded-md ${
+                    className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isDark 
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -925,8 +834,11 @@ const handleDisburseApproval = async (application) => {
 
         {/* Table */}
         <CreditApprovalTable
-          paginatedApplications={paginatedApplications}
-          filteredApplications={filteredApplications}
+          paginatedApplications={applications.map((app, index) => ({
+            ...app,
+            srNo: (currentPage - 1) * itemsPerPage + index + 1
+          }))}
+          filteredApplications={applications}
           currentPage={currentPage}
           totalPages={totalPages}
           itemsPerPage={itemsPerPage}
@@ -947,24 +859,23 @@ const handleDisburseApproval = async (application) => {
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
-          // NEW: Pass the bank verification and disburse approval handlers
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
           onStatusClick={handleStatusModalOpen}
         />
       </div>
 
-      
+      {/* All Modals */}
       {currentStatusApplication && (
-  <StatusUpdateModal
-    isOpen={statusModalOpen}
-    onClose={handleStatusModalClose}
-    application={currentStatusApplication}
-    statusOptions={statusOptions}
-    onStatusUpdate={handleStatusUpdate}
-    isDark={isDark}
-  />
-)}
+        <StatusUpdateModal
+          isOpen={statusModalOpen}
+          onClose={handleStatusModalClose}
+          application={currentStatusApplication}
+          statusOptions={statusOptions}
+          onStatusUpdate={handleStatusUpdate}
+          isDark={isDark}
+        />
+      )}
 
       {currentRefundPDCApplication && (
         <RefundPDCModal

@@ -1,12 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
-import ManageApplicationTable from "./ManageApplicationTable";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
-import { mockApplicationsData } from "@/lib/MockApplicationData";
+import { exportToExcel } from "@/components/utils/exportutil";
+import ManageApplicationTable from "./ManageApplicationTable";
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";
@@ -26,8 +25,8 @@ import {
   formatManageApplicationForUI,
   manageFileService
 } from "@/lib/services/ManageApplicationServices";
-import toast from 'react-hot-toast';
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
 
 const ManageApplication = () => {
   const { theme } = useThemeStore();
@@ -36,17 +35,13 @@ const ManageApplication = () => {
   
   // State management
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [loanStatusFilter, setLoanStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
   // Modal states
-  
   const [chequeModalOpen, setChequeModalOpen] = useState(false);
   const [currentApplication, setCurrentApplication] = useState(null);
   const [currentChequeNo, setCurrentChequeNo] = useState('');
@@ -69,14 +64,13 @@ const ManageApplication = () => {
   
   // Collection modal states
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
-  const [collectionType, setCollectionType] = useState(null); // 'normal', 'recollection', 'renewal', 'emi'
+  const [collectionType, setCollectionType] = useState(null);
   const [currentCollectionApplication, setCurrentCollectionApplication] = useState(null);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [sourceFilter, setSourceFilter] = useState("all");
 
   // Data states
   const [applications, setApplications] = useState([]);
@@ -86,16 +80,15 @@ const ManageApplication = () => {
   const itemsPerPage = 10;
 
   const SearchOptions = [
-    { value: 'loanNo', label: 'Loan No.' },
-    { value: 'crnNo', label: 'CRN No.' },
-    { value: 'accountId', label: 'Account ID' },
-    { value: 'name', label: 'Name' },
-    { value: 'phoneNo', label: 'Phone Number' },
-    { value: 'email', label: 'Email' },
-    { value: 'appliedAmount', label: 'Applied Amount' },
-    { value: 'approvedAmount', label: 'Approved Amount' },
-  ];
-
+  { value: 'accountId', label: 'Account ID' },
+  { value: 'loan_no', label: 'Loan No' },
+  { value: 'crnno', label: 'CRN No' },
+  { value: 'name', label: 'Name' },
+  { value: 'phone', label: 'Phone Number' },
+  { value: 'email', label: 'Email' },
+  { value: 'city', label: 'City' },
+  { value: 'state', label: 'State' },
+];
   // Build API parameters
   const buildApiParams = () => {
     const params = {
@@ -104,9 +97,9 @@ const ManageApplication = () => {
     };
 
     // Add search parameters
-    if (searchField && searchTerm) {
+    if (searchField && searchTerm.trim()) {
       params.search_by = searchField;
-      params.search_value = searchTerm;
+      params.search_value = searchTerm.trim();
     }
 
     // Add date filters
@@ -117,17 +110,14 @@ const ManageApplication = () => {
       params.to_date = dateRange.end;
     }
 
+    console.log('API Params:', params);
     return params;
   };
 
   // Fetch applications
-  const fetchApplications = async (isAutoRefresh = false) => {
+  const fetchApplications = async () => {
     try {
-      if (isAutoRefresh) {
-        setIsAutoRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
       const params = buildApiParams();
@@ -135,57 +125,50 @@ const ManageApplication = () => {
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
-      if (actualResponse && actualResponse.success && actualResponse.data) {
-        const formattedApplications = actualResponse.data.map(formatManageApplicationForUI);
+      if (actualResponse && actualResponse.success) {
+        const applicationsData = actualResponse.data || [];
+        const formattedApplications = applicationsData.map(formatManageApplicationForUI);
         setApplications(formattedApplications);
-        setTotalCount(actualResponse.pagination?.total || actualResponse.data.length);
+        setTotalCount(actualResponse.pagination?.total || applicationsData.length);
         setTotalPages(actualResponse.pagination?.total_pages || 1);
+        
+        if (applicationsData.length === 0) {
+          setError("No applications found with current filters");
+        }
       } else {
-        console.error("❌ Invalid API Response structure:", actualResponse);
-        setError("Failed to fetch applications - Invalid response");
+        setApplications([]);
+        setTotalCount(0);
+        setError("No applications found");
       }
     } catch (err) {
-      console.error("❌ Error details:", err);
+      console.error('Fetch error:', err);
+      setApplications([]);
+      setTotalCount(0);
       setError("Failed to fetch applications. Please try again.");
     } finally {
       setLoading(false);
-      setIsAutoRefreshing(false);
     }
   };
 
-  // Load data on component mount and when filters change
+  // Load data when filters or page changes
   useEffect(() => {
     fetchApplications();
-  }, [currentPage, searchField, searchTerm, dateRange]);
+  }, [currentPage]);
 
-  // Auto-refresh functionality
+  // Handle search and date filter changes
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    }, 60000); // 1 minute
-  
-    return () => clearInterval(interval);
-  }, [currentPage, searchField, searchTerm, dateRange]);
-  
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchApplications(true);
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentPage, searchField, searchTerm, dateRange]);
+    if (currentPage === 1) {
+      fetchApplications();
+    } else {
+      setCurrentPage(1);
+    }
+  }, [searchField, searchTerm, dateRange]);
 
   // Status update handlers
   const handleReadyForApprove = async (application) => {
     try {
       await manageApplicationService.updateReadyForApprove(application.id);
       
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === application.id 
           ? { ...app, readyForApprove: "ready_to_verify" }
@@ -194,7 +177,6 @@ const ManageApplication = () => {
       
       toast.success('Application marked as ready for approval!');
     } catch (error) {
-      console.error('Error updating ready for approve:', error);
       toast.error('Failed to update approval status');
     }
   };
@@ -214,19 +196,17 @@ const ManageApplication = () => {
 
   const handleCollectionSubmit = async (applicationId, formData) => {
     try {
-      // TODO: Add API call for collection submission
       console.log('Collection submitted:', { applicationId, formData, type: collectionType });
       
       await fetchApplications();
       toast.success('Collection processed successfully!');
     } catch (error) {
-      console.error('Error processing collection:', error);
       toast.error('Failed to process collection');
       throw error;
     }
   };
 
-  // Bank Verification Handler with SweetAlert Confirmation
+  // Bank Verification Handler
   const handleBankVerification = async (application) => {
     if (application.bankVerification === "verified") {
       toast.success('Bank verification already completed!');
@@ -246,14 +226,10 @@ const ManageApplication = () => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       await manageApplicationService.updateBankVerification(application.id);
-      
-      // Refresh data from server
       await fetchApplications();
       
       await Swal.fire({
@@ -265,7 +241,6 @@ const ManageApplication = () => {
         color: isDark ? "#f9fafb" : "#111827",
       });
     } catch (error) {
-      console.error('Error updating bank verification:', error);
       await Swal.fire({
         title: 'Error!',
         text: 'Failed to update bank verification',
@@ -277,7 +252,7 @@ const ManageApplication = () => {
     }
   };
 
-  // Disburse Approval Handler with SweetAlert Confirmation
+  // Disburse Approval Handler
   const handleDisburseApproval = async (application) => {
     if (application.disburseApproval === "approved") {
       toast.success('Disburse approval already completed!');
@@ -297,14 +272,10 @@ const ManageApplication = () => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       await manageApplicationService.updateDisburseApproval(application.id);
-      
-      // Refresh data from server
       await fetchApplications();
       
       await Swal.fire({
@@ -316,7 +287,6 @@ const ManageApplication = () => {
         color: isDark ? "#f9fafb" : "#111827",
       });
     } catch (error) {
-      console.error('Error updating disburse approval:', error);
       await Swal.fire({
         title: 'Error!',
         text: 'Failed to update disburse approval',
@@ -328,7 +298,7 @@ const ManageApplication = () => {
     }
   };
 
-
+  // Modal handlers
   const handleDocumentVerificationModalOpen = (application) => {
     setCurrentDocumentApplication(application);
     setDocumentVerificationModalOpen(true);
@@ -360,18 +330,14 @@ const ManageApplication = () => {
   const handleChequeSubmit = async (newChequeNo) => {
     try {
       await manageApplicationService.updateChequeNumber(currentApplication.id, newChequeNo);
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentApplication.id 
           ? { ...app, chequeNo: newChequeNo }
           : app
       ));
-      
       await fetchApplications();
       toast.success('Cheque number updated successfully!');
     } catch (error) {
-      console.error('Error saving cheque number:', error);
       toast.error('Failed to update cheque number');
       throw error;
     }
@@ -394,8 +360,6 @@ const ManageApplication = () => {
         isReceived, 
         receivedDate
       );
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentOriginalDocumentsApplication.id 
           ? { 
@@ -405,11 +369,9 @@ const ManageApplication = () => {
             }
           : app
       ));
-      
       await fetchApplications();
       toast.success(isReceived ? 'Original documents received!' : 'Documents status updated!');
     } catch (error) {
-      console.error('Error saving original documents status:', error);
       toast.error('Failed to update documents status');
       throw error;
     }
@@ -428,11 +390,9 @@ const ManageApplication = () => {
   const handleRemarksSubmit = async (remarks) => {
     try {
       await manageApplicationService.updateRemarks(currentRemarksApplication.id, remarks);
-      
       await fetchApplications();
       toast.success('Remarks updated successfully!');
     } catch (error) {
-      console.error('Error saving remarks:', error);
       toast.error('Failed to update remarks');
       throw error;
     }
@@ -451,18 +411,14 @@ const ManageApplication = () => {
   const handleRefundPDCSubmit = async (refundStatus) => {
     try {
       await manageApplicationService.updateRefundPDC(currentRefundPDCApplication.id, refundStatus);
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentRefundPDCApplication.id 
           ? { ...app, refundPdc: refundStatus }
           : app
       ));
-      
       await fetchApplications();
       toast.success('Refund PDC status updated successfully!');
     } catch (error) {
-      console.error('Error saving refund PDC status:', error);
       toast.error('Failed to update refund PDC status');
       throw error;
     }
@@ -481,8 +437,6 @@ const ManageApplication = () => {
   const handleChangeStatusSubmit = async (updateData) => {
     try {
       await manageApplicationService.updateStatusChange(currentChangeStatusApplication.id, updateData);
-      
-      // Update UI immediately based on changes
       setApplications(prev => prev.map(app => 
         app.id === currentChangeStatusApplication.id 
           ? { 
@@ -497,11 +451,9 @@ const ManageApplication = () => {
             }
           : app
       ));
-      
       await fetchApplications();
       toast.success('Status updated successfully!');
     } catch (error) {
-      console.error('Error saving status changes:', error);
       toast.error('Failed to update status');
       throw error;
     }
@@ -520,18 +472,14 @@ const ManageApplication = () => {
   const handleDisburseEmandateSubmit = async (selectedOption) => {
     try {
       await manageApplicationService.updateEmandateStatus(currentDisburseEmandateApplication.id, selectedOption);
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentDisburseEmandateApplication.id 
           ? { ...app, receivedDisburse: selectedOption }
           : app
       ));
-      
       await fetchApplications();
       toast.success('E-mandate status updated successfully!');
     } catch (error) {
-      console.error('Error saving disburse e-mandate option:', error);
       toast.error('Failed to update e-mandate status');
       throw error;
     }
@@ -554,8 +502,6 @@ const ManageApplication = () => {
         isPicked, 
         pickedDate
       );
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentCourierPickedApplication.id 
           ? { 
@@ -565,11 +511,9 @@ const ManageApplication = () => {
             }
           : app
       ));
-      
       await fetchApplications();
       toast.success(isPicked ? 'Courier pickup recorded!' : 'Courier status updated!');
     } catch (error) {
-      console.error('Error saving courier picked status:', error);
       toast.error('Failed to update courier status');
       throw error;
     }
@@ -588,86 +532,48 @@ const ManageApplication = () => {
   const handleCourierSubmit = async (courierDate) => {
     try {
       await manageApplicationService.updateSendToCourier(currentCourierApplication.id, courierDate);
-      
-      // Update UI immediately
       setApplications(prev => prev.map(app => 
         app.id === currentCourierApplication.id 
           ? { ...app, sendToCourier: "Yes", courierDate: courierDate }
           : app
       ));
-      
       await fetchApplications();
       toast.success('Courier scheduled successfully!');
     } catch (error) {
-      console.error('Error saving courier date:', error);
       toast.error('Failed to schedule courier');
       throw error;
     }
   };
 
-  // Navigation handlers
-  const handleLoanEligibilityClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/loan-eligibility/${application.id}`);
-  };
-
-  const handleCheckClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/appraisal-report/${application.id}`);
-  };
-
-  const handleReplaceKYCClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/replace-kyc/${application.id}`);
-  };
-
-  const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
-
-  // Handle file view
-  const handleFileView = async (fileName, documentCategory) => {
-    if (!fileName) {
-      alert('No file available');
+  // Handle Advanced Search
+  const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
       return;
     }
     
-    setFileLoading(true);
-    setLoadingFileName(fileName);
-    
-    try {
-      const url = await manageFileService.viewFile(fileName, documentCategory);
-      
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Popup blocked! Please allow popups for this site.');
-      }
-    } catch (error) {
-      console.error("Failed to load file:", error);
-      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
-    } finally {
-      setFileLoading(false);
-      setLoadingFileName('');
-    }
-  };
-
-  // Handle Advanced Search
-  const handleAdvancedSearch = ({ field, term }) => {
     setSearchField(field);
-    setSearchTerm(term);
+    setSearchTerm(term.trim());
     setCurrentPage(1);
   };
 
   // Handle Date Filter
   const handleDateFilter = (filters) => {
-    setDateRange(filters.dateRange);
-    setSourceFilter(filters.source);
+    setDateRange(filters.dateRange || { start: "", end: "" });
     setCurrentPage(1);
   };
 
-  // Export functionality
-  const handleExport = async (type) => {
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchField("");
+    setSearchTerm("");
+    setDateRange({ start: "", end: "" });
+    setCurrentPage(1);
+  };
+
+  // Export to Excel
+  const handleExportToExcel = async () => {
     const result = await Swal.fire({
       title: 'Export Applications?',
       text: 'This will export all manage applications with current filters.',
@@ -681,14 +587,11 @@ const ManageApplication = () => {
       color: isDark ? "#f9fafb" : "#111827",
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       setExporting(true);
       
-      // Build export params without pagination
       const exportParams = { ...buildApiParams() };
       delete exportParams.per_page;
       delete exportParams.page;
@@ -742,7 +645,6 @@ const ManageApplication = () => {
         throw new Error("Failed to export data");
       }
     } catch (err) {
-      console.error("Export error:", err);
       await Swal.fire({
         title: 'Export Failed!',
         text: 'Failed to export data. Please try again.',
@@ -756,33 +658,51 @@ const ManageApplication = () => {
     }
   };
 
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchField("");
-    setSearchTerm("");
-    setDateRange({ start: "", end: "" });
-    setSourceFilter("all");
-    setStatusFilter("all");
-    setLoanStatusFilter("all");
-    setCurrentPage(1);
+  // Navigation handlers
+  const handleLoanEligibilityClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/loan-eligibility/${application.id}`);
   };
 
-  // Client-side filtering
-  const filteredApplications = applications.filter(app => {
-    const matchesStatus = statusFilter === "all" || 
-      app.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesLoanStatus = loanStatusFilter === "all" || 
-      app.loanStatus.toLowerCase() === loanStatusFilter.toLowerCase();
-    return matchesStatus && matchesLoanStatus;
-  });
+  const handleCheckClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/appraisal-report/${application.id}`);
+  };
 
-  // Pagination
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedApplications = filteredApplications.slice(startIndex, endIndex).map((app, index) => ({
-    ...app,
-    srNo: startIndex + index + 1
-  }));
+  const handleReplaceKYCClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/replace-kyc/${application.id}`);
+  };
+
+  const handleActionClick = (application) => {
+    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
+    router.push(`/crm/application-form/${application.id}`);
+  };
+
+  // Handle file view
+  const handleFileView = async (fileName, documentCategory) => {
+    if (!fileName) {
+      alert('No file available');
+      return;
+    }
+    
+    setFileLoading(true);
+    setLoadingFileName(fileName);
+    
+    try {
+      const url = await manageFileService.viewFile(fileName, documentCategory);
+      
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site.');
+      }
+    } catch (error) {
+      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+    } finally {
+      setFileLoading(false);
+      setLoadingFileName('');
+    }
+  };
 
   if (loading && applications.length === 0) {
     return (
@@ -840,20 +760,20 @@ const ManageApplication = () => {
                   isDark
                     ? "bg-gray-700 hover:bg-gray-600 text-white"
                     : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-                }`}
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
               
               <button
-                onClick={() => handleExport('excel')}
-                disabled={exporting}
+                onClick={handleExportToExcel}
+                disabled={exporting || applications.length === 0}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                   isDark
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
+                } ${exporting || applications.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
                 <span>{exporting ? 'Exporting...' : 'Export'}</span>
@@ -861,44 +781,35 @@ const ManageApplication = () => {
             </div>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-              <button 
-                onClick={() => setError(null)}
-                className="ml-2 text-red-800 hover:text-red-900"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
           {/* Date Filter */}
           <DateFilter 
             isDark={isDark} 
             onFilterChange={handleDateFilter}
+            dateField="enquiry_date"
+            showSourceFilter={false}
+            buttonLabels={{
+              apply: "Apply",
+              clear: "Clear"
+            }}
           />
 
-          {/* Search and Status Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="md:col-span-2">
-              <AdvancedSearchBar 
-                searchOptions={SearchOptions}
-                onSearch={handleAdvancedSearch}
-                isDark={isDark}
-              />
-            </div>
-
-    
+          {/* Search and Filters */}
+          <div className="mb-6 grid grid-cols-2">
+            <AdvancedSearchBar 
+              searchOptions={SearchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              placeholder="Search manage applications..."
+              buttonText="Search"
+            />
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || dateRange.start || dateRange.end || sourceFilter !== "all" || statusFilter !== "all" || loanStatusFilter !== "all") && (
+          {(searchTerm || dateRange.start || dateRange.end) && (
             <div className={`mb-4 p-4 rounded-lg border ${
               isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   <span className={`text-sm font-medium ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
@@ -906,38 +817,24 @@ const ManageApplication = () => {
                     Active Filters:
                   </span>
                   {searchTerm && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
                       {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
                     </span>
                   )}
                   {dateRange.start && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      From: {dateRange.start}
+                      From: {new Date(dateRange.start).toLocaleDateString('en-GB')}
                     </span>
                   )}
                   {dateRange.end && (
-                    <span className={`px-2 py-1 rounded text-xs ${
+                    <span className={`px-3 py-1 rounded-full text-sm ${
                       isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      To: {dateRange.end}
-                    </span>
-                  )}
-                  {statusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Status: {statusFilter}
-                    </span>
-                  )}
-                  {loanStatusFilter !== "all" && (
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-                    }`}>
-                      Loan Status: {loanStatusFilter}
+                      To: {new Date(dateRange.end).toLocaleDateString('en-GB')}
                     </span>
                   )}
                 </div>
@@ -945,11 +842,11 @@ const ManageApplication = () => {
                   <span className={`text-sm font-medium ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    Showing {filteredApplications.length} of {totalCount} applications
+                    Showing {applications.length} of {totalCount}
                   </span>
                   <button
                     onClick={clearAllFilters}
-                    className={`text-sm px-3 py-1 rounded-md ${
+                    className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
                       isDark 
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -965,10 +862,13 @@ const ManageApplication = () => {
 
         {/* Table */}
         <ManageApplicationTable
-          paginatedApplications={paginatedApplications}
-          filteredApplications={filteredApplications}
+          paginatedApplications={applications.map((app, index) => ({
+            ...app,
+            srNo: (currentPage - 1) * itemsPerPage + index + 1
+          }))}
+          filteredApplications={applications}
           currentPage={currentPage}
-          totalPages={Math.ceil(filteredApplications.length / itemsPerPage)}
+          totalPages={totalPages}
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
@@ -986,7 +886,6 @@ const ManageApplication = () => {
           onCheckClick={handleCheckClick}
           onDocumentStatusClick={handleDocumentVerificationModalOpen}
           onReplaceKYCClick={handleReplaceKYCClick} 
-          
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
@@ -996,9 +895,8 @@ const ManageApplication = () => {
           onCollectionClick={handleCollectionClick}
         />
       </div>
-      
-      
 
+      {/* All Modals */}
       {currentDocumentApplication && (
         <DocumentVerificationModal
           isOpen={documentVerificationModalOpen}
