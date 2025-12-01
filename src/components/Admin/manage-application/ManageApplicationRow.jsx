@@ -698,6 +698,13 @@ const ApplicationRow = ({
           </button>
         </div>
       </td>
+      
+      {/* Disburse */}
+      <td className={cellStyle}>
+  <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
+    <CheckCircle className="w-5 h-5 text-white mx-auto" />
+  </div>
+</td>
 
       {/* Collection */}
       <td className={cellStyle}>
@@ -805,6 +812,11 @@ const ApplicationRow = ({
         </div>
       </td>
 
+      {/* NOC */}
+      <td className={cellStyle}>
+        <span className="text-sm text-gray-500">-</span>
+      </td>
+
       {/* Refund PDC */}
       <td className={cellStyle}>
         <div className="flex items-center justify-center">
@@ -869,19 +881,11 @@ const ApplicationRow = ({
         </span>
       </td>
 
-      {/* Disburse */}
-      <td className={cellStyle}>
-  <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
-    <CheckCircle className="w-5 h-5 text-white mx-auto" />
-  </div>
-</td>
+      
 
       
 
-      {/* NOC */}
-      <td className={cellStyle}>
-        <span className="text-sm text-gray-500">-</span>
-      </td>
+      
     </tr>
   );
 };

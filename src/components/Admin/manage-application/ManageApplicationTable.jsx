@@ -89,24 +89,19 @@ const ManageApplicationTable = ({
         { label: "ICICI Emandate Status", width: "180px" },
         { label: "Bank A/c Verification", width: "180px" },
         { label: "Disburse Approval", width: "160px" },
-  
+          { label: "Disburse", width: "100px" },
         { label: "Collection", width: "150px" },
 
         // { label: "Change Status", width: "200px" },
         { label: "Action", width: "140px" },
         { label: "Remarks", width: "120px" },
         { label: "Document Status", width: "210px" },
+        { label: "NOC", width: "120px" },
         { label: "Refund PDC", width: "120px" },
-
         { label: "Appraisal Report", width: "160px" },
         { label: "Eligibility", width: "120px" },
         { label: "Replace KYC", width: "160px" },
         { label: "Settled", width: "100px" },
-
-
-        
-    { label: "Disburse", width: "100px" },
-    { label: "NOC", width: "120px" },
 
   ];
 
