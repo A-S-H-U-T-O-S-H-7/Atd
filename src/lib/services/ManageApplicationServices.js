@@ -59,8 +59,12 @@ export const manageApplicationAPI = {
 // Format application data for UI
 export const formatManageApplicationForUI = (application) => {
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
-  const updatedDate = application.updated_at ? new Date(application.updated_at) : new Date();
-  
+  const approvedDate = application.approved_date ? new Date(application.approved_date) : null;
+  const disburseDate = application.disburse_date ? new Date(application.disburse_date) : null;
+  const dueDate = application.duedate ? new Date(application.duedate) : null;
+  const transactionDate = application.transaction_date ? new Date(application.transaction_date) : null;
+  const closedDate = application.closed_date ? new Date(application.closed_date) : null;
+
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
   
@@ -83,11 +87,19 @@ export const formatManageApplicationForUI = (application) => {
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    updatedDate: updatedDate.toLocaleDateString('en-GB'),
-    updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    approvedDate: enquiryDate.toLocaleDateString('en-GB'),
-    disburseDate: application.disburse_date || 'N/A',
-    dueDate: application.due_date || 'N/A',
+    
+    approvedDate: approvedDate ? approvedDate.toLocaleDateString('en-GB') : 'N/A',
+    approvedDateTime: application.approved_date,
+
+    transactionDate: transactionDate ? transactionDate.toLocaleDateString('en-GB') : 'N/A',
+    transactionDateTime: application.transaction_date,
+
+    disburseDate: disburseDate ? disburseDate.toLocaleDateString('en-GB') : 'N/A',
+    disburseDateTime: application.disburse_date,    dueDate: dueDate ? dueDate.toLocaleDateString('en-GB') : 'N/A',
+    dueDate: dueDate ? dueDate.toLocaleDateString('en-GB') : 'N/A',
+    dueDateTime: application.duedate,
+    closedDate: closedDate ? closedDate.toLocaleDateString('en-GB') : 'N/A',
+    closedDateTime: application.closed_date,
 
     // Personal information
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',

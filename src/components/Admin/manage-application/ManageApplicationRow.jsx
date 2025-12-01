@@ -156,7 +156,7 @@ const ApplicationRow = ({
         <div className="flex items-center space-x-2">
           <Calendar className={iconAccent} />
           <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.approvedDate}
+            {application.approvedDate || 'N/A'}
           </span>
         </div>
       </td>
@@ -288,59 +288,6 @@ const ApplicationRow = ({
         </span>
       </td>
 
-      {/* Renewal Sanction Date */}
-      <td className={cellStyle}>
-        <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.renewalSanctionDate}
-          </span>
-        </div>
-      </td>
-
-      {/* Renewal Tenure */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.renewalTenure}
-        </span>
-      </td>
-
-      {/* Renewal Maturity Date */}
-      <td className={cellStyle}>
-        <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
-            {application.renewalMaturityDate}
-          </span>
-        </div>
-      </td>
-
-      {/* Renewal Outstanding Balance */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.renewalOutstandingBalance}
-        </span>
-      </td>
-
-      {/* Renewal Remarks */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.renewalRemarks}
-        </span>
-      </td>
-
-      {/* Renewal Sanction Letter */}
-      <td className={cellStyle}>
-        <SanctionLetterDocument
-          fileName={application.renewalSanctionLetter}
-          hasDoc={!!application.renewalSanctionLetter}
-          onFileView={onFileView}
-          fileLoading={fileLoading}
-          loadingFileName={loadingFileName}
-          isDark={isDark}
-          title="Renewal Sanction Letter"
-        />
-      </td>
 
       {/* Photo */}
       <td className={cellStyle}>

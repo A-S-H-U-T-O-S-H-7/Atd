@@ -99,11 +99,11 @@ const CreditApprovalPage = () => {
 
     // Add date filters
     if (dateRange.start) {
-      params.from_date = dateRange.start;
-    }
-    if (dateRange.end) {
-      params.to_date = dateRange.end;
-    }
+  params.from_approved_date = `${dateRange.start} 00:00:00`;
+}
+if (dateRange.end) {
+  params.to_approved_date = `${dateRange.end} 23:59:59`;
+}
 
     console.log('API Params:', params);
     return params;

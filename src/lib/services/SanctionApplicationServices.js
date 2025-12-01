@@ -26,12 +26,12 @@ export const sanctionApplicationAPI = {
 
 export const formatSanctionApplicationForUI = (application) => {
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
-  const updatedDate = application.updated_at ? new Date(application.updated_at) : new Date();
+  const approvedDate = application.approved_date ? new Date(application.approved_date) : null;
   
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
   
-  const currentAddress = application.current_address || 
+  const currentAddress = application.current_address ||  
     `${application.current_house_no || ''}, ${application.current_city || ''}, ${application.current_state || ''} - ${application.current_pincode || ''}`.trim();
 
   return {
@@ -44,9 +44,9 @@ export const formatSanctionApplicationForUI = (application) => {
 
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    updatedDate: updatedDate.toLocaleDateString('en-GB'),
-    updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    approvedDate: enquiryDate.toLocaleDateString('en-GB'),
+    
+    approvedDate: approvedDate ? approvedDate.toLocaleDateString('en-GB') : 'N/A',
+    approvedDateTime: application.approved_date,
 
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
     

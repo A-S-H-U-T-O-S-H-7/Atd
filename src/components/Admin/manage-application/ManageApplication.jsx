@@ -89,30 +89,31 @@ const ManageApplication = () => {
   { value: 'city', label: 'City' },
   { value: 'state', label: 'State' },
 ];
+
   // Build API parameters
-  const buildApiParams = () => {
-    const params = {
-      per_page: itemsPerPage,
-      page: currentPage,
-    };
-
-    // Add search parameters
-    if (searchField && searchTerm.trim()) {
-      params.search_by = searchField;
-      params.search_value = searchTerm.trim();
-    }
-
-    // Add date filters
-    if (dateRange.start) {
-      params.from_date = dateRange.start;
-    }
-    if (dateRange.end) {
-      params.to_date = dateRange.end;
-    }
-
-    console.log('API Params:', params);
-    return params;
+const buildApiParams = () => {
+  const params = {
+    per_page: itemsPerPage,
+    page: currentPage,
   };
+
+  // Add search parameters
+  if (searchField && searchTerm.trim()) {
+    params.search_by = searchField;
+    params.search_value = searchTerm.trim();
+  }
+
+  // Add date filters WITH TIME
+  if (dateRange.start) {
+    params.from_date = `${dateRange.start} 00:00:00`;
+  }
+  if (dateRange.end) {
+    params.to_date = `${dateRange.end} 23:59:59`;
+  }
+
+  // console.log('API Params with time:', params);
+  return params;
+};
 
   // Fetch applications
   const fetchApplications = async () => {
@@ -785,7 +786,7 @@ const ManageApplication = () => {
           <DateFilter 
             isDark={isDark} 
             onFilterChange={handleDateFilter}
-            dateField="enquiry_date"
+            dateField="approved_date"
             showSourceFilter={false}
             buttonLabels={{
               apply: "Apply",

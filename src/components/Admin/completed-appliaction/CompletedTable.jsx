@@ -42,7 +42,7 @@ const CompletedTable = ({
     { label: "Enquiry Date", width: "100px" },
 
     { label: "Complete Date", width: "100px" },
-    { label: "Complete Time", width: "100px" },
+    { label: "Complete Time", width: "110px" },
 
     { label: "Name", width: "160px" },
     { label: "Current Address", width: "150px" },

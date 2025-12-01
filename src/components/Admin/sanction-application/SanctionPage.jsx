@@ -85,30 +85,31 @@ const SanctionPage = () => {
     { value: 'state', label: 'State' },
   ];
 
-  // Build API parameters
-  const buildApiParams = () => {
-    const params = {
-      per_page: itemsPerPage,
-      page: currentPage,
-    };
-
-    // Add search parameters
-    if (searchField && searchTerm.trim()) {
-      params.search_by = searchField;
-      params.search_value = searchTerm.trim();
-    }
-
-    // Add date filters
-    if (dateRange.start) {
-      params.from_date = dateRange.start;
-    }
-    if (dateRange.end) {
-      params.to_date = dateRange.end;
-    }
-
-    console.log('API Params:', params);
-    return params;
+  // Build API parameters 
+const buildApiParams = () => {
+  const params = {
+    per_page: itemsPerPage,
+    page: currentPage,
   };
+
+  // Add search parameters
+  if (searchField && searchTerm.trim()) {
+    params.search_by = searchField;
+    params.search_value = searchTerm.trim();
+  }
+
+  // Add date filters
+  if (dateRange.start) {
+   
+    params.from_approved_date = `${dateRange.start} 00:00:00`;
+  }
+  if (dateRange.end) {
+    params.to_approved_date = `${dateRange.end} 23:59:59`;
+  }
+
+  console.log('API Params:', params);
+  return params;
+};
 
   // Fetch applications
   const fetchApplications = async () => {
@@ -119,7 +120,7 @@ const SanctionPage = () => {
       const params = buildApiParams();
       const response = await sanctionApplicationAPI.getSanctionApplications(params);
       
-      console.log('API Response:', response);
+      // console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       

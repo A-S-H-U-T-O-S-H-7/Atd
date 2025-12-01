@@ -58,34 +58,47 @@ export const completedApplicationAPI = {
 
 // Format application data for UI 
 export const formatCompletedApplicationForUI = (application) => {
-   const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
-  const completeDate = application.complete_date ? new Date(application.complete_date) : null;
+  const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
 
-   const getTimeFromDateTime = (dateTimeString) => {
-    if (!dateTimeString) return 'N/A';
+  // Helper function to format time from backend
+  const formatTimeString = (timeString) => {
+    if (!timeString) return 'N/A';
+    
     try {
-      const date = new Date(dateTimeString);
-      return date.toLocaleTimeString('en-GB', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true 
-      });
+      const timeParts = timeString.split(' ');
+      if (timeParts.length >= 2) {
+        const time = timeParts[0]; 
+        const period = timeParts[1]; 
+        
+        const [hours, minutes, seconds] = time.split(':');
+        
+        return `${parseInt(hours, 10)}:${minutes} ${period}`;
+      }
+      
+      // If not in expected format, return as is
+      return timeString;
     } catch (error) {
-      return 'N/A';
+      console.error('Time formatting error:', error);
+      return timeString || 'N/A';
     }
   };
 
-  const getDateFromDateTime = (dateTimeString) => {
-    if (!dateTimeString) return 'N/A';
+  // Helper function to format date
+  const formatDateString = (dateString) => {
+    if (!dateString) return 'N/A';
+    
     try {
-      const date = new Date(dateTimeString);
+      // If date has time component, extract just date
+      const dateOnly = dateString.split(' ')[0];
+      const date = new Date(dateOnly);
+      
+      // Format as DD/MM/YYYY
       return date.toLocaleDateString('en-GB');
     } catch (error) {
-      return 'N/A';
+      console.error('Date formatting error:', error);
+      return dateString || 'N/A';
     }
   };
-
 
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
@@ -101,13 +114,14 @@ export const formatCompletedApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
 
-    enquiryDate: getDateFromDateTime(application.enquiry_date),
-    enquiryTime: getTimeFromDateTime(application.enquiry_date),
+    enquiryDate: formatDateString(application.enquiry_date),
+    enquiryTime: formatTimeString(application.enquiry_time || application.enquiry_date?.split(' ')[1]),
     enquiryDateTime: application.enquiry_date,
     
-    completeDate: getDateFromDateTime(application.complete_date),
-    completeTime: getTimeFromDateTime(application.complete_time || application.complete_date),
-    completeDateTime: application.complete_date,
+    // Fixed: Use complete_date and complete_time fields
+    completeDate: formatDateString(application.complete_date),
+    completeTime: formatTimeString(application.complete_time),
+    completeDateTime: `${application.complete_date} ${application.complete_time}`,
 
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
     firstName: application.fname || '',
