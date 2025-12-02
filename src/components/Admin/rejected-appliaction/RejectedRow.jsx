@@ -13,6 +13,8 @@ import ActionButton from "../action-buttons/ActionButton";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import CallButton from "../call/CallButton";
+import CRNLink from "../CRNLink";
+import toast from "react-hot-toast";
 
 const RejectedRow = ({
   application,
@@ -123,10 +125,17 @@ const RejectedRow = ({
 
       {/* CRN No */}
       <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.crnNo}
-        </span>
-      </td>
+            <CRNLink 
+              crnNo={application.crnNo} 
+              userId={application.userId}
+              onSuccess={(data) => {
+                toast.success('Profile loaded');
+              }}
+              onError={(error) => {
+                toast.error(error);
+              }}
+            />
+            </td>
 
       {/* Account ID */}
       <td className={cellStyle}>

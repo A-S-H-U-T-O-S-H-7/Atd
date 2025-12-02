@@ -20,6 +20,8 @@ import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
+import CRNLink from "../CRNLink";
+import toast from "react-hot-toast";
 
 const SanctionRow = ({
   application,
@@ -46,14 +48,14 @@ const SanctionRow = ({
   };
 
   const formatCurrency = amount => {
-    return `₹${parseFloat(amount).toLocaleString("en-IN", {
-      minimumFractionDigits: 2
-    })}`;
-  };
+  if (!amount && amount !== 0) return "0";
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount)) return "0";
+  return `${numAmount.toLocaleString("en-IN", {
+  })}`;
+};
 
-  const handleCall = () => {
-    onCall(application);
-  };
+  
 
   // Validation logic for loan status modal
   const canOpenLoanStatusModal = () => {
@@ -147,9 +149,16 @@ const SanctionRow = ({
 
       {/* CRN No */}
       <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.crnNo}
-        </span>
+      <CRNLink 
+        crnNo={application.crnNo} 
+        userId={application.userId}
+        onSuccess={(data) => {
+          toast.success('Profile loaded');
+        }}
+        onError={(error) => {
+          toast.error(error);
+        }}
+      />
       </td>
 
       {/* Account ID */}

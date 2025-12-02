@@ -40,7 +40,6 @@ const CreditApprovalRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  // NEW: Bank verification and disburse approval handlers
   onBankVerification,
   onDisburseApproval,
   onStatusClick
@@ -50,10 +49,12 @@ const CreditApprovalRow = ({
   };
 
   const formatCurrency = amount => {
-    return `₹${parseFloat(amount).toLocaleString("en-IN", {
-      minimumFractionDigits: 2
-    })}`;
-  };
+  if (!amount && amount !== 0) return "0";
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount)) return "0";
+  return `${numAmount.toLocaleString("en-IN", {
+  })}`;
+};
 
   
 

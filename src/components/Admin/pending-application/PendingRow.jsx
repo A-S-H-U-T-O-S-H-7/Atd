@@ -43,10 +43,12 @@ const PendingRow = ({
   const iconAccent = `w-4 h-4 ${textAccent}`;
 
   const formatCurrency = amount => {
-    return `${parseFloat(amount).toLocaleString("en-IN", {
-      minimumFractionDigits: 2
-    })}`;
-  };
+  if (!amount && amount !== 0) return "0";
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount)) return "0";
+  return `${numAmount.toLocaleString("en-IN", {
+  })}`;
+};
 
   
   // Create application object with proper props for buttons (IMPORTANT FIX)

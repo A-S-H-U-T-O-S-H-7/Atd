@@ -46,31 +46,19 @@ const InProgressRow = ({
   const iconAccent = `w-4 h-4 ${textAccent}`;
 
   const formatCurrency = amount => {
-    return `${parseFloat(amount).toLocaleString("en-IN", {
-      minimumFractionDigits: 2
-    })}`;
-  };
+  if (!amount && amount !== 0) return "0";
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount)) return "0";
+  return `${numAmount.toLocaleString("en-IN", {
+  })}`;
+};
 
-  const handleCall = () => {
-    onCall(application);
-  };
+ 
 
-  // ADD THIS FUNCTION
   const handleOpenStatusModal = () => {
     if (onOpenStatusModal) {
       onOpenStatusModal(application);
     }
-  };
-
-  // Ensure application has the required properties for button components
-  const applicationWithDefaults = {
-    ...application,
-    showActionButton: application.showActionButton !== false,
-    showAppraisalButton: application.showAppraisalButton !== false,
-    showEligibilityButton: application.showEligibilityButton !== false,
-    isFinalStage: application.isFinalStage || false,
-    finalReportStatus: application.finalReportStatus || null,
-    hasAppraisalReport: application.hasAppraisalReport || false
   };
 
   return (
