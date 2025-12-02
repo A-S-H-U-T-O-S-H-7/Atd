@@ -347,8 +347,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   panCard: Yup.mixed()
@@ -364,8 +364,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   photo: Yup.mixed()
@@ -378,8 +378,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   salarySlip1: Yup.mixed()
@@ -395,8 +395,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   salarySlip2: Yup.mixed()
@@ -412,8 +412,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   salarySlip3: Yup.mixed()
@@ -429,8 +429,8 @@ const DocumentUploadSchema = Yup.object().shape({
     )
     .test(
       "fileSize",
-      "File size should not exceed 2MB",
-      (value) => value && value.size <= 2 * 1024 * 1024
+      "File size should not exceed 3MB",
+      (value) => value && value.size <= 3 * 1024 * 1024
     ),
    
   bankStatement: Yup.mixed()
