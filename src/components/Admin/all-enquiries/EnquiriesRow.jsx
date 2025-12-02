@@ -12,6 +12,8 @@ import CibilScoreDocument from "../documents/CibilScoreDocument";
 import ActionButton from "../action-buttons/ActionButton";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
+import CRNLink from "../CRNLink";
+import toast from "react-hot-toast";
 
 const EnquiriesRow = ({
   enquiry,
@@ -122,10 +124,17 @@ const EnquiriesRow = ({
       </td>
 
       {/* CRN No */}
-      <td className={cellStyle}> 
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {enquiry.crnNo}
-        </span>
+      <td className={cellStyle}>
+      <CRNLink 
+        crnNo={enquiry.crnNo} 
+        userId={enquiry.user_id || enquiry.user_Id}
+        onSuccess={(data) => {
+          toast.success('Profile loaded');
+        }}
+        onError={(error) => {
+          toast.error(error);
+        }}
+      />
       </td>
 
       {/* Account ID */}

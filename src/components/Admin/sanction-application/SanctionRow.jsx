@@ -151,7 +151,7 @@ const SanctionRow = ({
       <td className={cellStyle}>
       <CRNLink 
         crnNo={application.crnNo} 
-        userId={application.userId}
+        userId={application.user_id || application.user_Id}
         onSuccess={(data) => {
           toast.success('Profile loaded');
         }}

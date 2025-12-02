@@ -117,6 +117,8 @@ export const formatEnquiryForUI = (enquiry) => {
     enquirySource: enquiry.enquiry_type,
     crnNo: enquiry.crnno,
     accountId: enquiry.accountId,
+    user_Id: enquiry.user_id,
+
 
     // Date and time - FIXED: Use enquiry_date from API response
     enquiryDate: getDateFromDateTime(enquiry.enquiry_date),
