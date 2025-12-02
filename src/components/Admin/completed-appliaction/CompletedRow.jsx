@@ -80,11 +80,7 @@ const CompletedRow = ({
     }
   };
 
-  const handleBlacklist = () => {
-    if (onBlacklist && application.id) {
-      onBlacklist(application.id);
-    }
-  };
+  
 
   const handleOpenStatusModal = () => {
     if (onOpenStatusModal) {
@@ -177,11 +173,11 @@ const CompletedRow = ({
       </td>
 
       {/* Account ID */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.accountId}
         </span>
-      </td>
+      </td> */}
 
       {/* Enquiry Date */}
       <td className={cellStyle}>

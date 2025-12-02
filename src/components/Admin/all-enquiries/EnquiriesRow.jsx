@@ -138,11 +138,11 @@ const EnquiriesRow = ({
       </td>
 
       {/* Account ID */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {enquiry.accountId}
         </span>
-      </td>
+      </td> */}
 
       {/* Enquiry Date */}
       <td className={cellStyle}>

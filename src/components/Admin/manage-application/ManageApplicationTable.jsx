@@ -43,7 +43,7 @@ const ManageApplicationTable = ({
         { label: "Call", width: "20px" },
         { label: "Loan No.", width: "80px" },
         { label: "CRN No.", width: "60px" },
-        { label: "Account ID", width: "70px" },
+        // { label: "Account ID", width: "70px" },
         { label: "Approved Date", width: "100px" },
         { label: "Disburse Date", width: "120px" },
         { label: "Due Date", width: "120px" },

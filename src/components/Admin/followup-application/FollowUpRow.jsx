@@ -192,11 +192,11 @@ const FollowUpRow = ({
       </td>
 
       {/* Account ID */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.accountId}
         </span>
-      </td>
+      </td> */}
 
       {/* Enquiry Date */}
       <td className={cellStyle}>

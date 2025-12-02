@@ -34,7 +34,7 @@ const FollowUpTable = ({
     { label: "Enquiry Source", width: "100px" },
     { label: "Account Activation", width: "140px" },
     { label: "CRN No.", width: "80px" },
-    { label: "Account ID", width: "100px" },
+    // { label: "Account ID", width: "100px" },
     { label: "Enquiry Date", width: "160px" },
     { label: "Name", width: "160px" },
     { label: "Current Address", width: "150px" },

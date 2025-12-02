@@ -41,7 +41,7 @@ const CreditApprovalTable = ({
     { label: "Call", width: "70px" },
     { label: "Loan No.", width: "100px" },
     { label: "CRN No.", width: "80px" },
-    { label: "Account ID", width: "120px" },
+    // { label: "Account ID", width: "120px" },
     { label: "Approved Date", width: "100px" },
     
     { label: "Name", width: "160px" },

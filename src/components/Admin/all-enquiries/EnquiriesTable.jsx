@@ -29,7 +29,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
     { label: "SR. No.", width: "80px" },
     { label: "Enquiry Source", width: "80px" },
     { label: "CRN No", width: "80px" },
-    { label: "Account ID", width: "140px" },
+    // { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "100px" },
     { label: "Enquiry Time", width: "110px" },
     { label: "Name", width: "150px" },

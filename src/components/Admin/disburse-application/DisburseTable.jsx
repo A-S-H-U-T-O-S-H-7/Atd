@@ -43,7 +43,7 @@ const DisburseTable = ({
     { label: "Call", width: "90px" },
     { label: "Loan No.", width: "100px" },
     { label: "CRN No.", width: "80px" },
-    { label: "Account ID", width: "140px" },
+    // { label: "Account ID", width: "140px" },
     { label: "Approved Date", width: "100px" },
     { label: "Disburse Date", width: "100px" },
     { label: "Due Date", width: "100px" },

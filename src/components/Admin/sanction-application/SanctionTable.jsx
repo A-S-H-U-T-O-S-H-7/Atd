@@ -41,7 +41,7 @@ const SanctionTable = ({
     { label: "Call", width: "70px" },
     { label: "Loan No.", width: "90px" },
     { label: "CRN No.", width: "90px" },
-    { label: "Account ID", width: "100px" },
+    // { label: "Account ID", width: "100px" },
     { label: "Approved Date", width: "80px" },
     
     { label: "Name", width: "160px" },

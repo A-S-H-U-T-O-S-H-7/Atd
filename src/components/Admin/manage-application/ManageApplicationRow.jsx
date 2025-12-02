@@ -145,11 +145,11 @@ const ApplicationRow = ({
       </td>
 
       {/* Account ID */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.accountId}
         </span>
-      </td>
+      </td> */}
 
       {/* Approved Date */}
       <td className={cellStyle}>

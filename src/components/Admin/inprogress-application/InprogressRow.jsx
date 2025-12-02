@@ -30,7 +30,7 @@ const InProgressRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  onOpenStatusModal // Add this prop
+  onOpenStatusModal 
 }) => {
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
@@ -106,11 +106,11 @@ const InProgressRow = ({
       </td>
 
       {/* Account ID */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.accountId}
         </span>
-      </td>
+      </td> */}
 
       {/* Enquiry Date */}
       <td className={cellStyle}>

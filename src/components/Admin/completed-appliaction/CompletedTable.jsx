@@ -38,7 +38,7 @@ const CompletedTable = ({
 
 
     { label: "CRN No.", width: "80px" },
-    { label: "Account ID", width: "140px" },
+    // { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "100px" },
 
     { label: "Complete Date", width: "100px" },
