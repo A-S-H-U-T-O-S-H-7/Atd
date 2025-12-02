@@ -107,7 +107,6 @@ const SanctionRow = ({
   // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
 
-  console.log("App verify value:", application.verify);
 
   return (
     <tr

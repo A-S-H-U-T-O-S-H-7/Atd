@@ -175,6 +175,12 @@ const CallDetailsModal = ({
     return value;
   };
 
+  const getMaxFutureDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 30);
+  return date.toISOString().split('T')[0];
+};
+
   // Get today's date in YYYY-MM-DD format for max attribute
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
@@ -389,7 +395,8 @@ const CallDetailsModal = ({
                     type="date"
                     value={nextCallDate}
                     onChange={(e) => setNextCallDate(e.target.value)}
-                    max={getTodayDate()} // Only allow past and present dates, no future dates
+                    max={getMaxFutureDate()}
+                    min={getTodayDate()} 
                     disabled={submitting}
                     className={`w-full px-3 py-2 text-sm rounded border transition-all duration-200 ${
                       isDark
