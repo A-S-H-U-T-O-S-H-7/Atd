@@ -124,6 +124,7 @@ export const formatSanctionApplicationForUI = (application) => {
     originalDocumentsRaw: application.original_documents,
     emandateVerificationRaw: application.emandateverification,
     readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
+    verify: application.verify,
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,

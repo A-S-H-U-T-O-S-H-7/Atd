@@ -174,6 +174,7 @@ export const formatCompletedApplicationForUI = (application) => {
     approvalNote: application.approval_note,
     status: getStatusName(application.loan_status),
     loanStatus: getStatusName(application.loan_status),
+    verify: application.verify,
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,

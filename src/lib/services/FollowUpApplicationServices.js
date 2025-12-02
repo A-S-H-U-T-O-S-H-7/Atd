@@ -142,6 +142,7 @@ export const formatFollowUpApplicationForUI = (application) => {
     loanStatus: getStatusName(application.loan_status),
 
     // Application stage information - CRITICAL FOR BUTTONS
+    verify: application.verify,
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,

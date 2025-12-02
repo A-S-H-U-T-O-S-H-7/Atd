@@ -158,6 +158,7 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     creditApprovalRaw: application.credit_approval,
 
     // Application stage information
+    verify: application.verify,
     isVerified: application.verify === 1,
     isReportChecked: application.report_check === 1,
     isFinalStage: application.verify === 1 && application.report_check === 1,

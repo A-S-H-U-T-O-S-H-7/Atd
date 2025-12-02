@@ -107,6 +107,8 @@ const SanctionRow = ({
   // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
 
+  console.log("App verify value:", application.verify);
+
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
@@ -640,7 +642,7 @@ const SanctionRow = ({
         </div>
       </td>
 
-      {/* Action */}
+      {/* Action */} 
       <td className={cellStyle}>
         <ActionButton
           enquiry={application}
