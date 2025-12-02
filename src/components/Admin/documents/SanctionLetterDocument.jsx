@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaRegFilePdf } from "react-icons/fa";
-import { X, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 
@@ -20,39 +20,16 @@ const SanctionLetterDocument = ({
     try {
       setIsLoading(true);
       
-      // Define folder mapping locally
-      const folderMappings = {
-        'address_proof': 'address',
-        'bank_statement': 'bank-statement',
-        'aadhar_proof': 'idproof', 
-        'pan_proof': 'pan',
-        'selfie': 'photo',
-        'salary_slip': 'first_salaryslip',
-        'second_salary_slip': 'second_salaryslip', 
-        'third_salary_slip': 'third_salaryslip',
-        'bank_verif_report': 'reports',
-        'social_score_report': 'reports',
-        'cibil_score_report': 'reports',
-        'pdc': 'pdc',
-        'nach_form': 'nach-form',
-        'agreement': 'agreement',
-        'sanction_letter': 'sanction-letter', // Add sanction letter folder mapping
-      };
-
-      // Determine document category from component context
-      const documentCategory = 'sanction_letter';
-      const folder = folderMappings[documentCategory];
+      let url = fileName;
       
-      if (!folder) {
-        console.error('No folder mapping found for:', documentCategory);
-        alert('Document type not configured');
-        return;
+      if (fileName.startsWith('http')) {
+        url = fileName.replace(/\\\//g, '/');
+      } 
+      else {
+        const filePath = `sanction-letter/${fileName}`;
+        const fileRef = ref(storage, filePath);
+        url = await getDownloadURL(fileRef);
       }
-      
-      // Construct file path and get download URL
-      const filePath = `${folder}/${fileName}`;
-      const fileRef = ref(storage, filePath);
-      const url = await getDownloadURL(fileRef);
       
       // Open in new tab
       const newWindow = window.open(url, '_blank');
@@ -60,44 +37,47 @@ const SanctionLetterDocument = ({
         alert('Popup blocked! Please allow popups for this site.');
       }
 
-      // Call the original onFileView if provided (for tracking/analytics)
-      if (typeof onFileView === 'function') {
-        onFileView(fileName, documentCategory);
-      }
-
     } catch (error) {
-      console.error("Failed to load file:", error);
-      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+      console.error("Failed to load sanction letter:", error);
+      alert(`Failed to load sanction letter. Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // File present - Green theme
   if (hasDoc && fileName) {
     return (
       <button
         onClick={handleClick}
         disabled={isLoading}
-        className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
+        className={`p-2 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center ${
           isLoading 
-            ? 'bg-gray-300 text-gray-500 cursor-wait' 
-            : 'bg-red-100 hover:bg-red-200 text-red-700'
+            ? 'bg-green-100 border border-green-300 text-green-700 cursor-wait' 
+            : 'bg-green-100 hover:bg-green-200 border-2 border-green-300 hover:border-green-400 text-green-800 hover:text-green-900 shadow-sm hover:shadow-md'
         }`}
         title={isLoading ? "Loading..." : "View Sanction Letter PDF"}
       >
         {isLoading ? (
           <Loader size={18} className="flex-shrink-0 animate-spin" />
         ) : (
-          <FaRegFilePdf size={18} className="flex-shrink-0" />
+          <>
+            <FaRegFilePdf size={18} className="flex-shrink-0" />
+            <span className="text-xs font-bold ml-1 text-green-600">✓</span>
+          </>
         )}
       </button>
     );
   }
 
+  // File missing - Red theme
   return (
-    <div className="p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed" title="Sanction Letter Missing">
-      <FaRegFilePdf size={18} className="flex-shrink-0" />
-      <span className="text-xs ml-1">✗</span>
+    <div 
+      className="p-2 rounded-lg bg-red-50 border-2 border-red-200 text-red-600 flex items-center justify-center cursor-not-allowed shadow-sm"
+      title="Sanction Letter Missing"
+    >
+      <FaRegFilePdf size={18} className="flex-shrink-0 opacity-70" />
+      <span className="text-xs font-bold ml-1">✗</span>
     </div>
   );
 };

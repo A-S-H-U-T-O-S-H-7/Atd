@@ -1,35 +1,71 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
+import { exportToExcel } from "@/components/utils/exportutil";
 import ClientHistoryTable from "./ClientHistoryTable";
 import ClientViewModal from "./ClientViewModal";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { clientService } from "@/lib/services/ClientHistoryService";
+import Swal from 'sweetalert2';
 
 const ClientHistoryPage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const router = useRouter();
+  
   const [currentPage, setCurrentPage] = useState(1);
-  const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
+  const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const [searchField, setSearchField] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientHistoryData, setClientHistoryData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Fetch client histories on component mount
-  useEffect(() => {
-    fetchClientHistories();
-  }, []);
+  const itemsPerPage = 10;
 
+  // Search Options
+  const SearchOptions = [
+    { value: 'accountId', label: 'Account ID' },
+    { value: 'crnNo', label: 'CRN No' },
+    { value: 'name', label: 'Name' },
+    { value: 'phone', label: 'Phone Number' },
+    { value: 'email', label: 'Email' },
+   
+  ];
+
+  // Build API parameters
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    // Add search parameters
+    if (searchField && searchTerm.trim()) {
+      params.search_by = searchField;
+      params.search_value = searchTerm.trim();
+    }
+
+    console.log('API Params:', params);
+    return params;
+  };
+
+  // Fetch client histories
   const fetchClientHistories = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await clientService.getClientHistories();
+      
+      const params = buildApiParams();
+      const response = await clientService.getClientHistories(params);
       
       if (response.success) {
         // Transform API data to match your component structure
@@ -37,7 +73,7 @@ const ClientHistoryPage = () => {
           id: client.user_id,
           sn: index + 1,
           name: client.fullname,
-          loanNo: "N/A", // This will be populated when viewing details
+          loanNo: "N/A",
           fatherName: client.fathername,
           crnNo: client.crnno,
           accountId: client.accountId,
@@ -47,77 +83,173 @@ const ClientHistoryPage = () => {
         }));
         
         setClientHistoryData(transformedData);
+        setTotalCount(response.clients.length);
+        setTotalPages(Math.ceil(response.clients.length / itemsPerPage));
+      } else {
+        setError("Failed to fetch client histories");
       }
     } catch (err) {
-      setError("Failed to fetch client histories");
+      setError("Failed to fetch client histories. Please try again.");
       console.error("Error fetching client histories:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewClick = async (client) => {
-  try {
-    setLoading(true);
-    const response = await clientService.getClientDetails(client.id);
-    
-    if (response.success) {
-      // Transform the detailed client data
-      const clientDetails = {
-        ...client,
-        dob: response.details.dob,
-        selfie: response.details.selfie,
-        gender: response.details.gender,
-        location: response.details.address,
-        panNo: response.details.pan_no,
-        aadharNo: response.details.aadhar_no,
-        // Add loan information if available
-        loans: response.loans || [],
-        references: response.references || []
-      };
-      
-      setSelectedClient(clientDetails);
-      setIsViewModalOpen(true);
+  // Load data when filters or page changes
+  useEffect(() => {
+    fetchClientHistories();
+  }, [currentPage]);
+
+  // Handle search changes
+  useEffect(() => {
+    if (currentPage === 1) {
+      fetchClientHistories();
+    } else {
+      setCurrentPage(1);
     }
-  } catch (err) {
-    setError("Failed to fetch client details");
-    console.error("Error fetching client details:", err);
-  } finally {
-    setLoading(false); // This will reset the loading state for all buttons
-  }
-};
+  }, [searchField, searchTerm]);
+
+  const handleViewClick = async (client) => {
+    try {
+      setLoading(true);
+      const response = await clientService.getClientDetails(client.id);
+      
+      if (response.success) {
+        // Transform the detailed client data
+        const clientDetails = {
+          ...client,
+          dob: response.details.dob,
+          selfie: response.details.selfie,
+          gender: response.details.gender,
+          location: response.details.address,
+          panNo: response.details.pan_no,
+          aadharNo: response.details.aadhar_no,
+          // Add loan information if available
+          loans: response.loans || [],
+          references: response.references || []
+        };
+        
+        setSelectedClient(clientDetails);
+        setIsViewModalOpen(true);
+      }
+    } catch (err) {
+      setError("Failed to fetch client details");
+      console.error("Error fetching client details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCloseModal = () => {
     setIsViewModalOpen(false);
     setSelectedClient(null);
   };
 
-  const searchOptions = [
-    { value: 'name', label: 'Name' },
-    { value: 'phone', label: 'Phone' },
-    { value: 'crnNo', label: 'CRN No' },
-    { value: 'loanNo', label: 'Loan No' },
-    { value: 'email', label: 'Email' }
-  ];
-
-  const itemsPerPage = 10;
-
-  const filteredClientData = clientHistoryData.filter(item => {
-    // Advanced search filter
-    if (!advancedSearch.field || !advancedSearch.term) return true;
+  // Handle Advanced Search
+  const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
+      return;
+    }
     
-    const fieldValue = item[advancedSearch.field]?.toString().toLowerCase() || '';
-    return fieldValue.includes(advancedSearch.term.toLowerCase());
-  });
-
-  const totalPages = Math.ceil(filteredClientData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedClientData = filteredClientData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handleAdvancedSearch = (searchData) => {
-    setAdvancedSearch(searchData);
+    setSearchField(field);
+    setSearchTerm(term.trim());
     setCurrentPage(1);
   };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchField("");
+    setSearchTerm("");
+    setCurrentPage(1);
+  };
+
+  // Export to Excel
+  const handleExportToExcel = async () => {
+    const result = await Swal.fire({
+      title: 'Export Client History?',
+      text: 'This will export all client history records.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setExporting(true);
+      
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      
+      const response = await clientService.exportClientHistories(exportParams);
+      
+      if (response.success) {
+        const headers = [
+          'Sr. No.', 'Name', 'Father Name', 'CRN No.', 'Account ID', 
+          'Phone', 'Email', 'Date'
+        ];
+
+        const dataRows = response.clients.map((client, index) => [
+          index + 1,
+          client.fullname,
+          client.fathername,
+          client.crnno,
+          client.accountId,
+          client.phone,
+          client.email || 'N/A',
+          "2025-07-10"
+        ]);
+
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, `client_history_${new Date().toISOString().split('T')[0]}`);
+        
+        await Swal.fire({
+          title: 'Export Successful!',
+          text: 'Client history has been exported to Excel successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+      } else {
+        throw new Error("Failed to export data");
+      }
+    } catch (err) {
+      await Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Filter data for display
+  const filteredClientData = clientHistoryData.filter(item => {
+    if (!searchField || !searchTerm.trim()) return true;
+    
+    const fieldValue = item[searchField]?.toString().toLowerCase() || '';
+    return fieldValue.includes(searchTerm.toLowerCase());
+  });
+
+  // Pagination
+  const paginatedClientData = filteredClientData.map((client, index) => ({
+    ...client,
+    srNo: (currentPage - 1) * itemsPerPage + index + 1
+  }));
 
   if (loading && clientHistoryData.length === 0) {
     return (
@@ -125,34 +257,14 @@ const ClientHistoryPage = () => {
         isDark ? "bg-gray-900" : "bg-emerald-50/30"
       }`}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className={`mt-4 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+          <RefreshCw className={`w-8 h-8 animate-spin mx-auto mb-4 ${
+            isDark ? "text-emerald-400" : "text-emerald-600"
+          }`} />
+          <p className={`text-lg font-medium ${
+            isDark ? "text-gray-300" : "text-gray-700"
+          }`}>
             Loading client histories...
           </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        isDark ? "bg-gray-900" : "bg-emerald-50/30"
-      }`}>
-        <div className="text-center">
-          <p className={`text-lg ${isDark ? "text-red-400" : "text-red-600"}`}>
-            {error}
-          </p>
-          <button
-            onClick={fetchClientHistories}
-            className={`mt-4 px-4 py-2 rounded-lg ${
-              isDark 
-                ? "bg-emerald-600 hover:bg-emerald-500" 
-                : "bg-emerald-600 hover:bg-emerald-500"
-            } text-white transition-colors`}
-          >
-            Retry
-          </button>
         </div>
       </div>
     );
@@ -179,36 +291,111 @@ const ClientHistoryPage = () => {
                   isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
               </button>
-              <div className="flex items-center space-x-3">
-                <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                  isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-                } bg-clip-text text-transparent`}>
-                  Client History
-                </h1>
+              <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
+                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+              } bg-clip-text text-transparent`}>
+                Client History ({totalCount})
+              </h1>
+            </div>
+            
+            {/* Export and Refresh */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchClientHistories()}
+                disabled={loading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              
+              <button
+                onClick={handleExportToExcel}
+                disabled={exporting || clientHistoryData.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting || clientHistoryData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span>{exporting ? 'Exporting...' : 'Export'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className={`mb-4 p-4 rounded-lg border ${
+              isDark ? "bg-red-900/20 border-red-700 text-red-300" : "bg-red-100 border-red-400 text-red-700"
+            }`}>
+              <div className="flex justify-between items-center">
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError(null)}
+                  className={`ml-2 ${isDark ? "text-red-400 hover:text-red-300" : "text-red-800 hover:text-red-900"}`}
+                >
+                  ×
+                </button>
               </div>
             </div>
+          )}
+
+          {/* Search and Filters */}
+          <div className="mb-6 grid grid-cols-2">
+            <AdvancedSearchBar 
+              searchOptions={SearchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              placeholder="Search client history..."
+              buttonText="Search"
+            />
           </div>
 
-          {/* Search Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <AdvancedSearchBar
-                searchOptions={searchOptions}
-                onSearch={handleAdvancedSearch}
-                placeholder="Search clients..."
-                defaultSearchField="name"
-              />
-            </div>
-          </div>
-
-          {/* Total Records */}
-          <div className="mb-4">
-            <p className={`text-lg font-semibold ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
+          {/* Filter Summary */}
+          {searchTerm && (
+            <div className={`mb-4 p-4 rounded-lg border ${
+              isDark ? "bg-gray-800/50 border-emerald-600/30" : "bg-emerald-50/50 border-emerald-200"
             }`}>
-              Total Records: {filteredClientData.length}
-            </p>
-          </div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-wrap gap-2">
+                  <span className={`text-sm font-medium ${
+                    isDark ? "text-emerald-400" : "text-emerald-600"
+                  }`}>
+                    Active Filters:
+                  </span>
+                  {searchTerm && (
+                    <span className={`px-3 py-1 rounded-full text-sm ${
+                      isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      {SearchOptions.find(opt => opt.value === searchField)?.label}: {searchTerm}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}>
+                    Showing {filteredClientData.length} of {totalCount}
+                  </span>
+                  <button
+                    onClick={clearAllFilters}
+                    className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
+                      isDark 
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    }`}
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}

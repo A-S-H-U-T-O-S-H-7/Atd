@@ -74,11 +74,8 @@ const handleShowReferences = async () => {
 
   setLoadingReferences(true);
   try {
-    // FIX: Since axios returns response.data directly, we get the actual API response
     const response = await personalVerificationService.getReferences(applicationId);
-    console.log('API Response:', response); // This will be the actual API response
     
-    // Now response is the actual API data, so we check response.success directly
     if (response && response.success) {
       setFetchedReferences(response.reference || []);
       setShowReferencesModal(true);
@@ -86,7 +83,7 @@ const handleShowReferences = async () => {
       if (response.reference && response.reference.length > 0) {
         toast.success(`Loaded ${response.reference.length} references`);
       } else {
-        toast.info('No references found');
+        toast('No references found');
       }
     } else {
       toast.error(response?.message || 'Failed to fetch references');
@@ -121,7 +118,7 @@ const handleRefreshReferences = async () => {
       if (response.reference && response.reference.length > 0) {
         toast.success(`Refreshed ${response.reference.length} references`);
       } else {
-        toast.info('No references found');
+        toast('No references found');
       }
     } else {
       toast.error(response?.message || 'Failed to refresh references');
