@@ -34,7 +34,7 @@ export default function EMandateThankYou() {
   }, []);
 
   const handleBackToProfile = () => {
-    router.push('/profile');
+    router.push('/userProfile');
   };
 
   const getStatusContent = () => {

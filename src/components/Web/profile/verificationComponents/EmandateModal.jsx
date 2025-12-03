@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { TokenManager } from '@/utils/tokenManager';
 
 const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
   const [mode, setMode] = useState('');
@@ -55,11 +56,9 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
 
   // Get user token from localStorage
   const getToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token') || sessionStorage.getItem('token');
-    }
-    return null;
-  };
+  const tokenData = TokenManager.getToken();
+  return tokenData.token;
+};
 
   // Create axios instance with token
   const getAxiosConfig = () => {
@@ -75,7 +74,7 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
         ...(token && { 'Authorization': `Bearer ${token}` })
       },
       timeout: 15000,
-      withCredentials: false // Set to false to avoid CORS preflight issues
+      withCredentials: false 
     };
   };
 
@@ -142,11 +141,12 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
         }
       } 
       else if (error.response?.status === 401 || error.response?.status === 403) {
-        toast.error('Session expired. Please login again.');
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-      } 
+  toast.error('Session expired. Please login again.');
+  TokenManager.clearAllTokens();
+  if (typeof window !== 'undefined') {
+    window.location.href = '/userlogin';
+  }
+}
       else if (error.response?.data?.message) {
         toast.error(`Failed to load banks: ${error.response.data.message}`);
       } 
