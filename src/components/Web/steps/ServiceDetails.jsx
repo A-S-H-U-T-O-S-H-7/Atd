@@ -102,7 +102,7 @@ function ServiceDetails() {
   hrEmail: serviceData.hrEmail || '',
   designation: serviceData.designation || '',
   workingSince: serviceData.workingSince || { month: '', year: '' },
-  officialEmail: serviceData.officialEmail || ''
+  officialEmail: serviceData.officialEmail || '',
 });
 
   return (

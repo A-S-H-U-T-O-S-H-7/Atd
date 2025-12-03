@@ -1,34 +1,24 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
+import { TokenManager } from '@/utils/tokenManager';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [isViewingApplicant, setIsViewingApplicant] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Check if admin is viewing an applicant
-    const viewUserToken = sessionStorage.getItem('view_user_token');
-    const viewUserData = sessionStorage.getItem('view_user_data');
-    
-    if (viewUserToken && viewUserData) {
-      setIsViewingApplicant(true);
-      setCheckingAuth(false);
-    } else {
-      setIsViewingApplicant(false);
-      setCheckingAuth(false);
+    if (!loading) {
+      const tokenData = TokenManager.getToken();
       
-      // Only redirect if not in admin viewing mode and not authenticated
-      if (!loading && !isAuthenticated()) {
+      if (!tokenData.token && !isAuthenticated()) {
         router.push('/userlogin');
       }
     }
   }, [loading, isAuthenticated, router]);
 
-  if (loading || checkingAuth) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -39,8 +29,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // Allow access if viewing as admin or authenticated as user
-  if (!isViewingApplicant && !isAuthenticated()) {
+  if (!isAuthenticated()) {
     return null;
   }
 

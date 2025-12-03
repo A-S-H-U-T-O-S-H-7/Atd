@@ -22,7 +22,6 @@ function References() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { completeRegistration, fetchUserData } = useAuth();
 
-
   const {
     referenceData,
     setReferenceData,
@@ -86,6 +85,7 @@ function References() {
     setIsSubmitting(false);
   }
 };
+  
   return (
     <>
       <FullPageLoader isVisible={isSubmitting} />
@@ -102,7 +102,7 @@ function References() {
             </h1>
             <p className="text-gray-600">
                Please provide 5 personal references who can speak about your reliability 
-                          </p>
+            </p>
           </div>
 
           <Formik
@@ -115,9 +115,17 @@ function References() {
               const references = Array.isArray(values?.references) ? values.references : 
                 Array(5).fill().map(() => ({ name: "", phone: "", email: "" }));
 
-              const { completedCount, duplicates } = useReferencesValidation(references);
+              // Call hook INSIDE Formik render function
+              const { completedCount, duplicates, userPhoneMatches } = useReferencesValidation(references);
+              
               const hasDuplicates = Object.keys(duplicates).length > 0;
-              const isFormValid = completedCount === 5 && !hasDuplicates && values.consentToContact;
+              const hasUserPhoneMatches = Object.keys(userPhoneMatches).length > 0;
+              
+              // Update isFormValid to include userPhoneMatches check
+              const isFormValid = completedCount === 5 && 
+                                 !hasDuplicates && 
+                                 !hasUserPhoneMatches && 
+                                 values.consentToContact;
 
               return (
                 <Form className="space-y-8">
@@ -146,6 +154,7 @@ function References() {
                               index={index}
                               duplicatePhones={duplicates[`phone_${index}`] || []}
                               duplicateEmails={duplicates[`email_${index}`] || []}
+                              userPhoneMatch={userPhoneMatches[`phone_${index}`]} // Pass user phone match
                               formatPhoneNumber={formatPhoneNumber}
                             />
                           ))}
@@ -189,6 +198,7 @@ function References() {
                     loader={loader}
                     completedCount={completedCount}
                     hasDuplicates={hasDuplicates}
+                    hasUserPhoneMatches={hasUserPhoneMatches} 
                     isSubmitting={isSubmitting}
                     values={values}
                     isFormValid={isFormValid}

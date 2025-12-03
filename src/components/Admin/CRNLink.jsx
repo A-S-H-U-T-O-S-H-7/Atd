@@ -1,5 +1,7 @@
+// components/CRNLink.js
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { TokenManager } from '@/utils/tokenManager';
 
 const CRNLink = ({ crnNo, userId, className = '', onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -13,15 +15,14 @@ const CRNLink = ({ crnNo, userId, className = '', onSuccess, onError }) => {
       const response = await api.get(`crm/application/profile/${userId}`);
 
       if (response.success) {
-        sessionStorage.setItem('view_user_token', response.access_token);
-        sessionStorage.setItem('view_user_data', JSON.stringify(response.user));
+        // Use TokenManager instead of direct sessionStorage
+        TokenManager.setAdminViewToken(response.access_token, response.user);
         
         if (onSuccess) {
           onSuccess(response);
         }
         
         window.open('/userProfile', '_blank');
-        setLoading(false);
       } else {
         throw new Error(response.message || 'Failed to fetch user profile');
       }

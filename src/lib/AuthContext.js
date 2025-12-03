@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { TokenManager } from '@/utils/tokenManager';
 
-// Create context with default values
 const AuthContext = createContext({
   user: null,
   loading: true,
@@ -18,15 +18,8 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async () => {
     setLoading(true);
-
-    let token;
-    try {
-      token = localStorage.getItem("token");
-    } catch (error) {
-      console.warn("Could not access localStorage:", error);
-      setLoading(false);
-      return;
-    }
+    const tokenData = TokenManager.getToken();
+    const token = tokenData.token;
 
     if (!token) {
       setUser(null);
@@ -45,42 +38,28 @@ export const AuthProvider = ({ children }) => {
         }
       );
 
-      console.log("🔍 API Response Status:", response.status);
-
       if (response.ok) {
         const result = await response.json();
-
         setUser(result.user || result.data || result);
       } else {
-        localStorage.removeItem("token");
+        TokenManager.clearAllTokens();
         setUser(null);
       }
     } catch (error) {
       console.error("Error fetching user:", error);
-      localStorage.removeItem("token");
+      TokenManager.clearAllTokens();
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Direct login function (for login flow)
   const login = async (userData, token) => {
     try {
-      // Store token safely
-      try {
-        localStorage.setItem("token", token);
-      } catch (error) {
-        console.warn("Could not store token in localStorage:", error);
-      }
-
-      // Set user data directly from login response
+      TokenManager.setUserToken(token, userData);
       setUser(userData);
       setLoading(false);
-
       console.log("User logged in successfully:", userData);
-      // localStorage.setItem('showCongratulations', 'true');
-
       return true;
     } catch (error) {
       console.error("Login error:", error);
@@ -90,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const completeRegistration = async (token, userData) => {
     try {
-      localStorage.setItem("token", token);
+      TokenManager.setUserToken(token, userData);
       setUser(userData);
       setLoading(false);
       console.log("Registration completed:", userData);
@@ -101,10 +80,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const tokenData = TokenManager.getToken();
+      const token = tokenData.token;
 
       if (token) {
         try {
@@ -120,23 +99,19 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("showCongratulations");
-      localStorage.removeItem("tempUserData");
+      TokenManager.clearAllTokens();
     } catch (error) {
-      console.warn("Could not remove items from localStorage:", error);
+      console.warn("Error clearing tokens:", error);
     }
 
     setUser(null);
     setLoading(false);
   };
 
-  // Check if user is authenticated
   const isAuthenticated = () => {
     return !!user;
   };
 
-  // Initialize on mount
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -158,7 +133,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Fixed useAuth hook with proper error handling
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

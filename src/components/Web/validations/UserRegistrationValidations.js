@@ -281,6 +281,10 @@ const ServiceDetailsSchema = Yup.object().shape({
   officialEmail: Yup.string()
   .transform((value) => value ? value.toLowerCase().trim() : value)
   .email("Invalid email format")
+  .matches(
+    /^(?!.*@(gmail|yahoo|hotmail|outlook|rediffmail|aol|live\.in|live\.com|zoho\.com|proton\.me|protonmail\.com|icloud\.com)\.?[a-z]*$).+@.+\..+$/i,
+    "Personal email domains (Gmail, Yahoo, Live.in, Zoho, ProtonMail, etc.) are not allowed. Please use your official company email address"
+  )
   .required("Official email is required"),
 
   netMonthlySalary: Yup.number()

@@ -6,6 +6,7 @@ import Header from './Header';
 import ProtectedRoute from './ProtectRoute';
 import UserFooter from './UserFooter';
 import CreditScoreSection from './CreditScore';
+import { TokenManager } from '@/utils/tokenManager';
 
 export default function StepInProgressProfile({ user, router, userStep, logout }) {
   const totalSteps = 5;
@@ -14,6 +15,7 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
   const handleClientHistory = () => router.push('/client-history');
   
   const handleLogout = async () => {
+    TokenManager.clearAllTokens();
     await logout();
     router.push('/userlogin');
   };

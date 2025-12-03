@@ -4,6 +4,7 @@ import MobileLoginInput from './MobileInput';
 import LoginOtpVerification from './OtpVerification';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
+import { TokenManager } from '@/utils/tokenManager';
 
 function MobileLogin() {
     const [phoneData, setPhoneData] = useState({
@@ -22,16 +23,13 @@ function MobileLogin() {
     const router = useRouter();
     const { login, isAuthenticated, user } = useAuth();
 
-    // Modified redirect logic - show option instead of forcing redirect
     useEffect(() => {
         const requireOTP = localStorage.getItem("requireOTPLogin");
         
-        // Only redirect if explicitly required, otherwise let user choose
         if (isAuthenticated() && requireOTP === "true") {
             router.push('/userProfile');
         }
         
-        // Don't auto-redirect for normal cases - let user choose
     }, [isAuthenticated, router]);
 
     // Animated content data for left section
@@ -141,9 +139,9 @@ function MobileLogin() {
                 const token = result.token || result.access_token;
 
                 if (token && userData) {
-                    // Use AuthContext login function
-                    const loginSuccess = await login(userData, token);
-                    
+                       TokenManager.setUserToken(token, userData);
+                        const loginSuccess = await login(userData, token);
+
                     if (loginSuccess) {
                         setPhoneData({ 
                             ...phoneData, 

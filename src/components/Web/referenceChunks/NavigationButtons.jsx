@@ -7,6 +7,7 @@ const NavigationButtons = ({
   loader, 
   completedCount, 
   hasDuplicates, 
+  hasUserPhoneMatches,
   isSubmitting,
   values,
   isFormValid 
@@ -19,7 +20,6 @@ const NavigationButtons = ({
 
   return (
     <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-6">
-      {/* Progress Summary */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-800">Progress Summary</h3>
@@ -35,7 +35,6 @@ const NavigationButtons = ({
           </div>
         </div>
         
-        {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
           <div 
             className="bg-gradient-to-r from-teal-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
@@ -43,39 +42,44 @@ const NavigationButtons = ({
           ></div>
         </div>
 
-        {/* Validation Messages */}
         <div className="space-y-2">
           {completedCount < 5 && (
             <p className="text-amber-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Please complete all {5 - completedCount} remaining reference(s)
+              Complete {5 - completedCount} remaining reference(s)
             </p>
           )}
           
           {hasDuplicates && (
             <p className="text-red-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Please resolve duplicate phone numbers or emails
+              Resolve duplicate phone numbers or emails
             </p>
           )}
           
-          {!values.consentToContact && completedCount === 5 && !hasDuplicates && (
+          {hasUserPhoneMatches && (
+            <p className="text-red-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Reference phones cannot match your existing numbers
+            </p>
+          )}
+          
+          {!values.consentToContact && completedCount === 5 && !hasDuplicates && !hasUserPhoneMatches && (
             <p className="text-amber-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Please provide consent to contact your references
+              Provide consent to contact references
             </p>
           )}
           
           {isFormValid && (
             <p className="text-green-600 text-sm flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
-              All requirements met! Ready to submit.
+              Ready to submit
             </p>
           )}
         </div>
       </div>
 
-      {/* Navigation Buttons */}
       <div className="flex items-center justify-between">
         <button
           type="button"

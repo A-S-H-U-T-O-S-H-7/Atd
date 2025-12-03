@@ -21,6 +21,7 @@ import ReferBlock from './ReferBlock';
 import LoanInformation from './LoanHistoryInformation';
 import LoanApplicationModal from './LoanApplicationModal';
 import PaymentModal from './PaymentModal';
+import { TokenManager } from '@/utils/tokenManager';
 
 
 export default function StepCompleteProfile({ 
@@ -84,9 +85,7 @@ export default function StepCompleteProfile({
   
   const handleClientHistory = () => router.push('/client-history');
   const handleLoanApplicationSuccess = () => {
-    // You can add any post-success logic here
-    // For example, refresh user data or show a toast notification
-    console.log('Loan application submitted successfully');
+    
   };
    const handleApplyNewLoan = () => {
     setIsLoanModalOpen(true);
@@ -97,6 +96,7 @@ export default function StepCompleteProfile({
   };
   
   const handleLogout = async () => {
+    TokenManager.clearAllTokens();
     await logout();
     router.push('/userlogin');
   };

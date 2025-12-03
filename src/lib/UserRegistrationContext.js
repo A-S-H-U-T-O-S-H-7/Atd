@@ -1,8 +1,9 @@
 "use client";
 import { createContext, useState, useContext, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { TokenManager } from "@/utils/tokenManager";
 
-const UserContext = createContext();
+const UserContext = createContext(); 
 
 export const UserContextProvider = ({ children }) => {
   // Step 1: Phone Number and Verification Data
@@ -128,7 +129,12 @@ export const UserContextProvider = ({ children }) => {
   const [loader, setLoader] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(() => {
+  if (typeof window !== 'undefined') {
+    return TokenManager.getToken().token;
+  }
+  return null;
+});
 
   let authContext;
   try {
@@ -141,17 +147,25 @@ export const UserContextProvider = ({ children }) => {
   const user = authContext?.user || null;
 
   const fetchAndPopulateUserData = async (userId, token) => {
-    try {
-      setLoader(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_ATD_API}/api/user/me`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`
-          }
+  try {
+    setLoader(true);
+    const authToken = token || TokenManager.getToken().token;
+    
+    if (!authToken) {
+      setErrorMessage("No authentication token found");
+      setLoader(false);
+      return;
+    }
+    
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_ATD_API}/api/user/me`,
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${authToken}`
         }
-      );
+      }
+    );
 
       if (response.ok) {
         const result = await response.json();
@@ -297,33 +311,27 @@ export const UserContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log("🔄 UserContext useEffect triggered:");
-    console.log("- User:", user);
-    console.log("- Current token state:", token);
-    console.log("- Token in localStorage:", localStorage.getItem("token"));
-
-    if (user && !loader) {
+  if (user && !loader) {
+    
+    if (step === null) {
+      console.log("🔄 Initial step set from user:", user.step);
       setStep(user.step || 1);
-      setUserId(user.id || user._id);
-
-      try {
-        const storedToken = localStorage.getItem("token");
-        
-        // Sync token: if localStorage has token but context doesn't, update context
-        if (storedToken && storedToken !== token) {
-          setToken(storedToken);
-        }
-        
-        // Only fetch if we have token and don't already have the data
-        if (storedToken && !personalData.firstName && user.step >= 2) {
-          fetchAndPopulateUserData(user.id || user._id, storedToken);
-        }
-      } catch (error) {
-        console.warn("Could not access localStorage:", error);
-        setErrorMessage("Storage access error. Please check your browser settings.");
-      }
     }
-  }, [user]);
+    
+    setUserId(user.id || user._id);
+    
+    const tokenData = TokenManager.getToken();
+    const currentToken = tokenData.token;
+    
+    if (currentToken && currentToken !== token) {
+      setToken(currentToken);
+    }
+    
+    if (currentToken && !personalData.firstName && user.step >= 2) {
+      fetchAndPopulateUserData(user.id || user._id, currentToken);
+    }
+  }
+},[user, loader, personalData.firstName, token, step]);
 
   const copyCurrentToPermanent = () => {
     setPersonalData((prev) => ({

@@ -4,6 +4,7 @@ import { User, Phone, Mail, CreditCard, Building2, IndianRupee, Users, CheckCirc
 import Header from './Header';
 import UserFooter from './UserFooter';
 import CreditScoreSection from './CreditScore';
+import { TokenManager } from '@/utils/tokenManager';
 
 export default function StepOneProfile({ user, router, logout }) {
   const handleApplyForLoan = () => {
@@ -13,6 +14,7 @@ export default function StepOneProfile({ user, router, logout }) {
   const handleClientHistory = () => router.push('/client-history');
   
   const handleLogout = async () => {
+    TokenManager.clearAllTokens();
     await logout();
     router.push('/userlogin');
   };

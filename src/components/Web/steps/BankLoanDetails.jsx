@@ -126,7 +126,7 @@ function BankLoanDetails() {
                     ifsccode: values.ifscCode,
                     bankname: values.bankName,
                     bankbranch: values.bankBranch,
-                    accountno: values.accountNumber, // Keep as string
+                    accountno: values.accountNumber, 
                     accounttype: values.accountType,
                     // Loan details
                     amount: parseInt(values.amount.replace(/[^0-9]/g, '')),
