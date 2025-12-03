@@ -75,7 +75,6 @@ const DisburseApplication = () => {
 
   // Search Options
   const SearchOptions = [
-    { value: 'accountId', label: 'Account ID' },
     { value: 'loan_no', label: 'Loan No' },
     { value: 'crnno', label: 'CRN No' },
     { value: 'name', label: 'Name' },
