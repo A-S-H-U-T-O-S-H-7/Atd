@@ -130,56 +130,11 @@ const CallDetailsModal = ({
     return data[field] || "--";
   };
 
-  const renderHighlightedNumber = (value, label) => {
-    if (!value || value === "--") return value;
-    
-    const isImportantNumber = [
-      'mobile', 
-      'alternate_no', 
-      'loan_no', 
-      'crnno', 
-      'customer_ac_no'
-    ].includes(label?.toLowerCase());
-    
-    if (isImportantNumber) {
-      return (
-        <span className={`font-bold ${
-          isDark ? "text-white bg-blue-900/30 px-1 rounded" : "text-blue-700 bg-blue-100 px-1 rounded"
-        }`}>
-          {value}
-        </span>
-      );
-    }
-    
-    const isAmount = label?.toLowerCase().includes('amount') || 
-                    label?.toLowerCase().includes('penalty') || 
-                    label?.toLowerCase().includes('interest');
-    
-    if (isAmount && !isNaN(parseFloat(value))) {
-      const amount = parseFloat(value);
-      const isOverdue = label?.toLowerCase().includes('overdue') && amount > 0;
-      
-      return (
-        <span className={`font-bold ${
-          isOverdue 
-            ? "text-red-600 bg-red-50 px-1 rounded" 
-            : isDark 
-              ? "text-green-400 bg-green-900/20 px-1 rounded" 
-              : "text-green-700 bg-green-50 px-1 rounded"
-        }`}>
-          {formatCurrency(value)}
-        </span>
-      );
-    }
-    
-    return value;
-  };
-
   const getMaxFutureDate = () => {
-  const date = new Date();
-  date.setDate(date.getDate() + 30);
-  return date.toISOString().split('T')[0];
-};
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().split('T')[0];
+  };
 
   // Get today's date in YYYY-MM-DD format for max attribute
   const getTodayDate = () => {
@@ -294,17 +249,87 @@ const CallDetailsModal = ({
                   { label: "Alternate Mobile", value: getCustomerData('alternate_no'), important: true },
                   { label: "CRN No", value: getCustomerData('crnno'), important: true },
                   { label: "Loan No", value: getCustomerData('loan_no'), important: true },
+                  // Moved fields from right column
+                  { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
+                  { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
+                  { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
+                  { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
+                  { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
+                  // End of moved fields
                   { label: "Customer A/c No", value: getCustomerData('customer_ac_no'), important: true },
-                ].map((item, index) => (
-                  <div key={index} className="flex py-1 items-center border-b border-gray-400 justify-between">
-                    <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                      {item.label}:
-                    </span>
-                    <span className={`text-right ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                      {renderHighlightedNumber(item.value, item.label)}
-                    </span>
-                  </div>
-                ))}
+                ].map((item, index) => {
+                  const displayValue = item.value === "--" ? "" : item.value;
+                  const isImportant = item.important;
+                  const isAmount = item.amount;
+                  let formattedValue = displayValue;
+                  
+                  // Format currency if it's an amount
+                  if (isAmount && displayValue && displayValue !== "--") {
+                    formattedValue = formatCurrency(displayValue);
+                  }
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className="py-1 border-b border-gray-400 relative"
+                      style={{ 
+                        // Add CSS for copy-friendly display
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {/* Label with pseudo-element for copy */}
+                      <span 
+                        className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                        style={{
+                          position: 'relative',
+                        }}
+                      >
+                        {/* Invisible text for copy that includes the colon */}
+                        <span 
+                          style={{
+                            position: 'absolute',
+                            width: '1px',
+                            height: '1px',
+                            padding: 0,
+                            margin: '-1px',
+                            overflow: 'hidden',
+                            clip: 'rect(0, 0, 0, 0)',
+                            whiteSpace: 'nowrap',
+                            border: 0,
+                          }}
+                          aria-hidden="true"
+                        >
+                          {item.label}:
+                        </span>
+                        {/* Visible label without colon */}
+                        {item.label}
+                      </span>
+                      
+                      {/* Value */}
+                      <span 
+                        className={`text-right ${
+                          isImportant 
+                            ? isDark 
+                              ? "text-white bg-blue-900/30 px-1 rounded font-bold" 
+                              : "text-blue-700 bg-blue-100 px-1 rounded font-bold"
+                            : isAmount && displayValue && !isNaN(parseFloat(displayValue))
+                              ? isDark 
+                                ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
+                                : item.label === "Overdue Amount" && parseFloat(displayValue) > 0
+                                  ? "text-red-600 bg-red-50 px-1 rounded font-bold"
+                                  : "text-green-700 bg-green-50 px-1 rounded font-bold"
+                              : isDark 
+                                ? "text-gray-100" 
+                                : "text-gray-900"
+                        }`}
+                      >
+                        {formattedValue || "--"}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -319,31 +344,80 @@ const CallDetailsModal = ({
                 }`}>Loan Details</h3>
               </div>
               
-              <div className="space-y-2  text-sm">
+              <div className="space-y-2 text-sm">
                 {[
-                  { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
-                  { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
-                  { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
-                  { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
-                  { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
+                  // Remaining fields (removed the ones moved to left column)
                   { label: "Disburse Date", value: formatDate(getCustomerData('disburse_date')) },
                   { label: "Sanction Amount", value: getCustomerData('sanction_amount'), amount: true },
                   { label: "Disburse Amount", value: getCustomerData('disburse_amount'), amount: true },
                   { label: "Ledger Amount", value: getCustomerData('ledger_amount'), amount: true },
                   { label: "Penal Interest", value: getCustomerData('penal_interest'), amount: true },
                   { label: "Penalty", value: getCustomerData('penality'), amount: true },
-                ].map((item, index) => (
-                  <div key={index} className="flex border-b border-gray-400 py-[1px] item-center justify-between">
-                    <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                      {item.label}:
-                    </span>
-                    <span className={`text-right ${
-                      item.label.includes("Amount") || item.label === "Penalty" ? "font-medium" : ""
-                    } ${isDark ? "text-gray-100" : "text-gray-900"}`}>
-                      {renderHighlightedNumber(item.value, item.label)}
-                    </span>
-                  </div>
-                ))}
+                ].map((item, index) => {
+                  const displayValue = item.value === "--" ? "" : item.value;
+                  const isAmount = item.amount;
+                  let formattedValue = displayValue;
+                  
+                  // Format currency if it's an amount
+                  if (isAmount && displayValue && displayValue !== "--") {
+                    formattedValue = formatCurrency(displayValue);
+                  }
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className="border-b border-gray-400 py-[1px] relative"
+                      style={{ 
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {/* Label with pseudo-element for copy */}
+                      <span 
+                        className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                        style={{
+                          position: 'relative',
+                        }}
+                      >
+                        {/* Invisible text for copy that includes the colon */}
+                        <span 
+                          style={{
+                            position: 'absolute',
+                            width: '1px',
+                            height: '1px',
+                            padding: 0,
+                            margin: '-1px',
+                            overflow: 'hidden',
+                            clip: 'rect(0, 0, 0, 0)',
+                            whiteSpace: 'nowrap',
+                            border: 0,
+                          }}
+                          aria-hidden="true"
+                        >
+                          {item.label}:
+                        </span>
+                        {/* Visible label without colon */}
+                        {item.label}
+                      </span>
+                      
+                      {/* Value */}
+                      <span 
+                        className={`text-right ${
+                          isAmount && displayValue && !isNaN(parseFloat(displayValue))
+                            ? isDark 
+                              ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
+                              : "text-green-700 bg-green-50 px-1 rounded font-bold"
+                            : isDark 
+                              ? "text-gray-100" 
+                              : "text-gray-900"
+                        }`}
+                      >
+                        {formattedValue || "--"}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -434,10 +508,10 @@ const CallDetailsModal = ({
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full  text-sm">
+              <table className="w-full text-sm">
                 <thead className={`${isDark ? "bg-gray-800" : "bg-blue-50"}`}>
                   <tr>
-                    <th className={`px-4 py-2 text-center  font-semibold ${
+                    <th className={`px-4 py-2 text-center font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Date & Time</th>
                     <th className={`px-4 py-2 text-center font-semibold ${
