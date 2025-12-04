@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Phone, User, CreditCard, Calendar, Clock, Mail, Smartphone, Building } from "lucide-react";
-import { callAPI, callService } from "@/lib/services/CallServices";
+import { X, Phone, User, CreditCard, Clock, Smartphone, Building } from "lucide-react";
+import { callAPI } from "@/lib/services/CallServices";
 
 const CallDetailsModal = ({ 
   isOpen, 
@@ -32,13 +32,8 @@ const CallDetailsModal = ({
       setCallHistory(response.calls || []);
       setCustomerDetails(response.details || null);
     } catch (error) {
-      if (error.response?.status === 404) {
-        setCallHistory([]);
-        setCustomerDetails(null);
-      } else {
-        setCallHistory([]);
-        setCustomerDetails(null);
-      }
+      setCallHistory([]);
+      setCustomerDetails(null);
     } finally {
       setLoadingHistory(false);
     }
@@ -136,7 +131,6 @@ const CallDetailsModal = ({
     return date.toISOString().split('T')[0];
   };
 
-  // Get today's date in YYYY-MM-DD format for max attribute
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
   };
@@ -249,13 +243,11 @@ const CallDetailsModal = ({
                   { label: "Alternate Mobile", value: getCustomerData('alternate_no'), important: true },
                   { label: "CRN No", value: getCustomerData('crnno'), important: true },
                   { label: "Loan No", value: getCustomerData('loan_no'), important: true },
-                  // Moved fields from right column
                   { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
                   { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
                   { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
                   { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
                   { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
-                  // End of moved fields
                   { label: "Customer A/c No", value: getCustomerData('customer_ac_no'), important: true },
                 ].map((item, index) => {
                   const displayValue = item.value === "--" ? "" : item.value;
@@ -263,7 +255,6 @@ const CallDetailsModal = ({
                   const isAmount = item.amount;
                   let formattedValue = displayValue;
                   
-                  // Format currency if it's an amount
                   if (isAmount && displayValue && displayValue !== "--") {
                     formattedValue = formatCurrency(displayValue);
                   }
@@ -271,45 +262,24 @@ const CallDetailsModal = ({
                   return (
                     <div 
                       key={index} 
-                      className="py-1 border-b border-gray-400 relative"
-                      style={{ 
-                        // Add CSS for copy-friendly display
+                      className="py-1 border-b border-gray-400"
+                      style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        gap: '8px'
                       }}
                     >
-                      {/* Label with pseudo-element for copy */}
-                      <span 
-                        className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                        style={{
-                          position: 'relative',
-                        }}
-                      >
-                        {/* Invisible text for copy that includes the colon */}
-                        <span 
-                          style={{
-                            position: 'absolute',
-                            width: '1px',
-                            height: '1px',
-                            padding: 0,
-                            margin: '-1px',
-                            overflow: 'hidden',
-                            clip: 'rect(0, 0, 0, 0)',
-                            whiteSpace: 'nowrap',
-                            border: 0,
-                          }}
-                          aria-hidden="true"
-                        >
-                          {item.label}:
+                      {/* Label with colon */}
+                      <div className="flex-shrink-0">
+                        <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                          {item.label}: 
                         </span>
-                        {/* Visible label without colon */}
-                        {item.label}
-                      </span>
+                      </div>
                       
-                      {/* Value */}
-                      <span 
-                        className={`text-right ${
+                      {/* Value with proper alignment */}
+                      <div className="flex-grow text-right min-w-0">
+                        <span className={`inline-block ${
                           isImportant 
                             ? isDark 
                               ? "text-white bg-blue-900/30 px-1 rounded font-bold" 
@@ -323,10 +293,10 @@ const CallDetailsModal = ({
                               : isDark 
                                 ? "text-gray-100" 
                                 : "text-gray-900"
-                        }`}
-                      >
-                        {formattedValue || "--"}
-                      </span>
+                        }`}>
+                          {formattedValue || "--"}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -346,7 +316,6 @@ const CallDetailsModal = ({
               
               <div className="space-y-2 text-sm">
                 {[
-                  // Remaining fields (removed the ones moved to left column)
                   { label: "Disburse Date", value: formatDate(getCustomerData('disburse_date')) },
                   { label: "Sanction Amount", value: getCustomerData('sanction_amount'), amount: true },
                   { label: "Disburse Amount", value: getCustomerData('disburse_amount'), amount: true },
@@ -358,7 +327,6 @@ const CallDetailsModal = ({
                   const isAmount = item.amount;
                   let formattedValue = displayValue;
                   
-                  // Format currency if it's an amount
                   if (isAmount && displayValue && displayValue !== "--") {
                     formattedValue = formatCurrency(displayValue);
                   }
@@ -366,44 +334,24 @@ const CallDetailsModal = ({
                   return (
                     <div 
                       key={index} 
-                      className="border-b border-gray-400 py-[1px] relative"
-                      style={{ 
+                      className="border-b border-gray-400 py-[1px]"
+                      style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        gap: '8px'
                       }}
                     >
-                      {/* Label with pseudo-element for copy */}
-                      <span 
-                        className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}
-                        style={{
-                          position: 'relative',
-                        }}
-                      >
-                        {/* Invisible text for copy that includes the colon */}
-                        <span 
-                          style={{
-                            position: 'absolute',
-                            width: '1px',
-                            height: '1px',
-                            padding: 0,
-                            margin: '-1px',
-                            overflow: 'hidden',
-                            clip: 'rect(0, 0, 0, 0)',
-                            whiteSpace: 'nowrap',
-                            border: 0,
-                          }}
-                          aria-hidden="true"
-                        >
-                          {item.label}:
+                      {/* Label with colon */}
+                      <div className="flex-shrink-0">
+                        <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                          {item.label}: 
                         </span>
-                        {/* Visible label without colon */}
-                        {item.label}
-                      </span>
+                      </div>
                       
-                      {/* Value */}
-                      <span 
-                        className={`text-right ${
+                      {/* Value with proper alignment */}
+                      <div className="flex-grow text-right min-w-0">
+                        <span className={`inline-block ${
                           isAmount && displayValue && !isNaN(parseFloat(displayValue))
                             ? isDark 
                               ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
@@ -411,10 +359,10 @@ const CallDetailsModal = ({
                             : isDark 
                               ? "text-gray-100" 
                               : "text-gray-900"
-                        }`}
-                      >
-                        {formattedValue || "--"}
-                      </span>
+                        }`}>
+                          {formattedValue || "--"}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}

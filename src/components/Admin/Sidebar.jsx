@@ -48,9 +48,9 @@ const menuList = [
       { name: 'Completed Application', link: '/crm/completed-application', icon: <MdDoneAll /> },
       { name: 'Pending Appliaction', link: '/crm/pending-application', icon: <FaHourglassHalf /> },
       { name: 'Rejected Appliaction', link: '/crm/rejected-application', icon: <MdCancel /> },
-      { name: 'Cancelled Appliaction', link: '/crm/cancelled-application', icon: <MdBlockFlipped /> },
-      { name: 'Returned Appliaction', link: '/crm/returned-application', icon: <LuFileOutput /> },
-      { name: 'Closed By Admin Appliaction', link: '/crm/closedbyadmin-application', icon: <UserLock /> },
+      // { name: 'Cancelled Appliaction', link: '/crm/cancelled-application', icon: <MdBlockFlipped /> },
+      // { name: 'Returned Appliaction', link: '/crm/returned-application', icon: <LuFileOutput /> },
+      // { name: 'Closed By Admin Appliaction', link: '/crm/closedbyadmin-application', icon: <UserLock /> },
 
 
 
@@ -113,6 +113,12 @@ const menuList = [
   { name: 'Download App', link: '/crm/download-app', icon: <MdDownload /> },
   { name: 'Notifications', link: '/crm/notifications', icon: <IoMdNotifications /> },
   { name: 'References', link: '/crm/references', icon: <VscReferences /> },
+  { name: 'Help Ticket', link: '/crm/help-ticket', icon: <MdSupportAgent /> },
+  { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
+  { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
+
+  { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
+  { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
   {
     name: 'Business Loan Enquiry',
     icon: <FaMoneyCheckAlt />,
@@ -123,12 +129,6 @@ const menuList = [
     ]
   },
 
-  { name: 'Help Ticket', link: '/crm/help-ticket', icon: <MdSupportAgent /> },
-  { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
-  { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
-  { name: 'Blogs', link: '/crm/blogs', icon: <SiBlogger /> },
-
-  { name: 'Reviews', link: '/crm/reviews', icon: <MdReviews /> },
 
 
 
