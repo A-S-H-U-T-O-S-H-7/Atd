@@ -644,14 +644,104 @@ const ApplicationRow = ({
         <span className={`text-sm font-semibold ${textAccent}`}>
           {application.emandateStatus}
         </span>
-      </td>
+      </td> 
 
       {/* ICICI Emandate Status */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.iciciEmandateStatus}
-        </span>
-      </td>   
+<td className={cellStyle}>
+  {(() => {
+    // Parse account number from enach_details string
+    let customerAccount = null;
+    if (application.enachDetails?.details) {
+      const match = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
+      if (match) {
+        customerAccount = match[1];
+      }
+    }
+    
+    const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
+    
+    return (
+      <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
+        isDark 
+          ? "bg-gray-800/50 border border-gray-700/50" 
+          : "bg-gray-50 border border-gray-200"
+      }`}>
+        
+        {/* Status with Badge */}
+        <div className="flex items-center space-x-1.5">
+          <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
+            application.enachDetails?.status === "Success" 
+              ? "bg-green-500 text-white" 
+              : application.enachDetails?.status === "Failed"
+              ? "bg-red-500 text-white"
+              : "bg-yellow-500 text-white"
+          }`}>
+            {application.enachDetails?.status === "Success" 
+              ? "✓"
+              : application.enachDetails?.status === "Failed"
+              ? "✕"
+              : "⋯"
+            }
+          </div>
+          <span className={`text-sm font-semibold ${
+            application.enachDetails?.status === "Success" 
+              ? isDark ? "text-green-400" : "text-green-700"
+              : application.enachDetails?.status === "Failed"
+              ? isDark ? "text-red-400" : "text-red-700"
+              : isDark ? "text-yellow-400" : "text-yellow-700"
+          }`}>
+            {application.enachDetails?.status || "Pending"}
+          </span>
+        </div>
+        
+        {/* Date and Time */}
+        {application.enachDetails?.date && (
+          <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <div className="font-medium">{application.enachDetails.date}</div>
+            {application.enachDetails?.time && (
+              <div className={isDark ? "text-gray-400" : "text-gray-500"}>
+                {application.enachDetails.time}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Account No with Verification Badge - Only show if not pending */}
+        {!isPending && customerAccount && (
+          <div className="flex items-center space-x-1.5">
+            <div className={`text-sm font-mono font-semibold ${
+              isDark ? "text-rose-400" : "text-rose-600"
+            }`}>
+              {customerAccount}
+            </div>
+            {application.customerAcVerified === "Yes" && (
+              <div className="flex items-center justify-center w-4 h-4 rounded-full bg-green-500 flex-shrink-0">
+                <span className="text-white text-[10px] font-bold">✓</span>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* CRN No - Only show if not pending */}
+        {!isPending && (
+          <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+            <span className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>CRN - </span>
+            <span className="font-medium">{application.crnNo || "N/A"}</span>
+          </div>
+        )}
+        
+        {/* Customer Name - Only show if not pending */}
+        {!isPending && (
+          <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+            <span className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Customer - </span>
+            <span className="font-medium">{application.name || "N/A"}</span>
+          </div>
+        )}
+        
+      </div>
+    );
+  })()}
+</td>
 
       {/* Bank A/c Verification */}
       <td className={cellStyle}>

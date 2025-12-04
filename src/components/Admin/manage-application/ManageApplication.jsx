@@ -77,7 +77,7 @@ const ManageApplication = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 10; 
 
   const SearchOptions = [
   { value: 'loan_no', label: 'Loan No' },

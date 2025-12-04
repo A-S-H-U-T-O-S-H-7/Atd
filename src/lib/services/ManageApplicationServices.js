@@ -64,6 +64,7 @@ export const formatManageApplicationForUI = (application) => {
   const dueDate = application.duedate ? new Date(application.duedate) : null;
   const transactionDate = application.transaction_date ? new Date(application.transaction_date) : null;
   const closedDate = application.closed_date ? new Date(application.closed_date) : null;
+  const enachDetails = application.enach_details || {};
 
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
@@ -177,7 +178,14 @@ export const formatManageApplicationForUI = (application) => {
     loanStatus: getStatusName(application.loan_status),
     loanStatusId: application.loan_status, 
     emandateStatus: application.emandatestatus || "Pending",
-    iciciEmandateStatus: application.emandatestatus || "Pending",
+    iciciEmandateStatus: enachDetails.status || "Pending",
+    enachDetails: {
+      status: enachDetails.status || "Pending",
+      enacheId: enachDetails.enache_id,
+      transactionId: enachDetails.enach_transaction_id,
+      date: enachDetails.enach_date,
+      details: enachDetails.enach_details
+    },
     chequeNo: application.cheque_no,
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
@@ -186,8 +194,8 @@ export const formatManageApplicationForUI = (application) => {
     emandateVerificationRaw: application.emandateverification,    readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
     refundPdc: application.refund_pdc || "Update",
     settled: application.settled || "-",
-
-    // Bank verification and disburse approval (same as credit approval)
+    
+    // Bank verification and disburse approval 
     bankVerification: application.bank_veried === 1 ? "verified" : "not_verified",
     disburseApproval: application.credit_approval === 1 ? "approved" : "not_approved",
     bankVerifiedRaw: application.bank_veried,

@@ -27,7 +27,8 @@ export const sanctionApplicationAPI = {
 export const formatSanctionApplicationForUI = (application) => {
   const enquiryDate = application.created_at ? new Date(application.created_at) : new Date();
   const approvedDate = application.approved_date ? new Date(application.approved_date) : null;
-  
+  const enachDetails = application.enach_details || {};
+
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
   
@@ -111,7 +112,14 @@ export const formatSanctionApplicationForUI = (application) => {
     approvalNote: application.approval_note,
     loanStatus: getStatusName(application.loan_status),
     emandateStatus: application.emandateverification || "Pending",
-    iciciEmandateStatus: application.emandatestatus || "Pending",
+    iciciEmandateStatus: enachDetails.status || "Pending",
+    enachDetails: {
+      status: enachDetails.status || "Pending",
+      enacheId: enachDetails.enache_id,
+      transactionId: enachDetails.enach_transaction_id,
+      date: enachDetails.enach_date,
+      details: enachDetails.enach_details
+    },
     chequeNo: application.cheque_no, 
     sendToCourier: application.send_courier === 1 ? "Yes" : "No",
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
