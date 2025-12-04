@@ -625,12 +625,7 @@ const DisburseRow = ({
         />
       </td>
 
-      {/* Emandate Status */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${textAccent}`}>
-          {application.emandateStatus}
-        </span>
-      </td>
+      
 
       {/* ICICI Emandate Status */}
 <td className={cellStyle}>

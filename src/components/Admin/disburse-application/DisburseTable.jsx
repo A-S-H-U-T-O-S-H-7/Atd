@@ -88,7 +88,6 @@ const DisburseTable = ({
     { label: "Loan Term", width: "100px" },
     { label: "Customer A/c Verified", width: "100px" },
     { label: "Sanction Letter", width: "140px" },
-    { label: "Emandate Status", width: "100px" },
     { label: "ICICI Emandate Status", width: "180px" },
 
     { label: "Bank A/c Verification", width: "120px" },

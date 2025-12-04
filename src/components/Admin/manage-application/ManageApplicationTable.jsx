@@ -85,11 +85,10 @@ const ManageApplicationTable = ({
         { label: "Disbursal Account", width: "160px" },
         { label: "Customer A/c Verified", width: "180px" },
         { label: "Sanction Letter", width: "120px" },
-        { label: "Emandate Status", width: "100px" },
         { label: "ICICI Emandate Status", width: "180px" },
         { label: "Bank A/c Verification", width: "180px" },
         { label: "Disburse Approval", width: "160px" },
-          { label: "Disburse", width: "100px" },
+        { label: "Disburse", width: "100px" },
         { label: "Collection", width: "150px" },
 
         // { label: "Change Status", width: "200px" },
