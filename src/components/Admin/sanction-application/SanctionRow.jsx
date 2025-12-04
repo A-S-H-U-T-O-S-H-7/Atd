@@ -603,8 +603,7 @@ const SanctionRow = ({
         />
       </td>
 
-      
-
+    
 {/* ICICI Emandate Status */}
 <td className={cellStyle}>
   {(() => {

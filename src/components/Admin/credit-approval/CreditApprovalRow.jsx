@@ -626,19 +626,36 @@ const getLoanStatusClassName = (application) => {
 
       
 
-      {/* ICICI Emandate Status */}
+     {/* ICICI Emandate Status */}
 <td className={cellStyle}>
   {(() => {
-    // Parse account number from enach_details string
+    // Parse account numbers from enach_details string
+    let enachAccount = null;
     let customerAccount = null;
+    
     if (application.enachDetails?.details) {
-      const match = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
-      if (match) {
-        customerAccount = match[1];
+      // Extract enach_ac_no from enach_details
+      const enachMatch = application.enachDetails.details.match(/enach_ac_no:\s*(\d+)/);
+      if (enachMatch) {
+        enachAccount = enachMatch[1];
+      }
+      
+      // Extract customer_ac_no from enach_details
+      const customerMatch = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
+      if (customerMatch) {
+        customerAccount = customerMatch[1];
       }
     }
     
+    // Fetch CRM account number from the application data
+    // Assuming it's in disbursal_account field
+    const crmAccount = application.disbursalAccount;
+    
+    // Check if account numbers match
+    const accountsMatch = enachAccount && crmAccount && enachAccount === crmAccount;
+    
     const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
+    const isSuccess = application.enachDetails?.status === "Success";
     
     return (
       <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
@@ -686,29 +703,53 @@ const getLoanStatusClassName = (application) => {
           </div>
         )}
         
-        {/* Account No with Verification Badge - Only show if not pending */}
-        {!isPending && customerAccount && (
-          <div className="flex items-center space-x-1.5">
-            <div className={`text-sm font-mono font-semibold ${
-              isDark ? "text-rose-400" : "text-rose-600"
-            }`}>
-              {customerAccount}
-            </div>
-            {application.customerAcVerified === "Yes" && (
-              <div className="flex items-center justify-center w-4 h-4 rounded-full bg-green-500 flex-shrink-0">
-                <span className="text-white text-[10px] font-bold">✓</span>
+        {/* Account Numbers Comparison - Only show if not pending and status is Success */}
+        {!isPending && isSuccess && (
+          <div className="space-y-1.5 pt-1">
+            
+            
+            {/* E-Nach Account Number */}
+            <div className="flex items-center justify-between">
+              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Account:</span>
+              <div className="flex items-center space-x-1.5">
+                <span className={`text-xs font-mono font-semibold ${
+                  isDark ? "text-blue-300" : "text-blue-600"
+                }`}>
+                  {enachAccount || "N/A"}
+                </span>
+                {enachAccount && crmAccount && (
+                  <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
+                    accountsMatch ? "bg-green-500" : "bg-red-500"
+                  }`}>
+                    <span className="text-white text-[10px] font-bold">
+                      {accountsMatch ? "✓" : "✕"}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            
+            {/* Customer Account Number */}
+            <div className="flex items-center justify-between">
+              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Customer Ac:</span>
+              <div className="flex items-center space-x-1.5">
+                <span className={`text-xs font-mono font-semibold ${
+                  isDark ? "text-amber-300" : "text-amber-600"
+                }`}>
+                  {customerAccount || "N/A"}
+                </span>
+                {/* Customer Account Verification */}
+                {application.customerAcVerified === "Yes" && (
+                  <div className="flex items-center justify-center w-4 h-4 rounded-full bg-green-500 flex-shrink-0">
+                    <span className="text-white text-[10px] font-bold">✓</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
         
-        {/* CRN No - Only show if not pending */}
-        {!isPending && (
-          <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-            <span className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>CRN - </span>
-            <span className="font-medium">{application.crnNo || "N/A"}</span>
-          </div>
-        )}
+        
         
         {/* Customer Name - Only show if not pending */}
         {!isPending && (
@@ -721,7 +762,7 @@ const getLoanStatusClassName = (application) => {
       </div>
     );
   })()}
-</td>
+  </td>
 
       {/* NEW: Bank A/c Verification */}
 <td className={cellStyle}>
