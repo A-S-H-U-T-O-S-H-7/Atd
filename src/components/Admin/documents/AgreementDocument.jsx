@@ -34,7 +34,7 @@ const AgreementDocument = ({
         'cibil_score_report': 'reports',
         'pdc': 'pdc',
         'nach_form': 'nach-form',
-        'agreement': 'agreement', // Add agreement folder mapping
+        'agreement': 'agreement', 
       };
 
       // Determine document category from component context
@@ -58,10 +58,7 @@ const AgreementDocument = ({
         alert('Popup blocked! Please allow popups for this site.');
       }
 
-      // Call the original onFileView if provided (for tracking/analytics)
-      if (typeof onFileView === 'function') {
-        onFileView(fileName, documentCategory);
-      }
+      
 
     } catch (error) {
       console.error("Failed to load file:", error);

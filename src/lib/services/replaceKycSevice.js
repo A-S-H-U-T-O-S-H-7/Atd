@@ -51,10 +51,10 @@ export const FOLDER_MAPPINGS = {
   'cam_sheet': 'reports',
   'social_score_report': 'reports',
   'cibil_score_report': 'reports',
-  'nach_form': 'documents',
-  'pdc': 'documents',
-  'aggrement': 'documents',
-  'video': 'video'
+  'nach_form': 'nach-form',
+  'pdc': 'pdc',                      
+  'aggrement': 'agreement',          
+  'video': 'video-kyc' 
 };
 
 export const kycService = {

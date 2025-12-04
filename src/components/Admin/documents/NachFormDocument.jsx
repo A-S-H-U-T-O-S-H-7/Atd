@@ -57,10 +57,6 @@ const NachFormDocument = ({
         alert('Popup blocked! Please allow popups for this site.');
       }
 
-      // Call the original onFileView if provided (for tracking/analytics)
-      if (typeof onFileView === 'function') {
-        onFileView(fileName, documentCategory);
-      }
 
     } catch (error) {
       console.error("Failed to load file:", error);
