@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Users, Plus, Trash2, Home, Building } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { salaryVerificationService } from '@/lib/services/appraisal/salaryVerificationService';
 import { incomeVerificationSchema } from '@/lib/schema/salaryValidationSchemas';
 
 const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [localFamilyMembers, setLocalFamilyMembers] = useState([]);
   const [submittingSalary, setSubmittingSalary] = useState(false);
+  const [userManuallyChangedFinalReport, setUserManuallyChangedFinalReport] = useState(false);
 
   // Sync with formik values when component mounts or familyMembers changes from parent
   useEffect(() => {
@@ -32,6 +32,98 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       }
     });
   }, []);
+
+  // Handle verified status change for organization, gross salary, and net salary
+  const handleVerifiedChange = (field, value) => {
+    // Set the verified field
+    formik.setFieldValue(field, value);
+    
+    // Determine corresponding status field
+    const statusFieldMap = {
+      organizationSameAsApplied: 'organizationSameAsAppliedStatus',
+      grossAmountSalary: 'grossAmountSalaryStatus',
+      netAmountSalary: 'netAmountSalaryStatus'
+    };
+    
+    const statusField = statusFieldMap[field];
+    if (statusField) {
+      // Auto-set status based on verified selection
+      if (value === 'Yes') {
+        formik.setFieldValue(statusField, 'Positive');
+      } else if (value === 'No') {
+        formik.setFieldValue(statusField, 'Negative');
+      } else {
+        // If cleared, also clear status
+        formik.setFieldValue(statusField, '');
+      }
+    }
+  };
+
+  // Handle final report change - track manual changes
+  const handleFinalReportChange = (e) => {
+    const value = e.target.value;
+    formik.setFieldValue('incomeVerificationFinalReport', value);
+    setUserManuallyChangedFinalReport(true);
+  };
+
+  // Auto-update final report based on verifications and required fields - ONLY if user hasn't manually changed it
+  useEffect(() => {
+    // If user manually changed final report, don't auto-update
+    if (userManuallyChangedFinalReport) {
+      return;
+    }
+
+    const allCriticalVerified = 
+      formik.values.organizationSameAsApplied === 'Yes' &&
+      formik.values.organizationSameAsAppliedStatus === 'Positive' &&
+      formik.values.grossAmountSalary === 'Yes' &&
+      formik.values.grossAmountSalaryStatus === 'Positive' &&
+      formik.values.netAmountSalary === 'Yes' &&
+      formik.values.netAmountSalaryStatus === 'Positive';
+
+    // Check required fields
+    const requiredFieldsFilled = 
+      formik.values.salaryDate &&
+      formik.values.salaryDate.trim() !== '' &&
+      formik.values.monthsOfEmployment &&
+      formik.values.monthsOfEmployment.toString().trim() !== '' &&
+      formik.values.selfReportedMonthlyIncome &&
+      formik.values.selfReportedMonthlyIncome.toString().trim() !== '';
+
+    // Set to Positive if all conditions met
+    if (allCriticalVerified && requiredFieldsFilled && formik.values.incomeVerificationFinalReport !== 'Positive') {
+      formik.setFieldValue('incomeVerificationFinalReport', 'Positive');
+    }
+
+    // Set to Negative if any critical verification is negative
+    const hasCriticalNegative = 
+      formik.values.organizationSameAsApplied === 'No' ||
+      formik.values.organizationSameAsAppliedStatus === 'Negative' ||
+      formik.values.grossAmountSalary === 'No' ||
+      formik.values.grossAmountSalaryStatus === 'Negative' ||
+      formik.values.netAmountSalary === 'No' ||
+      formik.values.netAmountSalaryStatus === 'Negative';
+      
+    if (hasCriticalNegative && formik.values.incomeVerificationFinalReport !== 'Negative') {
+      formik.setFieldValue('incomeVerificationFinalReport', 'Negative');
+    }
+  }, [formik.values, userManuallyChangedFinalReport]);
+
+  // Reset manual change flag when component mounts or when verification fields are cleared
+  useEffect(() => {
+    // Reset manual change if all verification fields are empty/not set
+    const allFieldsEmpty = 
+      !formik.values.organizationSameAsApplied &&
+      !formik.values.grossAmountSalary &&
+      !formik.values.netAmountSalary &&
+      !formik.values.salaryDate &&
+      !formik.values.monthsOfEmployment &&
+      !formik.values.selfReportedMonthlyIncome;
+    
+    if (allFieldsEmpty) {
+      setUserManuallyChangedFinalReport(false);
+    }
+  }, [formik.values]);
 
   const inputClassName = `w-full px-3 py-2 rounded-lg border transition-all duration-200 text-sm ${
     isDark
@@ -146,6 +238,22 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
         return;
       }
       
+      // Validate required fields are filled
+      if (!formik.values.salaryDate || formik.values.salaryDate.trim() === '') {
+        toast.error('Salary date is required');
+        return;
+      }
+
+      if (!formik.values.monthsOfEmployment || formik.values.monthsOfEmployment.toString().trim() === '') {
+        toast.error('Months of employment is required');
+        return;
+      }
+
+      if (!formik.values.selfReportedMonthlyIncome || formik.values.selfReportedMonthlyIncome.toString().trim() === '') {
+        toast.error('Self-reported monthly income is required');
+        return;
+      }
+      
       // Validate contact numbers before saving
       const invalidContacts = localFamilyMembers.filter(member => 
         member.contactNo && member.contactNo.length !== 10
@@ -166,7 +274,6 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       }
       
     } catch (error) {
-      console.error('Error saving income verification:', error);
       toast.error('Failed to save income verification data');
     } finally {
       setSubmittingSalary(false);
@@ -198,7 +305,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   <div className="flex items-center space-x-2">
                     <select
                       value={formik.values.organizationSameAsApplied || ''}
-                      onChange={(e) => formik.setFieldValue('organizationSameAsApplied', e.target.value)}
+                      onChange={(e) => handleVerifiedChange('organizationSameAsApplied', e.target.value)}
                       className={selectClassName}
                     >
                       <option value="">Verified</option>
@@ -233,7 +340,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     <div>
                       <select
                         value={formik.values.grossAmountSalary || ''}
-                        onChange={(e) => formik.setFieldValue('grossAmountSalary', e.target.value)}
+                        onChange={(e) => handleVerifiedChange('grossAmountSalary', e.target.value)}
                         className={selectClassName}
                       >
                         <option value="">Verified</option>
@@ -271,7 +378,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
                     <div>
                       <select
                         value={formik.values.netAmountSalary || ''}
-                        onChange={(e) => formik.setFieldValue('netAmountSalary', e.target.value)}
+                        onChange={(e) => handleVerifiedChange('netAmountSalary', e.target.value)}
                         className={selectClassName}
                       >
                         <option value="">Verified</option>
@@ -440,8 +547,6 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
               </div>
             </div>
 
-            
-
             {/* Employment Details Block */}
             <div className={`${fieldClassName}`}>
               <label className={labelClassName}>Employment Details</label>
@@ -488,19 +593,20 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
             {/* Final Report Block */}
             <div className={`${fieldClassName}`}>
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6">
-                <div className=" w-50">
+                <div className="w-50">
                   <label className={`text-sm font-semibold mb-2 block ${isDark ? "text-blue-500" : "text-blue-700"}`}>
                     Final Report
                   </label>
                   <select
                     value={formik.values.incomeVerificationFinalReport || ''}
-                    onChange={(e) => formik.setFieldValue('incomeVerificationFinalReport', e.target.value)}
+                    onChange={handleFinalReportChange}
                     className={selectClassName}
                   >
                     <option value="">Select Final Report</option>
                     <option value="Positive">Positive</option>
                     <option value="Negative">Negative</option>
                   </select>
+                  
                 </div>
 
                 <div className="w-full lg:w-auto">

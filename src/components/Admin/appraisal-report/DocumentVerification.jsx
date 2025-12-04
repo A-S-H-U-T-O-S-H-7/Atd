@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Shield, Phone, IdCard, CreditCard, Download, ExternalLink, User, Mail, Users, Save, Loader2 } from 'lucide-react';
 import personalVerificationService from '@/lib/services/appraisal/personalVerificationService';
 import { documentVerificationSchema } from '@/lib/schema/documentVerificationSchema';
@@ -10,11 +10,12 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [aadharVerifying, setAadharVerifying] = useState(false);
   const [submittingDocument, setSubmittingDocument] = useState(false);
   const [reportModal, setReportModal] = useState({
-  isOpen: false,
-  type: null, 
-  data: null,
-  loading: false
-});
+    isOpen: false,
+    type: null, 
+    data: null,
+    loading: false
+  });
+  const [userManuallyChangedFinalReport, setUserManuallyChangedFinalReport] = useState(false);
 
   // Styling classes
   const fieldClassName = `p-4 rounded-lg border transition-all duration-200 ${
@@ -61,8 +62,46 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
       : "bg-white border-gray-300 text-gray-900 hover:border-blue-400 focus:border-blue-500"
   } outline-none w-full`;
 
-  // Auto-update final report based on all verifications
+  // Handle verified status change for phone, PAN, and Aadhar
+  const handleVerifiedChange = (field, value) => {
+    // Set the verified field
+    formik.setFieldValue(field, value);
+    
+    // Determine corresponding status field
+    const statusFieldMap = {
+      personal_phone: 'phone_status',
+      personal_pan: 'pan_status',
+      personal_aadhar: 'aadhar_status'
+    };
+    
+    const statusField = statusFieldMap[field];
+    if (statusField) {
+      // Auto-set status based on verified selection
+      if (value === 'Yes') {
+        formik.setFieldValue(statusField, 'Positive');
+      } else if (value === 'No') {
+        formik.setFieldValue(statusField, 'Negative');
+      } else {
+        // If cleared, also clear status
+        formik.setFieldValue(statusField, '');
+      }
+    }
+  };
+
+  // Handle final report change - track manual changes
+  const handleFinalReportChange = (e) => {
+    const value = e.target.value;
+    formik.setFieldValue('personal_final_report', value);
+    setUserManuallyChangedFinalReport(true);
+  };
+
+  // Auto-update final report based on all verifications - ONLY if user hasn't manually changed it
   useEffect(() => {
+    // If user manually changed final report, don't auto-update
+    if (userManuallyChangedFinalReport) {
+      return;
+    }
+
     const allVerified = 
       formik.values.personal_phone === 'Yes' &&
       formik.values.phone_status === 'Positive' &&
@@ -87,6 +126,23 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
       
     if (hasCriticalNegative && formik.values.personal_final_report !== 'Negative') {
       formik.setFieldValue('personal_final_report', 'Negative');
+    }
+  }, [formik.values, userManuallyChangedFinalReport]);
+
+  // Reset manual change flag when component mounts or when verification fields are cleared
+  useEffect(() => {
+    // Reset manual change if all verification fields are empty/not set
+    const allFieldsEmpty = 
+      !formik.values.personal_phone &&
+      !formik.values.personal_pan &&
+      !formik.values.personal_aadhar &&
+      !formik.values.personal_ref_name &&
+      !formik.values.personal_ref_mobile &&
+      !formik.values.personal_ref_email &&
+      !formik.values.personal_ref_relation;
+    
+    if (allFieldsEmpty) {
+      setUserManuallyChangedFinalReport(false);
     }
   }, [formik.values]);
 
@@ -137,7 +193,6 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
         toast.error(response?.message || 'PAN verification failed');
       }
     } catch (error) {
-      console.error('PAN verification error:', error);
       toast.error(error?.response?.data?.message || 'PAN verification failed');
     } finally {
       setPanVerifying(false);
@@ -175,138 +230,99 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
         toast.error(response?.message || 'Aadhar verification failed');
       }
     } catch (error) {
-      console.error('Aadhar verification error:', error);
       toast.error(error?.response?.data?.message || 'Aadhar verification failed');
     } finally {
       setAadharVerifying(false);
     }
   };
 
-const handleReportClick = async (type) => {
-  console.log('=== REPORT BUTTON CLICKED ===');
-  console.log('Button type:', type);
-  console.log('Form values:', {
-    applicationId: formik.values.applicationId,
-    crnNo: formik.values.crnNo,
-    panNo: formik.values.panNo,
-    aadharNo: formik.values.aadharNo
-  });
-
-  // Validate required fields
-  if (!formik.values.applicationId) {
-    console.error('❌ Validation failed: Application ID missing');
-    toast.error('Application ID is required');
-    return;
-  }
-
-  if (type === 'pan' && !formik.values.panNo) {
-    console.error('❌ Validation failed: PAN number missing');
-    toast.error('PAN number is required');
-    return;
-  }
-
-  if (type === 'aadhar' && !formik.values.aadharNo) {
-    console.error('❌ Validation failed: Aadhar number missing');
-    toast.error('Aadhar number is required');
-    return;
-  }
-
-  console.log('✅ All validations passed');
-
-  // Open modal immediately
-  setReportModal({
-    isOpen: true,
-    type: type,
-    data: null,
-    loading: true
-  });
-
-  try {
-    console.log(`🚀 Starting ${type} verification API call...`);
-    
-    let response;
-    const requestData = {
-      application_id: parseInt(formik.values.applicationId),
-      crnno: formik.values.crnNo || '',
-    };
-
-    if (type === 'pan') {
-      requestData.pan_no = formik.values.panNo.toUpperCase().trim();
-      console.log('📤 PAN API Request Data:', requestData);
-      console.log('🔗 Calling personalVerificationService.verifyPAN...');
-      
-      response = await personalVerificationService.verifyPAN(requestData);
-      console.log('📥 PAN API Response:', response);
-      
-    } else if (type === 'aadhar') {
-      requestData.aadhar_no = formik.values.aadharNo;
-      console.log('📤 Aadhar API Request Data:', requestData);
-      console.log('🔗 Calling personalVerificationService.verifyAadhar...');
-      
-      response = await personalVerificationService.verifyAadhar(requestData);
-      console.log('📥 Aadhar API Response:', response);
+  const handleReportClick = async (type) => {
+    // Validate required fields
+    if (!formik.values.applicationId) {
+      toast.error('Application ID is required');
+      return;
     }
 
-    console.log('🎯 Final processed response:', response);
-    
-    // Update modal with response data
-    setReportModal(prev => ({
-      ...prev,
-      data: response,
-      loading: false
-    }));
-    
-    // Auto-update verification status based on response
-    if (response?.success) {
-      console.log('✅ Verification successful, updating form...');
-      if (type === 'pan') {
-        formik.setFieldValue('personal_pan', 'Yes');
-        formik.setFieldValue('pan_status', 'Positive');
-        toast.success('PAN verification completed successfully');
-      } else if (type === 'aadhar') {
-        formik.setFieldValue('personal_aadhar', 'Yes');
-        formik.setFieldValue('aadhar_status', 'Positive');
-        toast.success('Aadhar verification completed successfully');
-      }
-    } else {
-      console.warn('⚠️ Verification failed:', response?.message);
-      toast.error(response?.message || `${type.toUpperCase()} verification failed`);
+    if (type === 'pan' && !formik.values.panNo) {
+      toast.error('PAN number is required');
+      return;
     }
-  } catch (error) {
-    console.error('💥 API Call Error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      response: error.response,
-      request: error.request
+
+    if (type === 'aadhar' && !formik.values.aadharNo) {
+      toast.error('Aadhar number is required');
+      return;
+    }
+
+    // Open modal immediately
+    setReportModal({
+      isOpen: true,
+      type: type,
+      data: null,
+      loading: true
     });
-    
-    const errorResponse = {
-      success: false,
-      message: error?.message || `${type.toUpperCase()} verification failed. Please try again.`,
-      data: null
-    };
-    
-    setReportModal(prev => ({
-      ...prev,
-      data: errorResponse,
-      loading: false
-    }));
-    
-    toast.error(errorResponse.message);
-  }
-};
 
-// Close modal handler
-const handleCloseModal = () => {
-  setReportModal({
-    isOpen: false,
-    type: null,
-    data: null,
-    loading: false
-  });
-};
+    try {
+      let response;
+      const requestData = {
+        application_id: parseInt(formik.values.applicationId),
+        crnno: formik.values.crnNo || '',
+      };
+
+      if (type === 'pan') {
+        requestData.pan_no = formik.values.panNo.toUpperCase().trim();
+        response = await personalVerificationService.verifyPAN(requestData);
+      } else if (type === 'aadhar') {
+        requestData.aadhar_no = formik.values.aadharNo;
+        response = await personalVerificationService.verifyAadhar(requestData);
+      }
+      
+      // Update modal with response data
+      setReportModal(prev => ({
+        ...prev,
+        data: response,
+        loading: false
+      }));
+      
+      // Auto-update verification status based on response
+      if (response?.success) {
+        if (type === 'pan') {
+          formik.setFieldValue('personal_pan', 'Yes');
+          formik.setFieldValue('pan_status', 'Positive');
+          toast.success('PAN verification completed successfully');
+        } else if (type === 'aadhar') {
+          formik.setFieldValue('personal_aadhar', 'Yes');
+          formik.setFieldValue('aadhar_status', 'Positive');
+          toast.success('Aadhar verification completed successfully');
+        }
+      } else {
+        toast.error(response?.message || `${type.toUpperCase()} verification failed`);
+      }
+    } catch (error) {
+      const errorResponse = {
+        success: false,
+        message: error?.message || `${type.toUpperCase()} verification failed. Please try again.`,
+        data: null
+      };
+      
+      setReportModal(prev => ({
+        ...prev,
+        data: errorResponse,
+        loading: false
+      }));
+      
+      toast.error(errorResponse.message);
+    }
+  };
+
+  // Close modal handler
+  const handleCloseModal = () => {
+    setReportModal({
+      isOpen: false,
+      type: null,
+      data: null,
+      loading: false
+    });
+  };
 
   // Save document verification
   const handleSaveDocumentVerification = async () => {
@@ -335,7 +351,6 @@ const handleCloseModal = () => {
       }
       
     } catch (error) {
-      console.error('Error in document verification:', error);
       toast.error(error?.response?.data?.message || 'Error saving document verification');
     } finally {
       setSubmittingDocument(false);
@@ -403,7 +418,7 @@ const handleCloseModal = () => {
                   </div>
                   <select
                     value={formik.values.personal_phone}
-                    onChange={(e) => formik.setFieldValue('personal_phone', e.target.value)}
+                    onChange={(e) => handleVerifiedChange('personal_phone', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -434,7 +449,7 @@ const handleCloseModal = () => {
                   </div>
                   <select
                     value={formik.values.personal_pan}
-                    onChange={(e) => formik.setFieldValue('personal_pan', e.target.value)}
+                    onChange={(e) => handleVerifiedChange('personal_pan', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -452,15 +467,15 @@ const handleCloseModal = () => {
                   </select>
                 </div>
                 <div className="flex space-x-2 mt-2">
-  <button
-    type="button"
-    onClick={() => handleReportClick('pan')}
-    className={reportButtonClassName}
-  >
-    <Download className="w-3 h-3" />
-    <span>Report</span>
-  </button>
-</div>
+                  <button
+                    type="button"
+                    onClick={() => handleReportClick('pan')}
+                    className={reportButtonClassName}
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Report</span>
+                  </button>
+                </div>
               </div>
 
               {/* Aadhar Verification */}
@@ -475,7 +490,7 @@ const handleCloseModal = () => {
                   </div>
                   <select
                     value={formik.values.personal_aadhar}
-                    onChange={(e) => formik.setFieldValue('personal_aadhar', e.target.value)}
+                    onChange={(e) => handleVerifiedChange('personal_aadhar', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Verified</option>
@@ -493,29 +508,29 @@ const handleCloseModal = () => {
                   </select>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-  <button
-    type="button"
-    onClick={() => handleReportClick('aadhar')}
-    className={reportButtonClassName}
-  >
-    <Download className="w-3 h-3" />
-    <span>Report</span>
-  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleReportClick('aadhar')}
+                    className={reportButtonClassName}
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Report</span>
+                  </button>
 
-  {/* link */}
-  <button
-    type="button"
-    onClick={() => window.open('https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status', '_blank')}
-    className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-xs ${
-      isDark
-        ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-        : "bg-emerald-600 hover:bg-emerald-700 text-white"
-    }`}
-  >
-    <ExternalLink className="w-3 h-3" />
-    <span>Aadhar-PAN Link Status</span>
-  </button>
-</div>
+                  {/* Aadhar-PAN Link Status Button */}
+                  <button
+                    type="button"
+                    onClick={() => window.open('https://eportal.incometax.gov.in/iec/foservices/#/pre-login/link-aadhaar-status', '_blank')}
+                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 text-xs ${
+                      isDark
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Aadhar-PAN Link Status</span>
+                  </button>
+                </div>
               </div>
             </div>  
 
@@ -630,7 +645,7 @@ const handleCloseModal = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <select
                 value={formik.values.personal_final_report}
-                onChange={(e) => formik.setFieldValue('personal_final_report', e.target.value)}
+                onChange={handleFinalReportChange}
                 className={finalReportSelectClassName}
               >
                 <option value="">Select Final Verification Status</option>
@@ -638,9 +653,10 @@ const handleCloseModal = () => {
                 <option value="Negative">Negative</option>
               </select>
             </div>
+            
           </div>
 
-          {/* Save Button - ALWAYS ENABLED */}
+          {/* Save Button */}
           <div className="w-full lg:w-auto">
             <button
               type="button"
@@ -665,19 +681,20 @@ const handleCloseModal = () => {
           </div>
         </div>
       </div>
+      
       <DocumentReportModal
-  isOpen={reportModal.isOpen}
-  onClose={handleCloseModal}
-  reportType={reportModal.type}
-  reportData={reportModal.data}
-  loadingReport={reportModal.loading}
-  isDark={isDark}
-  documentNumber={
-    reportModal.type === 'pan' 
-      ? formik.values.panNo 
-      : formik.values.aadharNo
-  }
-/>
+        isOpen={reportModal.isOpen}
+        onClose={handleCloseModal}
+        reportType={reportModal.type}
+        reportData={reportModal.data}
+        loadingReport={reportModal.loading}
+        isDark={isDark}
+        documentNumber={
+          reportModal.type === 'pan' 
+            ? formik.values.panNo 
+            : formik.values.aadharNo
+        }
+      />
     </div>
   );
 };

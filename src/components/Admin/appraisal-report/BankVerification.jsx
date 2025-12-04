@@ -12,6 +12,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.bankVerificationRemark || '');
   const [bankData, setBankData] = useState(null);
   const [loadingBankData, setLoadingBankData] = useState(false);
+  const [userManuallyChangedFinalReport, setUserManuallyChangedFinalReport] = useState(false);
   const timeoutRef = useRef(null);
 
   // CSS Classes
@@ -67,6 +68,94 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
     
     loadBankData();
   }, [formik.values.applicationId]);
+
+  // Handle verified status change for bank fields
+  const handleVerifiedChange = (verifiedField, statusField, value) => {
+    // Set the verified field
+    formik.setFieldValue(verifiedField, value);
+    
+    // Auto-set status based on verified selection
+    if (value === 'Yes') {
+      formik.setFieldValue(statusField, 'Positive');
+    } else if (value === 'No') {
+      formik.setFieldValue(statusField, 'Negative');
+    } else {
+      // If cleared, also clear status
+      formik.setFieldValue(statusField, '');
+    }
+  };
+
+  // Handle final report change - track manual changes
+  const handleFinalReportChange = (e) => {
+    const value = e.target.value;
+    formik.setFieldValue('bankVerificationFinalReport', value);
+    setUserManuallyChangedFinalReport(true);
+  };
+
+  // Auto-update final report based on ALL verifications - ONLY if user hasn't manually changed it
+  useEffect(() => {
+    // If user manually changed final report, don't auto-update
+    if (userManuallyChangedFinalReport) {
+      return;
+    }
+
+    // Check if ALL critical fields are "Yes" and "Positive"
+    const allCriticalVerified = 
+      // Auto Verification
+      formik.values.bankAutoVerification === 'Yes' &&
+      formik.values.bankAutoVerificationStatus === 'Positive' &&
+      // Is salary account?
+      formik.values.bankIsSalaryAccount === 'Yes' &&
+      formik.values.bankIsSalaryAccountStatus === 'Positive' &&
+      // Regular Salary Credits?
+      formik.values.bankSalaryCreditedRegular === 'Yes' &&
+      formik.values.bankSalaryCreditedRegularStatus === 'Positive' &&
+      // Salary Credit Date is selected
+      formik.values.bankSalaryDate &&
+      // Is EMI Debited in Bank Statement? is selected
+      formik.values.bankAnyEmiDebited &&
+      // Is this EMI with bank statement? is selected
+      formik.values.bankIsEmiWithBankStatement;
+
+    // Check if ANY field is negative
+    const hasAnyNegative = 
+      // Auto Verification
+      formik.values.bankAutoVerification === 'No' ||
+      formik.values.bankAutoVerificationStatus === 'Negative' ||
+      // Is salary account?
+      formik.values.bankIsSalaryAccount === 'No' ||
+      formik.values.bankIsSalaryAccountStatus === 'Negative' ||
+      // Regular Salary Credits?
+      formik.values.bankSalaryCreditedRegular === 'No' ||
+      formik.values.bankSalaryCreditedRegularStatus === 'Negative';
+
+    // Set final report
+    if (allCriticalVerified) {
+      if (formik.values.bankVerificationFinalReport !== 'Positive') {
+        formik.setFieldValue('bankVerificationFinalReport', 'Positive');
+      }
+    } else if (hasAnyNegative) {
+      if (formik.values.bankVerificationFinalReport !== 'Negative') {
+        formik.setFieldValue('bankVerificationFinalReport', 'Negative');
+      }
+    }
+  }, [formik.values, userManuallyChangedFinalReport]);
+
+  // Reset manual change flag when component mounts or when verification fields are cleared
+  useEffect(() => {
+    // Reset manual change if all verification fields are empty/not set
+    const allFieldsEmpty = 
+      !formik.values.bankAutoVerification &&
+      !formik.values.bankIsSalaryAccount &&
+      !formik.values.bankSalaryCreditedRegular &&
+      !formik.values.bankSalaryDate &&
+      !formik.values.bankAnyEmiDebited &&
+      !formik.values.bankIsEmiWithBankStatement;
+    
+    if (allFieldsEmpty) {
+      setUserManuallyChangedFinalReport(false);
+    }
+  }, [formik.values]);
 
   // Debounced remark save
   const debouncedSaveRemark = useCallback((value) => {
@@ -125,7 +214,6 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       await bankVerificationService.saveBankVerificationData(bankVerificationData);
       toast.success('Bank verification saved successfully!');
       
-      // Don't call onSectionSave - it would trigger duplicate save
     } catch (error) {
       // Error handling is done in the service
     } finally {
@@ -167,7 +255,16 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
     );
   };
 
-  const VerificationField = ({ label, verified, status, onVerifiedChange, onStatusChange, accountNumber }) => (
+  const VerificationField = ({ 
+    label, 
+    verified, 
+    status, 
+    onVerifiedChange, 
+    onStatusChange, 
+    accountNumber,
+    verifiedField,
+    statusField 
+  }) => (
     <div className={`p-3 rounded-lg border transition-all duration-200 ${
       isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
     }`}>
@@ -187,12 +284,20 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        <select value={verified} onChange={(e) => onVerifiedChange(e.target.value)} className={selectClassName}>
+        <select 
+          value={verified} 
+          onChange={(e) => onVerifiedChange(e.target.value)} 
+          className={selectClassName}
+        >
           <option value="">Verified</option>
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         </select>
-        <select value={status} onChange={(e) => onStatusChange(e.target.value)} className={selectClassName}>
+        <select 
+          value={status} 
+          onChange={(e) => onStatusChange(e.target.value)} 
+          className={selectClassName}
+        >
           <option value="">Status</option>
           <option value="Positive">Positive</option>
           <option value="Negative">Negative</option>
@@ -280,24 +385,30 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
         {/* Verification Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="space-y-4">
+            {/* Auto Verification */}
             <VerificationField
               label="Auto Verification"
               verified={formik.values.bankAutoVerification}
               status={formik.values.bankAutoVerificationStatus}
-              onVerifiedChange={(value) => formik.setFieldValue('bankAutoVerification', value)}
+              onVerifiedChange={(value) => handleVerifiedChange('bankAutoVerification', 'bankAutoVerificationStatus', value)}
               onStatusChange={(value) => formik.setFieldValue('bankAutoVerificationStatus', value)}
+              verifiedField="bankAutoVerification"
+              statusField="bankAutoVerificationStatus"
             />
 
+            {/* Is salary account? */}
             <VerificationField
               label="Is salary account?"
               verified={formik.values.bankIsSalaryAccount}
               status={formik.values.bankIsSalaryAccountStatus}
-              onVerifiedChange={(value) => formik.setFieldValue('bankIsSalaryAccount', value)}
+              onVerifiedChange={(value) => handleVerifiedChange('bankIsSalaryAccount', 'bankIsSalaryAccountStatus', value)}
               onStatusChange={(value) => formik.setFieldValue('bankIsSalaryAccountStatus', value)}
               accountNumber={bankData?.accountNumber}
+              verifiedField="bankIsSalaryAccount"
+              statusField="bankIsSalaryAccountStatus"
             />
 
-            {/* Regular Salary Credits with conditional fields - FIXED */}
+            {/* Regular Salary Credits */}
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
             }`}>
@@ -305,13 +416,24 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
                   Regular Salary Credits?
                 </span>
-                {statusIndicator(formik.values.bankSalaryCreditedRegular)}
+                {statusIndicator(formik.values.bankSalaryCreditedRegularStatus || formik.values.bankSalaryCreditedRegular)}
               </div>
 
               <div className="space-y-2">
                 <select
                   value={formik.values.bankSalaryCreditedRegular}
-                  onChange={(e) => formik.setFieldValue('bankSalaryCreditedRegular', e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formik.setFieldValue('bankSalaryCreditedRegular', value);
+                    // Auto-set status based on selection
+                    if (value === 'Yes') {
+                      formik.setFieldValue('bankSalaryCreditedRegularStatus', 'Positive');
+                    } else if (value === 'No') {
+                      formik.setFieldValue('bankSalaryCreditedRegularStatus', 'Negative');
+                    } else {
+                      formik.setFieldValue('bankSalaryCreditedRegularStatus', '');
+                    }
+                  }}
                   className={selectClassName}
                 >
                   <option value="">Select</option>
@@ -329,7 +451,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   <option value="Negative">Negative</option>
                 </select>
 
-                {/* ✅ Fixed conditional fields with new field names */}
+                {/* Conditional fields */}
                 {formik.values.bankSalaryCreditedRegular === 'Yes' && (
                   <div>
                     <label className={labelClassName}>Salary Credit Date</label>
@@ -364,7 +486,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
           </div>
 
           <div className="space-y-4">
-            {/* EMI Section - FIXED */}
+            {/* EMI Section */}
             <div className={`p-3 rounded-lg border transition-all duration-200 ${
               isDark ? "bg-gray-700/30 border-gray-600" : "bg-gray-50 border-gray-200"
             }`}>
@@ -385,8 +507,8 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 <div>
                   <label className={labelClassName}>Is EMI Debited in Bank Statement?</label>
                   <select
-                    value={formik.values.bankAnyEmiDebited} 
-                    onChange={(e) => formik.setFieldValue('bankAnyEmiDebited', e.target.value)} 
+                    value={formik.values.bankAnyEmiDebited}
+                    onChange={(e) => formik.setFieldValue('bankAnyEmiDebited', e.target.value)}
                     className={selectClassName}
                   >
                     <option value="">Select</option>
@@ -395,10 +517,9 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   </select>
                 </div>
 
-                
                   <>
                     <div>
-                      <label className={labelClassName}>EMI Amount in Statement</label> {/* ✅ Added label */}
+                      <label className={labelClassName}>EMI Amount in Statement</label>
                       <input
                         type="number"
                         value={formik.values.bankEmiAmountInStatement}
@@ -414,7 +535,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                         onChange={(e) => formik.setFieldValue('bankIsEmiWithBankStatement', e.target.value)}
                         className={selectClassName}
                       >
-                      <option value="">Select</option>
+                        <option value="">Select</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
                       </select>
@@ -432,7 +553,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
             <label className={labelClassName}>Final Report</label>
             <select
               value={formik.values.bankVerificationFinalReport}
-              onChange={(e) => formik.setFieldValue('bankVerificationFinalReport', e.target.value)}
+              onChange={handleFinalReportChange}
               className={selectClassName}
               style={{ minWidth: '200px' }}
             >
@@ -440,6 +561,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <option value="Positive">Positive</option>
               <option value="Negative">Negative</option>
             </select>
+            
           </div>
           
           <button

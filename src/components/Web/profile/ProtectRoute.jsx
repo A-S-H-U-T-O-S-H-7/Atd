@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated()) {
-    return null;
+    return null; 
   }
 
   return children;

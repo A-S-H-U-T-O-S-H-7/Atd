@@ -8,6 +8,7 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
   const [remarkSaving, setRemarkSaving] = useState(false);
   const [submittingSocial, setSubmittingSocial] = useState(false);
   const [localRemarkValue, setLocalRemarkValue] = useState(formik.values.socialScoreRemark || '');
+  const [userManuallyChangedFinalReport, setUserManuallyChangedFinalReport] = useState(false);
   const timeoutRef = useRef(null);
   const formikUpdateTimeoutRef = useRef(null);
 
@@ -56,32 +57,102 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
     };
   }, []);
 
+  // Handle score status change
+  const handleScoreStatusChange = (value) => {
+    formik.setFieldValue('socialScoreRange', value);
+    
+    // Auto-set recommendation based on score status
+    if (value === 'Positive') {
+      formik.setFieldValue('socialScoreRecommendation', 'Recommended');
+    } else if (value === 'Negative') {
+      formik.setFieldValue('socialScoreRecommendation', 'Not Recommended');
+    } else {
+      // If cleared, also clear recommendation
+      formik.setFieldValue('socialScoreRecommendation', '');
+    }
+  };
+
+  // Handle final report change - track manual changes
+  const handleFinalReportChange = (e) => {
+    const value = e.target.value;
+    formik.setFieldValue('socialScoreFinalReport', value);
+    setUserManuallyChangedFinalReport(true);
+  };
+
+  // Auto-update final report based on score, status, and recommendation - ONLY if user hasn't manually changed it
+  useEffect(() => {
+    // If user manually changed final report, don't auto-update
+    if (userManuallyChangedFinalReport) {
+      return;
+    }
+
+    const hasValidScore = 
+      formik.values.socialScore && 
+      formik.values.socialScore.toString().trim() !== '' &&
+      !isNaN(parseInt(formik.values.socialScore));
+
+    if (!hasValidScore) {
+      // Clear final report if score is empty
+      if (formik.values.socialScoreFinalReport) {
+        formik.setFieldValue('socialScoreFinalReport', '');
+      }
+      return;
+    }
+
+    const isPositive = 
+      formik.values.socialScoreRange === 'Positive' &&
+      formik.values.socialScoreRecommendation === 'Recommended';
+
+    const isNegative = 
+      formik.values.socialScoreRange === 'Negative' ||
+      formik.values.socialScoreRecommendation === 'Not Recommended';
+
+    // Set final report
+    if (isPositive && formik.values.socialScoreFinalReport !== 'Positive') {
+      formik.setFieldValue('socialScoreFinalReport', 'Positive');
+    } else if (isNegative && formik.values.socialScoreFinalReport !== 'Negative') {
+      formik.setFieldValue('socialScoreFinalReport', 'Negative');
+    }
+  }, [formik.values, userManuallyChangedFinalReport]);
+
+  // Reset manual change flag when all fields are cleared
+  useEffect(() => {
+    // Reset manual change if all fields are empty/not set
+    const allFieldsEmpty = 
+      !formik.values.socialScore &&
+      !formik.values.socialScoreRange &&
+      !formik.values.socialScoreRecommendation;
+    
+    if (allFieldsEmpty) {
+      setUserManuallyChangedFinalReport(false);
+    }
+  }, [formik.values]);
+
   // Debounced save function for social remarks
   const debouncedSaveRemark = useCallback((value) => {
-  if (timeoutRef.current) {
-    clearTimeout(timeoutRef.current);
-  }
-
-  timeoutRef.current = setTimeout(async () => {
-    try {
-      if (!value || value.trim().length === 0 || !formik.values.applicationId) {
-        return;
-      }
-
-      setRemarkSaving(true);
-      
-      await socialScoreVerificationService.saveSocialScoreRemark({
-        application_id: parseInt(formik.values.applicationId),
-        remarks: value.trim()
-      });
-    } catch (error) {
-      // Error handled in service
-    } finally {
-      setRemarkSaving(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
-  }, 3000);
-}, [formik.values.applicationId]);
-  
+
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        if (!value || value.trim().length === 0 || !formik.values.applicationId) {
+          return;
+        }
+
+        setRemarkSaving(true);
+        
+        await socialScoreVerificationService.saveSocialScoreRemark({
+          application_id: parseInt(formik.values.applicationId),
+          remarks: value.trim()
+        });
+      } catch (error) {
+        // Error handled in service
+      } finally {
+        setRemarkSaving(false);
+      }
+    }, 3000);
+  }, [formik.values.applicationId]);
 
   // Optimized remark change handler
   const handleRemarkChange = (value) => {
@@ -98,45 +169,46 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
   };
 
   // Save social score verification
- const handleSaveSocialVerification = async () => {
-  try {
-    setSubmittingSocial(true);
-    
-    const socialData = socialScoreVerificationService.formatSocialScoreVerificationData(
-      formik.values.applicationId,
-      formik.values
-    );
-    
+  const handleSaveSocialVerification = async () => {
     try {
-      await socialScoreVerificationSchema.validate(socialData, { abortEarly: false });
-    } catch (validationError) {
-      // Show first validation error
-      const firstError = validationError.errors[0] || validationError.message;
-      toast.error(firstError);
-      return;
+      setSubmittingSocial(true);
+      
+      // Validate that social score is not empty
+      if (!formik.values.socialScore || formik.values.socialScore.toString().trim() === '') {
+        toast.error('Social score is required');
+        return;
+      }
+
+      const socialData = socialScoreVerificationService.formatSocialScoreVerificationData(
+        formik.values.applicationId,
+        formik.values
+      );
+      
+      try {
+        await socialScoreVerificationSchema.validate(socialData, { abortEarly: false });
+      } catch (validationError) {
+        // Show first validation error
+        const firstError = validationError.errors[0] || validationError.message;
+        toast.error(firstError);
+        return;
+      }
+      
+      await socialScoreVerificationService.saveSocialScoreVerificationData(socialData);
+      toast.success('Social score verification saved successfully!');
+      
+    } catch (error) {
+      // API errors handled in service
+    } finally {
+      setSubmittingSocial(false);
     }
-    
-    await socialScoreVerificationService.saveSocialScoreVerificationData(socialData);
-    toast.success('Social score verification saved successfully!');
-    
-    // Don't call onSectionSave - it would trigger duplicate save
-  } catch (error) {
-    // API errors handled in service
-  } finally {
-    setSubmittingSocial(false);
-  }
-};
- 
+  };
 
-  // Auto-calculate final report when score and status are positive
-  
-
-
-  return <div className={`rounded-xl mt-5 shadow-lg border transition-all duration-300 overflow-hidden ${
-    isDark
-      ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
-      : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
-  }`}>
+  return (
+    <div className={`rounded-xl mt-5 shadow-lg border transition-all duration-300 overflow-hidden ${
+      isDark
+        ? "bg-gray-800 border-emerald-600/30 shadow-emerald-900/10 hover:shadow-emerald-900/20"
+        : "bg-white border-emerald-200 shadow-emerald-500/5 hover:shadow-emerald-500/10"
+    }`}>
       {/* Header */}
       <div className={`p-4 border-b ${
         isDark ? "border-gray-700 bg-gray-800/80" : "border-gray-100 bg-emerald-50/50"
@@ -191,7 +263,18 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <input 
                 type="number" 
                 value={formik.values.socialScore || ''} 
-                onChange={e => formik.setFieldValue("socialScore", e.target.value)} 
+                onChange={e => {
+                  formik.setFieldValue("socialScore", e.target.value);
+                  // If score changes and is below 500, auto-set status to Negative
+                  const score = parseInt(e.target.value);
+                  if (score < 500 && formik.values.socialScoreRange !== 'Negative') {
+                    formik.setFieldValue('socialScoreRange', 'Negative');
+                    formik.setFieldValue('socialScoreRecommendation', 'Not Recommended');
+                  } else if (score >= 500 && formik.values.socialScoreRange !== 'Positive') {
+                    formik.setFieldValue('socialScoreRange', 'Positive');
+                    formik.setFieldValue('socialScoreRecommendation', 'Recommended');
+                  }
+                }} 
                 className={inputClassName} 
                 placeholder="Enter score (e.g. 650)" 
                 min="0"
@@ -202,12 +285,17 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
               }`}>
                 Score should be above 500 for positive assessment
               </div>
+              {formik.values.socialScore && parseInt(formik.values.socialScore) < 500 && (
+                <div className="text-xs text-red-500 mt-1">
+                  Score is below 500 - will auto-set to Negative
+                </div>
+              )}
             </div>
             <div>
               <label className={labelClassName}>Score Status</label>
               <select 
                 value={formik.values.socialScoreRange || ''} 
-                onChange={e => formik.setFieldValue("socialScoreRange", e.target.value)} 
+                onChange={e => handleScoreStatusChange(e.target.value)} 
                 className={selectClassName}
               >
                 <option value="">Select Status</option>
@@ -235,7 +323,7 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
               <label className={labelClassName}>Final Report</label>
               <select 
                 value={formik.values.socialScoreFinalReport || ''} 
-                onChange={e => formik.setFieldValue("socialScoreFinalReport", e.target.value)} 
+                onChange={handleFinalReportChange} 
                 className={selectClassName}
               >
                 <option value="">Select Final Report</option>
@@ -247,7 +335,7 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
             <button
               type="button"
               onClick={handleSaveSocialVerification}
-              disabled={submittingSocial || saving}
+              disabled={submittingSocial || saving || !formik.values.socialScore}
               className={buttonClassName}
             >
               {(submittingSocial || saving) ? (
@@ -260,7 +348,8 @@ const SocialScoreVerification = ({ formik, onSectionSave, isDark, saving }) => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default SocialScoreVerification;
