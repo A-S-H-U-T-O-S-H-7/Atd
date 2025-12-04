@@ -462,7 +462,6 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
     );
   };
   
-  // DPD Status Field Component with local state - REMOVED INSTRUCTION TEXT
   const DpdStatusField = () => {
     const [localDpd, setLocalDpd] = useState(formik.values.dpd || '');
     const [localDpdStatus, setLocalDpdStatus] = useState(formik.values.dpdStatus || '');
