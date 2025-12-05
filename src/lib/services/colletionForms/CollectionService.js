@@ -61,7 +61,7 @@ submitNormalCollection: async (applicationId, formData, collectionData) => {
       penal_interest_gst: penalInterestGST,
       bounce_charge: bounceCharge,
       total_due_amount: totalDueAmount,
-      collection_bank_name: formData.bankName || "",
+      collection_bank_name: formData.bankId ? parseInt(formData.bankId) : null,
       collection_bank_id: formData.bankId || null, 
       disbursed_bank: collectionData?.bank_name || "",
       collected_amount: parseFloat(formData.collectionAmount),

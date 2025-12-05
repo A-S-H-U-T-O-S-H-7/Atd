@@ -1,52 +1,62 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Download, ChevronDown, Filter } from "lucide-react";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
-import DisbursementTable from "./DisbursementTable";
 import BankDateFilter from "../BankDateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
+import DisbursementTable from "./DisbursementTable";
 import TransactionDetailsModal from "./TransationDetailsModal";
 import DisburseStatusModal from "./DisburseStatus";
-import { useRouter } from "next/navigation";
 import TransferModal from "./TransferModal";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import disbursementService from "@/lib/services/disbursementService";
+import Swal from "sweetalert2";
 
 const DisbursementPage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const router = useRouter();
-  
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [searchField, setSearchField] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [selectedBank, setSelectedBank] = useState("all");
   const [filterBy, setFilterBy] = useState("all");
-  const [advancedSearch, setAdvancedSearch] = useState({ field: "", term: "" });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
-
-  const [transactionModal, setTransactionModal] = useState({ 
-    isOpen: false, 
-    disbursementData: null 
-  });
-  const [transactionStatusModal, setTransactionStatusModal] = useState({ 
-    isOpen: false, 
-    disbursementData: null 
-  });
-  const [transferModal, setTransferModal] = useState({ 
-    isOpen: false, 
-    disbursementData: null 
-  });
 
   const [disbursementData, setDisbursementData] = useState([]);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    current_page: 1,
-    per_page: 10,
-    total_pages: 0
-  });
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [banks, setBanks] = useState([]);
+
+  const [transactionModal, setTransactionModal] = useState({
+    isOpen: false,
+    disbursementData: null,
+  });
+  const [transactionStatusModal, setTransactionStatusModal] = useState({
+    isOpen: false,
+    disbursementData: null,
+  });
+  const [transferModal, setTransferModal] = useState({
+    isOpen: false,
+    disbursementData: null,
+  });
+
+  const itemsPerPage = 10;
+  const searchOptions = [
+    { value: "crnno", label: "CRN No" },
+    { value: "loan_no", label: "Loan No" },
+    { value: "name", label: "Name" },
+    { value: "phone", label: "Phone" },
+    { value: "email", label: "Email" },
+    { value: "disburse_transaction_id", label: "Transaction ID" },
+  ];
 
   useEffect(() => {
     const loadBanks = async () => {
@@ -54,85 +64,283 @@ const DisbursementPage = () => {
         const bankList = await disbursementService.getBanks();
         setBanks([{ id: "all", name: "All Banks" }, ...bankList]);
       } catch (error) {
-        console.error('Error loading banks:', error);
         setBanks([
           { id: "all", name: "All Banks" },
           { id: "IBKL", name: "IDBI Bank" },
           { id: "SBIN", name: "State Bank of India" },
           { id: "HDFC", name: "HDFC Bank" },
           { id: "ICIC", name: "ICICI Bank" },
-          { id: "AXIS", name: "Axis Bank" }
+          { id: "AXIS", name: "Axis Bank" },
         ]);
       }
     };
-    
     loadBanks();
   }, []);
 
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    if (filterBy === "transaction") {
+      params.status = "10";
+    } else if (filterBy === "not_transaction") {
+      params.status = "9";
+    }
+
+    if (searchField && searchTerm.trim()) {
+      params.search_by = searchField;
+      params.search_value = searchTerm.trim();
+    }
+
+    if (dateRange.start) {
+      params.from_date = dateRange.start;
+    }
+    if (dateRange.end) {
+      params.to_date = dateRange.end;
+    }
+
+    if (selectedBank && selectedBank !== "all") {
+      params.bank = selectedBank;
+    }
+
+    return params;
+  };
+
   const fetchDisbursementData = async () => {
-    setIsLoading(true);
     try {
-      const filters = disbursementService.mapFiltersToAPI({
-        dateRange,
-        selectedBank,
-        filterBy,
-        advancedSearch
-      });
-      
-      const result = await disbursementService.getDisbursementData({
-        ...filters,
-        page: currentPage,
-        per_page: 10
-      });
-      
-      setDisbursementData(result.data);
-      setPagination(result.pagination);
-    } catch (error) {
-      console.error('Error fetching disbursement data:', error);
-      toast.error('Failed to load disbursement data');
+      setLoading(true);
+      setError(null);
+
+      const params = buildApiParams();
+      const result = await disbursementService.getDisbursementData(params);
+
+      if (result && result.data) {
+        setDisbursementData(result.data);
+        setTotalCount(result.pagination?.total || result.data.length);
+        setTotalPages(result.pagination?.total_pages || 1);
+
+        if (result.data.length === 0) {
+          setError("No disbursements found with current filters");
+        }
+      } else {
+        setDisbursementData([]);
+        setTotalCount(0);
+        setError("No disbursements found");
+      }
+    } catch (err) {
       setDisbursementData([]);
+      setTotalCount(0);
+      setError("Failed to fetch disbursements");
+      toast.error("Failed to load disbursement data");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchDisbursementData();
-  }, [currentPage, dateRange, selectedBank, filterBy, advancedSearch]);
+  }, [currentPage]);
 
-  const handleExport = async (type) => {
+  useEffect(() => {
+    if (currentPage === 1) {
+      fetchDisbursementData();
+    } else {
+      setCurrentPage(1);
+    }
+  }, [searchField, searchTerm, dateRange, selectedBank, filterBy]);
+
+  const handleAdvancedSearch = ({ field, term }) => {
+    if (!field || !term.trim()) {
+      setSearchField("");
+      setSearchTerm("");
+      return;
+    }
+    setSearchField(field);
+    setSearchTerm(term.trim());
+    setCurrentPage(1);
+  };
+
+  const handleBankDateFilter = (filters) => {
+    setDateRange(filters.dateRange || { start: "", end: "" });
+    setSelectedBank(filters.selectedBank || "all");
+    setCurrentPage(1);
+  };
+
+  const clearAllFilters = () => {
+    setSearchField("");
+    setSearchTerm("");
+    setDateRange({ start: "", end: "" });
+    setSelectedBank("all");
+    setFilterBy("all");
+    setCurrentPage(1);
+  };
+
+  const handleExportToExcel = async () => {
+    const result = await Swal.fire({
+      title: "Export Disbursements?",
+      text: "This will export all disbursements with current filters.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, Export!",
+      cancelButtonText: "Cancel",
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
-      const filters = disbursementService.mapFiltersToAPI({
-        dateRange,
-        selectedBank,
-        filterBy,
-        advancedSearch
-      });
+      setExporting(true);
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+
+      const response = await disbursementService.exportDisbursement(exportParams);
       
-      const exportData = await disbursementService.exportDisbursement(filters, type);
-      exportToExcel(exportData, type === 'gst' ? 'disbursement-gst-data' : 'disbursement-data');
-      toast.success('Data exported successfully!');
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export data');
+      if (!response || response.length === 0) {
+        throw new Error("No data available for export");
+      }
+
+      const headers = [
+        'User ID', 'CRN No', 'Name', 'Application ID', 'Loan No', 
+        'Approved Amount', 'Disburse ID', 'Transaction ID', 
+        'Transaction Date', 'Disburse Amount', 'Tenure', 
+        'Disburse Date', 'Bank Name', 'Sender Name', 'ATD Branch',
+        'Customer Bank', 'Customer Branch', 'Customer Account', 'Customer IFSC'
+      ];
+
+      const dataRows = response.map((item) => [
+        item.user_id || 'N/A',
+        item.crnno || 'N/A',
+        item.name || 'N/A',
+        item.application_id || 'N/A',
+        item.loan_no || 'N/A',
+        item.approved_amount || '0.00',
+        item.disburse_id || 'N/A',
+        item.disburse_transaction_id || 'N/A',
+        item.disbursement_transaction_date || 'N/A',
+        item.disburse_amount || '0.00',
+        item.tenure || 0,
+        item.disburse_date || 'N/A',
+        item.bank_name || 'N/A',
+        item.sender_name || 'N/A',
+        item.atd_branch || 'N/A',
+        item.customer_bank || 'N/A',
+        item.customer_branch || 'N/A',
+        item.customer_ac || 'N/A',
+        item.customer_ifsc || 'N/A'
+      ]);
+
+      const exportData = [headers, ...dataRows];
+      exportToExcel(exportData, `disbursements_${new Date().toISOString().split("T")[0]}`);
+
+      await Swal.fire({
+        title: "Export Successful!",
+        text: `Exported ${dataRows.length} records.`,
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } catch (err) {
+      await Swal.fire({
+        title: "Export Failed!",
+        text: err.message || "Failed to export data.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
     }
   };
 
   const handleGSTExport = async () => {
+    const result = await Swal.fire({
+      title: "Export Non-Transaction Data?",
+      text: "This will export disbursements without transaction details.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, Export!",
+      cancelButtonText: "Cancel",
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
-      const filters = disbursementService.mapFiltersToAPI({
-        dateRange,
-        selectedBank,
-        filterBy: 'not_transaction',
-        advancedSearch
-      });
+      setExporting(true);
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      delete exportParams.status;
+
+      const response = await disbursementService.exportNonTransactionDisbursement(exportParams);
       
-      const gstData = await disbursementService.exportDisbursement(filters, 'gst');
-      exportToExcel(gstData, 'disbursement-gst-export');
-      toast.success('GST data exported successfully!');
-    } catch (error) {
-      console.error('GST export error:', error);
-      toast.error('Failed to export GST data');
+      if (!response || response.length === 0) {
+        throw new Error("No non-transaction data available");
+      }
+
+      const headers = [
+        'User ID', 'CRN No', 'Name', 'Application ID', 'Loan No', 
+        'Approved Amount', 'Disburse ID', 'Transaction ID', 
+        'Transaction Date', 'Disburse Amount', 'Tenure', 
+        'Disburse Date', 'Bank Name', 'Sender Name', 'ATD Branch',
+        'Customer Bank', 'Customer Branch', 'Customer Account', 'Customer IFSC'
+      ];
+
+      const dataRows = response.map((item) => [
+        item.user_id || 'N/A',
+        item.crnno || 'N/A',
+        item.name || 'N/A',
+        item.application_id || 'N/A',
+        item.loan_no || 'N/A',
+        item.approved_amount || '0.00',
+        item.disburse_id || 'N/A',
+        item.disburse_transaction_id || 'N/A',
+        item.disbursement_transaction_date || 'N/A',
+        item.disburse_amount || '0.00',
+        item.tenure || 0,
+        item.disburse_date || 'N/A',
+        item.bank_name || 'N/A',
+        item.sender_name || 'N/A',
+        item.atd_branch || 'N/A',
+        item.customer_bank || 'N/A',
+        item.customer_branch || 'N/A',
+        item.customer_ac || 'N/A',
+        item.customer_ifsc || 'N/A'
+      ]);
+
+      const exportData = [headers, ...dataRows];
+      exportToExcel(exportData, `non-transaction-disbursements_${new Date().toISOString().split("T")[0]}`);
+
+      await Swal.fire({
+        title: "Export Successful!",
+        text: `Exported ${dataRows.length} non-transaction records.`,
+        icon: "success",
+        confirmButtonColor: "#3b82f6",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } catch (err) {
+      await Swal.fire({
+        title: "Export Failed!",
+        text: err.message || "Failed to export non-transaction data.",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -146,18 +354,12 @@ const DisbursementPage = () => {
 
   const handleTransactionSubmit = async (transactionData) => {
     try {
-      await disbursementService.updateTransaction(
-        transactionData.disburse_id,
-        transactionData,
-        transactionData
-      );
-      
-      toast.success('Transaction updated successfully!');
+      await disbursementService.updateTransaction(transactionData.disburse_id, transactionData, transactionData);
+      toast.success("Transaction updated successfully!");
       fetchDisbursementData();
       handleTransactionModalClose();
     } catch (error) {
-      console.error('Transaction update error:', error);
-      toast.error('Failed to update transaction');
+      toast.error("Failed to update transaction");
     }
   };
 
@@ -172,12 +374,11 @@ const DisbursementPage = () => {
   const handleTransferSubmit = async (transferData) => {
     try {
       await disbursementService.processTransfer(transferData, transferData);
-      toast.success('Transfer processed successfully!');
+      toast.success("Transfer processed successfully!");
       fetchDisbursementData();
       handleTransferModalClose();
     } catch (error) {
-      console.error('Transfer error:', error);
-      toast.error('Transfer failed. Please try again.');
+      toast.error("Transfer failed");
     }
   };
 
@@ -192,39 +393,20 @@ const DisbursementPage = () => {
   const handleTransactionStatusSubmit = async (statusData) => {
     try {
       await disbursementService.checkTransactionStatus(statusData, statusData);
-      toast.success('Transaction status checked successfully!');
+      toast.success("Transaction status checked successfully!");
       handleTransactionStatusModalClose();
     } catch (error) {
-      console.error('Status check error:', error);
-      toast.error('Failed to check transaction status');
+      toast.error("Failed to check transaction status");
     }
   };
 
-  const handleAdvancedSearch = (searchData) => {
-    setAdvancedSearch(searchData);
-    setCurrentPage(1);
-  };
-
-  const handleFilterChange = (filters) => {
-    setDateRange(filters.dateRange);
-    setSelectedBank(filters.selectedBank);
-    setCurrentPage(1);
-  };
-
-  const handleSearch = () => {
-    setCurrentPage(1);
-    fetchDisbursementData();
-  };
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDark ? "bg-gray-900" : "bg-emerald-50/30"
-    }`}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-gray-900" : "bg-emerald-50/30"}`}>
       <div className="p-0 md:p-4">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 onClick={() => router.back()}
                 className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                   isDark
@@ -232,159 +414,72 @@ const DisbursementPage = () => {
                     : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
                 }`}
               >
-                <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`} />
+                <ArrowLeft className={`w-5 h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
               </button>
               <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
-                Disbursement Reporting
+                Disbursement Reporting ({totalCount})
               </h1>
             </div>
-            
-            <button
-              onClick={() => handleExport('excel')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-sm ${
-                isDark
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
-              }`}
-            >
-              <Download size={16} />
-              <span>Export Data</span>
-            </button>
-          </div>
 
-          {/* BOTH FILTERS UNDER ONE DROPDOWN TOGGLE */}
-          <div className={`rounded-xl border shadow-sm overflow-hidden transition-all duration-200 mb-6 ${
-            isDark ? "bg-gray-800/50 border-blue-600" : "bg-white border-blue-400"
-          }`}>
-            {/* Toggle Header */}
-            <button
-              onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-              className={`w-full px-4 py-3 flex items-center justify-between transition-colors duration-200 ${
-                isDark ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${
-                  isDark ? "bg-emerald-600/20" : "bg-emerald-50"
-                }`}>
-                  <Filter className={`w-4 h-4 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`} />
-                </div>
-                <div className="text-left">
-                  <h3 className={`text-base font-semibold ${
-                    isDark ? "text-gray-100" : "text-gray-800"
-                  }`}>
-                    Filters & Export Options
-                  </h3>
-                  <p className={`text-xs ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Date range, bank filter and non-transaction export
-                  </p>
-                </div>
-              </div>
-              <div className={`transition-transform duration-200 ${
-                isFiltersExpanded ? 'rotate-180' : ''
-              }`}>
-                <ChevronDown className={`w-5 h-5 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`} />
-              </div>
-            </button>
-            
-            {/* BOTH FILTERS IN ONE LINE */}
-            <div className={`overflow-hidden transition-all  duration-300 ${
-              isFiltersExpanded ? 'max-h-[500px]' : 'max-h-0'
-            }`}>
-              <div className={`px-4 pb-4 pt-2 border-t ${
-                isDark ? "border-gray-700" : "border-gray-200"
-              }`}>
-                <div className="grid grid-cols-1 lg:grid-cols-2  gap-6">
-                  
-                  {/* LEFT: Bank Date Filter */}
-                  <div className={`rounded-lg p-4 border ${
-                    isDark ? "bg-gray-700/30 border-gray-600" : "bg-emerald-50/50 border-emerald-200"
-                  }`}>
-                    <h4 className={`text-sm font-semibold mb-3 ${
-                      isDark ? "text-emerald-400" : "text-emerald-700"
-                    }`}>
-                      Date & Bank Filter
-                    </h4>
-                    <BankDateFilter
-                      dateRange={dateRange}
-                      selectedBank={selectedBank}
-                      banks={banks}
-                      isDark={isDark}
-                      onFilterChange={handleFilterChange}
-                      onSearch={handleSearch}
-                    />
-                  </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => fetchDisbursementData()}
+                disabled={loading}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                <span>Refresh</span>
+              </button>
 
-                  {/* RIGHT: Non-Transaction Export */}
-                  <div className={`rounded-lg p-4 border ${
-                    isDark ? "bg-gray-700/30 border-gray-600" : "bg-blue-50/50 border-blue-200"
-                  }`}>
-                    <h4 className={`text-sm font-semibold mb-3 ${
-                      isDark ? "text-blue-400" : "text-blue-700"
-                    }`}>
-                      Export Non-Transaction Data
-                    </h4>
-                    <div className="flex flex-col gap-3">
-                      <div>
-                        <label className={`block text-xs font-medium mb-1.5 ${
-                          isDark ? "text-gray-400" : "text-gray-600"
-                        }`}>
-                          Select Bank for Export
-                        </label>
-                        <select
-                          value={selectedBank}
-                          onChange={(e) => setSelectedBank(e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
-                            isDark
-                              ? "bg-gray-700/50 border-gray-600 text-white hover:border-blue-500 focus:border-blue-400"
-                              : "bg-white border-gray-300 text-gray-900 hover:border-blue-400 focus:border-blue-500"
-                          } focus:ring-2 focus:ring-blue-500/20 focus:outline-none`}
-                        >
-                          {banks.map(bank => (
-                            <option key={bank.id} value={bank.id}>{bank.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <button
-                        onClick={handleGSTExport}
-                        className={`w-full px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-sm ${
-                          isDark
-                            ? "bg-blue-600 hover:bg-blue-700 text-white"
-                            : "bg-blue-500 hover:bg-blue-600 text-white"
-                        }`}
-                      >
-                        <Download size={14} />
-                        <span>Export Non-Transaction</span>
-                      </button>
-                    </div>
-                  </div>
+              <button
+                onClick={handleExportToExcel}
+                disabled={exporting || disbursementData.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                } ${exporting || disbursementData.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? "animate-spin" : ""}`} />
+                <span>{exporting ? "Exporting..." : "Export All"}</span>
+              </button>
 
-                </div>
-              </div>
+              <button
+                onClick={handleGSTExport}
+                disabled={exporting || disbursementData.length === 0}
+                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  isDark ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+                } ${exporting || disbursementData.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Download className={`w-4 h-4 ${exporting ? "animate-spin" : ""}`} />
+                <span>Non-Transaction</span>
+              </button>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <BankDateFilter isDark={isDark} onFilterChange={handleBankDateFilter} banks={banks} />
+
+          <div className="mb-6 grid grid-cols-2">
+            <AdvancedSearchBar
+              searchOptions={searchOptions}
+              onSearch={handleAdvancedSearch}
+              isDark={isDark}
+              placeholder="Search disbursements..."
+              buttonText="Search"
+            />
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
-              <span className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                Filter By:
-              </span>
+              <span className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>Filter By:</span>
               <div className="flex space-x-2">
                 {[
-                  { id: 'all', label: 'All' },
-                  { id: 'transaction', label: 'Transaction' },
-                  { id: 'not_transaction', label: 'Not Transaction' }
-                ].map(filter => (
+                  { id: "all", label: "All" },
+                  { id: "transaction", label: "Transaction" },
+                  { id: "not_transaction", label: "Not Transaction" },
+                ].map((filter) => (
                   <button
                     key={filter.id}
                     onClick={() => setFilterBy(filter.id)}
@@ -394,8 +489,8 @@ const DisbursementPage = () => {
                           ? "bg-emerald-600 text-white shadow-sm"
                           : "bg-emerald-500 text-white shadow-sm"
                         : isDark
-                          ? "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border border-gray-600"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                        ? "bg-gray-700/50 text-gray-300 hover:bg-gray-700 border border-gray-600"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
                     }`}
                   >
                     {filter.label}
@@ -404,29 +499,39 @@ const DisbursementPage = () => {
               </div>
             </div>
 
-            <div className="w-full md:w-auto">
-              <AdvancedSearchBar
-                searchOptions={disbursementService.searchOptions}
-                onSearch={handleAdvancedSearch}
-                placeholder="Search disbursement data..."
-                defaultSearchField="loanNo"
-              />
-            </div>
+            {(searchTerm || dateRange.start || dateRange.end || selectedBank !== "all" || filterBy !== "all") && (
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Showing {disbursementData.length} of {totalCount}
+                </span>
+                <button
+                  onClick={clearAllFilters}
+                  className={`text-sm px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    isDark ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  }`}
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         <DisbursementTable
-          paginatedDisbursementData={disbursementData}
+          paginatedDisbursementData={disbursementData.map((item, index) => ({
+            ...item,
+            srNo: (currentPage - 1) * itemsPerPage + index + 1,
+          }))}
           filteredDisbursementData={disbursementData}
           currentPage={currentPage}
-          totalPages={pagination.total_pages}
-          itemsPerPage={pagination.per_page}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
           onTransactionClick={handleTransactionModalOpen}
           onTransactionStatusClick={handleTransactionStatusModalOpen}
           onTransferClick={handleTransferModalOpen}
-          isLoading={isLoading}
+          isLoading={loading}
         />
       </div>
 

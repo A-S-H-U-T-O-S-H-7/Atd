@@ -12,7 +12,7 @@ export const disbursementAPI = {
           from_date: params.from_date || '',
           to_date: params.to_date || '',
           bank: params.bank || '',
-          transaction_status: params.transaction_status || '',
+          status: params.status || '',
           ...params
         }
       });
@@ -26,14 +26,30 @@ export const disbursementAPI = {
     try {
       const response = await api.get("/crm/disbursement/export", {
         params: {
-          per_page: params.per_page || 10,
-          page: params.page || 1,
           search_by: params.search_by || '',
           search_value: params.search_value || '',
           from_date: params.from_date || '',
           to_date: params.to_date || '',
           bank: params.bank || '',
-          transaction_status: params.transaction_status || '',
+          status: params.status || '',
+          ...params
+        }
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  exportNonTransactionDisbursement: async (params = {}) => {
+    try {
+      const response = await api.get("/crm/disbursement/export/no-transaction", { 
+        params: {
+          search_by: params.search_by || '',
+          search_value: params.search_value || '',
+          from_date: params.from_date || '',
+          to_date: params.to_date || '',
+          bank: params.bank || '',
           ...params
         }
       });
@@ -93,7 +109,7 @@ export const formatDisbursementDataForUI = (apiData) => {
   if (!apiData || !Array.isArray(apiData)) return [];
   
   return apiData.map((item, index) => ({
-    id: item.disburse_id || item.id || index + 1,
+    id: item.disburse_id || index + 1,
     sn: index + 1,
     loanNo: item.loan_no || 'N/A',
     disburseDate: item.disburse_date || 'N/A',
@@ -105,11 +121,11 @@ export const formatDisbursementDataForUI = (apiData) => {
     tenure: item.tenure || 0,
     senderAcNo: item.sender_acno || 'N/A',
     senderName: item.sender_name || 'ATD FINANCIAL SERVICES PVT LTD',
-    transaction: item.transaction_type || 'NEFT',
+    transaction: item.transaction_ref_no ? 'Completed' : 'Pending',
     dueDate: item.due_date || 'N/A',
-    atdBankId: item.atd_bank_id || item.atd_bank || null,
+    atdBankId: item.atd_bank_id || null,
     atdBankName: item.atd_bank_name || null,
-    atdBranchName: item.atd_branch_name || item.atd_branch || null,
+    atdBranchName: item.atd_branch_name || null,
     beneficiaryBankIFSC: item.customer_ifsc || 'N/A',
     beneficiaryAcType: item.customer_ac_type || 'Saving',
     beneficiaryAcNo: item.customer_ac || 'N/A',
@@ -117,7 +133,7 @@ export const formatDisbursementDataForUI = (apiData) => {
     beneficiaryPhone: item.customer_phone || 'N/A',
     sendToRec: item.transaction_narration || `Loan/${item.loan_no || 'N/A'}`,
     newLoan: "Active",
-    action: item.transaction_status || "Pending",
+    action: item.transaction_ref_no ? "Completed" : "Pending",
     isTransaction: !!item.transaction_ref_no,
     user_id: item.user_id,
     application_id: item.application_id,
@@ -129,15 +145,20 @@ export const formatDisbursementExportData = (apiData) => {
   if (!apiData || !Array.isArray(apiData)) return [];
   
   return apiData.map(item => ({
+    'User ID': item.user_id || 'N/A',
     'CRN No': item.crnno || 'N/A',
     'Name': item.name || 'N/A',
+    'Application ID': item.application_id || 'N/A',
     'Loan No': item.loan_no || 'N/A',
     'Approved Amount': item.approved_amount || '0.00',
-    'Disburse Transaction ID': item.disburse_transaction_id || 'N/A',
-    'Disbursement Transaction Date': item.disbursement_transaction_date || 'N/A',
+    'Disburse ID': item.disburse_id || 'N/A',
+    'Transaction ID': item.disburse_transaction_id || 'N/A',
+    'Transaction Date': item.disbursement_transaction_date || 'N/A',
     'Disburse Amount': item.disburse_amount || '0.00',
+    'Tenure': item.tenure || 0,
     'Disburse Date': item.disburse_date || 'N/A',
-    'ATD Bank': item.atd_bank || 'N/A',
+    'Bank Name': item.bank_name || 'N/A',
+    'Sender Name': item.sender_name || 'N/A',
     'ATD Branch': item.atd_branch || 'N/A',
     'Customer Bank': item.customer_bank || 'N/A',
     'Customer Branch': item.customer_branch || 'N/A',
@@ -208,18 +229,27 @@ export const disbursementService = {
     }
   },
 
-  exportDisbursement: async (filters = {}, exportType = 'all') => {
+  exportDisbursement: async (filters = {}) => {
     try {
       const response = await disbursementAPI.exportDisbursementData(filters);
       
       if (response.success && response.data) {
-        if (exportType === 'gst') {
-          const gstData = response.data.filter(item => !item.disburse_transaction_id);
-          return formatDisbursementExportData(gstData);
-        }
-        return formatDisbursementExportData(response.data);
+        return response.data;
       }
       throw new Error(response.message || 'Failed to export disbursement data');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  exportNonTransactionDisbursement: async (filters = {}) => {
+    try {
+      const response = await disbursementAPI.exportNonTransactionDisbursement(filters);
+      
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to export non-transaction data');
     } catch (error) {
       throw error;
     }
@@ -268,7 +298,6 @@ export const disbursementService = {
     }
   },
 
-
   checkTransactionStatus: async (formData, disbursementData) => {
     try {
       const statusData = formatTransactionStatusData(formData, disbursementData);
@@ -295,45 +324,6 @@ export const disbursementService = {
     } catch (error) {
       throw error;
     }
-  },
-
-  searchOptions: [
-    { value: 'crnNo', label: 'CRN No', apiField: 'crnno' },
-    { value: 'loanNo', label: 'Loan No', apiField: 'loan_no' },
-    { value: 'beneficiaryAcName', label: 'Name', apiField: 'customer_name' },
-    { value: 'beneficiaryPhone', label: 'Phone', apiField: 'customer_phone' },
-    { value: 'tranRefNo', label: 'Trans Ref', apiField: 'transaction_ref_no' }
-  ],
-
-  mapFiltersToAPI: (filters) => {
-    const apiFilters = {};
-    
-    if (filters.dateRange?.from) {
-      apiFilters.from_date = filters.dateRange.from;
-    }
-    if (filters.dateRange?.to) {
-      apiFilters.to_date = filters.dateRange.to;
-    }
-    
-    if (filters.selectedBank && filters.selectedBank !== 'all') {
-      apiFilters.bank = filters.selectedBank;
-    }
-    
-    if (filters.filterBy && filters.filterBy !== 'all') {
-      apiFilters.transaction_status = filters.filterBy;
-    }
-    
-    if (filters.advancedSearch?.field && filters.advancedSearch?.term) {
-      const searchOption = disbursementService.searchOptions.find(
-        opt => opt.value === filters.advancedSearch.field
-      );
-      if (searchOption) {
-        apiFilters.search_by = searchOption.apiField;
-        apiFilters.search_value = filters.advancedSearch.term;
-      }
-    }
-    
-    return apiFilters;
   }
 };
 
