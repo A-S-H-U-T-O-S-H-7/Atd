@@ -183,65 +183,65 @@ const DisburseRow = ({
       </td>
 
       {/* Current Address */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.currentAddress}
         </span>
-      </td>
+      </td> */}
 
       {/* Current State */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.currentState}
         </span>
-      </td>
+      </td> */}
 
       {/* Current City */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.currentCity}
         </span>
-      </td>
+      </td> */}
 
       {/* Permanent Address */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.permanentAddress}
         </span>
-      </td>
+      </td> */}
 
       {/* State */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.state}
         </span>
-      </td>
+      </td> */}
 
       {/* City */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.city}
         </span>
-      </td>
+      </td> */}
 
       {/* Phone No */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <div className="flex items-center space-x-2">
           <span className={`text-sm ${textSecondary}`}>
             {application.phoneNo}
           </span>
         </div>
-      </td>
+      </td> */}
 
       {/* E-mail */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <div className="flex items-center space-x-2">
           <Mail className={iconAccent} />
           <span className={`text-sm ${textSecondary}`}>
             {application.email}
           </span>
         </div>
-      </td>
+      </td> */}
 
       {/* Applied Amount */}
       <td className={cellStyle}>
@@ -283,7 +283,7 @@ const DisburseRow = ({
       </td>
 
       {/* Photo */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <PhotoDocument
           fileName={application.photoFileName}
           hasDoc={application.hasPhoto}
@@ -292,10 +292,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Pan Card */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <PanCardDocument
           fileName={application.panCardFileName}
           hasDoc={application.hasPanCard}
@@ -304,10 +304,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Address Proof */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <AddressProofDocument
           fileName={application.addressProofFileName}
           hasDoc={application.hasAddressProof}
@@ -316,10 +316,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* ID Proof */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <IdProofDocument
           fileName={application.idProofFileName}
           hasDoc={application.hasIdProof}
@@ -328,10 +328,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Salary Proof */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <SalaryProofDocument
           fileName={application.salarySlip1}
           hasDoc={application.hasSalaryProof}
@@ -344,10 +344,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Bank Statement */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <BankStatementDocument
           fileName={application.bankStatementFileName}
           hasDoc={application.hasBankStatement}
@@ -356,10 +356,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Video KYC */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <VideoKYCDocument
           fileName={application.videoKycFileName}
           hasDoc={application.hasVideoKyc}
@@ -368,24 +368,24 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Approval Note */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.approvalNote || "N/A"}
         </span>
-      </td>
+      </td> */}
 
       {/* Application Source */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.enquirySource || "N/A"}
         </span>
-      </td>
+      </td> */}
 
       {/* Bank Verification Report */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <BankVerificationDocument
           fileName={application.bankVerificationFileName}
           hasDoc={application.hasBankVerificationReport}
@@ -394,10 +394,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Social Score Report */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <SocialScoreDocument
           fileName={application.socialScoreFileName}
           hasDoc={application.hasSocialScoreReport}
@@ -406,10 +406,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* CIBIL Score Report */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <CibilScoreDocument
           fileName={application.cibilScoreFileName}
           hasDoc={application.hasCibilScoreReport}
@@ -418,10 +418,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* NACH Form */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <NachFormDocument
           fileName={application.nachFormFileName}
           hasDoc={application.hasNachForm}
@@ -430,10 +430,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* PDC */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <PDCDocument
           fileName={application.pdcFileName}
           hasDoc={application.hasPdc}
@@ -442,10 +442,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Agreement */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <AgreementDocument
           fileName={application.agreementFileName}
           hasDoc={application.hasAgreement}
@@ -454,10 +454,10 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       {/* Cheque */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <div className="flex items-center space-x-2">
           {application.chequeNo ? (
             <div className="flex items-center space-x-2">
@@ -495,10 +495,10 @@ const DisburseRow = ({
             </button>
           )}
         </div>
-      </td>
+      </td> */}
 
       {/* Send To Courier - READ ONLY */}
-<td className={cellStyle}>
+{/* <td className={cellStyle}>
   <div className="flex items-center justify-center">
     <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
       application.sendToCourier === "Yes" 
@@ -518,10 +518,10 @@ const DisburseRow = ({
       )}
     </span>
   </div>
-</td>
+</td> */}
 
 {/* Courier Picked - READ ONLY */}
-<td className={cellStyle}>
+{/* <td className={cellStyle}>
   <div className="flex items-center justify-center">
     <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
       application.courierPicked === "Yes" 
@@ -541,10 +541,10 @@ const DisburseRow = ({
       )}
     </span>
   </div>
-</td>
+</td> */}
 
 {/* Original Documents Received - READ ONLY */}
-<td className={cellStyle}>
+{/* <td className={cellStyle}>
   <div className="flex items-center justify-center">
     <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
       application.originalDocuments === "Yes" 
@@ -564,10 +564,10 @@ const DisburseRow = ({
       )}
     </span>
   </div>
-</td>
+</td> */}
 
 {/* Disburse Behalf of E-mandate - READ ONLY */}
-<td className={cellStyle}>
+{/* <td className={cellStyle}>
   <div className="flex items-center justify-center">
     <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
       application.receivedDisburse === "Yes" 
@@ -587,14 +587,14 @@ const DisburseRow = ({
       )}
     </span>
   </div>
-</td>
+</td> */}
 
       {/* Loan Term */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
           {application.loanTerm}
         </span>
-      </td>
+      </td> */}
 
       {/* Customer A/c Verified */}
       <td className={cellStyle}>
@@ -614,7 +614,7 @@ const DisburseRow = ({
       </td>
 
       {/* Sanction Letter */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <SanctionLetterDocument
           fileName={application.sanctionLetterFileName}
           hasDoc={application.sanctionLetter}
@@ -623,12 +623,12 @@ const DisburseRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
+      </td> */}
 
       
 
       {/* ICICI Emandate Status */}
-<td className={cellStyle}>
+{/* <td className={cellStyle}>
   {(() => {
     let enachAccount = null;
     let customerAccount = null;
@@ -639,14 +639,12 @@ const DisburseRow = ({
         enachAccount = enachMatch[1];
       }
       
-      // Extract customer_ac_no from enach_details
       const customerMatch = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
       if (customerMatch) {
         customerAccount = customerMatch[1];
       }
     }
     
-    // Check if E-Nach Account and Customer Account match
     const accountsMatch = enachAccount && customerAccount && enachAccount === customerAccount;
     
     const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
@@ -659,7 +657,6 @@ const DisburseRow = ({
           : "bg-gray-50 border border-gray-200"
       }`}>
         
-        {/* Status with Badge */}
         <div className="flex items-center space-x-1.5">
           <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
             application.enachDetails?.status === "Success" 
@@ -686,7 +683,6 @@ const DisburseRow = ({
           </span>
         </div>
         
-        {/* Date and Time */}
         {application.enachDetails?.date && (
           <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
             <div className="font-medium">{application.enachDetails.date}</div>
@@ -698,11 +694,9 @@ const DisburseRow = ({
           </div>
         )}
         
-        {/* Account Numbers - Only show if not pending and status is Success */}
         {!isPending && isSuccess && (
           <div className="space-y-1.5 pt-1">
             
-            {/* E-Nach Account Number - NO TICK/CROSS */}
             <div className="flex items-center justify-between">
               <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
               <span className={`text-xs font-mono font-semibold ${
@@ -712,7 +706,6 @@ const DisburseRow = ({
               </span>
             </div>
             
-            {/* Customer Account Number - COMPARE WITH E-NACH ACCOUNT */}
             <div className="flex items-center justify-between">
               <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
               <div className="flex items-center space-x-1.5">
@@ -721,7 +714,6 @@ const DisburseRow = ({
                 }`}>
                   {customerAccount || "N/A"}
                 </span>
-                {/* Compare Customer Account with E-Nach Account */}
                 {enachAccount && customerAccount && (
                   <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
                     accountsMatch ? "bg-green-500" : "bg-red-500"
@@ -736,7 +728,6 @@ const DisburseRow = ({
           </div>
         )}
         
-        {/* Customer Name - Only show if not pending */}
         {!isPending && (
           <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
             <span className="font-medium">{application.name || "N/A"}</span>
@@ -746,7 +737,7 @@ const DisburseRow = ({
       </div>
     );
   })()}
-</td>
+</td> */}
 
       {/* Bank A/c Verification */}
       <td className={cellStyle}>
@@ -828,7 +819,7 @@ const DisburseRow = ({
       
 
       {/* Remarks */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <button
           onClick={() => onRemarksClick(application)}
           className={`text-sm underline cursor-pointer transition-colors duration-200 ${
@@ -839,10 +830,10 @@ const DisburseRow = ({
         >
           View Remarks
         </button>
-      </td>
+      </td> */}
 
       {/* Document Status */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <div className="flex items-center justify-center">
           <button
             onClick={() => onDocumentStatusClick(application)}
@@ -857,20 +848,20 @@ const DisburseRow = ({
             <span>Check Status</span>
           </button>
         </div>
-      </td>
+      </td> */}
 
       {/* Action */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <ActionButton
           enquiry={application}
           isDark={isDark}
           onVerifyClick={onActionClick} 
           className="w-full flex justify-center"
         />
-      </td>
+      </td> */}
 
       {/* Appraisal Report */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <AppraisalReportButton
           enquiry={application}
           isDark={isDark}
@@ -878,20 +869,20 @@ const DisburseRow = ({
           onCheckClick={onCheckClick}
           className="w-full flex justify-center"
         />
-      </td>
+      </td> */}
 
       {/* Eligibility */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
           onLoanEligibilityClick={onLoanEligibilityClick}
           className="w-full flex justify-center"
         />
-      </td>
+      </td> */}
 
       {/* Replace KYC */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <button
           onClick={() => onReplaceKYCClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
@@ -902,7 +893,7 @@ const DisburseRow = ({
         >
           Replace KYC
         </button>
-      </td>
+      </td> */}
     </tr>
   );
 };

@@ -231,7 +231,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
       </td>
 
       {/* Address */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-start space-x-2">
           <MapPin className={`w-4 h-4 mt-1 flex-shrink-0 ${
             isDark ? "text-emerald-400" : "text-emerald-600"
@@ -242,10 +242,10 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
             {item.address}
           </span>
         </div>
-      </td>
+      </td> */}
 
       {/* Phone No */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <p className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
@@ -253,10 +253,10 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
             {item.phoneNo}
           </p>
         </div>
-      </td>
+      </td> */}
 
       {/* Email */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <p className={`text-sm font-medium ${
             isDark ? "text-gray-200" : "text-gray-800"
@@ -264,7 +264,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
             {item.email}
           </p>    
         </div>
-      </td>
+      </td> */}
 
       {/* Adjustment */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

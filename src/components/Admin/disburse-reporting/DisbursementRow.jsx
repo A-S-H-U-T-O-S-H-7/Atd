@@ -77,6 +77,13 @@ const DisbursementRow = ({
           {item.loanNo}
         </span>
       </td>
+      
+      {/* Beneficiary a/c name */}
+      <td className={cellStyle}>
+        <span className={`text-sm font-medium ${textPrimary}`}>
+          {item.beneficiaryAcName}
+        </span>
+      </td>
 
       {/* Disburse Date */}
       <td className={cellStyle}>
@@ -211,13 +218,13 @@ const DisbursementRow = ({
       </td>
 
       {/* Beneficiary a/c type */}
-      <td className={cellStyle}>
+      {/* <td className={cellStyle}>
         <span className={`text-sm font-semibold ${
           isDark ? "text-teal-400" : "text-teal-600"
         }`}>
           {item.beneficiaryAcType}
         </span>
-      </td>
+      </td> */}
 
       {/* Beneficiary a/c no */}
       <td className={cellStyle}>
@@ -226,12 +233,7 @@ const DisbursementRow = ({
         </span>
       </td>
 
-      {/* Beneficiary a/c name */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-medium ${textPrimary}`}>
-          {item.beneficiaryAcName}
-        </span>
-      </td>
+      
 
       {/* Send to Rec */}
       <td className={cellStyle}>

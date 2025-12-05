@@ -41,6 +41,7 @@ const DisbursementTable = ({
   const tableHeaders = [
     { label: "SN", width: "60px" },
     { label: "Loan No", width: "60px" },
+    { label: "Customer name", width: "180px" },
     { label: "Disburse Date", width: "150px" },
     { label: "CRN No.", width: "100px" },
     { label: "Tran. Ref. No", width: "120px" },
@@ -53,9 +54,8 @@ const DisbursementTable = ({
     { label: "ICICI Transaction", width: "100px" },
     { label: "ICICI Transaction Status", width: "170px" },
     { label: "Beneficiary Bank IFSC Code", width: "120px" },
-    { label: "Beneficiary a/c type", width: "120px" },
+    // { label: "Beneficiary a/c type", width: "120px" },
     { label: "Beneficiary a/c no", width: "150px" },
-    { label: "Beneficiary a/c name", width: "180px" },
     { label: "Send to Rec (Transaction Narration)", width: "180px" },
   ];
 

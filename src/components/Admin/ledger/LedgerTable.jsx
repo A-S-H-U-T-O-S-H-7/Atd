@@ -57,21 +57,21 @@ const LedgerTable = ({
                 }`} style={{ minWidth: "210px" }}>
                   Name
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                {/* <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "300px" }}>
                   Address
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                </th> */}
+                {/* <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "130px" }}>
                   Phone No.
-                </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                </th> */}
+                {/* <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "220px" }}>
                   E-mail
-                </th>
+                </th> */}
                 <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "120px" }}>
