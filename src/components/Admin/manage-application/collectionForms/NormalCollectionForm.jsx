@@ -30,13 +30,12 @@ const NormalCollectionForm = ({
   const [penaltyChecked, setPenaltyChecked] = useState(false);
   const [banks, setBanks] = useState([]);
   const [selectedBankDetails, setSelectedBankDetails] = useState(null);
+  const [selectedBankId, setSelectedBankId] = useState("");
 
-  // Fetch banks when component mounts
   useEffect(() => {
     fetchBanks();
   }, []);
 
-  // Fetch collection data when modal opens
   useEffect(() => {
     if (isOpen && application) {
       fetchCollectionData();
@@ -53,17 +52,16 @@ const NormalCollectionForm = ({
         normalInterest: ""
       });
       setPenaltyChecked(false);
+      setSelectedBankId("");
     }
   }, [isOpen, application]);
 
-  // Auto-calculate charges when collection date changes
   useEffect(() => {
     if (formData.collectionDate && collectionData) {
       calculateAndSetCharges();
     }
   }, [formData.collectionDate, collectionData]);
 
-  // Fetch bank list from API
   const fetchBanks = async () => {
     try {
       const response = await collectionService.getBankList();
@@ -75,7 +73,6 @@ const NormalCollectionForm = ({
     }
   };
 
-  // Fetch bank details when bank is selected
   const fetchBankDetails = async (bankId) => {
     try {
       const response = await collectionService.getBankDetails(bankId);
@@ -88,7 +85,6 @@ const NormalCollectionForm = ({
     }
   };
 
-  // API call to fetch collection details
   const fetchCollectionData = async () => {
     if (!application?.id) return;
     
@@ -102,13 +98,13 @@ const NormalCollectionForm = ({
         setCollectionData(response.data);
         
         if (response.data.bank_name) {
-          setFormData(prev => ({
-            ...prev,
-            bankName: response.data.bank_name
-          }));
-          
           const bank = banks.find(b => b.bank_name === response.data.bank_name);
           if (bank) {
+            setSelectedBankId(bank.id.toString());
+            setFormData(prev => ({
+              ...prev,
+              bankName: response.data.bank_name
+            }));
             fetchBankDetails(bank.id);
           }
         }
@@ -123,12 +119,10 @@ const NormalCollectionForm = ({
     }
   };
 
-  // Calculate all charges based on scenarios
   const calculateAndSetCharges = () => {
     if (!collectionData || !formData.collectionDate) return;
 
     const approvedAmount = parseFloat(collectionData.approved_amount);
-    const dwCollection = parseFloat(collectionData.dw_collection);
     const dueDate = new Date(collectionData.duedate);
     const gracePeriod = parseInt(collectionData.grace_period);
     const collectionDate = new Date(formData.collectionDate);
@@ -138,14 +132,11 @@ const NormalCollectionForm = ({
     const totalPenaltyPaid = parseFloat(collectionData.total_penalty_paid || 0);
     const hasOverduePayment = collectionData.has_overdue_payment === 1;
 
-    // Calculate grace period end date
     const gracePeriodEnd = new Date(dueDate);
     gracePeriodEnd.setDate(gracePeriodEnd.getDate() + gracePeriod);
 
-    // Check if payment is within grace period
     const isWithinGracePeriod = collectionDate <= gracePeriodEnd;
 
-    // SCENARIO 1 & 3: Payment within grace period (on-time)
     if (isWithinGracePeriod && !hasOverduePayment) {
       setFormData(prev => ({
         ...prev,
@@ -157,46 +148,30 @@ const NormalCollectionForm = ({
       return;
     }
 
-    // Determine if this is first late payment or subsequent payment
     const isFirstLatePayment = !lastCollectionDate;
     
     let diffDays;
     
-    // SCENARIO 2 & 4: First late payment - calculate from due date
     if (isFirstLatePayment) {
       diffDays = Math.floor((collectionDate - dueDate) / (1000 * 60 * 60 * 24));
-    } 
-    // SCENARIO 5: Subsequent late payments - calculate from last collection date
-    else {
+    } else {
       diffDays = Math.floor((collectionDate - lastCollectionDate) / (1000 * 60 * 60 * 24));
     }
 
-    // Ensure positive days
     diffDays = Math.max(0, diffDays);
 
-    // Calculate normal interest: ((approved_amount * 0.067) / 100) * diffdays
     const normalInterest = ((approvedAmount * 0.067) / 100) * diffDays;
-    
-    // Calculate penal interest: ((approved_amount * 0.6) / 100) * diffdays
     const penalInterestBase = ((approvedAmount * 0.6) / 100) * diffDays;
-    
-    // Calculate penal GST: 18% of penal interest
     const penalGst = penalInterestBase * 0.18;
-    
-    // Total penal interest including GST
     const penalInterestTotal = penalInterestBase + penalGst;
     
-    // Penalty logic
     let penalty = 0;
     if (isFirstLatePayment) {
-      // First late payment: always charge 500
       penalty = 500;
     } else {
-      // Subsequent payments: only if customer hasn't paid 500 before
       penalty = totalPenaltyPaid >= 500 ? 0 : 500;
     }
 
-    // Update form data with calculated values
     setFormData(prev => ({
       ...prev,
       normalInterest: normalInterest.toFixed(2),
@@ -204,7 +179,6 @@ const NormalCollectionForm = ({
       penalInterest: penalInterestTotal.toFixed(2)
     }));
     
-    // Update penalty checkbox state
     setPenaltyChecked(penalty === 500);
   };
 
@@ -223,18 +197,22 @@ const NormalCollectionForm = ({
         collectionBy: value,
         bankName: value === "by cash" ? "" : prev.bankName
       }));
-    } else if (name === "bankName") {
-      setFormData(prev => ({
-        ...prev,
-        bankName: value
-      }));
+    } else if (name === "bankId") {
+      const bankId = value;
+      setSelectedBankId(bankId);
       
-      if (value) {
-        const selectedBank = banks.find(bank => bank.bank_name === value);
-        if (selectedBank) {
-          fetchBankDetails(selectedBank.id);
-        }
+      const selectedBank = banks.find(bank => bank.id.toString() === bankId);
+      if (selectedBank) {
+        setFormData(prev => ({
+          ...prev,
+          bankName: selectedBank.bank_name
+        }));
+        fetchBankDetails(selectedBank.id);
       } else {
+        setFormData(prev => ({
+          ...prev,
+          bankName: ""
+        }));
         setSelectedBankDetails(null);
       }
     } else {
@@ -262,45 +240,48 @@ const NormalCollectionForm = ({
     }
   };
 
- const handleSubmit = async () => {
-  if (!collectionData) {
-    alert('Collection data is still loading. Please wait...');
-    return;
-  }
-
-  if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
-    alert('Please fill all required fields.');
-    return;
-  }
-
-  if (formData.collectionBy === "by bank" && !formData.bankName) {
-    alert('Please select a bank.');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    
-    // Pass collectionData as the third parameter
-    await collectionService.submitNormalCollection(application.id, formData, collectionData);
-    
-    if (onCollectionSubmit) {
-      await onCollectionSubmit(application.id, formData);
+  const handleSubmit = async () => {
+    if (!collectionData) {
+      alert('Collection data is still loading. Please wait...');
+      return;
     }
-    
-    alert('Collection processed successfully!');
-    onClose();
-  } catch (error) {
-    console.error("Collection error:", error);
-    alert(`Failed to process collection: ${error.message || 'Please try again.'}`);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    if (formData.collectionBy === "by bank" && !selectedBankId) {
+      alert('Please select a bank.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const dataToSend = {
+        ...formData,
+        bankId: selectedBankId
+      };
+      
+      await collectionService.submitNormalCollection(application.id, dataToSend, collectionData);
+      
+      if (onCollectionSubmit) {
+        await onCollectionSubmit(application.id, formData);
+      }
+      
+      alert('Collection processed successfully!');
+      onClose();
+    } catch (error) {
+      console.error("Collection error:", error);
+      alert(`Failed to process collection: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  // Use API data
   const sanctionAmount = collectionData?.approved_amount || "0";
   const processFee = collectionData?.process_fee || "0";
   const processFeePrincipal = parseFloat(processFee) - parseFloat(collectionData?.gst || 0);
@@ -312,7 +293,6 @@ const NormalCollectionForm = ({
   const interest = collectionData?.roi ? `${collectionData.roi}%` : "";
   const dueAmount = collectionData?.dw_collection || "";
   
-  // Calculate total due amount
   const calculateTotalDue = () => {
     const base = parseFloat(collectionData?.dw_collection || 0);
     const normalInt = parseFloat(formData.normalInterest || 0);
@@ -325,13 +305,11 @@ const NormalCollectionForm = ({
   const totalDueAmount = calculateTotalDue();
   const amtDisbursedFrom = collectionData?.bank_name || "";
 
-  // Calculate penalty details for display
   const penaltyAmount = formData.penaltyInput ? parseFloat(formData.penaltyInput) : 0;
   const penaltyPrincipal = penaltyAmount > 0 ? Math.round(penaltyAmount / 1.18) : 0;
   const penaltyGST = penaltyAmount > 0 ? penaltyAmount - penaltyPrincipal : 0;
   const penaltyDetail = penaltyAmount > 0 ? `(Principal: ${penaltyPrincipal.toLocaleString('en-IN')} + GST: ${penaltyGST.toLocaleString('en-IN')})` : "";
 
-  // Calculate penal interest details for display
   const penalInterestAmount = formData.penalInterest ? parseFloat(formData.penalInterest) : 0;
   const penalInterestPrincipal = penalInterestAmount > 0 ? Math.round(penalInterestAmount / 1.18) : 0;
   const penalInterestGST = penalInterestAmount > 0 ? penalInterestAmount - penalInterestPrincipal : 0;
@@ -348,7 +326,6 @@ const NormalCollectionForm = ({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className={`px-6 py-4 border-b flex items-center justify-between sticky top-0 z-10 ${
           isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
         }`}>
@@ -370,7 +347,6 @@ const NormalCollectionForm = ({
           </button>
         </div>
 
-        {/* Error Message */}
         {apiError && (
           <div className={`mx-6 mt-4 p-3 rounded-lg border ${
             isDark ? "bg-red-900/20 border-red-700 text-red-300" : "bg-red-50 border-red-200 text-red-700"
@@ -385,9 +361,7 @@ const NormalCollectionForm = ({
           </div>
         )}
 
-        {/* Form Content */}
         <div className="p-6">
-          {/* Non-editable Application Details */}
           <div className={`mb-6 p-5 rounded-xl border ${
             isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
@@ -496,7 +470,6 @@ const NormalCollectionForm = ({
             </div>
           </div>
 
-          {/* Due Amount Section */}
           <div className={`mb-6 p-5 rounded-xl border ${
             isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
@@ -586,7 +559,6 @@ const NormalCollectionForm = ({
                 </div>
               </div>
 
-              {/* Penalty and Penal Interest in 2-column grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
@@ -669,7 +641,6 @@ const NormalCollectionForm = ({
                 </div>
               </div>
 
-              {/* Bounce Charge and Collection By in 2-column grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
@@ -716,7 +687,6 @@ const NormalCollectionForm = ({
                 </div>
               </div>
 
-              {/* Bank Name and Amt Disbursed From in 2-column grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
@@ -732,8 +702,8 @@ const NormalCollectionForm = ({
                     )}
                   </label>
                   <select
-                    name="bankName"
-                    value={formData.bankName}
+                    name="bankId"
+                    value={selectedBankId}
                     onChange={handleChange}
                     disabled={formData.collectionBy === "by cash"}
                     className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
@@ -748,7 +718,7 @@ const NormalCollectionForm = ({
                   >
                     <option value="">--Select Bank--</option>
                     {banks.map((bank) => (
-                      <option key={bank.id} value={bank.bank_name}>
+                      <option key={bank.id} value={bank.id}>
                         {bank.bank_name}
                       </option>
                     ))}
@@ -774,7 +744,6 @@ const NormalCollectionForm = ({
                 </div>
               </div>
 
-              {/* Transaction ID and Collection Amount in 2-column grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
@@ -820,7 +789,6 @@ const NormalCollectionForm = ({
                 </div>
               </div>
 
-              {/* Status field */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
@@ -850,7 +818,6 @@ const NormalCollectionForm = ({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
             <button
               type="button"

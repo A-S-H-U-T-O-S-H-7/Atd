@@ -22,10 +22,17 @@ const DisbursementModal = ({
 
   useEffect(() => {
     if (isOpen && application) {
+      // Get current date in YYYY-MM-DD format
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
       // Pre-fill with application data from API
       setFormData({
         disburseAmount: application.disburseAmount || application.approvedAmount || "",
-        disbursementDate: new Date().toISOString().split('T')[0], // Only editable field
+        disbursementDate: formattedDate, // Set to current date automatically
         bankName: application.customerBank || application.customerAcBank || "",
         branchName: application.customerBranch || application.customerAcBranch || "",
         accountNo: application.customerAccount || application.customerAcNo || "",
@@ -34,36 +41,9 @@ const DisbursementModal = ({
     }
   }, [isOpen, application]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    // Only allow changes to disbursementDate
-    if (name === "disbursementDate") {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation - only check disbursementDate since others are pre-filled
-    if (!formData.disbursementDate) {
-      toast.error('Please select disbursement date.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
-        }
-      });
-      return;
-    }
-
     try {
       setLoading(true);
       
@@ -150,14 +130,14 @@ const DisbursementModal = ({
                   Disbursement Amount
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="disburseAmount"
                   value={formData.disburseAmount}
                   readOnly
                   className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-gray-300 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
                 />
                 <p className={`text-xs mt-1 ${
@@ -171,24 +151,23 @@ const DisbursementModal = ({
                 <label className={`block text-xs font-medium mb-1 ${
                   isDark ? "text-gray-400" : "text-gray-600"
                 }`}>
-                  Disbursement Date <span className="text-red-500">*</span>
+                  Disbursement Date
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   name="disbursementDate"
                   value={formData.disbursementDate}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  readOnly
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
-                  required
                 />
                 <p className={`text-xs mt-1 ${
                   isDark ? "text-gray-500" : "text-gray-400"
                 }`}>
-                  Select disbursement date
+                  Auto-filled with current date
                 </p>
               </div>
             </div>
@@ -218,8 +197,8 @@ const DisbursementModal = ({
                   readOnly
                   className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
                 />
               </div>
@@ -237,8 +216,8 @@ const DisbursementModal = ({
                   readOnly
                   className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
                 />
               </div>
@@ -256,8 +235,8 @@ const DisbursementModal = ({
                   readOnly
                   className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
                 />
               </div>
@@ -275,8 +254,8 @@ const DisbursementModal = ({
                   readOnly
                   className={`w-full px-3 py-2 rounded-lg border text-sm ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-800 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-gray-200" 
+                      : "bg-gray-100 border-gray-300 text-gray-800"
                   }`}
                 />
               </div>

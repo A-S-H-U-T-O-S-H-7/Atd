@@ -236,7 +236,7 @@ const CallDetailsModal = ({
                 }`}>Customer Information</h3>
               </div>
               
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-sm">
                 {[
                   { label: "Name", value: getCustomerData('name') },
                   { label: "Mobile", value: getCustomerData('mobile'), important: true },

@@ -97,7 +97,7 @@ const SanctionRow = ({
   };
 
   // Common cell styles
-  const cellBase = "px-2 text-center py-4 border-r";
+  const cellBase = "px-2 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
@@ -556,13 +556,30 @@ const SanctionRow = ({
         <CheckCircle className="w-3 h-3" />
         <span>Yes</span>
       </span>
-    ) : (
+    ) : application.enachDetails?.status === "Success" ? (
       <button
         onClick={() => onDisburseEmandateModalOpen(application)}
         className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+        title="Click to verify disbursement"
       >
         <span>Verify</span>
       </button>
+    ) : (
+      <div className="relative group">
+        <button
+          disabled
+          className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-400 to-gray-600 text-gray-300 cursor-not-allowed flex items-center space-x-1 opacity-60"
+        >
+          <span>Pending</span>
+        </button>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block">
+          <div className={`px-2 py-1 text-xs rounded ${
+            isDark ? "bg-gray-800 text-gray-300" : "bg-gray-900 text-white"
+          } whitespace-nowrap`}>
+            Waiting for ICICI Emandate Success
+          </div>
+        </div>
+      </div>
     )}
   </div>
 </td>
@@ -603,8 +620,28 @@ const SanctionRow = ({
         />
       </td>
 
-    
-{/* ICICI Emandate Status */}
+      {/* Sanction Mail */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center">
+    {application.sanctionMail === "Sent" ? (
+      <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+        <CheckCircle className="w-3 h-3" />
+        <span>Sent</span>
+      </span>
+    ) : (
+      <button
+        
+        className="px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+        title="Send sanction letter via email"
+      >
+        <Mail className="w-4 h-4" />
+        <span>Send Mail</span>
+      </button>
+    )}
+  </div>
+</td>
+
+      {/* ICICI Emandate Status */}
 <td className={cellStyle}>
   {(() => {
     // Parse account numbers from enach_details string
@@ -625,8 +662,7 @@ const SanctionRow = ({
       }
     }
     
-    // Fetch CRM account number from the application data
-    // Assuming it's in disbursal_account field
+    
     const crmAccount = application.disbursalAccount;
     
     // Check if account numbers match
@@ -740,8 +776,8 @@ const SanctionRow = ({
       </div>
     );
   })()}
-</td>
-
+  </td>
+   
       {/* Loan Status */}
       <td className={cellStyle}>
         <button

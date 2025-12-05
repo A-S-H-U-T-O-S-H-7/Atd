@@ -83,6 +83,7 @@ const SanctionTable = ({
     { label: "Loan Term", width: "90px" },
     { label: "Customer A/c Verified", width: "120px" },
     { label: "Sanction Letter", width: "140px" },
+    { label: "Sanction Mail", width: "140px" },
     { label: "ICICI Emandate Status", width: "180px" },
     
     { label: "Loan Status", width: "100px" },

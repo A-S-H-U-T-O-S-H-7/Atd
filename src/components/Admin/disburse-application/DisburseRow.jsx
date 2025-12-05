@@ -842,14 +842,7 @@ const DisburseRow = ({
         </div>
       </td> */}
 
-      {/* Sanction Mail */}
-      <td className={cellStyle}>
-        <span className={`text-sm font-semibold ${
-          isDark ? "text-orange-400" : "text-orange-600"
-        }`}>
-          {application.sanctionMail}
-        </span>
-      </td>
+      
 
       {/* Remarks */}
       <td className={cellStyle}>
