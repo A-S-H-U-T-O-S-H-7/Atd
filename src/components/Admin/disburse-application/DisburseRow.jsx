@@ -630,12 +630,10 @@ const DisburseRow = ({
       {/* ICICI Emandate Status */}
 <td className={cellStyle}>
   {(() => {
-    // Parse account numbers from enach_details string
     let enachAccount = null;
     let customerAccount = null;
     
     if (application.enachDetails?.details) {
-      // Extract enach_ac_no from enach_details
       const enachMatch = application.enachDetails.details.match(/enach_ac_no:\s*(\d+)/);
       if (enachMatch) {
         enachAccount = enachMatch[1];
@@ -648,12 +646,8 @@ const DisburseRow = ({
       }
     }
     
-    // Fetch CRM account number from the application data
-    // Assuming it's in disbursal_account field
-    const crmAccount = application.disbursalAccount;
-    
-    // Check if account numbers match
-    const accountsMatch = enachAccount && crmAccount && enachAccount === crmAccount;
+    // Check if E-Nach Account and Customer Account match
+    const accountsMatch = enachAccount && customerAccount && enachAccount === customerAccount;
     
     const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
     const isSuccess = application.enachDetails?.status === "Success";
@@ -704,21 +698,31 @@ const DisburseRow = ({
           </div>
         )}
         
-        {/* Account Numbers Comparison - Only show if not pending and status is Success */}
+        {/* Account Numbers - Only show if not pending and status is Success */}
         {!isPending && isSuccess && (
           <div className="space-y-1.5 pt-1">
             
-            
-            {/* E-Nach Account Number */}
+            {/* E-Nach Account Number - NO TICK/CROSS */}
             <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Account:</span>
+              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
+              <span className={`text-xs font-mono font-semibold ${
+                isDark ? "text-blue-300" : "text-blue-600"
+              }`}>
+                {enachAccount || "N/A"}
+              </span>
+            </div>
+            
+            {/* Customer Account Number - COMPARE WITH E-NACH ACCOUNT */}
+            <div className="flex items-center justify-between">
+              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
               <div className="flex items-center space-x-1.5">
                 <span className={`text-xs font-mono font-semibold ${
-                  isDark ? "text-blue-300" : "text-blue-600"
+                  isDark ? "text-amber-300" : "text-amber-600"
                 }`}>
-                  {enachAccount || "N/A"}
+                  {customerAccount || "N/A"}
                 </span>
-                {enachAccount && crmAccount && (
+                {/* Compare Customer Account with E-Nach Account */}
+                {enachAccount && customerAccount && (
                   <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
                     accountsMatch ? "bg-green-500" : "bg-red-500"
                   }`}>
@@ -729,33 +733,12 @@ const DisburseRow = ({
                 )}
               </div>
             </div>
-            
-            {/* Customer Account Number */}
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Customer Ac:</span>
-              <div className="flex items-center space-x-1.5">
-                <span className={`text-xs font-mono font-semibold ${
-                  isDark ? "text-amber-300" : "text-amber-600"
-                }`}>
-                  {customerAccount || "N/A"}
-                </span>
-                {/* Customer Account Verification */}
-                {application.customerAcVerified === "Yes" && (
-                  <div className="flex items-center justify-center w-4 h-4 rounded-full bg-green-500 flex-shrink-0">
-                    <span className="text-white text-[10px] font-bold">✓</span>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         )}
-        
-        
         
         {/* Customer Name - Only show if not pending */}
         {!isPending && (
           <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-            <span className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Customer - </span>
             <span className="font-medium">{application.name || "N/A"}</span>
           </div>
         )}
@@ -763,7 +746,7 @@ const DisburseRow = ({
       </div>
     );
   })()}
-  </td>
+</td>
 
       {/* Bank A/c Verification */}
       <td className={cellStyle}>
