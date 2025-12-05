@@ -111,7 +111,7 @@ const DisburseTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "1500px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "1000px" }}>
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
