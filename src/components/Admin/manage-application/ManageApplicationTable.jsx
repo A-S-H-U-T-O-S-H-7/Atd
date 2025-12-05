@@ -41,6 +41,7 @@ const ManageApplicationTable = ({
   // Table headers configuration with their respective widths
   const tableHeaders = [{ label: "SR. No", width: "90px" },
         { label: "Call", width: "20px" },
+        { label: "Collection", width: "150px" },
         { label: "Loan No.", width: "80px" },
         { label: "CRN No.", width: "60px" },
         // { label: "Account ID", width: "70px" },
@@ -89,7 +90,6 @@ const ManageApplicationTable = ({
         { label: "Bank A/c Verification", width: "180px" },
         { label: "Disburse Approval", width: "160px" },
         { label: "Disburse", width: "100px" },
-        { label: "Collection", width: "150px" },
 
         // { label: "Change Status", width: "200px" },
         { label: "Action", width: "140px" },
