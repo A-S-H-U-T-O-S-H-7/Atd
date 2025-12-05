@@ -95,7 +95,7 @@ const InProgressRow = ({
       <td className={cellStyle}>
       <CRNLink 
         crnNo={application.crnNo} 
-        userId={application.userId}
+        userId={application.user_Id}
         onSuccess={(data) => {
           toast.success('Profile loaded');
         }}
@@ -103,7 +103,7 @@ const InProgressRow = ({
           toast.error(error);
         }}
       />
-      </td>
+      </td> 
 
       {/* Account ID */}
       {/* <td className={cellStyle}>

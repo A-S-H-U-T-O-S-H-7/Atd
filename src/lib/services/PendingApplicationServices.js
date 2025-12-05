@@ -78,6 +78,8 @@ export const formatApplicationForUI = (application) => {
         enquirySource: application.enquiry_type || 'N/A',
         crnNo: application.crnno,
         accountId: application.accountId,
+        userId: application.user_id,
+
 
         // Date and time
         enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',

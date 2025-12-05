@@ -22,8 +22,8 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       'grossAmountSalary', 'grossAmountSalaryStatus', 'grossSalaryAmount',
       'netAmountSalary', 'netAmountSalaryStatus', 'netSalaryAmount',
       'salaryDate', 'incomeVerificationFinalReport',
-      'availabilityOfBasicAmenities', 'availabilityOfOtherAssets', 'primarySourceOfIncome', 'natureOfWork',
-      'frequencyOfIncome', 'monthsOfEmployment', 'selfReportedMonthlyIncome', 'averageMonthlyIncome'
+      'availabilityOfBasicAmenities', 'availabilityOfOtherAssets', 
+      'primarySourceOfIncome', 'natureOfWork', 'frequencyOfIncome'
     ];
     
     fields.forEach(field => {
@@ -66,7 +66,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
     setUserManuallyChangedFinalReport(true);
   };
 
-  // Auto-update final report based on verifications and required fields - ONLY if user hasn't manually changed it
+  // Auto-update final report based on verifications - ONLY if user hasn't manually changed it
   useEffect(() => {
     // If user manually changed final report, don't auto-update
     if (userManuallyChangedFinalReport) {
@@ -79,30 +79,25 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       formik.values.grossAmountSalary === 'Yes' &&
       formik.values.grossAmountSalaryStatus === 'Positive' &&
       formik.values.netAmountSalary === 'Yes' &&
-      formik.values.netAmountSalaryStatus === 'Positive';
-
-    // Check required fields
-    const requiredFieldsFilled = 
+      formik.values.netAmountSalaryStatus === 'Positive' &&
       formik.values.salaryDate &&
-      formik.values.salaryDate.trim() !== '' &&
-      formik.values.monthsOfEmployment &&
-      formik.values.monthsOfEmployment.toString().trim() !== '' &&
-      formik.values.selfReportedMonthlyIncome &&
-      formik.values.selfReportedMonthlyIncome.toString().trim() !== '';
+      formik.values.salaryDate.trim() !== '';
 
     // Set to Positive if all conditions met
-    if (allCriticalVerified && requiredFieldsFilled && formik.values.incomeVerificationFinalReport !== 'Positive') {
+    if (allCriticalVerified && formik.values.incomeVerificationFinalReport !== 'Positive') {
       formik.setFieldValue('incomeVerificationFinalReport', 'Positive');
     }
 
-    // Set to Negative if any critical verification is negative
+    // Set to Negative if any critical verification is negative OR salary date is missing
     const hasCriticalNegative = 
       formik.values.organizationSameAsApplied === 'No' ||
       formik.values.organizationSameAsAppliedStatus === 'Negative' ||
       formik.values.grossAmountSalary === 'No' ||
       formik.values.grossAmountSalaryStatus === 'Negative' ||
       formik.values.netAmountSalary === 'No' ||
-      formik.values.netAmountSalaryStatus === 'Negative';
+      formik.values.netAmountSalaryStatus === 'Negative' ||
+      !formik.values.salaryDate ||
+      formik.values.salaryDate.trim() === '';
       
     if (hasCriticalNegative && formik.values.incomeVerificationFinalReport !== 'Negative') {
       formik.setFieldValue('incomeVerificationFinalReport', 'Negative');
@@ -116,9 +111,7 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       !formik.values.organizationSameAsApplied &&
       !formik.values.grossAmountSalary &&
       !formik.values.netAmountSalary &&
-      !formik.values.salaryDate &&
-      !formik.values.monthsOfEmployment &&
-      !formik.values.selfReportedMonthlyIncome;
+      !formik.values.salaryDate;
     
     if (allFieldsEmpty) {
       setUserManuallyChangedFinalReport(false);
@@ -220,16 +213,12 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
     return total + (parseFloat(member.annualIncome) || 0);
   }, 0);
 
-  const monthsEmployed = parseFloat(formik.values.monthsOfEmployment) || 0;
-  const selfReportedIncome = parseFloat(formik.values.selfReportedMonthlyIncome) || 0;
-  const averageMonthlyIncome = monthsEmployed > 0 ? (selfReportedIncome * monthsEmployed) / 12 : 0;  
-
   // Save all data by calling parent's onSectionSave
   const saveAllHouseholdIncomes = async () => {
     try {
       setSubmittingSalary(true);
       
-      // Validate using Yup schema
+      // Validate using Yup schema (you might want to update this schema too)
       try {
         await incomeVerificationSchema.validate(formik.values, { abortEarly: true });
       } catch (validationError) {
@@ -241,16 +230,6 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
       // Validate required fields are filled
       if (!formik.values.salaryDate || formik.values.salaryDate.trim() === '') {
         toast.error('Salary date is required');
-        return;
-      }
-
-      if (!formik.values.monthsOfEmployment || formik.values.monthsOfEmployment.toString().trim() === '') {
-        toast.error('Months of employment is required');
-        return;
-      }
-
-      if (!formik.values.selfReportedMonthlyIncome || formik.values.selfReportedMonthlyIncome.toString().trim() === '') {
-        toast.error('Self-reported monthly income is required');
         return;
       }
       
@@ -543,49 +522,6 @@ const IncomeVerification = ({ formik, onSectionSave, isDark, saving }) => {
                   }`}>
                     {totalAnnualIncome > 0 ? `₹${totalAnnualIncome.toLocaleString()}` : 'No family income added'}
                   </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Employment Details Block */}
-            <div className={`${fieldClassName}`}>
-              <label className={labelClassName}>Employment Details</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className={requiredLabelClassName}>Months of employment over last one year</label>
-                  <input
-                    type="number"
-                    value={formik.values.monthsOfEmployment || ''}
-                    onChange={(e) => formik.setFieldValue('monthsOfEmployment', e.target.value)}
-                    className={inputClassName}
-                    placeholder="Enter months"
-                    min="1"
-                    max="12"
-                  />
-                </div>
-
-                <div>
-                  <label className={requiredLabelClassName}>Self-reported monthly income</label>
-                  <input
-                    type="number"
-                    value={formik.values.selfReportedMonthlyIncome || ''}
-                    onChange={(e) => formik.setFieldValue('selfReportedMonthlyIncome', e.target.value)}
-                    className={inputClassName}
-                    placeholder="₹"
-                    min="1"
-                  />
-                </div>
-
-                <div>
-                  <label className={subLabelClassName}>Average monthly income</label>
-                  <div className={`p-2 rounded border text-center font-semibold ${
-                    isDark ? "bg-gray-700 border-gray-600 text-emerald-400" : "bg-emerald-100 border-emerald-200 text-emerald-700"
-                  }`}>
-                    ₹{averageMonthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1 text-center">
-                    (Self-reported monthly income × Months of employment ÷ 12)
-                  </div>
                 </div>
               </div>
             </div>

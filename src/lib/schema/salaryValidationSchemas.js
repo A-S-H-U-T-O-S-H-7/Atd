@@ -41,12 +41,6 @@
     availabilityOfOtherAssets: Yup.string().optional(),
     primarySourceOfIncome: Yup.string().optional(),
     natureOfWork: Yup.string().optional(),
-    frequencyOfIncome: Yup.string().optional(),
-    monthsOfEmployment: Yup.number()
-      .transform((value, originalValue) => originalValue === '' ? undefined : value)
-      .optional(),
-    selfReportedMonthlyIncome: Yup.number()
-      .transform((value, originalValue) => originalValue === '' ? undefined : value)
-      .optional(),
+    
 
   });

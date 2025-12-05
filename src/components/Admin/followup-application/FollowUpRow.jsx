@@ -189,7 +189,7 @@ const FollowUpRow = ({
             toast.error(error);
           }}
         />
-      </td>
+      </td> 
 
       {/* Account ID */}
       {/* <td className={cellStyle}>
