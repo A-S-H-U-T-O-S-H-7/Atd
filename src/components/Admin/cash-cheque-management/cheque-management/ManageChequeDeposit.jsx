@@ -104,6 +104,8 @@ const ManageChequeDepositPage = () => {
       intimationMailFromBankDate: "",
       intimationMailFromDispatchChequeDate: "",
       reasonOfBounce: "",
+       applicationId: ""
+
     },
     validationSchema,
     onSubmit: async (values) => {
