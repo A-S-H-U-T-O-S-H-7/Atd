@@ -113,14 +113,12 @@ const RbiGuidelinesPage = () => {
     // Call the service with proper parameters
     const response = await rbiGuidelineService.updateStatus(guidelineId, newStatus, finalRemark);
     
-    // Consistent success checking - based on your API response
-    if (response.data?.status === true) {
-      toast.success(response.data?.message || 'Status updated successfully');
+    if (response?.status === true) {
+      toast.success(response?.message || 'Status updated successfully');
       await loadGuidelines(false);
-      // Close modal only after successful update
       handleCloseModal();
     } else {
-      throw new Error(response.data?.message || 'Failed to update status');
+      throw new Error(response?.message || 'Failed to update status');
     }
   } catch (error) {
     console.error('Status update error:', error);

@@ -80,7 +80,7 @@ export const formatManageApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
-    userId: application.user_id,
+    userId: application.user_id, 
 
     verify: application.verify, 
     isVerified: application.verify === 1,

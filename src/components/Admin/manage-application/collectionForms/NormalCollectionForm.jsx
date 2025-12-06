@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { collectionService } from "@/lib/services/colletionForms/CollectionService";
+import toast from "react-hot-toast";
 
 const NormalCollectionForm = ({
   isOpen,
@@ -242,17 +243,38 @@ const NormalCollectionForm = ({
 
   const handleSubmit = async () => {
     if (!collectionData) {
-      alert('Collection data is still loading. Please wait...');
+      toast.error('Collection data is still loading. Please wait...', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#fff',
+          color: isDark ? '#fff' : '#111827',
+        }
+      });
       return;
     }
 
     if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
-      alert('Please fill all required fields.');
+      toast.error('Please fill all required fields.', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#fff',
+          color: isDark ? '#fff' : '#111827',
+        }
+      });
       return;
     }
 
     if (formData.collectionBy === "by bank" && !selectedBankId) {
-      alert('Please select a bank.');
+      toast.error('Please select a bank.', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#fff',
+          color: isDark ? '#fff' : '#111827',
+        }
+      });
       return;
     }
 
@@ -270,11 +292,26 @@ const NormalCollectionForm = ({
         await onCollectionSubmit(application.id, formData);
       }
       
-      alert('Collection processed successfully!');
+      toast.success('Collection processed successfully!', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: '#10b981',
+          color: '#fff',
+        }
+      });
+      
       onClose();
     } catch (error) {
       console.error("Collection error:", error);
-      alert(`Failed to process collection: ${error.message || 'Please try again.'}`);
+      toast.error(error.message || 'Failed to process collection. Please try again.', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#fff',
+          color: isDark ? '#fff' : '#111827',
+        }
+      });
     } finally {
       setLoading(false);
     }

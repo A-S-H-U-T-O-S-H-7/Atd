@@ -78,7 +78,7 @@ export const formatApplicationForUI = (application) => {
         enquirySource: application.enquiry_type || 'N/A',
         crnNo: application.crnno,
         accountId: application.accountId,
-        userId: application.user_id,
+        quserId: application.user_id,
 
 
         // Date and time

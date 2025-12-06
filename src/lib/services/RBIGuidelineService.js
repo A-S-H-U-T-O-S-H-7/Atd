@@ -66,8 +66,8 @@ updateStatus: async (guidelineId, status, remarks = "") => {
     let errorMessage = 'Failed to update status';
     
     if (error.response) {
-      errorMessage = error.response.data?.message || 
-                    error.response.data?.error || 
+      errorMessage = error.response?.message || 
+                    error.response?.error || 
                     error.response.statusText ||
                     'Server error occurred';
     } else if (error.request) {
@@ -128,8 +128,8 @@ updateStatus: async (guidelineId, status, remarks = "") => {
 
     } catch (error) {
       if (error.response) {
-        const serverError = error.response.data?.error || 
-                          error.response.data?.message || 
+        const serverError = error.response?.error || 
+                          error.response?.message || 
                           error.response.statusText ||
                           'Server error occurred';
         

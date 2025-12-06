@@ -33,7 +33,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
       confirmButtonText: 'Download PDF',
       cancelButtonText: 'Cancel',
       showDenyButton: true,
-      denyButtonText: 'Print',
+      denyButtonText: 'View in Browser',
       confirmButtonColor: '#10b981',
       denyButtonColor: '#3b82f6',
       cancelButtonColor: '#6b7280',
@@ -74,18 +74,21 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         setPdfLoading(false);
       }
     } else if (result.isDenied) {
-      // Print PDF
+      // Open PDF in new tab
+      setPdfLoading(true);
       try {
-        await exportService.printIndividualLedger(item.application_id);
+        await exportService.openIndividualLedgerPDF(item.application_id);
       } catch (error) {
         await Swal.fire({
-          title: 'Print Failed!',
-          text: error.message || 'Failed to open print view. Please try again.',
+          title: 'Failed to Open PDF',
+          text: error.message || 'Failed to open PDF in browser.',
           icon: 'error',
           confirmButtonColor: '#ef4444',
           background: isDark ? "#1f2937" : "#ffffff",
           color: isDark ? "#f9fafb" : "#111827",
         });
+      } finally {
+        setPdfLoading(false);
       }
     }
   };
@@ -229,42 +232,6 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
           </div>
         </div>
       </td>
-
-      {/* Address */}
-      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-start space-x-2">
-          <MapPin className={`w-4 h-4 mt-1 flex-shrink-0 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm ${
-            isDark ? "text-gray-300" : "text-gray-600"
-          } leading-relaxed`}>
-            {item.address}
-          </span>
-        </div>
-      </td> */}
-
-      {/* Phone No */}
-      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <p className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
-            {item.phoneNo}
-          </p>
-        </div>
-      </td> */}
-
-      {/* Email */}
-      {/* <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <p className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}>
-            {item.email}
-          </p>    
-        </div>
-      </td> */}
 
       {/* Adjustment */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

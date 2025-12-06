@@ -125,7 +125,7 @@ function References() {
               const isFormValid = completedCount === 5 && 
                                  !hasDuplicates && 
                                  !hasUserPhoneMatches && 
-                                 values.consentToContact;
+                                 values.consentToContact; 
 
               return (
                 <Form className="space-y-8">

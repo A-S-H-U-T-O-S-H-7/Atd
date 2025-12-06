@@ -38,7 +38,6 @@ const ManageGuidelinePage = () => {
       
       const response = await rbiGuidelineService.getGuidelineById(guidelineId);
       
-      console.log('API Response for edit:', response); // Debug log
       
       let guideline = null;
       
@@ -62,14 +61,7 @@ const ManageGuidelinePage = () => {
       setRemarks(guideline.remarks || '');
       setStatus(guideline.status || 'Pending');
       
-      console.log('Form data set:', { // Debug log
-        rbi_date: guideline.rbi_date,
-        reference_no: guideline.reference_no,
-        subject: guideline.subject,
-        advice_no: guideline.advice_no,
-        remarks: guideline.remarks,
-        status: guideline.status
-      });
+      
       
     } catch (error) {
       console.error('Error loading guideline data:', error);
