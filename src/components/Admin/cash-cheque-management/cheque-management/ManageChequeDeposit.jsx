@@ -1,13 +1,12 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Save, X, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, X, AlertCircle, Building, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   ChequeService, 
   formatLoanOptions, 
   formatLoanDetails, 
-  formatDepositDataForForm,
   formatDepositDataForAPI 
 } from "@/lib/services/ChequeService";
 import { useFormik } from "formik";
@@ -32,6 +31,17 @@ const ManageChequeDepositPage = () => {
   const statusOptions = ["Bounced", "Received"];
   const deliveryStatusOptions = ["Delivered", "Not Delivered", "Returned Back"];
 
+  // Common input classes
+  const inputClasses = `w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
+    isDark
+      ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+      : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
+  }`;
+
+  const sectionTitleClasses = `text-lg font-semibold mb-4 pb-2 border-b ${
+    isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
+  }`;
+
   // Validation Schema
   const validationSchema = Yup.object({
     loanNo: Yup.string().required("Loan number is required"),
@@ -48,15 +58,9 @@ const ManageChequeDepositPage = () => {
     deliveryAddress: Yup.string(),
     chequeReturnMemoDate: Yup.date().nullable(),
     chequeReturnMemoReceivedDate: Yup.date().nullable(),
+    intimationMailFromBankDate: Yup.date().nullable(),
+    intimationMailFromDispatchChequeDate: Yup.date().nullable(),
     reasonOfBounce: Yup.string(),
-    certifiedCopyDisbursementDate: Yup.date().nullable(),
-    certifiedCopyDepositDate: Yup.date().nullable(),
-    legalNoticeDate: Yup.date().nullable(),
-    legalNoticeSpeedPostSentDate: Yup.date().nullable(),
-    speedPostTrackingNo: Yup.string(),
-    speedPostStatus: Yup.string(),
-    speedPostReceivedDate: Yup.date().nullable(),
-    remarkWithCaseDetails: Yup.string(),
   });
 
   // Formik initialization
@@ -97,15 +101,9 @@ const ManageChequeDepositPage = () => {
       deliveryAddress: "",
       chequeReturnMemoDate: "",
       chequeReturnMemoReceivedDate: "",
+      intimationMailFromBankDate: "",
+      intimationMailFromDispatchChequeDate: "",
       reasonOfBounce: "",
-      certifiedCopyDisbursementDate: "",
-      certifiedCopyDepositDate: "",
-      legalNoticeDate: "",
-      legalNoticeSpeedPostSentDate: "",
-      speedPostTrackingNo: "",
-      speedPostStatus: "",
-      speedPostReceivedDate: "",
-      remarkWithCaseDetails: ""
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -199,15 +197,9 @@ const ManageChequeDepositPage = () => {
           deliveryAddress: apiData.delivery_address || "",
           chequeReturnMemoDate: apiData.cheque_return_memo_date || "",
           chequeReturnMemoReceivedDate: apiData.cheque_return_memo_received_date || "",
+          intimationMailFromBankDate: apiData.intimation_mail_from_bank_date || "",
+          intimationMailFromDispatchChequeDate: apiData.intimation_mail_from_dispatch_cheque_date || "",
           reasonOfBounce: apiData.reason_of_bounce || "",
-          certifiedCopyDisbursementDate: apiData.certified_copy_disbursement_date || "",
-          certifiedCopyDepositDate: apiData.certified_copy_deposit_date || "",
-          legalNoticeDate: apiData.legal_notice_date || "",
-          legalNoticeSpeedPostSentDate: apiData.legal_notice_speed_post_sent_date || "",
-          speedPostTrackingNo: apiData.speed_post_tracking_no || "",
-          speedPostStatus: apiData.speed_post_status || "",
-          speedPostReceivedDate: apiData.speed_post_received_date || "",
-          remarkWithCaseDetails: apiData.remark_with_case_details || ""
         });
       } else {
         setError("Failed to load deposit data");
@@ -274,7 +266,7 @@ const ManageChequeDepositPage = () => {
         setSuccess(isEdit ? "Deposit updated successfully!" : "Deposit added successfully!");
         
         setTimeout(() => {
-          router.push("/admin/cheque-deposit");
+          router.push("/crm/cheque-management");
         }, 1500);
       } else {
         setError(response.message || "Operation failed");
@@ -314,11 +306,7 @@ const ManageChequeDepositPage = () => {
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-          isDark
-            ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-            : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-        } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
+        className={`${inputClasses} ${
           formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
         }`}
       />
@@ -338,11 +326,7 @@ const ManageChequeDepositPage = () => {
         value={formik.values[name]}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
-        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-          isDark
-            ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-            : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-        } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
+        className={`${inputClasses} ${
           formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
         }`}
       >
@@ -358,7 +342,7 @@ const ManageChequeDepositPage = () => {
   );
 
   const renderTextArea = (name, label, rows = 3, colSpan = 2) => (
-    <div className={`col-span-${colSpan}`}>
+    <div className={`col-span-${colSpan} mt-4`}>
       <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
         {label}
       </label>
@@ -368,13 +352,11 @@ const ManageChequeDepositPage = () => {
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
         rows={rows}
-        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 resize-none ${
+        className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
           isDark
             ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
             : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-        } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
-          formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
-        }`}
+        } ${formik.touched[name] && formik.errors[name] ? "border-red-500" : ""}`}
       />
       {formik.touched[name] && formik.errors[name] && (
         <div className="text-red-500 text-xs mt-1">{formik.errors[name]}</div>
@@ -466,9 +448,7 @@ const ManageChequeDepositPage = () => {
             <div className="space-y-8">
               {/* Basic Information Section */}
               <div>
-                <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                  isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                }`}>
+                <h3 className={sectionTitleClasses}>
                   Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -483,11 +463,7 @@ const ManageChequeDepositPage = () => {
                       onChange={handleLoanChange}
                       onBlur={formik.handleBlur}
                       disabled={loading || loanOptions.length === 0 || isEdit}
-                      className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-                        isDark
-                          ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                          : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-                      } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
                         formik.touched.loanNo && formik.errors.loanNo ? "border-red-500" : ""
                       }`}
                     >
@@ -511,35 +487,82 @@ const ManageChequeDepositPage = () => {
 
               {/* Bank Details Section */}
               <div>
-                <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                  isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                }`}>
+                <h3 className={sectionTitleClasses}>
                   Bank Details
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {renderField("companyBankName", "Company Bank Name", "text", "", 1)}
-                  {renderField("companyBankBranch", "Company Bank Branch", "text", "", 1)}
-                  {renderField("companyBankAC", "Company Bank A/C", "text", "", 1)}
-                  {renderField("companyBankIFSC", "Company Bank IFSC", "text", "", 1)}
-                  {renderField("customerBankName", "Customer Bank Name", "text", "", 1)}
-                  {renderField("customerBankBranch", "Customer Bank Branch", "text", "", 1)}
-                  {renderField("customerBankAC", "Customer Bank A/C", "text", "", 1)}
-                  {renderField("customerBankIFSC", "Customer Bank IFSC", "text", "", 1)}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Company Bank Details - Left Box */}
+                  <div className={`rounded-xl border-2 p-4 ${
+                    isDark
+                      ? "bg-gray-800/50 border-blue-600/30"
+                      : "bg-blue-50 border-blue-200"
+                  }`}>
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Building className={`w-5 h-5 ${
+                        isDark ? "text-blue-400" : "text-blue-600"
+                      }`} />
+                      <h4 className={`font-semibold ${
+                        isDark ? "text-blue-300" : "text-blue-700"
+                      }`}>
+                        Company Bank Details
+                      </h4>
+                    </div>
+                    <div className="space-y-4">
+                      {/* Row 1: Bank Name & Branch */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderField("companyBankName", "Bank Name", "text", "", 1)}
+                        {renderField("companyBankBranch", "Branch", "text", "", 1)}
+                      </div>
+                      {/* Row 2: Account No. & IFSC */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderField("companyBankAC", "Account No.", "text", "", 1)}
+                        {renderField("companyBankIFSC", "IFSC Code", "text", "", 1)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Bank Details - Right Box */}
+                  <div className={`rounded-xl border-2 p-4 ${
+                    isDark
+                      ? "bg-gray-800/50 border-purple-500/40"
+                      : "bg-purple-50 border-purple-200"
+                  }`}>
+                    <div className="flex items-center space-x-2 mb-4">
+                      <User className={`w-5 h-5 ${
+                        isDark ? "text-purple-400" : "text-purple-600"
+                      }`} />
+                      <h4 className={`font-semibold ${
+                        isDark ? "text-purple-300" : "text-purple-700"
+                      }`}>
+                        Customer Bank Details
+                      </h4>
+                    </div>
+                    <div className="space-y-4">
+                      {/* Row 1: Bank Name & Branch */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderField("customerBankName", "Bank Name", "text", "", 1)}
+                        {renderField("customerBankBranch", "Branch", "text", "", 1)}
+                      </div>
+                      {/* Row 2: Account No. & IFSC */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderField("customerBankAC", "Account No.", "text", "", 1)}
+                        {renderField("customerBankIFSC", "IFSC Code", "text", "", 1)}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Cheque Details Section */}
               <div>
-                <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                  isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                }`}>
+                <h3 className={sectionTitleClasses}>
                   Cheque Details
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {renderField("chequeNo", "Cheque No", "text", "", 1)}
                   {renderField("chequeReceivedDate", "Cheque Received Date", "date", "", 1)}
                   {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
-                  {renderField("amount", "Amount", "number", "", 1)}
+                  {renderField("amount", "Cheque Principal Amount", "number", "", 1)}
                   {renderField("interest", "Interest", "number", "", 1)}
                   {renderField("penalInterest", "Penal Interest", "number", "", 1)}
                   {renderField("penalty", "Penalty", "number", "", 1)}
@@ -549,64 +572,36 @@ const ManageChequeDepositPage = () => {
               {/* Additional Fields for Edit Mode */}
               {isEdit && (
                 <>
-                  {/* Status and Bounce Details */}
+                  {/* Clear / Bounce Details */}
                   <div>
-                    <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                      isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                    }`}>
-                      Status & Bounce Details
+                    <h3 className={sectionTitleClasses}>
+                      Clear / Bounce Details
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {renderSelect("status", "Status", statusOptions, 1)}
-                      {renderField("bounceDate", "Bounce Date / Cheque Clear Date", "date", "", 1)}
-                      {renderField("bounceCharge", "Bounce Charge", "number", "", 1)}
-                      {renderSelect("deliveryStatus", "Delivery Status", deliveryStatusOptions, 1)}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {renderSelect("status", "Status", statusOptions, 1)}
+                        {renderField("bounceDate", "Bounce Date / Cheque Clear Date", "date", "", 1)}
+                        {renderField("bounceCharge", "Bounce Charge", "number", "", 1)}
+                        {renderSelect("deliveryStatus", "Delivery Status", deliveryStatusOptions, 1)}
+                      </div>
+                      {renderTextArea("deliveryAddress", "Delivery Address", 2, 3)}
                     </div>
-                    {renderTextArea("deliveryAddress", "Delivery Address", 2, 3)}
                   </div>
 
                   {/* Cheque Return Details */}
                   <div>
-                    <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                      isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                    }`}>
+                    <h3 className={sectionTitleClasses}>
                       Cheque Return Details
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {renderField("chequeReturnMemoDate", "Cheque-Return Memo Date", "date", "", 1)}
-                      {renderField("chequeReturnMemoReceivedDate", "Cheque-Return Memo Received Date", "date", "", 1)}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {renderField("chequeReturnMemoDate", "Cheque Return Memo Date", "date", "", 1)}
+                        {renderField("chequeReturnMemoReceivedDate", "Cheque Return Memo Received Date", "date", "", 1)}
+                        {renderField("intimationMailFromBankDate", "Intimation Mail from Bank Date", "date", "", 1)}
+                        {renderField("intimationMailFromDispatchChequeDate", "Intimation Mail from Dispatch Cheque Date", "date", "", 1)}
+                      </div>
+                      {renderTextArea("reasonOfBounce", "Reason of Bounce", 2, 3)}
                     </div>
-                    {renderTextArea("reasonOfBounce", "Reason Of Bounce", 2, 3)}
-                  </div>
-
-                  {/* Certified Copy Details */}
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                      isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                    }`}>
-                      Certified Copy Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {renderField("certifiedCopyDisbursementDate", "Certified Copy (Disbursement) Date", "date", "", 1)}
-                      {renderField("certifiedCopyDepositDate", "Certified Copy (Deposit) Date", "date", "", 1)}
-                    </div>
-                  </div>
-
-                  {/* Legal Notice Details */}
-                  <div>
-                    <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-                      isDark ? "text-gray-200 border-gray-600" : "text-gray-700 border-gray-300"
-                    }`}>
-                      Legal Notice Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {renderField("legalNoticeDate", "Legal Notice Date", "date", "", 1)}
-                      {renderField("legalNoticeSpeedPostSentDate", "Legal Notice Speed Post Sent Date", "date", "", 1)}
-                      {renderField("speedPostTrackingNo", "Tracking No.", "text", "", 1)}
-                      {renderField("speedPostStatus", "Status", "text", "", 1)}
-                      {renderField("speedPostReceivedDate", "Speed Post Received Date", "date", "", 1)}
-                    </div>
-                    {renderTextArea("remarkWithCaseDetails", "Remark With Case Details", 3, 3)}
                   </div>
                 </>
               )}
