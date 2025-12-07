@@ -203,7 +203,7 @@ function UserFooter() {
       <div className="bg-slate-950 text-gray-400">
         <div className="container mx-auto">
           {/* Policy Links */}
-          <div className="flex flex-wrap justify-center md:justify-between gap-4 py-4 px-4 border-b border-slate-800 text-sm">
+          <div className="flex items-center justify-center gap-44 py-4 px-4 border-b border-slate-800 text-sm">
             <Link
               href="/privacypolicy"
               className="hover:text-teal-300 transition-colors duration-300"

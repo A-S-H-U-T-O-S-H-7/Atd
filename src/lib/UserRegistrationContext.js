@@ -170,7 +170,6 @@ export const UserContextProvider = ({ children }) => {
       if (response.ok) {
         const result = await response.json();
         const userData = result.user || result.data || result;
-        console.log("🔍 Full API Response:", userData);
 
         // Step 2: Personal Data
         if (userData.step >= 2) {
@@ -314,7 +313,6 @@ export const UserContextProvider = ({ children }) => {
   if (user && !loader) {
     
     if (step === null) {
-      console.log("🔄 Initial step set from user:", user.step);
       setStep(user.step || 1);
     }
     

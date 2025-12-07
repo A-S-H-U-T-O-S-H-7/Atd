@@ -1,100 +1,19 @@
 "use client";
 import { useState } from "react";
-import {
-  Calendar,
-  MapPin,
-  CreditCard,
-  Eye,
-} from "lucide-react";
-import { FaFilePdf } from "react-icons/fa";
-import { RefreshCw } from "lucide-react";
+import { Calendar, CreditCard, Eye } from "lucide-react";
 import CallButton from "../call/CallButton";
-import Swal from 'sweetalert2';
-import { exportService } from "@/lib/services/LedgerServices";
 
 const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => {
-  const [pdfLoading, setPdfLoading] = useState(false);
-
-  const handleView = (item) => {
+  const handleView = () => {
     onViewTransaction(item);
   };
 
-  const handleAdjustment = (item) => {
+  const handleAdjustment = () => {
     onAdjustment(item);  
   };
 
-  // PDF Action Handler
-  const handlePDFAction = async (item) => {
-    const result = await Swal.fire({
-      title: 'PDF Statement',
-      text: `Choose action for ${item.name}'s ledger statement`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Download PDF',
-      cancelButtonText: 'Cancel',
-      showDenyButton: true,
-      denyButtonText: 'View in Browser',
-      confirmButtonColor: '#10b981',
-      denyButtonColor: '#3b82f6',
-      cancelButtonColor: '#6b7280',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-
-    if (result.isConfirmed) {
-      // Download PDF
-      setPdfLoading(true);
-      try {
-        await exportService.downloadIndividualLedgerPDF(
-          item.application_id, 
-          item.name, 
-          item.loanNo
-        );
-        
-        await Swal.fire({
-          title: 'PDF Downloaded!',
-          text: `PDF statement for ${item.name} has been downloaded.`,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          timer: 2000,
-          showConfirmButton: false
-        });
-      } catch (error) {
-        await Swal.fire({
-          title: 'Download Failed!',
-          text: error.message || 'Failed to download PDF. Please try again.',
-          icon: 'error',
-          confirmButtonColor: '#ef4444',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-        });
-      } finally {
-        setPdfLoading(false);
-      }
-    } else if (result.isDenied) {
-      // Open PDF in new tab
-      setPdfLoading(true);
-      try {
-        await exportService.openIndividualLedgerPDF(item.application_id);
-      } catch (error) {
-        await Swal.fire({
-          title: 'Failed to Open PDF',
-          text: error.message || 'Failed to open PDF in browser.',
-          icon: 'error',
-          confirmButtonColor: '#ef4444',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-        });
-      } finally {
-        setPdfLoading(false);
-      }
-    }
-  };
-
   const getDueDateStatus = (dueDate) => {
-    if (!dueDate) return { status: 'normal', days: 0, color: 'green' };
+    if (!dueDate) return { status: 'normal', days: 0 };
     
     const today = new Date();
     const due = new Date(dueDate.split('-').reverse().join('-'));
@@ -102,11 +21,11 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays < 0) {
-      return { status: 'overdue', days: Math.abs(diffDays), color: 'red' };
+      return { status: 'overdue', days: Math.abs(diffDays) };
     } else if (diffDays <= 7) {
-      return { status: 'warning', days: diffDays, color: 'yellow' };
+      return { status: 'warning', days: diffDays };
     } else {
-      return { status: 'normal', days: diffDays, color: 'green' };
+      return { status: 'normal', days: diffDays };
     }
   };
 
@@ -236,8 +155,8 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
       {/* Adjustment */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
-          onClick={() => handleAdjustment(item)}
-          className={`px-3 py-2 cursor-pointer rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+          onClick={handleAdjustment}
+          className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-pink-900/50 text-pink-300 border-pink-700 hover:bg-pink-800"
               : "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-200"
@@ -286,38 +205,17 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
 
       {/* Action */}
       <td className="px-2 py-4">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handleView(item)}
-            className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${
-              isDark
-                ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"
-                : "bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200"
-            }`}
-            title="View Transaction Details"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={() => handlePDFAction(item)}
-            disabled={pdfLoading}
-            className={`p-2 cursor-pointer rounded-md transition-all duration-200 hover:scale-105 flex items-center justify-center ${
-              pdfLoading 
-                ? "opacity-50 cursor-not-allowed"
-                : isDark
-                  ? "bg-red-800/80 text-white hover:bg-red-700 border border-red-700"
-                  : "bg-red-500/10 text-red-700 hover:bg-red-100 border border-red-300"
-            }`}
-            title={pdfLoading ? "Processing..." : "PDF Statement Options"}
-          >
-            {pdfLoading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <FaFilePdf className="w-4 h-4" />
-            )}
-          </button>
-        </div>
+        <button
+          onClick={handleView}
+          className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+            isDark
+              ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"
+              : "bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200"
+          }`}
+          title="View Transaction Details"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
       </td>
     </tr>
   );

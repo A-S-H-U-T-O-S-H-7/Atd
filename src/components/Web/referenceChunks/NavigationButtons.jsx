@@ -8,6 +8,8 @@ const NavigationButtons = ({
   completedCount, 
   hasDuplicates, 
   hasUserPhoneMatches,
+  hasRestrictedPhoneMatches,
+  hasRestrictedEmailMatches,
   isSubmitting,
   values,
   isFormValid 
@@ -53,18 +55,34 @@ const NavigationButtons = ({
           {hasDuplicates && (
             <p className="text-red-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Resolve duplicate phone numbers or emails
+              Resolve duplicate phone numbers or emails within references
             </p>
           )}
           
           {hasUserPhoneMatches && (
             <p className="text-red-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              Reference phones cannot match your existing numbers
+              Reference phones cannot match your phone numbers
             </p>
           )}
           
-          {!values.consentToContact && completedCount === 5 && !hasDuplicates && !hasUserPhoneMatches && (
+          {hasRestrictedPhoneMatches && (
+            <p className="text-red-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Reference phones cannot match existing phone numbers
+            </p>
+          )}
+          
+          {hasRestrictedEmailMatches && (
+            <p className="text-red-600 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Reference emails cannot match existing emails
+            </p>
+          )}
+          
+          {!values.consentToContact && completedCount === 5 && 
+           !hasDuplicates && !hasUserPhoneMatches && 
+           !hasRestrictedPhoneMatches && !hasRestrictedEmailMatches && (
             <p className="text-amber-600 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Provide consent to contact references

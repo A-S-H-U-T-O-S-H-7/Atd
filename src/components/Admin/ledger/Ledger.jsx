@@ -46,7 +46,6 @@ const LedgerPage = () => {
     total_pages: 0
   });
 
-  // Sample agents - replace with your actual agent data
   const agents = [
     { id: "all", name: "All Agents" },
     { id: "agent1", name: "Agent 1" },
@@ -57,38 +56,24 @@ const LedgerPage = () => {
   const itemsPerPage = 10;
 
   // Build API parameters
-const buildApiParams = () => {
-  const params = {
-    per_page: itemsPerPage,
-    page: currentPage,
+  const buildApiParams = () => {
+    const params = {
+      per_page: itemsPerPage,
+      page: currentPage,
+    };
+
+    if (searchTerm) {
+      params.search_by = "name,loan_no,email,phone,address";
+      params.search_value = searchTerm;
+    }
+
+    if (dateRange.from) params.from_date = dateRange.from;
+    if (dateRange.to) params.to_date = dateRange.to;
+    if (dueDateSearch) params.due_date = dueDateSearch;
+    if (selectedAgent !== "all") params.agent_id = selectedAgent;
+
+    return params;
   };
-
-  // Add search parameters
-  if (searchTerm) {
-    params.search_by = "name,loan_no,email,phone,address";
-    params.search_value = searchTerm;
-  }
-
-  // Add date filters
-  if (dateRange.from) {
-    params.from_date = dateRange.from;
-  }
-  if (dateRange.to) {
-    params.to_date = dateRange.to;
-  }
-
-  // Add due date search
-  if (dueDateSearch) {
-    params.due_date = dueDateSearch;
-  }
-
-  // Add agent filter if needed
-  if (selectedAgent !== "all") {
-    params.agent_id = selectedAgent;
-  }
-
-  return params;
-};
 
   // Fetch ledger data
   const fetchLedgerData = async () => {
@@ -101,7 +86,7 @@ const buildApiParams = () => {
       
       if (response && response.success && response.ledgers) {
         const formattedLedgers = response.ledgers.map((ledger, index) => ({
-          ...formatLedgerDataForUI(ledger),
+          ...formatLedgerDataForUI(ledger, index),
           sn: (currentPage - 1) * itemsPerPage + index + 1
         }));
         
@@ -113,11 +98,10 @@ const buildApiParams = () => {
           total_pages: Math.ceil(response.ledgers.length / itemsPerPage)
         });
       } else {
-        console.error("❌ Invalid API Response structure:", response);
-        setError("Failed to fetch ledger data - Invalid response");
+        setError("Failed to fetch ledger data");
       }
     } catch (err) {
-      console.error("❌ Error fetching ledger data:", err);
+      console.error("Error fetching ledger data:", err);
       setError("Failed to fetch ledger data. Please try again.");
     } finally {
       setLoading(false);
@@ -127,120 +111,63 @@ const buildApiParams = () => {
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchLedgerData();
-  }, [currentPage, searchTerm, dueDateSearch, dateRange]);
-
-  // Filter ledger data (client-side filtering for additional features)
-  const filteredLedgerData = ledgerData.filter(item => {
-    const matchesSearch = 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.loanNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.phoneNo.includes(searchTerm) ||
-      item.address.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDueDate = dueDateSearch === "" || item.dueDate.includes(dueDateSearch);
-    
-    const matchesAgent = selectedAgent === "all";
-
-    // Date range filtering (already done by API, but keeping for client-side consistency)
-    const matchesDateRange = (() => {
-      if (!dateRange.from && !dateRange.to) return true;
-      
-      const itemDate = new Date(item.disburseDate.split('-').reverse().join('-'));
-      const fromDate = dateRange.from ? new Date(dateRange.from) : null;
-      const toDate = dateRange.to ? new Date(dateRange.to) : null;
-      
-      if (fromDate && toDate) {
-        return itemDate >= fromDate && itemDate <= toDate;
-      } else if (fromDate) {
-        return itemDate >= fromDate;
-      } else if (toDate) {
-        return itemDate <= toDate;
-      }
-      return true;
-    })();
-
-    return matchesSearch && matchesDueDate && matchesAgent && matchesDateRange;
-  });
-
-  const totalPages = pagination.total_pages;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedLedgerData = filteredLedgerData.slice(startIndex, startIndex + itemsPerPage);
+  }, [currentPage, searchTerm, dueDateSearch, dateRange, selectedAgent]);
 
   // Handle export
-const handleExport = async (type) => {
-  const result = await Swal.fire({
-    title: 'Export Ledger Data?',
-    text: 'This will export all ledger data with current filters.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#10b981',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Yes, Export!',
-    cancelButtonText: 'Cancel',
-    background: isDark ? "#1f2937" : "#ffffff",
-    color: isDark ? "#f9fafb" : "#111827",
-  });
+  const handleExport = async () => {
+    if (ledgerData.length === 0) {
+      Swal.fire({
+        title: 'No Data to Export',
+        text: 'There is no ledger data to export.',
+        icon: 'warning',
+        confirmButtonColor: '#10b981',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+      return;
+    }
 
-  if (!result.isConfirmed) {
-    return;
-  }
-
-  try {
-    setExporting(true);
-    
-    // Build export params from current filters
-    const exportParams = { ...buildApiParams() };
-    
-    // Remove pagination parameters for export
-    delete exportParams.per_page;
-    delete exportParams.page;
-    
-    // Ensure proper parameter names for export API
-    const formattedParams = {
-      search_by: exportParams.search_by,
-      search_value: exportParams.search_value,
-      from_date: exportParams.from_date,
-      to_date: exportParams.to_date,
-      due_date: exportParams.due_date
-    };
-
-    // Clean up undefined/null parameters
-    Object.keys(formattedParams).forEach(key => {
-      if (formattedParams[key] === undefined || formattedParams[key] === null || formattedParams[key] === '') {
-        delete formattedParams[key];
-      }
-    });
-
-    await exportService.downloadLedgerExport(
-      formattedParams, 
-      `ledger-export-${new Date().toISOString().split('T')[0]}.xlsx`
-    );
-    
-    await Swal.fire({
-      title: 'Export Successful!',
-      text: 'Ledger data has been exported successfully.',
-      icon: 'success',
+    const result = await Swal.fire({
+      title: 'Export Ledger Data?',
+      text: 'This will export all ledger data with current filters.',
+      icon: 'question',
+      showCancelButton: true,
       confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Export CSV',
+      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
-  } catch (err) {
-    console.error("Export error:", err);
-    await Swal.fire({
-      title: 'Export Failed!',
-      text: err.message || 'Failed to export data. Please try again.',
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-  } finally {
-    setExporting(false);
-  }
-};
 
-  
+    if (!result.isConfirmed) return;
+
+    try {
+      setExporting(true);
+      exportToExcel(ledgerData, `ledger-export-${new Date().toISOString().split('T')[0]}`);
+      
+      await Swal.fire({
+        title: 'Export Successful!',
+        text: 'Ledger data has been exported as CSV.',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } catch (err) {
+      console.error("Export error:", err);
+      Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Handle view transaction
   const handleViewTransaction = async (item) => { 
@@ -263,12 +190,6 @@ const handleExport = async (type) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle balance update
-  const handleBalanceUpdate = (updateData) => {
-    console.log('Balance updated:', updateData);
-    // You can implement balance update logic here if needed
   };
 
   // Handle adjustment click
@@ -295,7 +216,6 @@ const handleExport = async (type) => {
           color: isDark ? "#f9fafb" : "#111827",
         });
         
-        // Refresh ledger data
         fetchLedgerData();
       } else {
         throw new Error(result.message || 'Adjustment failed');
@@ -386,28 +306,26 @@ const handleExport = async (type) => {
             </div>
             
             {/* Export Button */}
-<div className="flex space-x-2">
-  <button
-    onClick={() => handleExport('excel')}
-    disabled={exporting || ledgerData.length === 0}
-    className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-      exporting || ledgerData.length === 0
-        ? "opacity-50 cursor-not-allowed"
-        : "hover:shadow-lg"
-    } ${
-      isDark
-        ? "bg-green-600 hover:bg-green-700 text-white"
-        : "bg-green-500 hover:bg-green-600 text-white"
-    }`}
-  >
-    {exporting ? (
-      <RefreshCw className="w-4 h-4 animate-spin" />
-    ) : (
-      <Download size={16} />
-    )}
-    <span>{exporting ? "Exporting..." : "Export"}</span>
-  </button>
-</div>
+            <button
+              onClick={handleExport}
+              disabled={exporting || ledgerData.length === 0}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                exporting || ledgerData.length === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:shadow-lg"
+              } ${
+                isDark
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-green-500 hover:bg-green-600 text-white"
+              }`}
+            >
+              {exporting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download size={16} />
+              )}
+              <span>{exporting ? "Exporting..." : "Export CSV"}</span>
+            </button>
           </div>
 
           {/* Error Message */}
@@ -530,10 +448,13 @@ const handleExport = async (type) => {
 
         {/* Table */}
         <LedgerTable
-          paginatedLedgerData={paginatedLedgerData}
-          filteredLedgerData={filteredLedgerData}
+          paginatedLedgerData={ledgerData.slice(
+            (currentPage - 1) * itemsPerPage, 
+            currentPage * itemsPerPage
+          )}
+          filteredLedgerData={ledgerData}
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={pagination.total_pages}
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
@@ -561,7 +482,6 @@ const handleExport = async (type) => {
         onClose={() => setShowTransactionModal(false)}
         data={selectedTransactionData}
         isDark={isDark}
-        onUpdateBalance={handleBalanceUpdate}
       />
     </div>
   );

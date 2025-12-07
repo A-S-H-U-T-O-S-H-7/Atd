@@ -202,6 +202,7 @@ const ManageChequeDepositPage = () => {
           intimationMailFromBankDate: apiData.intimation_mail_from_bank_date || "",
           intimationMailFromDispatchChequeDate: apiData.intimation_mail_from_dispatch_cheque_date || "",
           reasonOfBounce: apiData.reason_of_bounce || "",
+          applicationId: apiData.application_id || ""
         });
       } else {
         setError("Failed to load deposit data");

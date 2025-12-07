@@ -8,11 +8,15 @@ const ReferenceCard = ({
   duplicatePhones, 
   duplicateEmails, 
   userPhoneMatch,
+  restrictedPhoneMatch,
+  restrictedEmailMatch,
   formatPhoneNumber 
 }) => {
   const hasPhoneDuplicate = duplicatePhones.length > 0;
   const hasEmailDuplicate = duplicateEmails.length > 0;
   const isUserPhone = !!userPhoneMatch;
+  const hasRestrictedPhone = !!restrictedPhoneMatch;
+  const hasRestrictedEmail = !!restrictedEmailMatch;
   const isComplete = reference.name && reference.phone && reference.email;
 
   const handlePhoneChange = (e, form, fieldName) => {
@@ -32,7 +36,8 @@ const ReferenceCard = ({
         <h3 className="text-lg font-semibold text-gray-800">
           Reference {index + 1}
         </h3>
-        {isComplete && !hasPhoneDuplicate && !hasEmailDuplicate && !isUserPhone && (
+        {isComplete && !hasPhoneDuplicate && !hasEmailDuplicate && 
+         !isUserPhone && !hasRestrictedPhone && !hasRestrictedEmail && (
           <CheckCircle2 className="w-5 h-5 text-green-500 ml-auto" />
         )}
       </div>
@@ -66,7 +71,7 @@ const ReferenceCard = ({
                 type="tel"
                 placeholder="Enter 10-digit number"
                 className={`w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300 ${
-                  hasPhoneDuplicate || isUserPhone ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                  hasPhoneDuplicate || isUserPhone || hasRestrictedPhone ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
                 }`}
                 onChange={(e) => handlePhoneChange(e, form, field.name)}
                 maxLength="10"
@@ -81,18 +86,27 @@ const ReferenceCard = ({
             component="p" 
             className="text-red-500 text-sm" 
           />
-          {isUserPhone && (
+          
+          {hasRestrictedPhone && (
+            <p className="text-red-500 text-sm">
+              This phone number matches your {restrictedPhoneMatch.matchedType}
+            </p>
+          )}
+          
+          {isUserPhone && !hasRestrictedPhone && (
             <p className="text-red-500 text-sm">
               This phone number belongs to you or your existing references.
             </p>
           )}
-          {hasPhoneDuplicate && !isUserPhone && (
+          
+          {hasPhoneDuplicate && !isUserPhone && !hasRestrictedPhone && (
             <p className="text-red-500 text-sm">
               This phone number is already used in Reference {duplicatePhones.map(i => i + 1).join(', ')}
             </p>
           )}
+          
           <p className="text-xs text-gray-500">
-            10-digit mobile number (must be unique)
+           Number must be unique and not match any existing numbers
           </p>
         </div>
 
@@ -105,7 +119,7 @@ const ReferenceCard = ({
             type="email"
             placeholder="Enter email address"
             className={`w-full px-4 py-3 bg-white/50 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1 focus:border-transparent hover:border-teal-300 ${
-              hasEmailDuplicate ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+              hasEmailDuplicate || hasRestrictedEmail ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
             }`}
           />
           <ErrorMessage 
@@ -113,7 +127,14 @@ const ReferenceCard = ({
             component="p" 
             className="text-red-500 text-sm" 
           />
-          {hasEmailDuplicate && (
+          
+          {hasRestrictedEmail && (
+            <p className="text-red-500 text-sm">
+              This email matches your {restrictedEmailMatch.matchedType}
+            </p>
+          )}
+          
+          {hasEmailDuplicate && !hasRestrictedEmail && (
             <p className="text-red-500 text-sm">
               This email is already used in Reference {duplicateEmails.map(i => i + 1).join(', ')}
             </p>

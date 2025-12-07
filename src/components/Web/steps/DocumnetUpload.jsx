@@ -241,7 +241,6 @@ function DocumentUpload() {
             // Step 1: Upload to Firebase Storage
             const storageRef = ref(storage, `${config.bucket}/${randomFileName}`);
             const uploadResult = await uploadBytes(storageRef, file);
-            console.log("✅ File uploaded to Firebase:", randomFileName);
 
             // Get download URL
             const downloadURL = await getDownloadURL(uploadResult.ref);
@@ -261,7 +260,6 @@ function DocumentUpload() {
             });
 
             const result = await response.json();
-            console.log('API response:', result);
 
             if (response.ok && result.success) {
                 setUploadStatus(prev => ({

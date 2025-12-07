@@ -112,9 +112,18 @@ export const formatDepositDataForForm = (apiData) => {
 };
 
 export const formatDepositDataForAPI = (formData, loanOptions, isEdit = false) => {
-  // Find application_id from selected loan number
-  const selectedLoan = loanOptions.find(loan => loan.loanNo === formData.loanNo);
-  const applicationId = isEdit ? formData.applicationId : selectedLoan?.id;
+  let applicationId;
+  
+  if (isEdit) {
+    applicationId = formData.applicationId;
+  } else {
+    const selectedLoan = loanOptions.find(loan => loan.loanNo === formData.loanNo);
+    applicationId = selectedLoan?.id;
+  }
+  
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
 
   const baseData = {
     id: applicationId,
