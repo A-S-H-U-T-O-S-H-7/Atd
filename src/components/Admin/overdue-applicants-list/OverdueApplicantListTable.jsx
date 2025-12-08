@@ -5,7 +5,7 @@ import Pagination from "../Pagination";
 
 const OverdueApplicantListTable = ({ 
   paginatedApplicants,
-  filteredApplicants,
+  totalItems,
   currentPage,
   totalPages,
   itemsPerPage,
@@ -143,7 +143,7 @@ const OverdueApplicantListTable = ({
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={onPageChange}
-              totalItems={filteredApplicants.length}  
+              totalItems={totalItems || paginatedApplicants.length} 
               itemsPerPage={itemsPerPage}   
             />
           </div>

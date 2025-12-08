@@ -43,10 +43,10 @@ submitNormalCollection: async (applicationId, formData, collectionData) => {
     const penalInterestGST = penalInterest > 0 ? penalInterest - penalInterestBase : 0;
     
     const baseDueAmount = parseFloat(collectionData?.dw_collection || 0);
-    const normalInterest = parseFloat(formData.normalInterest || 0);
+    const normalInterest = parseFloat(formData.normalInterest || 0); 
     const totalDueAmount = baseDueAmount + normalInterest + penaltyAmount + penalInterest + bounceCharge;
 
-    const payload = {
+    const payload = { 
       sanction_amount: parseFloat(collectionData?.approved_amount || 0),
       disburse_date: collectionData?.disburse_date || "",
       transaction_date: collectionData?.transaction_date || "",
@@ -67,7 +67,6 @@ submitNormalCollection: async (applicationId, formData, collectionData) => {
       collected_amount: parseFloat(formData.collectionAmount),
       collected_transaction_id: formData.transactionId || "",
       collection_by: formData.collectionBy,
-      status: formData.status
     };
 
     const response = await api.put(`/crm/collection/add-collection/${applicationId}`, payload);

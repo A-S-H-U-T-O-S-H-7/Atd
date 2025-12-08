@@ -20,7 +20,6 @@ const NormalCollectionForm = ({
     bankName: "",
     transactionId: "",
     collectionAmount: "",
-    status: "",
     normalInterest: ""
   });
   
@@ -49,7 +48,6 @@ const NormalCollectionForm = ({
         bankName: "",
         transactionId: "",
         collectionAmount: "",
-        status: "", 
         normalInterest: ""
       });
       setPenaltyChecked(false);
@@ -254,7 +252,7 @@ const NormalCollectionForm = ({
       return;
     }
 
-    if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount || !formData.status) {
+    if (!formData.collectionDate || !formData.collectionBy || !formData.collectionAmount ) {
       toast.error('Please fill all required fields.', {
         duration: 3000,
         position: 'top-right',
@@ -292,14 +290,7 @@ const NormalCollectionForm = ({
         await onCollectionSubmit(application.id, formData);
       }
       
-      toast.success('Collection processed successfully!', {
-        duration: 3000,
-        position: 'top-right',
-        style: {
-          background: '#10b981',
-          color: '#fff',
-        }
-      });
+     
       
       onClose();
     } catch (error) {
@@ -824,33 +815,6 @@ const NormalCollectionForm = ({
                     step="0.01"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-200" : "text-gray-800"
-                  }`}>
-                    Status <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white" 
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                    required
-                  >
-                    <option value="">--Select Status--</option>
-                    <option value="Returned">Returned</option>
-                    <option value="Cancelled">Cancelled</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                </div>
-                <div></div>
               </div>
             </div>
           </div>

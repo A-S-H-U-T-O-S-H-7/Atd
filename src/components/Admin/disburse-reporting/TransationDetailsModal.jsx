@@ -13,14 +13,14 @@ const TransactionDetailsModal = ({
   const [formData, setFormData] = useState({
     disbursementAmount: '',
     transactionId: '',
-    transactionDate: '', // Keep blank initially
+    transactionDate: '', 
     dueDate: '',
     bankName: '',
     branchName: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
-  const [tenure, setTenure] = useState(0); // Initialize with 0
+  const [tenure, setTenure] = useState(0); 
 
   // Load banks and set initial data when modal opens
   useEffect(() => {
