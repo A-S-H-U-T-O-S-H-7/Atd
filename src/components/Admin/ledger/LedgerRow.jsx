@@ -1,32 +1,34 @@
 "use client";
-import { useState } from "react";
 import { Calendar, CreditCard, Eye } from "lucide-react";
 import CallButton from "../call/CallButton";
 
 const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => {
-  const handleView = () => {
-    onViewTransaction(item);
-  };
-
-  const handleAdjustment = () => {
-    onAdjustment(item);  
-  };
+  
+  const handleAdjustment = () => onAdjustment(item);
+  
+  // Common cell styles
+  const cellBase = "px-2 py-4 text-center border-r";
+  const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
+  const cellStyle = `${cellBase} ${cellBorder}`;
+  
+  // Text styles
+  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
+  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
+  
+  // Icon styles
+  const iconAccent = `w-4 h-4 ${textAccent}`;
 
   const getDueDateStatus = (dueDate) => {
     if (!dueDate) return { status: 'normal', days: 0 };
-    
     const today = new Date();
     const due = new Date(dueDate.split('-').reverse().join('-'));
     const diffTime = due - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) {
-      return { status: 'overdue', days: Math.abs(diffDays) };
-    } else if (diffDays <= 7) {
-      return { status: 'warning', days: diffDays };
-    } else {
-      return { status: 'normal', days: diffDays };
-    }
+    if (diffDays < 0) return { status: 'overdue', days: Math.abs(diffDays) };
+    if (diffDays <= 7) return { status: 'warning', days: diffDays };
+    return { status: 'normal', days: diffDays };
   };
 
   const dueDateStatus = getDueDateStatus(item.dueDate);
@@ -72,8 +74,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
           : ""
       }`}
     >
-      {/* SN */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
           isDark
             ? "bg-emerald-900/50 text-emerald-300"
@@ -83,8 +84,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Call */}
-      <td className={`text-md border-r px-1 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <CallButton
           applicant={item}
           isDark={isDark}
@@ -94,30 +94,20 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         />
       </td>
 
-      {/* Loan No */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <CreditCard className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
-          <span className={`text-sm font-semibold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
+          <CreditCard className={iconAccent} />
+          <span className={`text-sm font-semibold ${textAccent}`}>
             {item.loanNo}
           </span>
         </div>
       </td>
 
-      {/* Due Date */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${
-              isDark ? "text-emerald-400" : "text-emerald-600"
-            }`} />
-            <span className={`text-sm font-medium ${
-              isDark ? "text-gray-200" : "text-gray-800"
-            }`}>
+          <div className="flex items-center justify-center space-x-2">
+            <Calendar className={iconAccent} />
+            <span className={`text-sm font-medium ${textSecondary}`}>
               {item.dueDate || 'N/A'}
             </span>
           </div>
@@ -134,13 +124,10 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Name */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-3">
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-3">
           <div>
-            <p className={`text-sm font-semibold ${
-              isDark ? "text-gray-100" : "text-gray-900"
-            }`}>
+            <p className={`text-sm font-semibold ${textPrimary}`}>
               {item.name}
             </p>
             {item.crnno && (
@@ -152,10 +139,9 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Adjustment */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={cellStyle}>
         <button
-          onClick={handleAdjustment}
+          onClick={() => onAdjustment(item)}
           className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-pink-900/50 text-pink-300 border-pink-700 hover:bg-pink-800"
@@ -166,9 +152,8 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </button>
       </td>
 
-      {/* Balance */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
           <span className={`text-sm font-bold ${
             parseFloat(item.balance || 0) < 0 
               ? isDark ? "text-green-400" : "text-green-600"
@@ -179,9 +164,8 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Overdue Amount */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
           <span className={`text-sm font-bold ${
             isDark ? "text-red-400" : "text-red-600"
           }`}>
@@ -190,9 +174,8 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Settled */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
           <span className={`text-sm font-bold ${
             item.settled 
               ? isDark ? "text-green-400" : "text-green-600"
@@ -203,10 +186,9 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      {/* Action */}
       <td className="px-2 py-4">
         <button
-          onClick={handleView}
+          onClick={() => onViewTransaction(item)}  
           className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
             isDark
               ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"

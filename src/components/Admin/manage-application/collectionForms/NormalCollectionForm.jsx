@@ -49,7 +49,7 @@ const NormalCollectionForm = ({
         bankName: "",
         transactionId: "",
         collectionAmount: "",
-        status: "",
+        status: "", 
         normalInterest: ""
       });
       setPenaltyChecked(false);

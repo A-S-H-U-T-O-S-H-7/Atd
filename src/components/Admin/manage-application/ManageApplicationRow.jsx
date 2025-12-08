@@ -319,10 +319,15 @@ const ApplicationRow = ({
 
       {/* Admin Fee */}
       <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {formatCurrency(application.adminFee)}
-        </span>
-      </td>
+  <div className="flex flex-col">
+    <span className={`text-sm font-semibold ${textSecondary}`}>
+      {formatCurrency(application.adminFee)}
+    </span>
+    <span className={`text-xs ${isDark ? "text-emerald-300" : "text-emerald-600 font-semibold "}`}>
+      ({application.processPercent || 0}%)
+    </span>
+  </div>
+</td>
 
       {/* ROI */}
       <td className={cellStyle}>

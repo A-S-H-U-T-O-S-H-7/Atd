@@ -123,6 +123,7 @@ export const formatManageApplicationForUI = (application) => {
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
     adminFee: (parseFloat(application.process_fee || 0) + parseFloat(application.gst || 0)).toFixed(2),
+    processPercent: application.process_percent,
     roi: application.roi,
     tenure: application.tenure,
     loanTerm: application.loan_term === 4 ? "One Time Payment" : "Daily",

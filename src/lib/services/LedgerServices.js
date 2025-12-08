@@ -6,9 +6,8 @@ export const ledgerAPI = {
   getLedgerData: async (params = {}) => {
     try {
       const response = await api.get("/crm/ledger/get", { params });
-      return response.data || response;
+      return response;
     } catch (error) {
-      console.error("API Error - getLedgerData:", error);
       throw error;
     }
   },
@@ -17,9 +16,8 @@ export const ledgerAPI = {
   getLedgerDetails: async (applicationId) => {
     try {
       const response = await api.get(`/crm/ledger/detail/${applicationId}`);
-      return response.data || response;
+      return response;
     } catch (error) {
-      console.error("API Error - getLedgerDetails:", error);
       throw error;
     }
   },
@@ -28,23 +26,36 @@ export const ledgerAPI = {
   submitAdjustment: async (applicationId, adjustmentData) => {
     try {
       const response = await api.put(`/crm/ledger/adjustment/${applicationId}`, adjustmentData);
-      return response.data || response;
+      return response;
     } catch (error) {
-      console.error("API Error - submitAdjustment:", error);
       throw error;
     }
   }
 };
 
-// Format ledger data for UI
-export const formatLedgerDataForUI = (ledger, index) => {
+// Format ledger data for UI - SIMPLIFIED like complete page
+export const formatLedgerDataForUI = (ledger) => {
   if (!ledger) return null;
   
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch {
+      return dateString;
+    }
+  };
+
   return {
-    id: ledger.application_id || index,
-    sn: ledger.application_id || index,
+    id: ledger.application_id,
+    application_id: ledger.application_id,
     loanNo: ledger.loan_no || "N/A",
-    disburseDate: formatDate(ledger.disburse_date),
     dueDate: formatDate(ledger.duedate || ledger.due_date),
     name: ledger.name || "N/A",
     address: ledger.address ? `${ledger.address}, ${ledger.city || ''}, ${ledger.state || ''}` : "N/A",
@@ -53,7 +64,6 @@ export const formatLedgerDataForUI = (ledger, index) => {
     balance: ledger.balance || 0,
     over_due: ledger.over_due || 0,
     settled: (ledger.Settled === 1 || ledger.settled === 1),
-    application_id: ledger.application_id,
     crnno: ledger.crnno || "N/A"
   };
 };
@@ -61,6 +71,21 @@ export const formatLedgerDataForUI = (ledger, index) => {
 // Format ledger details for transaction modal
 export const formatLedgerDetailsForUI = (ledgerDetails) => {
   if (!ledgerDetails || !ledgerDetails.ledger) return { transactions: [], summary: {} };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch {
+      return dateString;
+    }
+  };
 
   const transactions = ledgerDetails.ledger.map((transaction, index) => ({
     id: transaction.id || index,
@@ -83,22 +108,6 @@ export const formatLedgerDetailsForUI = (ledgerDetails) => {
   };
 };
 
-// Helper function to format date
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  } catch {
-    return dateString;
-  }
-};
-
 // Adjustment service
 export const adjustmentService = {
   submitAdjustment: async (applicationId, adjustmentData) => {
@@ -117,32 +126,4 @@ export const adjustmentService = {
       throw new Error(error.response?.data?.message || error.message || 'Failed to submit adjustment');
     }
   }
-};
-
-// Export to Excel utility
-export const exportToExcel = (data, filename) => {
-  if (!data || data.length === 0) {
-    console.error("No data to export");
-    return;
-  }
-  
-  // Create CSV content
-  const headers = Object.keys(data[0]);
-  const csvContent = [
-    headers.join(','),
-    ...data.map(row => headers.map(header => 
-      JSON.stringify(row[header] || '').replace(/"/g, '""')
-    ).join(','))
-  ].join('\n');
-  
-  // Create blob and download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename.endsWith('.csv') ? filename : `${filename}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 };

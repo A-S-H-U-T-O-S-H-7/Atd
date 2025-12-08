@@ -123,11 +123,7 @@ const CollectionTable = ({
                 }`} style={{ minWidth: "110px" }}>
                   Total Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "80px" }}>
-                  Agent
-                </th>
+                
                 <th className={`px-4 py-4 text-left text-xs font-bold ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
                 }`} style={{ minWidth: "80px" }}>

@@ -231,12 +231,7 @@ const CollectionRow = ({ item, index, isDark }) => {
         </span>
       </td>
 
-      {/* Agent */}
-      <td className={cellClasses.base}>
-        <div className={cellClasses.badges.blue}>
-          {item.agent}
-        </div>
-      </td>
+      
 
       {/* User By */}
       <td className={`px-4 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
