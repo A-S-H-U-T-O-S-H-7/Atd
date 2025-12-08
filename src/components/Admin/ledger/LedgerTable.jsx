@@ -13,6 +13,7 @@ const LedgerTable = ({
   onPageChange,
   onViewTransaction,
   onAdjustment,
+  onDownloadPDF,
   loading,
   totalItems
 }) => {
@@ -64,20 +65,21 @@ const LedgerTable = ({
                 </th>
                 <th className={`px-2 py-3 text-center text-sm font-bold ${
                   isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "100px" }}>
-                  Action
+                }`} style={{ minWidth: "120px" }}>
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {paginatedLedgerData.map((item, index) => (
                 <LedgerRow
-                  key={item.application_id || item.id} 
+                  key={item.application_id || item.id}
                   item={item}
                   index={index}
                   isDark={isDark}
                   onViewTransaction={onViewTransaction}
                   onAdjustment={onAdjustment}
+                  onDownloadPDF={(appId, action) => onDownloadPDF(appId, action, item)}
                 />
               ))}
             </tbody>

@@ -9,8 +9,9 @@ import LedgerTable from "./LedgerTable";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { ledgerAPI, formatLedgerDataForUI, adjustmentService } from "@/lib/services/LedgerServices";
+import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService } from "@/lib/services/LedgerServices";
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
 
 const LedgerPage = () => {
   const { theme } = useThemeStore();
@@ -276,6 +277,52 @@ const LedgerPage = () => {
     setCurrentPage(1);
   };
 
+ const handleDownloadPDF = async (applicationId, action, applicantData) => {
+  try {
+    setLoading(true);
+    
+    if (action === 'download') {
+      await pdfService.downloadPDF(applicationId, applicantData); 
+      
+      // Show success toast instead of Swal popup
+      toast.success('Ledger statement downloaded successfully', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } else if (action === 'print') {
+      await pdfService.printPDF(applicationId, applicantData); 
+      
+      // Show info toast instead of Swal popup
+      toast.info('Ledger statement opened for printing', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  } catch (error) {
+    console.error("PDF error:", error);
+    
+    // Show error toast instead of Swal popup
+    toast.error(error.message || 'Failed to process PDF. Please try again.', {
+      position: "top-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
   if (loading && ledgerData.length === 0) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
@@ -356,6 +403,7 @@ const LedgerPage = () => {
             onFilterChange={handleDateFilter}
             dateField="due_date"
             showSourceFilter={false}
+            allowFutureDates={true}
             buttonLabels={{
               apply: "Apply",
               clear: "Clear"
@@ -436,6 +484,7 @@ const LedgerPage = () => {
           onPageChange={setCurrentPage}
           onViewTransaction={handleViewTransaction}
           onAdjustment={handleAdjustmentClick}
+          onDownloadPDF={handleDownloadPDF} 
           loading={loading}
           totalItems={totalCount}
         />

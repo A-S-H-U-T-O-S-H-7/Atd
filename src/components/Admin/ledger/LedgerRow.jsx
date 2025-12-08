@@ -1,22 +1,19 @@
 "use client";
 import { Calendar, CreditCard, Eye } from "lucide-react";
+import { FaFilePdf } from "react-icons/fa";
 import CallButton from "../call/CallButton";
+import Swal from "sweetalert2";
 
-const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => {
+const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDownloadPDF }) => {
   
-  const handleAdjustment = () => onAdjustment(item);
-  
-  // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
-  // Text styles
   const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
   const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
   const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
   
-  // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
 
   const getDueDateStatus = (dueDate) => {
@@ -58,6 +55,30 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
   const formatOverdue = (overdue) => {
     const amount = parseFloat(overdue || 0);
     return `₹${amount.toLocaleString()}`;
+  };
+
+  const handlePDFClick = () => {
+    Swal.fire({
+      title: 'Ledger Statement',
+      text: 'What would you like to do with the ledger statement?',
+      icon: 'question',
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: 'Download PDF',
+      denyButtonText: 'Print',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#10b981',
+      denyButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onDownloadPDF(item.application_id, 'download', item);
+      } else if (result.isDenied) {
+        onDownloadPDF(item.application_id, 'print', item); 
+      }
+    });
   };
 
   return (
@@ -186,18 +207,32 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment }) => 
         </div>
       </td>
 
-      <td className="px-2 py-4">
-        <button
-          onClick={() => onViewTransaction(item)}  
-          className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-            isDark
-              ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"
-              : "bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200"
-          }`}
-          title="View Transaction Details"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
+      <td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
+          <button
+            onClick={() => onViewTransaction(item)}  
+            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+              isDark
+                ? "bg-blue-900/50 text-blue-300 border border-blue-700 hover:bg-blue-800"
+                : "bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200"
+            }`}
+            title="View Transaction Details"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={handlePDFClick}
+            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+              isDark
+                ? "bg-red-900/50 text-red-300 border border-red-700 hover:bg-red-800"
+                : "bg-red-100 text-red-800 border border-red-200 hover:bg-red-200"
+            }`}
+            title="Download/Print Ledger Statement"
+          >
+            <FaFilePdf className="w-4 h-4" />
+          </button>
+        </div>
       </td>
     </tr>
   );

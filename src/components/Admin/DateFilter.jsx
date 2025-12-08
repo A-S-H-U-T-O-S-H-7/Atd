@@ -15,29 +15,35 @@ const DateFilter = ({
   buttonLabels = {
     apply: "Apply",
     clear: "Clear"
-  }
+  },
+  allowFutureDates = false
 }) => {
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [sourceFilter, setSourceFilter] = useState("all");
   const [isApplying, setIsApplying] = useState(false);
 
-  // Get current date in YYYY-MM-DD format for max date validation
   const currentDate = useMemo(() => {
     return new Date().toISOString().split('T')[0];
   }, []);
 
-  // Calculate max date for end date - FIXED VERSION
   const getMaxEndDate = () => {
-    // If no start date selected, max is today
+    if (allowFutureDates) {
+      if (!dateRange.start) return "";
+      return "";
+    }
+    
     if (!dateRange.start) return currentDate;
     
     const startDate = new Date(dateRange.start);
     const today = new Date(currentDate);
     
-    // If start date is in future (shouldn't happen due to validation), max is today
     if (startDate > today) return currentDate;
     
-    // Otherwise, max is today (users can select any date between start date and today)
+    return currentDate;
+  };
+
+  const getMaxStartDate = () => {
+    if (allowFutureDates) return "";
     return currentDate;
   };
 
@@ -46,12 +52,10 @@ const DateFilter = ({
     
     if (type === "start") {
       newDateRange.start = value;
-      // If new start date is after current end date, reset end date
       if (value && dateRange.end && new Date(value) > new Date(dateRange.end)) {
         newDateRange.end = "";
       }
     } else {
-      // Ensure end date is not before start date and not in future
       if (value) {
         const endDate = new Date(value);
         const today = new Date(currentDate);
@@ -59,7 +63,7 @@ const DateFilter = ({
         if (dateRange.start && endDate < new Date(dateRange.start)) {
           return;
         }
-        if (endDate > today) {
+        if (!allowFutureDates && endDate > today) {
           return;
         }
       }
@@ -119,7 +123,6 @@ const DateFilter = ({
     }
   };
 
-  // Check if apply button should be enabled
   const isApplyEnabled = !isApplying && (
     dateRange.start !== "" || 
     dateRange.end !== "" || 
@@ -135,17 +138,12 @@ const DateFilter = ({
           ? "border-emerald-600/30 bg-gray-800/50" 
           : "border-emerald-200 bg-emerald-50/30"
       }`}
-      role="region"
-      aria-label="Date and Source Filters"
     >
       <div className={`grid grid-cols-1 ${gridCols} gap-4 items-end`}>
-        {/* From Date Input */}
         <div className="md:col-span-1">
           <label 
             htmlFor="from-date"
-            className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-              isDark ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             From Date
           </label>
@@ -153,9 +151,9 @@ const DateFilter = ({
             id="from-date"
             type="date"
             value={dateRange.start}
-            max={currentDate}
+            max={getMaxStartDate()}
             onChange={(e) => handleDateChange("start", e.target.value)}
-            className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
+            className={`w-full px-4 py-3 rounded-xl border-2 font-medium ${
               isDark
                 ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                 : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
@@ -164,13 +162,10 @@ const DateFilter = ({
           />
         </div>
 
-        {/* To Date Input */}
         <div className="md:col-span-1">
           <label 
             htmlFor="to-date"
-            className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-              isDark ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             To Date
           </label>
@@ -181,7 +176,7 @@ const DateFilter = ({
             min={dateRange.start || undefined}
             max={getMaxEndDate()}
             onChange={(e) => handleDateChange("end", e.target.value)}
-            className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
+            className={`w-full px-4 py-3 rounded-xl border-2 font-medium ${
               isDark
                 ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                 : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
@@ -190,14 +185,11 @@ const DateFilter = ({
           />
         </div>
 
-        {/* Source Filter - Conditionally Rendered */}
         {showSourceFilter && (
           <div className="md:col-span-1">
             <label 
               htmlFor="source-filter"
-              className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}
+              className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
             >
               Source Filter
             </label>
@@ -205,7 +197,7 @@ const DateFilter = ({
               id="source-filter"
               value={sourceFilter}
               onChange={(e) => handleSourceChange(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
+              className={`w-full px-4 py-3 rounded-xl border-2 font-medium ${
                 isDark
                   ? "bg-gray-800 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                   : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
@@ -221,12 +213,11 @@ const DateFilter = ({
           </div>
         )}
 
-        {/* Apply Button */}
         <div className="md:col-span-1">
           <button
             onClick={handleApplyFilter}
             disabled={!isApplyEnabled}
-            className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 disabled:scale-100 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full px-6 py-3 rounded-xl font-semibold hover:scale-105 disabled:scale-100 disabled:opacity-50 disabled:cursor-not-allowed ${
               isApplying 
                 ? "animate-pulse bg-gray-400 text-white" 
                 : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white"
@@ -236,12 +227,11 @@ const DateFilter = ({
           </button>
         </div>
 
-        {/* Clear Button */}
         <div className="md:col-span-1">
           <button
             onClick={handleClearFilter}
             disabled={isApplying || !isApplyEnabled}
-            className={`w-full px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 disabled:scale-100 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full px-6 py-3 rounded-xl font-semibold hover:scale-105 disabled:scale-100 disabled:opacity-50 disabled:cursor-not-allowed ${
               isDark
                 ? "bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
                 : "bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300"
