@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { FileText } from "lucide-react";
 import CollectionRow from "./CollectionRow";
@@ -5,14 +6,19 @@ import Pagination from "../Pagination";
 
 const CollectionTable = ({ 
   paginatedCollectionData,
-  filteredCollectionData,
   currentPage,
   totalPages,
   itemsPerPage,
   isDark,
   onPageChange,
-  totals
+  totals,
+  loading,
+  totalItems  
 }) => {
+  const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+  }`;
+
   return (
     <>
       <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
@@ -28,104 +34,65 @@ const CollectionTable = ({
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "50px" }}>
+                <th className={headerStyle} style={{ minWidth: "50px" }}>
                   SN
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "160px" }}>
+                <th className={headerStyle} style={{ minWidth: "140px" }}>
                   Collection Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "100px" }}>
+                <th className={headerStyle} style={{ minWidth: "100px" }}>
                   CRN No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "130px" }}>
+                <th className={headerStyle} style={{ minWidth: "130px" }}>
                   Loan No
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "200px" }}>
+                <th className={headerStyle} style={{ minWidth: "200px" }}>
                   Name
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "100px" }}>
+                <th className={headerStyle} style={{ minWidth: "100px" }}>
                   Admin Fee
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "80px" }}>
+                <th className={headerStyle} style={{ minWidth: "80px" }}>
                   GST
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "130px" }}>
+                <th className={headerStyle} style={{ minWidth: "130px" }}>
                   Sanction Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "120px" }}>
+                <th className={headerStyle} style={{ minWidth: "120px" }}>
                   Disburse Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "130px" }}>
+                <th className={headerStyle} style={{ minWidth: "130px" }}>
                   Transaction Date
                 </th>
-                <th className={`px-4 py-6 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "240px" }}>
+                <th className={headerStyle} style={{ minWidth: "150px" }}>
                   Due Date
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "80px" }}>
+                <th className={headerStyle} style={{ minWidth: "80px" }}>
                   Interest
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "80px" }}>
+                <th className={headerStyle} style={{ minWidth: "80px" }}>
                   Penalty
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "80px" }}>
-                  GST
+                <th className={headerStyle} style={{ minWidth: "80px" }}>
+                  GST Penalty
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "100px" }}>
+                <th className={headerStyle} style={{ minWidth: "100px" }}>
                   Penal Interest
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "110px" }}>
+                <th className={headerStyle} style={{ minWidth: "110px" }}>
                   Renewal Charge
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "110px" }}>
+                <th className={headerStyle} style={{ minWidth: "110px" }}>
                   Bounce Charge
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "130px" }}>
+                <th className={headerStyle} style={{ minWidth: "100px" }}>
                   Collection Amount
                 </th>
-                <th className={`px-4 py-4 text-left text-xs font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "110px" }}>
+                <th className={headerStyle} style={{ minWidth: "110px" }}>
                   Total Amount
                 </th>
-                
-                <th className={`px-4 py-4 text-left text-xs font-bold ${
-                  isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
+                <th className={`px-2 py-3 text-center text-sm font-bold ${
+                  isDark ? "text-gray-100" : "text-gray-700"
                 }`} style={{ minWidth: "80px" }}>
                   User By
                 </th>
@@ -134,7 +101,7 @@ const CollectionTable = ({
             <tbody>
               {paginatedCollectionData.map((item, index) => (
                 <CollectionRow
-                  key={item.id}
+                  key={item.id || item.application_id || `collection-${currentPage}-${index}`}
                   item={item}
                   index={index}
                   isDark={isDark}
@@ -160,14 +127,13 @@ const CollectionTable = ({
                   <td className="px-4 py-4"></td>
                   <td className="px-4 py-4"></td>
                   <td className="px-4 py-4 text-sm">₹{totals.interest.toFixed(2)}</td>
-                  <td className="px-4 py-4 text-sm">{totals.penalty.toFixed(0)}</td>
-                  <td className="px-4 py-4 text-sm">{totals.gstPenalty.toFixed(0)}</td>
-                  <td className="px-4 py-4 text-sm">{totals.penalInterest.toFixed(0)}</td>
-                  <td className="px-4 py-4 text-sm">{totals.renewalCharge.toFixed(0)}</td>
+                  <td className="px-4 py-4 text-sm">₹{totals.penalty.toFixed(2)}</td>
+                  <td className="px-4 py-4 text-sm">₹{totals.gstPenalty.toFixed(2)}</td>
+                  <td className="px-4 py-4 text-sm">₹{totals.penalInterest.toFixed(2)}</td>
+                  <td className="px-4 py-4 text-sm">₹{totals.renewalCharge.toFixed(2)}</td>
                   <td className="px-4 py-4 text-sm">₹{totals.bounceCharge.toFixed(2)}</td>
                   <td className="px-4 py-4 text-sm">₹{totals.collectionAmount.toFixed(2)}</td>
                   <td className="px-4 py-4 text-sm">₹{totals.totalAmount.toFixed(2)}</td>
-                  <td className="px-4 py-4"></td>
                   <td className="px-4 py-4"></td>
                 </tr>
               )}
@@ -176,7 +142,7 @@ const CollectionTable = ({
         </div>
         
         {/* Empty State */}
-        {paginatedCollectionData.length === 0 && (
+        {paginatedCollectionData.length === 0 && !loading && (
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <FileText className="w-16 h-16 opacity-50" />
@@ -185,21 +151,28 @@ const CollectionTable = ({
             </div>
           </div>
         )}
-        {/* Pagination */}
-      {totalPages > 0 && (
-        <div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            totalItems={filteredCollectionData.length}  
-            itemsPerPage={itemsPerPage}   
-          />
-        </div>
-      )}
-      </div>
 
-      
+        {loading && (
+          <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className="flex flex-col items-center space-y-4">
+              <FileText className="w-16 h-16 opacity-50" />
+              <p className="text-lg font-medium">Loading collection data...</p>
+            </div>
+          </div>
+        )}
+
+        {totalPages > 0 && (
+          <div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              totalItems={totalItems || paginatedCollectionData.length}
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 };

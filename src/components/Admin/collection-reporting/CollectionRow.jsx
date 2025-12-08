@@ -1,50 +1,33 @@
-import React from "react";
-import { Calendar, CreditCard, User, Building2 } from "lucide-react";
+"use client";
+import { Calendar } from "lucide-react";
 
 const CollectionRow = ({ item, index, isDark }) => {
-  // Common cell styling classes
-  const cellClasses = {
-    base: `px-4 py-3 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`,
-    text: {
-      normal: `text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`,
-      semibold: `text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-800"}`,
-      bold: `text-sm font-bold ${isDark ? "text-gray-200" : "text-gray-800"}`,
-      muted: `text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`,
-    },
-    colors: {
-      emerald: `text-sm font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`,
-      blue: `text-sm font-medium ${isDark ? "text-blue-400" : "text-blue-600"}`,
-      green: `text-sm font-semibold ${isDark ? "text-green-400" : "text-green-600"}`,
-      red: `text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"}`,
-      orange: `text-sm font-medium ${isDark ? "text-orange-400" : "text-orange-600"}`,
-    },
-    badges: {
-      emerald: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-        isDark ? "bg-emerald-900/50 text-emerald-300 border border-emerald-700" : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-      }`,
-      blue: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-        isDark ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-blue-100 text-blue-800 border border-blue-200"
-      }`,
-      orange: `px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-        isDark ? "bg-orange-900/50 text-orange-300 border-orange-700" : "bg-orange-100 text-orange-800 border-orange-200"
-      }`,
-    }
-  };
+  // Common cell styles
+  const cellBase = "px-2 py-4 text-center border-r";
+  const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
+  const cellStyle = `${cellBase} ${cellBorder}`;
+  
+  // Text styles
+  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
+  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
+  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
+  
+  // Icon styles
+  const iconAccent = `w-4 h-4 ${textAccent}`;
 
   const getDueDateStatus = (dueDate) => {
+    if (!dueDate) return { status: 'normal', days: 0 };
     const today = new Date();
     const due = new Date(dueDate.split('-').reverse().join('-'));
     const diffTime = due - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) {
-      return { status: 'overdue', days: Math.abs(diffDays), color: 'red' };
-    } else if (diffDays <= 7) {
-      return { status: 'warning', days: diffDays, color: 'yellow' };
-    } else {
-      return { status: 'normal', days: diffDays, color: 'green' };
-    }
+    if (diffDays < 0) return { status: 'overdue', days: Math.abs(diffDays) };
+    if (diffDays <= 7) return { status: 'warning', days: diffDays };
+    return { status: 'normal', days: diffDays };
   };
+
+  const dueDateStatus = getDueDateStatus(item.dueDate);
 
   const getDueDateColor = (status) => {
     switch (status) {
@@ -63,8 +46,6 @@ const CollectionRow = ({ item, index, isDark }) => {
     }
   };
 
-  const dueDateStatus = getDueDateStatus(item.dueDate);
-
   return (
     <tr
       className={`border-b transition-all duration-200 hover:shadow-lg ${
@@ -74,168 +55,173 @@ const CollectionRow = ({ item, index, isDark }) => {
       } ${
         index % 2 === 0
           ? isDark 
-            ? "bg-gray-700/50" 
-            : "bg-gray-100"
+            ? "bg-gray-700/30" 
+            : "bg-gray-50"
           : ""
       }`}
     >
-      {/* SN */}
-      <td className={cellClasses.base}>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
-          isDark ? "text-white" : "text-black"
+      <td className={cellStyle}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+          isDark
+            ? "bg-emerald-900/50 text-emerald-300"
+            : "bg-emerald-100 text-emerald-700"
         }`}>
           {item.sn}
         </div>
       </td>
 
-      {/* Collection Date */}
-      <td className={cellClasses.base}>
+      <td className={cellStyle}>
         <div className="flex items-center space-x-2">
-          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-          <span className={cellClasses.text.normal}>
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
             {item.collectionDate}
           </span>
         </div>
       </td>
 
-      {/* CRN No */}
-      <td className={cellClasses.base}>
-        <div className="flex items-center space-x-2">
-          <span className={cellClasses.colors.blue}>
-            {item.crnNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${textAccent}`}>
+          {item.crnNo}
+        </span>
       </td>
 
-      {/* Loan No */}
-      <td className={cellClasses.base}>
-        <div className="flex items-center space-x-2">
-          <span className={cellClasses.colors.emerald}>
-            {item.loanNo}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${textAccent}`}>
+          {item.loanNo}
+        </span>
       </td>
 
-      {/* Name */}
-      <td className={cellClasses.base}>
-        <div className="flex items-center space-x-2">
-          <span className={cellClasses.text.normal}>
-            {item.name}
-          </span>
-        </div>
+      <td className={cellStyle}>
+        <span className={`text-sm font-medium ${textPrimary}`}>
+          {item.name}
+        </span>
       </td>
 
-      {/* Admin Fee */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           ₹{item.adminFee.toFixed(2)}
         </span>
       </td>
 
-      {/* GST */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           ₹{item.gst.toFixed(2)}
         </span>
       </td>
 
-      {/* Sanction Amount */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.badges.orange}>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${
+          isDark ? "text-orange-400" : "text-orange-600"
+        }`}>
           ₹{item.sanctionAmount.toFixed(2)}
         </span>
       </td>
 
-      {/* Disburse Date */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {item.disburseDate}
         </span>
       </td>
 
-      {/* Transaction Date */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           {item.transactionDate}
         </span>
       </td>
 
-      {/* Due Date */}
-      <td className={cellClasses.base}>
-        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${
-          getDueDateColor(dueDateStatus.status)
-        }`}>
-          {item.dueDate}
-          {dueDateStatus.status === 'overdue' && (
-            <span className="ml-1">({dueDateStatus.days}d overdue)</span>
-          )}
-          {dueDateStatus.status === 'warning' && (
-            <span className="ml-1">({dueDateStatus.days}d left)</span>
+      <td className={cellStyle}>
+        <div className="space-y-1">
+          <div className="flex items-center justify-center space-x-2">
+            <Calendar className={iconAccent} />
+            <span className={`text-sm font-medium ${textSecondary}`}>
+              {item.dueDate}
+            </span>
+          </div>
+          {item.dueDate && (
+            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getDueDateColor(dueDateStatus.status)}`}>
+              {dueDateStatus.status === 'overdue' 
+                ? `${dueDateStatus.days} days overdue`
+                : dueDateStatus.status === 'warning'
+                ? `${dueDateStatus.days} days left`
+                : 'On track'
+              }
+            </span>
           )}
         </div>
       </td>
 
-      {/* Interest */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${textSecondary}`}>
           ₹{item.interest.toFixed(2)}
         </span>
       </td>
 
-      {/* Penalty */}
-      <td className={cellClasses.base}>
-        <span className={item.penalty > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${
+          item.penalty > 0 
+            ? isDark ? "text-red-400" : "text-red-600" 
+            : textSecondary
+        }`}>
           {item.penalty > 0 ? `₹${item.penalty.toFixed(2)}` : '-'}
         </span>
       </td>
 
-      {/* GST Penalty */}
-      <td className={cellClasses.base}>
-        <span className={item.gstPenalty > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${
+          item.gstPenalty > 0 
+            ? isDark ? "text-red-400" : "text-red-600" 
+            : textSecondary
+        }`}>
           {item.gstPenalty > 0 ? `₹${item.gstPenalty.toFixed(2)}` : '-'}
         </span>
       </td>
 
-      {/* Penal Interest */}
-      <td className={cellClasses.base}>
-        <span className={item.penalInterest > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${
+          item.penalInterest > 0 
+            ? isDark ? "text-red-400" : "text-red-600" 
+            : textSecondary
+        }`}>
           {item.penalInterest > 0 ? `₹${item.penalInterest.toFixed(2)}` : '-'}
         </span>
       </td>
 
-      {/* Renewal Charge */}
-      <td className={cellClasses.base}>
-        <span className={item.renewalCharge > 0 ? cellClasses.colors.orange : cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${
+          item.renewalCharge > 0 
+            ? isDark ? "text-orange-400" : "text-orange-600" 
+            : textSecondary
+        }`}>
           {item.renewalCharge > 0 ? `₹${item.renewalCharge.toFixed(2)}` : '-'}
         </span>
       </td>
 
-      {/* Bounce Charge */}
-      <td className={cellClasses.base}>
-        <span className={item.bounceCharge > 0 ? cellClasses.colors.red : cellClasses.text.normal}>
+      <td className={cellStyle}>
+        <span className={`text-sm ${
+          item.bounceCharge > 0 
+            ? isDark ? "text-red-400" : "text-red-600" 
+            : textSecondary
+        }`}>
           {item.bounceCharge > 0 ? `₹${item.bounceCharge.toFixed(2)}` : '-'}
         </span>
       </td>
 
-      {/* Collection Amount */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.colors.green}>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${
+          isDark ? "text-green-400" : "text-green-600"
+        }`}>
           ₹{item.collectionAmount.toFixed(2)}
         </span>
       </td>
 
-      {/* Total Amount */}
-      <td className={cellClasses.base}>
-        <span className={cellClasses.colors.emerald}>
+      <td className={cellStyle}>
+        <span className={`text-sm font-semibold ${textAccent}`}>
           ₹{item.totalAmount.toFixed(2)}
         </span>
       </td>
 
-      
-
-      {/* User By */}
-      <td className={`px-4 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span className={cellClasses.text.muted}>
+      <td className={`px-2 py-4 ${cellBorder}`}>
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
           {item.userBy}
         </span>
       </td>
