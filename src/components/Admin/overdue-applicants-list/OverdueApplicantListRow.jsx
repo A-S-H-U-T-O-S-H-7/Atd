@@ -200,13 +200,13 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* View */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onView(applicant)}
-          className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
+          className={`px-3 py-1 cursor-pointer rounded-md font-medium transition-all duration-200 text-sm ${
             isDark
-              ? "bg-purple-900/50 hover:bg-purple-800 text-purple-300 border border-purple-700"
-              : "bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-200"
+              ? "bg-gradient-to-r from-purple-300 to-purple-400 hover:bg-purple-800 text-purple-900 border border-purple-700"
+              : "bg-gradient-to-r from-purple-200 to-purple-300 hover:bg-purple-200 text-purple-700 border border-purple-200"
           }`}
         >
           View
@@ -214,16 +214,16 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* Charge Amount */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <button
           onClick={() => onChargeICICI(applicant)}
-          className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
+          className={`px-3 py-1 cursor-pointer rounded-md font-medium transition-all duration-200 text-sm ${
             isDark
-              ? "bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 border border-indigo-700"
-              : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border border-indigo-200"
+              ? "bg-gradient-to-r from-indigo-300 to-indigo-400 hover:bg-indigo-800 text-indigo-900 border border-indigo-700"
+              : "bg-gradient-to-r from-indigo-200 to-indigo-300 hover:bg-indigo-200 text-indigo-700 border border-indigo-200"
           }`}
         >
-          Charge ICICI
+          Schedule
         </button>
       </td>
 

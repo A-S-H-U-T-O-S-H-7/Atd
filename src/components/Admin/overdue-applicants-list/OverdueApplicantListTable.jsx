@@ -51,12 +51,12 @@ const OverdueApplicantListTable = ({
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "160px" }}>
+                }`} style={{ minWidth: "120px" }}>
                   Due Date
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "200px" }}>
+                }`} style={{ minWidth: "150px" }}>
                   Name
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
@@ -81,18 +81,18 @@ const OverdueApplicantListTable = ({
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "140px" }}>
+                }`} style={{ minWidth: "110px" }}>
                   Overdue Amt.
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "140px" }}>
+                }`} style={{ minWidth: "90px" }}>
                   View
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
-                }`} style={{ minWidth: "170px" }}>
-                  Charge Amount
+                }`} style={{ minWidth: "120px" }}>
+                  E-Nach
                 </th>
                 <th className={`px-6 py-5 text-center text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"

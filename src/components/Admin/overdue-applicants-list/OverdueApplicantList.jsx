@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { overdueApplicantService } from "@/lib/services/OverdueApplicantServices";
 import Swal from 'sweetalert2';
+import ChargeICICIModal from "../application-modals/ChargeICICIModal";
 
 const OverdueApplicantList = () => {
   const { theme } = useThemeStore();
@@ -36,6 +37,9 @@ const OverdueApplicantList = () => {
   const [overdueApplicants, setOverdueApplicants] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+
+  const [showChargeICICIModal, setShowChargeICICIModal] = useState(false);
+const [selectedApplicantForCharge, setSelectedApplicantForCharge] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -281,9 +285,29 @@ const OverdueApplicantList = () => {
   };
 
   const handleChargeICICI = (applicant) => {
-    console.log('Charging ICICI for:', applicant.name);
-    // Add charge ICICI logic here
-  };
+  setSelectedApplicantForCharge(applicant);
+  setShowChargeICICIModal(true);
+};
+
+const handleChargeSubmit = async (chargeData) => {
+  try {
+    console.log("Charge scheduled:", chargeData);
+    fetchOverdueApplicants(); 
+    
+    Swal.fire({
+      title: 'Success',
+      text: 'Charge scheduled successfully',
+      icon: 'success',
+      confirmButtonColor: isDark ? '#10b981' : '#059669',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } catch (error) {
+    console.error("Charge error:", error);
+  }
+};
+
+
 
   const handleSREAssign = (applicant) => {
     console.log('Assigning SRE for:', applicant.name);
@@ -506,6 +530,17 @@ const OverdueApplicantList = () => {
         isDark={isDark}
         onSubmit={handleAdjustmentSubmit}
       />
+
+      <ChargeICICIModal
+  isOpen={showChargeICICIModal}
+  onClose={() => {
+    setShowChargeICICIModal(false);
+    setSelectedApplicantForCharge(null);
+  }}
+  applicant={selectedApplicantForCharge}
+  isDark={isDark}
+  onChargeSubmit={handleChargeSubmit}
+/>
 
       <OverdueAmountModal
         isOpen={showOverdueModal}

@@ -63,15 +63,13 @@ const ComplaintPage = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleFileView = (complaint, docType) => {
-    // Find document by type and open URL
-    const document = complaint.documents?.find(doc => doc.type === docType);
-    if (document?.url) {
-      window.open(document.url, '_blank');
-    } else {
-      toast.error('Document not found');
-    }
-  };
+  const handleFileView = (url) => {
+  if (url) {
+    window.open(url, '_blank');
+  } else {
+    toast.error('Document URL not found');
+  }
+};
 
   const handleUpload = async (complaintId, file, docType) => {
     try {
@@ -129,8 +127,7 @@ const ComplaintPage = () => {
     fetchComplaints(currentPage, searchTerm, statusFilter);
   };
 
-  // Transform API data to match component expectations
- const transformedComplaints = complaints.map(complaint => ({
+const transformedComplaints = complaints.map(complaint => ({
   id: complaint.id,
   srNo: complaint.id,
   complaintDate: complaint.complaint_date,
@@ -146,12 +143,13 @@ const ComplaintPage = () => {
   complaintResolution: complaint.resolution_remarks,
   complaintCloseDate: complaint.close_date,
   finalRemarks: complaint.final_remarks,
-  hasComplaintDocs: complaint.documents?.some(doc => doc.type === 'complaint') || false,
-  hasResolutionDocs: complaint.documents?.some(doc => doc.type === 'resolution') || false,
+  // Separate arrays for each document type
+  complaintDocuments: complaint.documents?.filter(doc => doc.type === 'complaint') || [],
+  resolutionDocuments: complaint.documents?.filter(doc => doc.type === 'resolution') || [],
+  // Add all documents for completeness
+  documents: complaint.documents || [],
   phone: complaint.phone,
   date: complaint.complaint_date,
-  documents: complaint.documents || [],
-  // Add these fields for proper mapping
   loan_belong_to: complaint.loan_belong_to,
   complaint_date: complaint.complaint_date,
   complaint_details: complaint.complaint_details,
@@ -160,8 +158,8 @@ const ComplaintPage = () => {
   resolution_remarks: complaint.resolution_remarks,
   close_date: complaint.close_date,
   final_remarks: complaint.final_remarks,
-  open_date: complaint.open_date, // Add this for assign date
-  loan_no: complaint.loan_no // Add this for loan number
+  open_date: complaint.open_date,
+  loan_no: complaint.loan_no
 }));
 
   return (

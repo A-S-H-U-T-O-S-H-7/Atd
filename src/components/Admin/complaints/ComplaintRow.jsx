@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { IoDocumentAttach } from "react-icons/io5";
 import ExpandableText from "./ExpandableText";
+import { Files } from "./Files";
 
 const ComplaintRow = ({
   complaint,
@@ -170,25 +171,35 @@ const ComplaintRow = ({
         />
       </td>
 
-      {/* Complaint Documents */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          {complaint.hasComplaintDocs
-            ? <button
-                onClick={() => onFileView(complaint, "complaint")}
-                className="p-2 rounded-lg transition-colors duration-200 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 cursor-pointer"
-                title="View Complaint Document"
-              >
-                <IoDocumentAttach className="text-xl" />
-              </button>
-            : <div
-                className="p-1 rounded-lg bg-red-100 text-red-600"
-                title="Document Missing"
-              >
-                <X />
-              </div>}
-        </div>
-      </td>
+{/* Complaint Documents */}
+<td className={`px-2 py-2 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+  <div className="flex items-center flex-wrap gap-1">
+    {complaint.complaintDocuments?.length > 0 ? (
+      complaint.complaintDocuments.map((doc, index) => (
+        <button
+          key={`complaint-${doc.file}-${index}`}
+          onClick={() => onFileView(doc.url)}
+          className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 cursor-pointer ${
+            isDark
+              ? "hover:bg-gray-600"
+              : "hover:bg-indigo-200"
+          }`}
+          title={`View ${doc.file.split('/').pop() || 'document'}`}
+        >
+          <Files fileUrl={doc.url} isDark={isDark} size="w-6 h-6" />
+        </button>
+      ))
+    ) : (
+      <div
+        className="p-1.5 rounded-md"
+        title="No Complaint Documents"
+      >
+        <X className={`w-6 h-6 ${isDark ? "text-red-400" : "text-red-400"}`} />
+      </div>
+    )}
+  </div>
+</td>
+
 
       {/* Complaint For */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
@@ -236,24 +247,33 @@ const ComplaintRow = ({
       </td>
 
       {/* Resolution Documents */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          {complaint.hasResolutionDocs
-            ? <button
-                onClick={() => onFileView(complaint, "resolution")}
-                className="p-2 rounded-lg border border-indigo-400 transition-colors duration-200 bg-indigo-200 hover:bg-indigo-200 text-indigo-900 cursor-pointer"
-                title="View Resolution Document"
-              >
-                <IoDocumentAttach className="text-xl" />
-              </button>
-            : <div
-                className="p-1 rounded-lg bg-red-100 text-red-600"
-                title="Document Missing"
-              >
-                <X />
-              </div>}
-        </div>
-      </td>
+<td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+  <div className="flex items-center flex-wrap gap-1">
+    {complaint.resolutionDocuments?.length > 0 ? (
+      complaint.resolutionDocuments.map((doc, index) => (
+        <button
+          key={`resolution-${doc.file}-${index}`}
+          onClick={() => onFileView(doc.url)}
+          className={`p-1.5 rounded-md transition-all duration-200 hover:scale-110 cursor-pointer ${
+            isDark
+              ? "hover:bg-gray-600"
+              : "hover:bg-emerald-200"
+          }`}
+          title={`View ${doc.file.split('/').pop() || 'document'}`}
+        >
+          <Files fileUrl={doc.url} isDark={isDark} size="w-6 h-6" />
+        </button>
+      ))
+    ) : (
+      <div
+        className="p-1.5 rounded-md"
+        title="No Resolution Documents"
+      >
+        <X className={`w-6 h-6 ${isDark ? "text-red-400" : "text-red-400"}`} />
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Complaint Close Date */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

@@ -1,3 +1,4 @@
+// lib/services/OverdueApplicantServices.js
 "use client";
 import api from "@/utils/axiosInstance";
 
@@ -9,10 +10,36 @@ export const overdueApplicantAPI = {
     } catch (error) {
       throw error;
     }
+  },
+
+  getEmandateDetails: async (id) => {
+    try {
+      const response = await api.get(`/crm/overdue/enach/${id}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getChargeAmount: async (data) => {
+    try {
+      const response = await api.post("/crm/overdue/enach", data);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  scheduleCharge: async (data) => {
+    try {
+      const response = await api.post("/crm/overdue/enach/schedule", data);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
-// Format overdue applicant data for UI
 export const formatOverdueApplicantForUI = (applicant) => {
   if (!applicant) return null;
   
@@ -52,7 +79,6 @@ export const formatOverdueApplicantForUI = (applicant) => {
   };
 };
 
-// Overdue applicant service
 export const overdueApplicantService = {
   getOverdueApplicants: async (params = {}) => {
     try {
@@ -79,6 +105,33 @@ export const overdueApplicantService = {
         };
       }
       throw new Error('Failed to fetch overdue applicants');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getEmandateDetails: async (id) => {
+    try {
+      const response = await overdueApplicantAPI.getEmandateDetails(id);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getChargeAmount: async (data) => {
+    try {
+      const response = await overdueApplicantAPI.getChargeAmount(data);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  scheduleCharge: async (data) => {
+    try {
+      const response = await overdueApplicantAPI.scheduleCharge(data);
+      return response;
     } catch (error) {
       throw error;
     }

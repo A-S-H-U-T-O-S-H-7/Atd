@@ -1,28 +1,53 @@
-// services/complaintService.js
+// lib/services/ComplaintService.js
 import api from '@/utils/axiosInstance';
-import { toast } from 'react-hot-toast';
 
 export const complaintService = {
-  // Add new complaint
+  // Search customer by loan number
+  async searchCustomer(loanNumber) {
+    try {
+      const response = await api.get(`/crm/complaint/search/${loanNumber}`);
+      return response;
+    } catch (error) {
+      console.error('Error searching customer:', error);
+      return null;
+    }
+  },
+
+  // Add new complaint with file upload
   async addComplaint(complaintData) {
     try {
-      const payload = {
-        complaintdate: complaintData.complaintDate,
-        customername: complaintData.customerName,
-        customerphone: complaintData.mobileNo,
-        customeremail: complaintData.email,
-        customerloan: complaintData.loanAcNo,
-        loan_belong_to: complaintData.loanProvider
-      };
+      const formData = new FormData();
+      
+      // Append all form data
+      formData.append('customer_loan_no', complaintData.loanAcNo);
+      formData.append('complaint_date', complaintData.complaintDate);
+      formData.append('customer_name', complaintData.customerName);
+      formData.append('customer_mobile', complaintData.mobileNo);
+      formData.append('customer_email', complaintData.email);
+      formData.append('complaint_belong', complaintData.loanProvider);
+      
+      if (complaintData.complaintDetails) {
+        formData.append('complaint_details', complaintData.complaintDetails);
+      }
+      
+      // Append files
+      if (complaintData.complaintFiles && complaintData.complaintFiles.length > 0) {
+        complaintData.complaintFiles.forEach((file, index) => {
+          formData.append('complaint_docs', file);
+        });
+      }
 
-      const response = await api.post('/crm/complaint/add', payload);
-      toast.success('Complaint added successfully!');
+      const response = await api.post('/crm/complaint/add', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       return response;
     } catch (error) {
       console.error('Error adding complaint:', error);
       const errorMessage = error.response?.data?.message || 'Failed to add complaint. Please try again.';
-      toast.error(errorMessage);
-      throw error;
+      throw new Error(errorMessage);
     }
   },
 
@@ -39,7 +64,16 @@ export const complaintService = {
       return response;
     } catch (error) {
       console.error('Error fetching complaints:', error);
-      toast.error('Failed to fetch complaints');
+      throw error;
+    }
+  },
+
+  async getUsers() {
+    try {
+      const response = await api.get('/crm/complaint/user');
+      return response;
+    } catch (error) {
+      console.error('Error fetching users:', error);
       throw error;
     }
   },
@@ -60,7 +94,6 @@ export const complaintService = {
       console.error('Error assigning complaint:', error);
       const errorMessage = error.response?.data?.message || 'Failed to assign complaint.';
       throw new Error(errorMessage);
-
     }
   },
 
@@ -96,7 +129,6 @@ export const complaintService = {
       console.error('Error adding final remarks:', error);
       const errorMessage = error.response?.data?.message || 'Failed to add final remarks.';
       throw new Error(errorMessage);
-
     }
   },
 
@@ -118,11 +150,8 @@ export const complaintService = {
       console.error('Error uploading document:', error);
       const errorMessage = error.response?.data?.message || 'Failed to upload document.';
       throw new Error(errorMessage);
-
     }
   },
-
-  
 };
 
 export default complaintService;

@@ -1,5 +1,6 @@
+// app/crm/complaints/add/page.jsx
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ArrowLeft, 
   Save, 
@@ -9,7 +10,8 @@ import {
   FileText, 
   File,
   Image,
-  FileType
+  FileType,
+  Search
 } from 'lucide-react';
 import ComplaintFormFields from './ComplaintsFormFields';
 import { useRouter } from 'next/navigation';
@@ -18,6 +20,7 @@ import { complaintService } from '@/lib/services/ComplaintService';
 import { toast } from 'react-hot-toast';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import debounce from 'lodash/debounce';
 
 // Validation Schema
 const complaintSchema = Yup.object().shape({
@@ -49,6 +52,7 @@ const AddComplaintPage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const router = useRouter();
 
@@ -56,6 +60,54 @@ const AddComplaintPage = () => {
   const getCurrentDate = () => {
     const now = new Date();
     return now.toISOString().split('T')[0];
+  };
+
+  // Debounced search function
+  const searchCustomer = useCallback(
+    debounce(async (loanNumber, setFieldValue) => {
+      if (!loanNumber || loanNumber.length < 3) return;
+      
+      setIsSearching(true);
+      try {
+        const response = await complaintService.searchCustomer(loanNumber);
+        
+        if (response?.success && response.data) {
+          const customer = response.data;
+          
+          setFieldValue('customerName', customer.customer_name || '');
+          setFieldValue('mobileNo', customer.customer_phone || '');
+          setFieldValue('email', customer.customer_email || '');
+          
+          toast.success('Customer details auto-filled!');
+        } else {
+          // Clear fields if no customer found
+          setFieldValue('customerName', '');
+          setFieldValue('mobileNo', '');
+          setFieldValue('email', '');
+        }
+      } catch (error) {
+        console.error('Error searching customer:', error);
+        toast.error('Error fetching customer details');
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500),
+    []
+  );
+
+  // Handle loan number change
+  const handleLoanNumberChange = (e, setFieldValue) => {
+    const value = e.target.value;
+    setFieldValue('loanAcNo', value);
+    
+    if (value.length >= 3) {
+      searchCustomer(value, setFieldValue);
+    } else {
+      // Clear customer details if loan number is too short
+      setFieldValue('customerName', '');
+      setFieldValue('mobileNo', '');
+      setFieldValue('email', '');
+    }
   };
 
   // Handle file selection
@@ -97,22 +149,7 @@ const AddComplaintPage = () => {
     setIsSubmitting(true);
     
     try {
-      const formData = new FormData();
-      
-      // Append all form fields
-      Object.keys(values).forEach(key => {
-        if (key !== 'complaintFiles' && values[key] !== null && values[key] !== undefined) {
-          formData.append(key, values[key]);
-        }
-      });
-      
-      // Append files if exist
-      selectedFiles.forEach((file, index) => {
-        formData.append(`complaintFiles`, file);
-      });
-      
-      // Call the service to add complaint
-      await complaintService.addComplaint(formData);
+      await complaintService.addComplaint(values);
       
       // Reset form after successful submission
       resetForm();
@@ -126,7 +163,7 @@ const AddComplaintPage = () => {
       
     } catch (error) {
       console.error('Error in handleSubmit:', error);
-      toast.error('Failed to add complaint. Please try again.');
+      toast.error(error.message || 'Failed to add complaint. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -246,14 +283,21 @@ const AddComplaintPage = () => {
 
                 <div className="p-4">
                   <div className="space-y-6">
-                    {/* Form Fields */}
+                    {/* Form Fields with auto-fill */}
                     <ComplaintFormFields
                       isDark={isDark}
                       values={values}
                       errors={errors}
                       touched={touched}
-                      handleChange={handleChange}
+                      handleChange={(e) => {
+                        if (e.target.name === 'loanAcNo') {
+                          handleLoanNumberChange(e, setFieldValue);
+                        } else {
+                          handleChange(e);
+                        }
+                      }}
                       handleBlur={handleBlur}
+                      isSearching={isSearching}
                     />
 
                     {/* Complaint Details and Attachment in one row */}
@@ -351,15 +395,16 @@ const AddComplaintPage = () => {
                               </span>
                             </div>
                             <button
-                              type="button"
-                              className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
-                                isDark
-                                  ? "bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50"
-                                  : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-                              }`}
-                            >
-                              Browse Files
-                            </button>
+      type="button"
+      onClick={() => document.getElementById('file-upload').click()}
+      className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+        isDark
+          ? "bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50"
+          : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+      }`}
+    >
+      Browse Files
+    </button>
                           </div>
                         </label>
                         <input
