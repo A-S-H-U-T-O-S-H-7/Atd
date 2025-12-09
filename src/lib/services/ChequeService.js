@@ -57,14 +57,6 @@ export const ChequeService = {
   }
 };
 
-export const formatLoanOptions = (loans) => {
-  if (!loans || !Array.isArray(loans)) return [];
-  return loans.map(loan => ({
-    id: loan.id,
-    loanNo: loan.loan_no
-  }));
-};
-
 export const formatLoanDetails = (loanData) => {
   if (!loanData) return {};
   
@@ -80,53 +72,9 @@ export const formatLoanDetails = (loanData) => {
   };
 };
 
-export const formatDepositDataForForm = (apiData) => {
-  if (!apiData) return {};
-  
-  return {
-    loanNo: apiData.loan_no || "",
-    applicationId: apiData.application_id || "",
-    name: apiData.name || "",
-    fatherName: apiData.f_name || "",
-    relation: apiData.relation_with || "",
-    chequePresented: "Repayment Cheque",
-    otherAddress: apiData.other_address || "",
-    companyBankName: apiData.company_bank_name || "",
-    companyBankBranch: apiData.company_bank_branch || "",
-    companyBankAC: apiData.company_bank_ac || "",
-    companyBankIFSC: apiData.company_bank_ifsc || "",
-    customerBankName: apiData.customer_bank_name || "",
-    customerBankBranch: apiData.customer_bank_branch || "",
-    customerBankAC: apiData.customer_bank_ac || "",
-    customerBankIFSC: apiData.customer_bank_ifsc || "",
-    chequeNo: apiData.cheque_no || "",
-    chequeReceivedDate: apiData.cheque_date || "",
-    chequeDepositDate: apiData.deposit_date || "",
-    amount: apiData.deposit_amount || "",
-    interest: apiData.interest || "",
-    penalInterest: apiData.penal_interest || "",
-    penalty: apiData.penality || "",
-    deliveryStatus: apiData.delivery_status || "",
-    deliveryAddress: apiData.delivery_address || ""
-  };
-};
-
-export const formatDepositDataForAPI = (formData, loanOptions, isEdit = false) => {
-  let applicationId;
-  
-  if (isEdit) {
-    applicationId = formData.applicationId;
-  } else {
-    const selectedLoan = loanOptions.find(loan => loan.loanNo === formData.loanNo);
-    applicationId = selectedLoan?.id;
-  }
-  
-  if (!applicationId) {
-    throw new Error("Application ID is required");
-  }
-
+export const formatDepositDataForAPI = (formData, isEdit = false) => {
   const baseData = {
-    id: applicationId,
+    id: formData.applicationId || "",
     name: formData.name || "",
     fathername: formData.fatherName || "",
     relation: formData.relation || "",
@@ -140,16 +88,28 @@ export const formatDepositDataForAPI = (formData, loanOptions, isEdit = false) =
     customer_bank_ac: formData.customerBankAC || "",
     customer_bank_ifsc: formData.customerBankIFSC || "",
     cheque_no: formData.chequeNo || "",
-    cheque_date: formData.chequeReceivedDate || "",
+    cheque_date: formData.chequeDate || "",
     deposit_date: formData.chequeDepositDate || "",
-    deposit_amount: parseFloat(formData.amount) || 0,
     interest: parseFloat(formData.interest) || 0,
     penal_interest: parseFloat(formData.penalInterest) || 0,
     penality: parseFloat(formData.penalty) || 0,
-    cheque_present: 1,
-    delivery_status: formData.deliveryStatus || "Pending",
-    delivery_address: formData.deliveryAddress || ""
+    cheque_present: 1
   };
+
+  if (isEdit) {
+    Object.assign(baseData, {
+      status: formData.status || "",
+      bounce_date: formData.bounceDate || "",
+      bounce_charge: parseFloat(formData.bounceCharge) || 0,
+      delivery_status: formData.deliveryStatus || "",
+      delivery_address: formData.deliveryAddress || "",
+      cheque_return_memo_date: formData.chequeReturnMemoDate || "",
+      cheque_return_memo_received_date: formData.chequeReturnMemoReceivedDate || "",
+      intimation_mail_from_bank_date: formData.intimationMailFromBankDate || "",
+      intimation_mail_from_dispatch_cheque_date: formData.intimationMailFromDispatchChequeDate || "",
+      reason_of_bounce: formData.reasonOfBounce || ""
+    });
+  }
 
   return baseData;
 };
