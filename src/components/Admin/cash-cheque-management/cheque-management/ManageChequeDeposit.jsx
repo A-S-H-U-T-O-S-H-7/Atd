@@ -105,36 +105,42 @@ const ManageChequeDepositPage = () => {
   }, [isEdit, editId]);
 
   useEffect(() => {
-    const fetchLoanDetails = async () => {
-      if (formik.values.loanNo && !loanFetched) {
-        setIsFetchingLoan(true);
-        try {
-          const response = await ChequeService.getLoanDetails(formik.values.loanNo);
+  const fetchLoanDetails = async () => {
+    if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
+      setIsFetchingLoan(true);
+      try {
+        const response = await ChequeService.getLoanDetails(formik.values.loanNo);
+        
+        if (response.status && response.data) {
+          const loanDetails = formatLoanDetails(response.data);
           
-          if (response.status && response.data) {
-            const loanDetails = formatLoanDetails(response.data);
-            
-            formik.setValues(prev => ({
-              ...prev,
-              ...loanDetails,
-              name: response.data.customer_name || "",
-              fatherName: response.data.fathername || "",
-              applicationId: response.data.application_id || ""
-            }));
-            
-            setLoanFetched(true);
-          }
-        } catch (error) {
-          console.error("Error fetching loan details:", error);
-        } finally {
-          setIsFetchingLoan(false);
+          formik.setValues(prev => ({
+            ...prev,
+            ...loanDetails,
+            name: response.data.customer_name || "",
+            fatherName: response.data.fathername || "",
+            applicationId: response.data.application_id || "",
+            interest: response.data.details?.final_recommendation?.interest || "",
+            penalInterest: response.data.details?.final_recommendation?.penal_interest || "",
+            penalty: response.data.details?.final_recommendation?.penality || ""
+          }));
+          
+          setLoanFetched(true);
         }
+      } catch (error) {
+        console.error("Error fetching loan details:", error);
+        setLoanFetched(false);
+      } finally {
+        setIsFetchingLoan(false);
       }
-    };
+    }
+  };
 
-    const timer = setTimeout(fetchLoanDetails, 500);
-    return () => clearTimeout(timer);
-  }, [formik.values.loanNo, loanFetched]);
+  // Clear existing timeout
+  const timerId = setTimeout(fetchLoanDetails, 800);
+  
+  return () => clearTimeout(timerId);
+}, [formik.values.loanNo, loanFetched]);
 
   useEffect(() => {
     setLoanFetched(false);
@@ -367,7 +373,7 @@ const ManageChequeDepositPage = () => {
                   Basic Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {renderField("loanNo", "Loan No", "text", "Enter loan number", 1, isEdit || isFetchingLoan)}
+                  {renderField("loanNo", "Loan No", "text", "Enter loan number", 1, isEdit)}
                   {renderField("name", "Name", "text", "Enter name", 1, true)}
                   {renderField("fatherName", "Father Name", "text", "Enter father's name", 1, true)}
                   {renderSelect("relation", "Relation", relationOptions, 1)}
@@ -439,11 +445,11 @@ const ManageChequeDepositPage = () => {
                   {renderField("chequeNo", "Cheque No (6 digits)", "text", "Enter 6-digit cheque number", 1)}
                   {renderField("chequeDate", "Cheque Date", "date", "", 1)}
                   {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
-                  {renderField("principalAmount", "Principal Amount", "number", "Enter principal amount", 1)}
+                  {renderField("principalAmount", "Principal Amount", "number", "Auto-filled from loan", 1, true)} 
                   {renderField("chequeAmount", "Cheque Amount", "number", "Enter cheque amount", 1)}
-                  {renderField("interest", "Interest", "number", "Enter interest", 1)}
-                  {renderField("penalInterest", "Penal Interest", "number", "Enter penal interest", 1)}
-                  {renderField("penalty", "Penalty", "number", "Enter penalty", 1)}
+                  {renderField("interest", "Interest", "number", "Enter Interest Amount", 1 )} 
+                  {renderField("penalInterest", "Penal Interest", "number", "Enter Penal Interest", 1)} 
+                  {renderField("penalty", "Penalty", "number", "Enter Penalty Amount", 1)} 
                 </div>
               </div>
 

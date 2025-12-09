@@ -68,7 +68,8 @@ export const formatLoanDetails = (loanData) => {
     customerBankName: loanData.customer_bank_name || "",
     customerBankBranch: loanData.customer_bank_branch_name || "",
     customerBankAC: loanData.customer_bank_account_no || "",
-    customerBankIFSC: loanData.customer_bank_ifsc_code || ""
+    customerBankIFSC: loanData.customer_bank_ifsc_code || "",
+    principalAmount: loanData.details?.final_recommendation?.principal_amount || ""
   };
 };
 
