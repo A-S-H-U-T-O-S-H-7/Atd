@@ -10,7 +10,7 @@ import CreateCriminalCaseModal from "./CriminalCaseModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { legalService, formatLegalCaseForUI } from "@/lib/services/LegalService";
 
-// Main Legal Management Component
+// Main Legal Management Component 
 const LegalPage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";

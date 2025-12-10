@@ -61,73 +61,116 @@ export const legalService = {
 
 // Format legal case data for UI
 export const formatLegalCaseForUI = (legalCase) => {
+
+  const customer = legalCase.customer_details || {};
+  const address = legalCase.customer_address || {};
+  const financial = legalCase.financial_details || {};
+  const bank = legalCase.bank_details || {};
+  const cheque = legalCase.cheque_details || {};
+  const dates = legalCase.important_dates || {};
+  const legalStatus = legalCase.legal_status || {};
+  const customerBank = bank.customer_bank || {};
+  const companyBank = bank.company_bank || {};
+
+  // Calculate derived values
+  const principal = parseFloat(financial.approved_amount) || 0;
+  const processingFee = parseFloat(financial.process_fee) || 0;
+  const gst = parseFloat(financial.gst) || 0;
+  const interest = parseFloat(cheque.interest) || 0;
+  const penalInterest = parseFloat(cheque.penal_interest) || 0;
+  const penalty = parseFloat(cheque.penality) || 0;
+  const chequeAmount = parseFloat(cheque.deposit_amount) || 0;
+  
+  // Calculate total PF + GST
+  const totalPfGst = processingFee + gst;
+  
+  // Calculate total amount (Principal + Interest + Penal Interest + Penalty)
+  const totalAmount = principal + interest + penalInterest + penalty;
+
   return {
-    id: legalCase.id,
-    sNo: legalCase.id,
-    customerName: legalCase.name || 'N/A',
-    fatherHusbandName: legalCase.f_name || 'N/A',
-    mobileNo: legalCase.phone || 'N/A',
-    loanId: legalCase.loan_no || 'N/A',
-    crnNo: legalCase.crn_no || 'N/A',
-    address: legalCase.address_1 || legalCase.delivery_address || 'N/A',
-    currentAddress: legalCase.address_1 || legalCase.delivery_address || 'N/A',
-    otherAddress: legalCase.other_address || '',
-    otherAddress2: legalCase.address_2 || '',
-    principal: parseFloat(legalCase.deposit_amount) || 0,
-    interest: parseFloat(legalCase.interest) || 0,
-    penalty: parseFloat(legalCase.penalty) || 0,
-    bounceCharges: parseFloat(legalCase.bounce_charge) || 0,
-    penalInterest: parseFloat(legalCase.penal_interest) || 0,
-    totalAmount: (parseFloat(legalCase.deposit_amount) || 0) + 
-                 (parseFloat(legalCase.interest) || 0) + 
-                 (parseFloat(legalCase.penal_interest) || 0) + 
-                 (parseFloat(legalCase.bounce_charge) || 0),
-    sanctionedLoanAmount: parseFloat(legalCase.deposit_amount) || 0,
-    tenure: legalCase.tenure || 0,
-    sanctionDate: legalCase.sanction_date || 'N/A',
-    disbursementAmount: parseFloat(legalCase.disbursement_amount) || 0,
-    disbursementDate: legalCase.disbursement_date || 'N/A',
-    processingFee: parseFloat(legalCase.processing_fee) || 0,
-    gst: parseFloat(legalCase.gst) || 0,
-    emi: parseFloat(legalCase.emi) || 0,
-    daysEmi: legalCase.days_emi || 0,
-    totalPfGst: (parseFloat(legalCase.processing_fee) || 0) + (parseFloat(legalCase.gst) || 0),
-    bankName: legalCase.customer_bank_name || 'N/A',
-    ifsc: legalCase.customer_bank_ifsc || 'N/A',
-    accountNo: legalCase.customer_bank_ac || 'N/A',
-    bankAddress: legalCase.customer_bank_branch || 'N/A',
-    chequeNo: legalCase.cheque_no || 'N/A',
-    chequeDate: legalCase.cheque_date || 'N/A',
-    chequeAmount: parseFloat(legalCase.deposit_amount) || 0,
-    chequeBounceDate: legalCase.bounce_date || 'N/A',
-    intimationMailFromBank: legalCase.intimation_mail || 'N/A',
-    intimationMailFormDispatch: legalCase.intimation_mail_despatch || 'N/A',
-    intimationMailBankFormDeliver: legalCase.intimation_mail_deliver || 'N/A',
-    chequeReturnMemo: legalCase.cheque_return_memo || 'N/A',
-    chequeReturnMemoReceived: legalCase.memo_received_date || 'N/A',
-    reasonOfBounce: legalCase.reason_bounce || 'N/A',
-    closeDate: legalCase.close_date || 'N/A',
-    certifiedCopyStatement: legalCase.statement_date_despatch || 'N/A',
-    legalNotice: legalCase.notice_date || 'N/A',
-    speedPost: legalCase.legal_notice_speed_post_date || 'N/A',
-    speedPostReceived: legalCase.speedpost_received_date_customer || 'N/A',
-    policeStation: legalCase.police_station || 'N/A',
-    boardResolution: legalCase.board_resolution_date || 'N/A',
-    loanAgreement: legalCase.loan_agreement_date || 'N/A',
-    loanApplication: legalCase.loan_application_date || 'N/A',
-    noticeUs138: legalCase.noticedate || 'N/A',
-    replyReceived: legalCase.reply_received_date || 'N/A',
-    caseFilled: legalCase.case_filled_date || 'N/A',
-    deliveryStatus: legalCase.delivery_status || 'NOT DELIVERED',
+    id: legalCase.cheque_deposit_id,
+    sNo: legalCase.cheque_deposit_id,
     applicationId: legalCase.application_id,
-    providerId: legalCase.provider_id,
-    adminId: legalCase.admin_id,
-    adminName: legalCase.admin_name,
-    createdAt: legalCase.created_at,
-    updatedAt: legalCase.updated_at,
-    chequePresent: legalCase.cheque_present === 1,
-    criminalComplaintNo: legalCase.criminal_complaint_no,
-    remarkWithCaseDetails: legalCase.remark_with_case_details
+    
+    // Customer Details
+    customerName: customer.customer_name || 'N/A',
+    fatherHusbandName: customer.customer_fathername || 'N/A',
+    mobileNo: customer.customer_phone || 'N/A',
+    email: customer.customer_email || 'N/A',
+    gender: customer.customer_gender || 'N/A',
+    loanId: customer.loan_no || 'N/A',
+    crnNo: customer.crnno || 'N/A',
+    
+    // Address Details
+    permanentAddress: address.permanent_address || 'N/A',
+    currentAddress: address.current_address || 'N/A',
+    companyAddress: address.company_address || 'N/A',
+    
+    // Financial Details
+    principal: principal,
+    roi: parseFloat(financial.roi) || 0,
+    tenure: financial.tenure || 0,
+    interest: interest,
+    penalInterest: penalInterest,
+    penalty: penalty,
+    processingFee: processingFee,
+    gst: gst,
+    totalPfGst: totalPfGst,
+    disbursementAmount: parseFloat(financial.disburse_amount) || 0,
+    
+    // Bank Details
+    bankName: customerBank.customer_bank || 'N/A',
+    bankBranch: customerBank.customer_bank_branch || 'N/A',
+    accountType: customerBank.customer_ac_type || 'N/A',
+    accountNo: customerBank.customer_ac_no || 'N/A',
+    ifsc: customerBank.customer_bank_ifsc || 'N/A',
+    
+    // ATD Bank Details
+    companyName: companyBank.company_name || 'N/A',
+    companyBankName: companyBank.company_bank || 'N/A',
+    companyBankBranch: companyBank.company_bank_branch || 'N/A',
+    companyAccountNo: companyBank.company_ac_no || 'N/A',
+    companyIfsc: companyBank.company_bank_ifsc || 'N/A',
+    
+    // Cheque Details
+    chequeNo: cheque.cheque_no || 'N/A',
+    chequeDate: cheque.cheque_date || 'N/A',
+    chequeAmount: chequeAmount,
+    depositDate: cheque.deposit_date || 'N/A',
+    
+    // Important Dates
+    approvedDate: dates.approved_date || 'N/A',
+    transactionDate: dates.transaction_date || 'N/A',
+    dueDate: dates.duedate || 'N/A',
+    lastCollectionDate: dates.last_collection_date || 'N/A',
+    bounceDate: dates.bounce_date || 'N/A',
+    memoReceivedDate: dates.memo_received_date || 'N/A',
+    
+    // Legal Documents Dates (mostly null)
+    statementDisburDate: dates.statement_date_disbur || 'N/A',
+    statementDespatchDate: dates.statement_date_despatch || 'N/A',
+    noticeDate: dates.notice_date || 'N/A',
+    legalNoticeSpeedPostDate: dates.legal_notice_speed_post_date || 'N/A',
+    speedpostReceivedDate: dates.speedpost_received_date_customer || 'N/A',
+    boardResolutionDate: dates.board_resolution_date || 'N/A',
+    loanAgreementDate: dates.loan_agreement_date || 'N/A',
+    loanApplicationDate: dates.loan_application_date || 'N/A',
+    replyReceivedDate: dates.reply_received_date || 'N/A',
+    caseFilledDate: dates.case_filled_date || 'N/A',
+    
+    // Legal Status
+    deliveryStatus: legalStatus.delivery_status || 'N/A',
+    criminalComplaintNo: legalStatus.criminal_complaint_no || 'N/A',
+    policeStation: legalStatus.police_station || 'N/A',
+    bounceReason: legalStatus.reason_bounce || cheque.reason_bounce || 'N/A',
+    remarkWithCaseDetails: legalStatus.remark_with_case_details || 'N/A',
+    
+    // Calculated totals
+    totalAmount: totalAmount,
+    
+    // Other
+    updatedBy: legalCase.updated_by || 'N/A',
+    chequePresent: chequeAmount > 0
   };
 };
 
