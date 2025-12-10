@@ -20,6 +20,7 @@ import {
   Activity
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const BankRow = ({
   bank,
@@ -91,12 +92,51 @@ const BankRow = ({
   };
 
   // Handle status toggle
-  const handleToggleStatus = () => {
-    if (onToggleStatus && bank.id) {
-      onToggleStatus(bank.id);
-      toast.success(`Bank account ${isActive ? 'deactivated' : 'activated'}`);
+const handleToggleStatus = async () => {
+  if (!onToggleStatus || !bank.id) return;
+  
+  const action = isActive ? 'deactivate' : 'activate';
+  const actionText = isActive ? 'Deactivate' : 'Activate';
+  const bankName = bank.bank || bank.name || 'this bank account';
+  
+  // Show confirmation dialog
+  const result = await Swal.fire({
+    title: `${actionText} Bank Account`,
+    html: `Are you sure you want to ${action} <strong>${bankName}</strong>?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: isActive ? '#dc2626' : '#059669',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: `Yes, ${actionText}!`,
+    cancelButtonText: 'Cancel',
+    reverseButtons: true,
+    background: isDark ? '#1f2937' : '#ffffff',
+    color: isDark ? '#f9fafb' : '#111827',
+    customClass: {
+      popup: isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900',
+      title: 'text-lg font-semibold',
+      htmlContainer: isDark ? 'text-gray-300' : 'text-gray-700',
+      confirmButton: 'px-4 py-2 rounded-lg font-medium',
+      cancelButton: 'px-4 py-2 rounded-lg font-medium'
     }
-  };
+  });
+  
+  // If user confirmed
+  if (result.isConfirmed) {
+    try {
+      // Call the toggle status function
+      await onToggleStatus(bank.id);
+      
+      // Show success toast (default styling)
+      toast.success(`Bank account ${action}d successfully!`);
+      
+    } catch (error) {
+      // Show error toast (default styling)
+      toast.error(`Failed to ${action} bank account. Please try again.`);
+      console.error('Error toggling bank status:', error);
+    }
+  }
+};
 
   // Get usage badge color
   const getUsageBadgeColor = (usage) => {
@@ -333,7 +373,7 @@ const BankRow = ({
           {/* Status Toggle Button */}
           <button
             onClick={handleToggleStatus}
-            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+            className={`p-2 cursor-pointer rounded-lg transition-all duration-200 hover:scale-105 ${
               isActive
                 ? isDark
                   ? "bg-red-900/50 hover:bg-red-800 text-red-300"

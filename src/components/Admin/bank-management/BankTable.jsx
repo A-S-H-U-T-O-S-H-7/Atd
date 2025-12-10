@@ -78,7 +78,7 @@ const BankTable = ({
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
                 isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "190px" }}>
+              }`} style={{ minWidth: "100px" }}>
                 Status
               </th>
               <th className={`px-2 py-5 text-left text-sm font-bold ${
@@ -128,7 +128,7 @@ const BankTable = ({
       )}
       
       {!isLoading && totalPages > 0 && (
-        <div className="mt-8">
+        <div >
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

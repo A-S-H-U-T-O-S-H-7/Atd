@@ -75,6 +75,7 @@ export const formatLoanDetails = (loanData) => {
 
 export const formatDepositDataForAPI = (formData, isEdit = false) => {
   const baseData = {
+    loan_no: formData.loanNo || "",
     id: formData.applicationId || "",
     name: formData.name || "",
     fathername: formData.fatherName || "",
@@ -91,6 +92,8 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
     cheque_no: formData.chequeNo || "",
     cheque_date: formData.chequeDate || "",
     deposit_date: formData.chequeDepositDate || "",
+    deposit_amount: parseFloat(formData.chequeAmount) || 0,
+    principal_amount: parseFloat(formData.principalAmount) || 0,
     interest: parseFloat(formData.interest) || 0,
     penal_interest: parseFloat(formData.penalInterest) || 0,
     penality: parseFloat(formData.penalty) || 0,

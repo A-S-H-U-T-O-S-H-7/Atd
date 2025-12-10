@@ -15,7 +15,8 @@ import {
   DollarSign,
   ChevronDown,
   ChevronUp,
-  Briefcase
+  Briefcase,
+  IndianRupee
 } from 'lucide-react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -49,6 +50,7 @@ const bankSchema = Yup.object().shape({
   phone: Yup.string()
     .required('Phone number is required')
     .matches(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number')
+    .max(10, 'Phone number cannot exceed 10 digits')
     .trim(),
   email: Yup.string()
     .required('Email is required')
@@ -69,8 +71,58 @@ const bankSchema = Yup.object().shape({
     .trim(),
   uses_for: Yup.string()
     .required('Usage is required')
-    .oneOf(['disbursement', 'collection', 'both'], 'Select valid usage')
+    .oneOf(['disbursement', 'collection', 'cheque', 'all'], 'Select valid usage')
 });
+
+// Reusable Input Styles
+const getInputStyles = (isDark, hasError = false) => {
+  const baseStyles = "w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium focus:ring-2 focus:ring-emerald-500/20 focus:outline-none";
+  
+  if (hasError) {
+    return `${baseStyles} ${
+      isDark
+        ? 'bg-gray-800 border-red-500 text-white placeholder-gray-400'
+        : 'bg-white border-red-500 text-gray-900 placeholder-gray-500'
+    }`;
+  }
+  
+  return `${baseStyles} ${
+    isDark
+      ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
+      : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
+  }`;
+};
+
+// Reusable Label Component
+const FormLabel = ({ icon: Icon, label, isDark, optional = false }) => (
+  <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
+    isDark ? 'text-gray-100' : 'text-gray-700'
+  }`}>
+    <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+      <Icon className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+    </div>
+    <span>{label}</span>
+    {optional && <span className="text-xs font-normal text-gray-500">(Optional)</span>}
+  </label>
+);
+
+// Phone input handler to restrict to 10 digits
+const PhoneInput = ({ field, form, ...props }) => {
+  const handleChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    form.setFieldValue(field.name, value);
+  };
+
+  return (
+    <input
+      {...field}
+      {...props}
+      type="text"
+      onChange={handleChange}
+      maxLength={10}
+    />
+  );
+};
 
 const BankForm = ({ 
   isDark, 
@@ -159,28 +211,17 @@ const BankForm = ({
             onSubmit={handleSubmit}
             enableReinitialize={isEditMode}
           >
-            {({ isSubmitting: formikSubmitting }) => (
+            {({ isSubmitting: formikSubmitting, errors, touched }) => (
               <Form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Bank Name Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Building2 className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Bank Name *</span>
-                    </label>
+                    <FormLabel icon={Building2} label="Bank Name *" isDark={isDark} />
                     <Field
                       type="text"
                       name="bank"
                       placeholder="e.g., HDFC, ICICI, SBI"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.bank && touched.bank)}
                     />
                     <ErrorMessage name="bank">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -189,23 +230,12 @@ const BankForm = ({
 
                   {/* Branch Name Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <MapPin className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Branch Name *</span>
-                    </label>
+                    <FormLabel icon={MapPin} label="Branch Name *" isDark={isDark} />
                     <Field
                       type="text"
                       name="branch_name"
                       placeholder="e.g., Noida Sector 62"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.branch_name && touched.branch_name)}
                     />
                     <ErrorMessage name="branch_name">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -214,23 +244,12 @@ const BankForm = ({
 
                   {/* Account Number Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <CreditCard className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Account Number *</span>
-                    </label>
+                    <FormLabel icon={CreditCard} label="Account Number *" isDark={isDark} />
                     <Field
                       type="text"
                       name="account_no"
                       placeholder="12-18 digit account number"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.account_no && touched.account_no)}
                     />
                     <ErrorMessage name="account_no">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -239,23 +258,12 @@ const BankForm = ({
 
                   {/* IFSC Code Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Hash className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>IFSC Code *</span>
-                    </label>
+                    <FormLabel icon={Hash} label="IFSC Code *" isDark={isDark} />
                     <Field
                       type="text"
                       name="ifsc_code"
                       placeholder="e.g., HDFC0001234"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.ifsc_code && touched.ifsc_code)}
                     />
                     <ErrorMessage name="ifsc_code">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -264,22 +272,11 @@ const BankForm = ({
 
                   {/* Account Type Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Briefcase className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Account Type *</span>
-                    </label>
+                    <FormLabel icon={Briefcase} label="Account Type *" isDark={isDark} />
                     <Field
                       as="select"
                       name="account_type"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.account_type && touched.account_type)}
                     >
                       <option value="">Select Account Type</option>
                       <option value="Savings">Savings</option>
@@ -294,23 +291,12 @@ const BankForm = ({
 
                   {/* Account Name Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <User className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Account Name *</span>
-                    </label>
+                    <FormLabel icon={User} label="Account Name *" isDark={isDark} />
                     <Field
                       type="text"
                       name="name"
                       placeholder="e.g., Main Collection Account"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.name && touched.name)}
                     />
                     <ErrorMessage name="name">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -319,23 +305,12 @@ const BankForm = ({
 
                   {/* Contact Person Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <User className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Contact Person *</span>
-                    </label>
+                    <FormLabel icon={User} label="Contact Person *" isDark={isDark} />
                     <Field
                       type="text"
                       name="contact_person"
                       placeholder="e.g., Rajesh Kumar"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.contact_person && touched.contact_person)}
                     />
                     <ErrorMessage name="contact_person">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -344,23 +319,12 @@ const BankForm = ({
 
                   {/* Phone Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Phone className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Phone Number *</span>
-                    </label>
+                    <FormLabel icon={Phone} label="Phone Number *" isDark={isDark} />
                     <Field
-                      type="text"
                       name="phone"
+                      component={PhoneInput}
                       placeholder="10-digit mobile number"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.phone && touched.phone)}
                     />
                     <ErrorMessage name="phone">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -369,23 +333,12 @@ const BankForm = ({
 
                   {/* Email Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Mail className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Email *</span>
-                    </label>
+                    <FormLabel icon={Mail} label="Email *" isDark={isDark} />
                     <Field
                       type="email"
                       name="email"
                       placeholder="contact@example.com"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.email && touched.email)}
                     />
                     <ErrorMessage name="email">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -394,23 +347,12 @@ const BankForm = ({
 
                   {/* Amount Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <DollarSign className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Amount *</span>
-                    </label>
+                    <FormLabel icon={IndianRupee} label="Amount *" isDark={isDark} />
                     <Field
                       type="number"
                       name="amount"
                       placeholder="e.g., 200000"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.amount && touched.amount)}
                     />
                     <ErrorMessage name="amount">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -419,27 +361,17 @@ const BankForm = ({
 
                   {/* Usage For Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Briefcase className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Usage For *</span>
-                    </label>
+                    <FormLabel icon={Briefcase} label="Usage For *" isDark={isDark} />
                     <Field
                       as="select"
                       name="uses_for"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark, errors.uses_for && touched.uses_for)}
                     >
                       <option value="">Select Usage</option>
                       <option value="disbursement">Disbursement</option>
                       <option value="collection">Collection</option>
-                      <option value="both">Both</option>
+                      <option value="cheque">Cheque</option>
+                      <option value="all">All</option>
                     </Field>
                     <ErrorMessage name="uses_for">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
@@ -448,70 +380,34 @@ const BankForm = ({
 
                   {/* API Key Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Key className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>API Key</span>
-                      <span className="text-xs font-normal text-gray-500">(Optional)</span>
-                    </label>
+                    <FormLabel icon={Key} label="API Key" isDark={isDark} optional />
                     <Field
                       type="text"
                       name="apikey"
                       placeholder="API key for integration"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark)}
                     />
                   </div>
 
                   {/* PassCode Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Lock className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>Pass Code</span>
-                      <span className="text-xs font-normal text-gray-500">(Optional)</span>
-                    </label>
+                    <FormLabel icon={Lock} label="Pass Code" isDark={isDark} optional />
                     <Field
                       type="text"
                       name="passCode"
                       placeholder="Pass code for authentication"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark)}
                     />
                   </div>
 
                   {/* BC ID Field */}
                   <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                        <Hash className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                      </div>
-                      <span>BC ID</span>
-                      <span className="text-xs font-normal text-gray-500">(Optional)</span>
-                    </label>
+                    <FormLabel icon={Hash} label="BC ID" isDark={isDark} optional />
                     <Field
                       type="text"
                       name="bcID"
                       placeholder="Business Correspondent ID"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
-                          : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
-                      } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                      className={getInputStyles(isDark)}
                     />
                   </div>
                 </div>
