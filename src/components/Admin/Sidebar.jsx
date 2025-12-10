@@ -5,29 +5,31 @@ import { usePathname } from 'next/navigation';
 import { FiMenu, FiX, FiChevronRight } from 'react-icons/fi';
 import {
   FaHome, FaSms, FaFileExport, FaMoneyCheckAlt, FaBook, FaHandHoldingUsd, FaMobileAlt,
-  FaEnvelopeOpenText, FaHourglassHalf, FaBriefcase
+  FaEnvelopeOpenText, FaHourglassHalf, FaBriefcase,
+  FaUserTie
 } from 'react-icons/fa';
 import {
   MdReviews, MdReportProblem, MdOutlineAccessTimeFilled, MdFlashAuto, MdOutlineQrCode2,
-  MdAssignmentTurnedIn, MdCreditScore, MdPendingActions, MdDoneAll, MdCancel, MdBlockFlipped, MdMenuBook,
-  MdDownload, MdSupportAgent, MdAttachMoney, MdOutlineHistoryEdu
+  MdAssignmentTurnedIn, MdCreditScore, MdPendingActions, MdDoneAll, MdCancel, MdMenuBook,
+  MdDownload, MdSupportAgent, MdAttachMoney, MdOutlineHistoryEdu,
+  MdSettings,
+  MdAccountBalance
 } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
-import { RiAccountPinBoxFill } from "react-icons/ri";
+import { RiAccountPinBoxFill} from "react-icons/ri";
 import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
 import { BiPlus, BiCog } from "react-icons/bi";
 import {
   Scale, BanknoteArrowUp, ChartNoAxesCombined, Codesandbox, Boxes,
-  ReceiptIndianRupee, BadgeCheck, Stamp, UserLock,
+  ReceiptIndianRupee, BadgeCheck, Stamp,
 } from "lucide-react";
 import { BsBank2 } from "react-icons/bs";
 import { GiExpense, GiWallet, GiMoneyStack } from "react-icons/gi";
 import { TbMessageCircleFilled } from "react-icons/tb";
 import { FaHourglassEnd } from "react-icons/fa6";
 import { BsCreditCard2FrontFill } from "react-icons/bs";
-import { LuFileOutput } from "react-icons/lu";
 import { BiSpreadsheet } from "react-icons/bi";
 import { useAdminAuthStore } from '@/lib/store/authAdminStore'
 import { useThemeStore } from '@/lib/store/useThemeStore'
@@ -84,6 +86,15 @@ const menuList = [
     subItems: [
       { name: 'Manage Expenses', link: '/crm/manage-expenses', icon: <GiExpense /> },
       { name: 'Track Profit/Loss', link: '/crm/profit-loss', icon: <ChartNoAxesCombined size={16} /> },
+    ]
+  },
+  {
+    name: 'Master Settings',
+    icon: <MdSettings />,
+    isDropdown: true,
+    subItems: [
+      { name: 'Manage Advocate', link: '/crm/manage-advocate', icon: <FaUserTie/> },
+      { name: 'Manage Banks', link: '/crm/manage-bank', icon: <MdAccountBalance /> },
     ]
   },
   { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack /> },
