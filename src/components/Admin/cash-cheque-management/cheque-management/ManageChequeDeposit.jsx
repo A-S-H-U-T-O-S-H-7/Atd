@@ -444,9 +444,9 @@ const ManageChequeDepositPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {renderField("chequeNo", "Cheque No (6 digits)", "text", "Enter 6-digit cheque number", 1)}
                   {renderField("chequeDate", "Cheque Date", "date", "", 1)}
-                  {renderField("principalAmount", "Principal Amount", "number", "Auto-filled from loan", 1)} 
                   {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
                   {renderField("chequeAmount", "Cheque Amount", "number", "Enter cheque amount", 1)}
+                  {renderField("principalAmount", "Principal Amount", "number", "Auto-filled from loan", 1)} 
                   {renderField("interest", "Interest", "number", "Enter Interest Amount", 1 )} 
                   {renderField("penalInterest", "Penal Interest", "number", "Enter Penal Interest", 1)} 
                   {renderField("penalty", "Penalty", "number", "Enter Penalty Amount", 1)} 
