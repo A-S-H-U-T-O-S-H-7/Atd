@@ -34,7 +34,7 @@ const BankRow = ({
   const isActive = bank.isActive === true || bank.isActive === 1;
   
   // Common cell styles
-  const cellBase = "px-4 py-4 border-r";
+  const cellBase = "px-2 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
@@ -44,7 +44,6 @@ const BankRow = ({
   const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
   const textSuccess = isDark ? "text-green-400" : "text-green-600";
   const textWarning = isDark ? "text-yellow-400" : "text-yellow-600";
-  const textDanger = isDark ? "text-red-400" : "text-red-600";
   
   // Icon styles
   const iconAccent = `w-4 h-4 ${textAccent}`;
@@ -139,37 +138,34 @@ const handleToggleStatus = async () => {
 };
 
   // Get usage badge color
-  const getUsageBadgeColor = (usage) => {
-    switch (usage) {
-      case 'disbursement':
-        return isDark
-          ? "bg-blue-900/50 text-blue-300 border-blue-700"
-          : "bg-blue-100 text-blue-800 border-blue-200";
-      case 'collection':
-        return isDark
-          ? "bg-purple-900/50 text-purple-300 border-purple-700"
-          : "bg-purple-100 text-purple-800 border-purple-200";
-      case 'both':
-        return isDark
-          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
-          : "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return isDark
-          ? "bg-gray-700 text-gray-300 border-gray-600"
-          : "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+const getUsageBadgeColor = (usage) => {
+  if (!usage) {
+    return isDark
+      ? "bg-gray-700 text-gray-300 border-gray-600"
+      : "bg-gray-100 text-gray-800 border-gray-200";
+  }
+  
+  switch (usage) {
+    case 'disbursement':
+      return isDark
+        ? "bg-blue-900/50 text-blue-300 border-blue-700"
+        : "bg-blue-100 text-blue-800 border-blue-200";
+    case 'collection':
+      return isDark
+        ? "bg-purple-900/50 text-purple-300 border-purple-700"
+        : "bg-purple-100 text-purple-800 border-purple-200";
+    case 'cheque':
+      return isDark
+        ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
+        : "bg-yellow-100 text-yellow-800 border-yellow-200";
+    default:
+      return isDark
+        ? "bg-gray-700 text-gray-300 border-gray-600"
+        : "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
 
-  // Get status badge color
-  const getStatusBadgeColor = (active) => {
-    return active
-      ? isDark
-        ? "bg-green-900/50 text-green-300 border-green-700"
-        : "bg-green-100 text-green-800 border-green-200"
-      : isDark
-        ? "bg-red-900/50 text-red-300 border-red-700"
-        : "bg-red-100 text-red-800 border-red-200";
-  };
+  
 
   return (
     <tr
@@ -242,27 +238,39 @@ const handleToggleStatus = async () => {
 
       {/* Contact Details */}
       <td className={`${cellStyle} text-left`}>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <User className={iconSuccess} />
-            <span className={`text-sm ${textSecondary}`}>
-              {bank.contactPerson}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Phone className={iconSuccess} />
-            <span className={`text-sm ${textSecondary}`}>
-              {bank.phone}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Mail className={iconAccent} />
-            <span className={`text-sm ${textSecondary}`}>
-              {bank.email}
-            </span>
-          </div>
-        </div>
-      </td>
+  <div className="space-y-2">
+    {bank.contactPerson ? (
+      <div className="flex items-center space-x-2">
+        <User className={iconSuccess} />
+        <span className={`text-sm ${textSecondary}`}>
+          {bank.contactPerson}
+        </span>
+      </div>
+    ) : null}
+    
+    {bank.phone ? (
+      <div className="flex items-center space-x-2">
+        <Phone className={iconSuccess} />
+        <span className={`text-sm ${textSecondary}`}>
+          {bank.phone}
+        </span>
+      </div>
+    ) : null}
+    
+    {bank.email ? (
+      <div className="flex items-center space-x-2">
+        <Mail className={iconAccent} />
+        <span className={`text-sm ${textSecondary}`}>
+          {bank.email}
+        </span>
+      </div>
+    ) : null}
+    
+    {!bank.contactPerson && !bank.phone && !bank.email && (
+      <span className={`text-xs ${textSecondary} italic`}>No contact info</span>
+    )}
+  </div>
+</td>
 
       {/* Amount */}
       <td className={`${cellStyle} text-left`}>
@@ -275,37 +283,15 @@ const handleToggleStatus = async () => {
 
       {/* Usage */}
       <td className={`${cellStyle} text-left`}>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getUsageBadgeColor(bank.usesFor)}`}>
-          {bank.usesFor === 'disbursement' && 'Disbursement'}
-          {bank.usesFor === 'collection' && 'Collection'}
-          {bank.usesFor === 'both' && 'Both'}
-        </span>
-      </td>
-
-      {/* API Details */}
-      <td className={`${cellStyle} text-left`}>
-        <div className="space-y-1">
-          {bank.apikey && bank.apikey !== 'N/A' && (
-            <div className="flex items-center space-x-2">
-              <Key className={`w-3 h-3 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-              <span className={`text-xs ${textSecondary}`}>
-                API: {bank.apikey.length > 10 ? `${bank.apikey.substring(0, 10)}...` : bank.apikey}
-              </span>
-            </div>
-          )}
-          {bank.bcID && bank.bcID !== 'N/A' && (
-            <div className="flex items-center space-x-2">
-              <Lock className={`w-3 h-3 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-              <span className={`text-xs ${textSecondary}`}>
-                BC ID: {bank.bcID}
-              </span>
-            </div>
-          )}
-          {(!bank.apikey || bank.apikey === 'N/A') && (!bank.bcID || bank.bcID === 'N/A') && (
-            <span className={`text-xs ${textSecondary}`}>N/A</span>
-          )}
-        </div>
-      </td>
+  {bank.usesFor ? (
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getUsageBadgeColor(bank.usesFor)}`}>
+      {bank.usesFor.charAt(0).toUpperCase() + bank.usesFor.slice(1)}
+    </span>
+  ) : (
+    <span className={`text-xs ${textSecondary} italic`}>Not specified</span>
+  )}
+</td>
+     
 
     <td className={`border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"} text-center`}>
      <div className="space-y-1">    

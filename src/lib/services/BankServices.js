@@ -31,8 +31,21 @@ export const bankService = {
   addBank: async (bankData) => {
     try {
       const response = await api.post('/crm/bank/add', bankData);
+      if (response.status === false) {
+        throw new Error(response.message || 'Failed to add bank');
+      }
       return response;
     } catch (error) {
+      if (error.response) {
+        const errorData = error.response.data || {};
+        throw {
+          response: {
+            data: errorData,
+            status: error.response.status
+          },
+          message: errorData.message || 'Failed to add bank'
+        };
+      }
       throw error;
     }
   },
@@ -41,8 +54,21 @@ export const bankService = {
   updateBank: async (id, bankData) => {
     try {
       const response = await api.put(`/crm/bank/update/${id}`, bankData);
+      if (response.status === false) {
+        throw new Error(response.message || 'Failed to update bank');
+      }
       return response;
     } catch (error) {
+      if (error.response) {
+        const errorData = error.response.data || {};
+        throw {
+          response: {
+            data: errorData,
+            status: error.response.status
+          },
+          message: errorData.message || 'Failed to update bank'
+        };
+      }
       throw error;
     }
   },
@@ -68,28 +94,32 @@ export const bankService = {
   }
 };
 
-// Format bank data for UI
+
 export const formatBankForUI = (bank) => {
+  const isEmpty = (value) => {
+    return value === null || value === undefined || value === '' || value === 'N/A';
+  };
+
   return {
     id: bank.id,
-    bankName: bank.bank_name || `${bank.bank}-${bank.account_no.slice(-4)}`,
-    bank: bank.bank || 'N/A',
-    branchName: bank.branch_name || 'N/A',
-    accountNo: bank.account_no || 'N/A',
-    ifscCode: bank.ifsc_code || 'N/A',
-    accountType: bank.account_type || 'N/A',
-    name: bank.name || 'N/A',
-    contactPerson: bank.contact_person || 'N/A',
-    phone: bank.phone || 'N/A',
-    email: bank.email || 'N/A',
+    bankName: bank.bank_name || `${bank.bank || ''}-${(bank.account_no || '').slice(-4)}`,
+    bank: bank.bank || '',
+    branchName: bank.branch_name || '',
+    accountNo: bank.account_no || '',
+    ifscCode: bank.ifsc_code || '',
+    accountType: bank.account_type || '',
+    name: bank.name || '',
+    contactPerson: isEmpty(bank.contact_person) ? '' : bank.contact_person,
+    phone: isEmpty(bank.phone) ? '' : bank.phone,
+    email: isEmpty(bank.email) ? '' : bank.email,
     amount: parseFloat(bank.amount) || 0,
-    usesFor: bank.uses_for || 'N/A',
-    apikey: bank.apikey || 'N/A',
-    passCode: bank.passCode || 'N/A',
-    bcID: bank.bcID || 'N/A',
+    usesFor: bank.uses_for || 'collection', 
+    apikey: isEmpty(bank.apikey) ? '' : bank.apikey,
+    passCode: isEmpty(bank.passCode) ? '' : bank.passCode,
+    bcID: isEmpty(bank.bcID) ? '' : bank.bcID,
     isActive: bank.isActive === 1,
-    addedBy: bank.added_by || 'N/A',
-    createdAt: bank.created_at || 'N/A',
+    addedBy: bank.added_by || '',
+    createdAt: bank.created_at || '',
     status: bank.isActive === 1 ? 'Active' : 'Inactive'
   };
 };

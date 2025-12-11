@@ -5,6 +5,23 @@ import { FileText, Loader } from 'lucide-react';
 import AdvocateRow from './AdvocateRow';
 import Pagination from '../Pagination';
 
+// Common Table Styles
+const getHeaderStyles = (isDark) => ({
+  headerClass: `px-4 py-5 text-left text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+  }`,
+  gradientClass: `border-b-2 ${
+    isDark
+      ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
+      : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
+  }`,
+  tableClass: `rounded-2xl shadow-2xl border-2 overflow-hidden ${
+    isDark
+      ? "bg-gray-800 border-emerald-600/50 shadow-blue-900/20"
+      : "bg-white border-emerald-300 shadow-blue-500/10"
+  }`
+});
+
 const AdvocateTable = ({ 
   paginatedAdvocates,
   filteredAdvocates,
@@ -15,60 +32,42 @@ const AdvocateTable = ({
   onPageChange,
   onEdit,
   onToggleStatus,
+  onViewLetterhead,
   isLoading = false
 }) => {
+  const styles = getHeaderStyles(isDark);
+
   return (
-    <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
-      isDark
-        ? "bg-gray-800 border-emerald-600/50 shadow-blue-900/20"
-        : "bg-white border-emerald-300 shadow-blue-500/10"
-    }`}>
+    <div className={styles.tableClass}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-max" style={{ minWidth: "1400px" }}>
-          <thead className={`border-b-2 ${
-            isDark
-              ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
-          }`}>
+          <thead className={styles.gradientClass}>
             <tr>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "80px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "80px" }}>
                 S.No.
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "250px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "250px" }}>
                 Advocate Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Court
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "300px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "250px" }}>
                 Address
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Contact
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "150px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "150px" }}>
                 Licence No.
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
+                Letterhead
+              </th>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Added Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "120px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
                 Status
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold ${
@@ -81,7 +80,7 @@ const AdvocateTable = ({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="9" className="px-4 py-8 text-center">
+                <td colSpan="10" className="px-4 py-8 text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <Loader className="w-5 h-5 animate-spin" />
                     <span className={isDark ? "text-gray-300" : "text-gray-600"}>
@@ -99,6 +98,7 @@ const AdvocateTable = ({
                   isDark={isDark}
                   onEdit={onEdit}
                   onToggleStatus={onToggleStatus}
+                  onViewLetterhead={onViewLetterhead}
                 />
               ))
             )}
@@ -118,7 +118,7 @@ const AdvocateTable = ({
       )}
       
       {!isLoading && totalPages > 0 && (
-        <div className="mt-8">
+        <div >
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

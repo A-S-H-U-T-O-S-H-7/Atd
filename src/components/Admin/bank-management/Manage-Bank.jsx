@@ -14,7 +14,6 @@ import { toast } from 'react-hot-toast';
 import BankForm from './BankForm';
 import BankTable from './BankTable';
 import { bankService, formatBankForUI } from '@/lib/services/BankServices';
-import { exportToExcel } from '@/components/utils/exportutil';
 
 const ManageBankPage = () => {
   const { theme } = useThemeStore();
@@ -106,95 +105,63 @@ const ManageBankPage = () => {
   };
 
   // Handle edit
-  const handleEdit = async (bankOrId) => {
-    try {
-      let bankData;
-      
-      if (typeof bankOrId === 'string' || typeof bankOrId === 'number') {
-        // Fetch from API
-        const response = await bankService.getBankById(bankOrId);
-        if (response.success) {
-          bankData = response.data;
-        } else {
-          throw new Error("Failed to fetch bank details");
-        }
+const handleEdit = async (bankOrId) => {
+  try {
+    let bankData;
+    
+    if (typeof bankOrId === 'string' || typeof bankOrId === 'number') {
+      const response = await bankService.getBankById(bankOrId);
+      if (response.success) {
+        bankData = response.data;
       } else {
-        // Use provided bank object
-        bankData = {
-          bank: bankOrId.bank,
-          branch_name: bankOrId.branchName,
-          account_no: bankOrId.accountNo,
-          ifsc_code: bankOrId.ifscCode,
-          account_type: bankOrId.accountType,
-          name: bankOrId.name,
-          contact_person: bankOrId.contactPerson,
-          phone: bankOrId.phone,
-          email: bankOrId.email,
-          amount: bankOrId.amount,
-          apikey: bankOrId.apikey,
-          passCode: bankOrId.passCode,
-          bcID: bankOrId.bcID,
-          uses_for: bankOrId.usesFor
-        };
+        throw new Error("Failed to fetch bank details");
       }
-
-      setSelectedBank({
-        id: typeof bankOrId === 'object' ? bankOrId.id : bankOrId,
-        ...bankData
-      });
-      setIsEditMode(true);
-      setIsFormExpanded(true);
-    } catch (err) {
-      console.error("Error fetching bank:", err);
-      toast.error("Failed to load bank details");
+    } else {
+      bankData = {
+        bank: bankOrId.bank,
+        branch_name: bankOrId.branchName,
+        account_no: bankOrId.accountNo,
+        ifsc_code: bankOrId.ifscCode,
+        account_type: bankOrId.accountType,
+        name: bankOrId.name,
+        contact_person: bankOrId.contactPerson || '',
+        phone: bankOrId.phone || '',
+        email: bankOrId.email || '',
+        amount: bankOrId.amount,
+        apikey: bankOrId.apikey || '',
+        passCode: bankOrId.passCode || '',
+        bcID: bankOrId.bcID || '',
+        uses_for: bankOrId.usesFor || 'collection'
+      };
     }
-  };
+
+    setSelectedBank({
+      id: typeof bankOrId === 'object' ? bankOrId.id : bankOrId,
+      ...bankData
+    });
+    setIsEditMode(true);
+    setIsFormExpanded(true);
+  } catch (err) {
+    console.error("Error fetching bank:", err);
+    toast.error("Failed to load bank details");
+  }
+};
 
   // Handle status toggle
   const handleToggleStatus = async (id) => {
     try {
       await bankService.toggleStatus(id);
-      toast.success("Status updated successfully");
       fetchBanks(currentPage, searchTerm);
     } catch (err) {
       toast.error(err.message || "Failed to update status");
     }
   };
 
-  // Handle export
-  const handleExport = () => {
-    const exportData = banks.map(bank => ({
-      'S.No': bank.id,
-      'Bank': bank.bank,
-      'Branch': bank.branchName,
-      'Account No': bank.accountNo,
-      'IFSC Code': bank.ifscCode,
-      'Account Type': bank.accountType,
-      'Account Name': bank.name,
-      'Contact Person': bank.contactPerson,
-      'Phone': bank.phone,
-      'Email': bank.email,
-      'Amount': bank.amount,
-      'Usage': bank.usesFor,
-      'API Key': bank.apikey,
-      'BC ID': bank.bcID,
-      'Status': bank.isActive ? 'Active' : 'Inactive',
-      'Added By': bank.addedBy,
-      'Created At': bank.createdAt
-    }));
-
-    exportToExcel(exportData, 'banks-list');
-  };
+  
 
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
-  };
-
-  // Handle search change
-  const handleSearchChange = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
   };
 
   // Toggle form expansion
@@ -219,11 +186,7 @@ const ManageBankPage = () => {
     }
   };
 
-  // Calculate statistics
-  const totalAmount = banks.reduce((sum, bank) => sum + bank.amount, 0);
-  const activeBanks = banks.filter(bank => bank.isActive).length;
-  const disbursementBanks = banks.filter(bank => bank.usesFor === 'disbursement').length;
-  const collectionBanks = banks.filter(bank => bank.usesFor === 'collection').length;
+  
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -278,17 +241,7 @@ const ManageBankPage = () => {
                 <Plus size={16} />
                 <span>Add Bank Account</span>
               </button>
-              <button
-                onClick={handleExport}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
+              
               <button
                 onClick={() => fetchBanks(currentPage, searchTerm)}
                 disabled={isLoading}
@@ -309,118 +262,7 @@ const ManageBankPage = () => {
             
           </div>
 
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-emerald-600/50"
-                : "bg-white border-emerald-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-                }`}>
-                  <Building2 className={`w-6 h-6 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {pagination.total || banks.length}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Total Bank Accounts
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-green-600/50"
-                : "bg-white border-green-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-green-900/50" : "bg-green-100"
-                }`}>
-                  
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    ₹{totalAmount.toLocaleString()}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Total Amount
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-blue-600/50"
-                : "bg-white border-blue-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-blue-900/50" : "bg-blue-100"
-                }`}>
-                  <Building2 className={`w-6 h-6 ${
-                    isDark ? "text-blue-400" : "text-blue-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {activeBanks}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Active Accounts
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-purple-600/50"
-                : "bg-white border-purple-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-purple-900/50" : "bg-purple-100"
-                }`}>
-                  <Building2 className={`w-6 h-6 ${
-                    isDark ? "text-purple-400" : "text-purple-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {disbursementBanks} / {collectionBanks}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Disb. / Collection
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          
         </div>
 
         {/* Bank Form */}

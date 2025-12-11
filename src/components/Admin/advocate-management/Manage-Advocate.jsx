@@ -6,7 +6,8 @@ import {
   Download, 
   RefreshCw, 
   UserPlus,
-  Scale
+  Scale,
+  X
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
@@ -15,7 +16,6 @@ import AdvancedSearchBar from '../AdvanceSearchBar';
 import AdvocateForm from './AdvocateForm';
 import AdvocateTable from './AdvocateTable';
 import { advocateService, formatAdvocateForUI } from '@/lib/services/AdvocateServices';
-import { exportToExcel } from '@/components/utils/exportutil';
 
 const ManageAdvocatePage = () => {
   const { theme } = useThemeStore();
@@ -30,6 +30,12 @@ const ManageAdvocatePage = () => {
   const [isFormExpanded, setIsFormExpanded] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedAdvocate, setSelectedAdvocate] = useState(null);
+  
+  // Modal state
+  const [previewModal, setPreviewModal] = useState({
+    isOpen: false,
+    url: null
+  });
   
   const [advocates, setAdvocates] = useState([]);
   const [pagination, setPagination] = useState({
@@ -89,7 +95,6 @@ const ManageAdvocatePage = () => {
         await advocateService.addAdvocate(values);
       }
       
-      // Refresh the list
       fetchAdvocates(currentPage, searchTerm);
       
       // Reset form
@@ -102,7 +107,7 @@ const ManageAdvocatePage = () => {
         router.replace('/crm/advocate/manage');
       }
     } catch (err) {
-      throw new Error(err.message || "Failed to save advocate");
+      throw err;
     }
   };
 
@@ -127,7 +132,8 @@ const ManageAdvocatePage = () => {
           address: advocateOrId.address,
           phone: advocateOrId.phone,
           email: advocateOrId.email,
-          licence_no: advocateOrId.licenceNo
+          licence_no: advocateOrId.licenceNo,
+          letterhead: advocateOrId.letterheadUrl 
         };
       }
 
@@ -147,29 +153,24 @@ const ManageAdvocatePage = () => {
   const handleToggleStatus = async (id) => {
     try {
       await advocateService.toggleStatus(id);
-      toast.success("Status updated successfully");
       fetchAdvocates(currentPage, searchTerm);
     } catch (err) {
       toast.error(err.message || "Failed to update status");
     }
   };
 
-  // Handle export
-  const handleExport = () => {
-    const exportData = advocates.map(advocate => ({
-      'S.No': advocate.id,
-      'Name': advocate.name,
-      'Email': advocate.email,
-      'Court': advocate.court,
-      'Address': advocate.address,
-      'Phone': advocate.phone,
-      'Licence No': advocate.licenceNo,
-      'Status': advocate.isActive ? 'Active' : 'Inactive',
-      'Added By': advocate.addedBy,
-      'Created At': advocate.createdAt
-    }));
+  // Handle letterhead preview
+  const handleViewLetterhead = (url) => {
+    if (!url) {
+      toast.info('No letterhead file available');
+      return;
+    }
+    setPreviewModal({ isOpen: true, url });
+  };
 
-    exportToExcel(exportData, 'advocates-list');
+  // Close modal
+  const closePreviewModal = () => {
+    setPreviewModal({ isOpen: false, url: null });
   };
 
   // Handle page change
@@ -206,232 +207,160 @@ const ManageAdvocatePage = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDark ? "bg-gray-900" : "bg-blue-50/30"
-    }`}>
-      <div className="p-0 md:p-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
-                    : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"
-                }`}
-              >
-                <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`} />
-              </button>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-                }`}>
-                  <Scale className={`w-6 h-6 ${
+    <>
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDark ? "bg-gray-900" : "bg-blue-50/30"
+      }`}>
+        <div className="p-0 md:p-4">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => router.back()}
+                  className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
+                    isDark
+                      ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
+                      : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"
+                  }`}
+                >
+                  <ArrowLeft className={`w-5 h-5 ${
                     isDark ? "text-emerald-400" : "text-emerald-600"
                   }`} />
+                </button>
+                <div className="flex items-center space-x-3">
+                  <div className={`p-3 rounded-lg ${
+                    isDark ? "bg-emerald-900/50" : "bg-emerald-100"
+                  }`}>
+                    <Scale className={`w-6 h-6 ${
+                      isDark ? "text-emerald-400" : "text-emerald-600"
+                    }`} />
+                  </div>
+                  <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
+                    isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+                  } bg-clip-text text-transparent`}>
+                    Manage Advocates
+                  </h1>
                 </div>
-                <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
-                  isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-                } bg-clip-text text-transparent`}>
-                  Manage Advocates
-                </h1>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    if (isEditMode) cancelEdit();
+                    setIsFormExpanded(true);
+                  }}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                    isDark
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-blue-500 hover:bg-blue-600 text-white"
+                  }`}
+                >
+                  <UserPlus size={16} />
+                  <span>Add Advocate</span>
+                </button>
+                
+                <button
+                  onClick={() => fetchAdvocates(currentPage, searchTerm)}
+                  disabled={isLoading}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+                    isDark
+                      ? "bg-gray-700 hover:bg-gray-600 text-white"
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                  <span>Refresh</span>
+                </button>
               </div>
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => {
-                  if (isEditMode) cancelEdit();
-                  setIsFormExpanded(true);
-                }}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <UserPlus size={16} />
-                <span>Add Advocate</span>
-              </button>
-              <button
-                onClick={handleExport}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
-              <button
-                onClick={() => fetchAdvocates(currentPage, searchTerm)}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                <span>Refresh</span>
-              </button>
-            </div>
+
           </div>
 
-          {/* Search Bar */}
-          <div className="mb-6">
-            
+          {/* Advocate Form */}
+          <div className="mb-8">
+            <AdvocateForm
+              isDark={isDark}
+              onSubmit={handleSubmitAdvocate}
+              initialData={selectedAdvocate}
+              isEditMode={isEditMode}
+              isExpanded={isFormExpanded}
+              onToggleExpand={toggleForm}
+            />
           </div>
 
-          {/* Statistics Card */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-emerald-600/50"
-                : "bg-white border-emerald-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-                }`}>
-                  <Scale className={`w-6 h-6 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {pagination.total || advocates.length}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Total Advocates
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-green-600/50"
-                : "bg-white border-green-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-green-900/50" : "bg-green-100"
-                }`}>
-                  <Scale className={`w-6 h-6 ${
-                    isDark ? "text-green-400" : "text-green-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {advocates.filter(a => a.isActive).length}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Active Advocates
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-red-600/50"
-                : "bg-white border-red-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-red-900/50" : "bg-red-100"
-                }`}>
-                  <Scale className={`w-6 h-6 ${
-                    isDark ? "text-red-400" : "text-red-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {advocates.filter(a => !a.isActive).length}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Inactive Advocates
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-xl border-2 ${
-              isDark
-                ? "bg-gray-800 border-purple-600/50"
-                : "bg-white border-purple-200"
-            }`}>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-purple-900/50" : "bg-purple-100"
-                }`}>
-                  <Scale className={`w-6 h-6 ${
-                    isDark ? "text-purple-400" : "text-purple-600"
-                  }`} />
-                </div>
-                <div>
-                  <p className={`text-2xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-900"
-                  }`}>
-                    {pagination.total_pages || 1}
-                  </p>
-                  <p className={`text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Total Pages
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Advocate Form */}
-        <div className="mb-8">
-          <AdvocateForm
+          {/* Advocate Table */}
+          <AdvocateTable
+            paginatedAdvocates={advocates}
+            filteredAdvocates={advocates}
+            currentPage={currentPage}
+            totalPages={pagination.total_pages}
+            itemsPerPage={itemsPerPage}
             isDark={isDark}
-            onSubmit={handleSubmitAdvocate}
-            initialData={selectedAdvocate}
-            isEditMode={isEditMode}
-            isExpanded={isFormExpanded}
-            onToggleExpand={toggleForm}
+            onPageChange={handlePageChange}
+            onEdit={handleEdit}
+            onToggleStatus={handleToggleStatus}
+            onViewLetterhead={handleViewLetterhead}
+            isLoading={isLoading}
           />
         </div>
-
-        {/* Advocate Table */}
-        <AdvocateTable
-          paginatedAdvocates={advocates}
-          filteredAdvocates={advocates}
-          currentPage={currentPage}
-          totalPages={pagination.total_pages}
-          itemsPerPage={itemsPerPage}
-          isDark={isDark}
-          onPageChange={handlePageChange}
-          onEdit={handleEdit}
-          onToggleStatus={handleToggleStatus}
-          isLoading={isLoading}
-        />
       </div>
-    </div>
+
+      {/* Preview Modal - Rendered at root level */}
+      {previewModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`relative rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden ${
+            isDark ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Letterhead Preview
+              </h3>
+              <button
+                onClick={closePreviewModal}
+                className={`p-2 rounded-lg ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-auto max-h-[70vh]">
+              {previewModal.url && (
+                previewModal.url.includes('.pdf') ? (
+                  <iframe 
+                    src={previewModal.url} 
+                    className="w-full h-[60vh] rounded-lg border"
+                    title="PDF Preview"
+                  />
+                ) : (
+                  <img 
+                    src={previewModal.url} 
+                    alt="Letterhead" 
+                    className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                  />
+                )
+              )}
+            </div>
+            
+            <div className="p-4 border-t flex justify-end">
+              <a
+                href={previewModal.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`px-4 py-2 rounded-lg font-medium ${
+                  isDark 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                Open in New Tab
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

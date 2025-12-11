@@ -1,4 +1,3 @@
-// app/crm/advocate/components/AdvocateForm.jsx
 'use client';
 import React, { useState } from 'react';
 import { 
@@ -10,6 +9,7 @@ import {
   Phone, 
   Mail, 
   FileText,
+  Upload,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -39,7 +39,9 @@ const advocateSchema = Yup.object().shape({
     .trim(),
   licence_no: Yup.string()
     .required('Licence number is required')
-    .trim()
+    .trim(),
+  letterhead: Yup.mixed()
+    .nullable()
 });
 
 const AdvocateForm = ({ 
@@ -51,6 +53,9 @@ const AdvocateForm = ({
   onToggleExpand 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(initialData?.letterhead_url || '');
 
   const initialValues = initialData || {
     name: '',
@@ -58,24 +63,103 @@ const AdvocateForm = ({
     address: '',
     phone: '',
     email: '',
-    licence_no: ''
+    licence_no: '',
+    letterhead: null
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit(values);
-      if (!isEditMode) {
-        resetForm();
+  const handleFileChange = (event, setFieldValue) => {
+    const file = event.currentTarget.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a valid file (JPG, PNG, WebP, PDF)');
+        return;
       }
-      toast.success(isEditMode ? 'Advocate updated successfully!' : 'Advocate added successfully!');
-    } catch (error) {
-      toast.error(error.message || 'Failed to save advocate');
-    } finally {
-      setIsSubmitting(false);
+      
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size should be less than 5MB');
+        return;
+      }
+      
+      setSelectedFile(file);
+      setFieldValue('letterhead', file);
+      
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type === 'application/pdf') {
+        setPreviewUrl('/pdf-icon.png'); // You can use a PDF icon here
+      }
     }
   };
 
+  const removeFile = (setFieldValue) => {
+    setSelectedFile(null);
+    setPreviewUrl('');
+    setFieldValue('letterhead', null);
+  };
+
+  const handleSubmit = async (values, { resetForm }) => {
+  setIsSubmitting(true);
+  setServerError('');
+  
+  try {
+    const formData = new FormData();
+    
+    // Add all form fields to FormData
+    Object.keys(values).forEach(key => {
+      const value = values[key];
+      
+      // Skip empty values
+      if (!value && value !== 0 && value !== false) return;
+      
+      // API expects 'letter_head' for file upload
+      if (key === 'letterhead' && value instanceof File) {
+        formData.append('letter_head', value);
+      } else {
+        formData.append(key, value);
+      }
+    });
+    
+    await onSubmit(formData);
+    
+    // Reset form for new entries
+    if (!isEditMode) {
+      resetForm();
+      setSelectedFile(null);
+      setPreviewUrl('');
+    }
+    
+    toast.success(isEditMode ? 'Advocate updated!' : 'Advocate added!');
+    
+  } catch (error) {
+    let errorMessage = 'Failed to save advocate';
+    
+    // Extract error from API response
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0]?.[0];
+      errorMessage = firstError || error.response.data.message || errorMessage;
+    } 
+    else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    }
+    else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.error(errorMessage);
+    
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   return (
     <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${
       isDark
@@ -115,13 +199,25 @@ const AdvocateForm = ({
       {/* Form Body - Collapsible */}
       {isExpanded && (
         <div className="p-6">
+          {/* Server Error Display */}
+          {serverError && (
+            <div className={`mb-6 p-4 rounded-lg border ${
+              isDark 
+                ? 'bg-red-900/20 border-red-600/50 text-red-200' 
+                : 'bg-red-50 border-red-300 text-red-700'
+            }`}>
+              <div className="font-medium mb-2">Please fix the following errors:</div>
+              <div className="text-sm">{serverError}</div>
+            </div>
+          )}
+
           <Formik
             initialValues={initialValues}
             validationSchema={advocateSchema}
             onSubmit={handleSubmit}
             enableReinitialize={isEditMode}
           >
-            {({ isSubmitting: formikSubmitting }) => (
+            {({ isSubmitting: formikSubmitting, setFieldValue, values }) => (
               <Form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Name Field */}
@@ -276,6 +372,118 @@ const AdvocateForm = ({
                     <ErrorMessage name="licence_no">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
                     </ErrorMessage>
+                  </div>
+
+                  {/* Letterhead Upload Field */}
+                  <div >
+                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
+                      isDark ? 'text-gray-100' : 'text-gray-700'
+                    }`}>
+                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                        <Upload className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                      </div>
+                      <span>Letterhead (Optional)</span>
+                    </label>
+                    
+                    {/* File Input */}
+                    <div className={`border-2 border-dashed rounded-lg p-4 transition-all duration-200 ${
+                      isDark
+                        ? 'border-emerald-600/30 bg-gray-800/50 hover:border-emerald-500/50'
+                        : 'border-emerald-300 bg-emerald-50/50 hover:border-emerald-400'
+                    }`}>
+                      <input
+                        type="file"
+                        id="letterhead"
+                        name="letterhead"
+                        accept=".jpg,.jpeg,.png,.webp,.pdf"
+                        onChange={(e) => handleFileChange(e, setFieldValue)}
+                        className="hidden"
+                      />
+                      
+                      <label
+                        htmlFor="letterhead"
+                        className={`cursor-pointer flex flex-col items-center justify-center p-4 ${
+                          isDark ? 'text-gray-300' : 'text-gray-600'
+                        }`}
+                      >
+                        <div className='flex justify-center items-center gap-2'>
+                        <Upload className="w-8 h-8 mb-2 opacity-70" />
+                        <div className='flex flex-col'>
+                        <span className="text-sm font-medium">
+                          {selectedFile || previewUrl ? 'Change File' : 'Click to upload letterhead'}
+                        </span>
+                        <span className="text-xs mt-1 opacity-70">
+                          JPG, PNG, WebP or PDF (Max 5MB)
+                        </span>
+                        </div>
+                        </div>
+                      </label>
+                      
+                      {/* File Preview */}
+                      {(selectedFile || previewUrl) && (
+                        <div className="mt-4 p-3 rounded-lg bg-gray-700/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <FileText className="w-5 h-5" />
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {selectedFile?.name || 'Uploaded file'}
+                                </p>
+                                <p className="text-xs opacity-70">
+                                  {selectedFile?.type?.startsWith('image/') ? 'Image' : 'PDF'} • {
+                                    selectedFile ? 
+                                    `${(selectedFile.size / 1024).toFixed(1)} KB` : 
+                                    'Uploaded'
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(setFieldValue)}
+                              className={`p-1 rounded-full ${
+                                isDark 
+                                  ? 'hover:bg-gray-700 text-gray-300' 
+                                  : 'hover:bg-gray-200 text-gray-600'
+                              }`}
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          {/* Image Preview */}
+                          {previewUrl && previewUrl.startsWith('data:image/') && (
+                            <div className="mt-3 flex justify-center">
+                              <img 
+                                src={previewUrl} 
+                                alt="Preview" 
+                                className="max-h-48 rounded-lg border"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <ErrorMessage name="letterhead">
+                      {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
+                    </ErrorMessage>
+                    
+                    {/* Existing letterhead in edit mode */}
+                    {isEditMode && initialData?.letterhead_url && !selectedFile && (
+                      <div className="mt-2">
+                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Existing letterhead: <a 
+                            href={initialData.letterhead_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-emerald-600 hover:underline"
+                          >
+                            View current letterhead
+                          </a>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

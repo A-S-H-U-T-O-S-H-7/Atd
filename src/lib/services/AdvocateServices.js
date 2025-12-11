@@ -30,8 +30,23 @@ export const advocateService = {
   addAdvocate: async (advocateData) => {
     try {
       const response = await api.post('/crm/advocate/add', advocateData);
+      
+      if (response.status === false) {
+        throw new Error(response.message || 'Failed to add advocate');
+      }
+      
       return response;
     } catch (error) {
+      if (error.response) {
+        const errorData = error.response.data || {};
+        
+        const serverError = new Error(
+          errorData.message || errorData.errors || 'Failed to add advocate'
+        );
+        
+        serverError.response = error.response;
+        throw serverError;
+      }
       throw error;
     }
   },
@@ -40,8 +55,21 @@ export const advocateService = {
   updateAdvocate: async (id, advocateData) => {
     try {
       const response = await api.put(`/crm/advocate/update/${id}`, advocateData);
+      
+      if (response.status === false) {
+        throw new Error(response.message || 'Failed to update advocate');
+      }
+      
       return response;
     } catch (error) {
+      if (error.response) {
+        const errorData = error.response.data || {};
+        const serverError = new Error(
+          errorData.message || errorData.errors || 'Failed to update advocate'
+        );
+        serverError.response = error.response;
+        throw serverError;
+      }
       throw error;
     }
   },
@@ -80,6 +108,7 @@ export const formatAdvocateForUI = (advocate) => {
     isActive: advocate.isActive === 1,
     addedBy: advocate.added_by || 'N/A',
     createdAt: advocate.created_at || 'N/A',
-    status: advocate.isActive === 1 ? 'Active' : 'Inactive'
+    status: advocate.isActive === 1 ? 'Active' : 'Inactive',
+    letterheadUrl: advocate.letter_head || null
   };
 };

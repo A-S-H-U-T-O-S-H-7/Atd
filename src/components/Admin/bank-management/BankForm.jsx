@@ -45,19 +45,19 @@ const bankSchema = Yup.object().shape({
     .required('Account name is required')
     .trim(),
   contact_person: Yup.string()
-    .required('Contact person is required')
+    .nullable()
     .trim(),
   phone: Yup.string()
-    .required('Phone number is required')
-    .matches(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number')
+    .nullable()
+    .matches(/^$|^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number')
     .max(10, 'Phone number cannot exceed 10 digits')
     .trim(),
   email: Yup.string()
-    .required('Email is required')
+    .nullable()
     .email('Please enter a valid email address')
     .trim(),
   amount: Yup.number()
-    .required('Amount is required')
+    .nullable()
     .min(0, 'Amount cannot be negative')
     .typeError('Amount must be a number'),
   apikey: Yup.string()
@@ -71,8 +71,9 @@ const bankSchema = Yup.object().shape({
     .trim(),
   uses_for: Yup.string()
     .required('Usage is required')
-    .oneOf(['disbursement', 'collection', 'cheque', 'all'], 'Select valid usage')
+    .oneOf(['disbursement', 'collection', 'cheque'], 'Select valid usage')
 });
+
 
 // Reusable Input Styles
 const getInputStyles = (isDark, hasError = false) => {
@@ -124,6 +125,27 @@ const PhoneInput = ({ field, form, ...props }) => {
   );
 };
 
+// Amount input handler to prevent negative values
+const AmountInput = ({ field, form, ...props }) => {
+  const handleChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
+      form.setFieldValue(field.name, value === '' ? '' : parseFloat(value));
+    }
+  };
+
+  return (
+    <input
+      {...field}
+      {...props}
+      type="number"
+      onChange={handleChange}
+      min="0"
+      step="any"
+    />
+  );
+};
+
 const BankForm = ({ 
   isDark, 
   onSubmit, 
@@ -133,6 +155,7 @@ const BankForm = ({
   onToggleExpand 
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const initialValues = initialData || {
     bank: '',
@@ -144,27 +167,68 @@ const BankForm = ({
     contact_person: '',
     phone: '',
     email: '',
-    amount: 0,
+    amount: '',
     apikey: '',
     passCode: '',
     bcID: '',
     uses_for: 'collection'
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit(values);
-      if (!isEditMode) {
-        resetForm();
-      }
-      toast.success(isEditMode ? 'Bank updated successfully!' : 'Bank added successfully!');
-    } catch (error) {
-      toast.error(error.message || 'Failed to save bank');
-    } finally {
-      setIsSubmitting(false);
+ const handleSubmit = async (values, { resetForm }) => {
+  setIsSubmitting(true);
+  setServerError('');
+  
+  try {
+    await onSubmit(values);
+    if (!isEditMode) {
+      resetForm();
     }
-  };
+    toast.success(isEditMode ? 'Bank updated successfully!' : 'Bank added successfully!');
+  } catch (error) {
+    let errorMessage = 'Failed to save bank';
+    
+    if (error.response) {
+      const errorData = error.response.data || {};
+      
+      if (error.response.status === 422 && errorData.errors) {
+        const errors = errorData.errors;
+        const firstError = Object.values(errors)[0];
+        errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+      } 
+      // Custom API error message
+      else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+      else if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      }
+      // Fallback to status text
+      else if (error.response.statusText) {
+        errorMessage = error.response.statusText;
+      }
+    } 
+    else if (error.data) {
+      const errorData = error.data;
+      
+      if (errorData.errors) {
+        const errors = errorData.errors;
+        const firstError = Object.values(errors)[0];
+        errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+      } 
+      else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    }
+    else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    setServerError(errorMessage);
+    toast.error(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${
@@ -202,9 +266,20 @@ const BankForm = ({
         )}
       </button>
 
-      {/* Form Body - Collapsible */}
+      {/* Form Body */}
       {isExpanded && (
         <div className="p-6">
+          {/* Server Error Display */}
+          {serverError && (
+            <div className={`mb-6 p-4 rounded-lg border ${
+              isDark 
+                ? 'bg-red-900/20 border-red-600/50 text-red-200' 
+                : 'bg-red-50 border-red-300 text-red-700'
+            }`}>
+              <p className="font-medium">{serverError}</p>
+            </div>
+          )}
+
           <Formik
             initialValues={initialValues}
             validationSchema={bankSchema}
@@ -305,7 +380,7 @@ const BankForm = ({
 
                   {/* Contact Person Field */}
                   <div>
-                    <FormLabel icon={User} label="Contact Person *" isDark={isDark} />
+                    <FormLabel icon={User} label="Contact Person" isDark={isDark} optional />
                     <Field
                       type="text"
                       name="contact_person"
@@ -319,7 +394,7 @@ const BankForm = ({
 
                   {/* Phone Field */}
                   <div>
-                    <FormLabel icon={Phone} label="Phone Number *" isDark={isDark} />
+                    <FormLabel icon={Phone} label="Phone Number" isDark={isDark} optional />
                     <Field
                       name="phone"
                       component={PhoneInput}
@@ -333,7 +408,7 @@ const BankForm = ({
 
                   {/* Email Field */}
                   <div>
-                    <FormLabel icon={Mail} label="Email *" isDark={isDark} />
+                    <FormLabel icon={Mail} label="Email" isDark={isDark} optional />
                     <Field
                       type="email"
                       name="email"
@@ -347,10 +422,10 @@ const BankForm = ({
 
                   {/* Amount Field */}
                   <div>
-                    <FormLabel icon={IndianRupee} label="Amount *" isDark={isDark} />
+                    <FormLabel icon={IndianRupee} label="Amount" isDark={isDark} optional />
                     <Field
-                      type="number"
                       name="amount"
+                      component={AmountInput}
                       placeholder="e.g., 200000"
                       className={getInputStyles(isDark, errors.amount && touched.amount)}
                     />
@@ -361,22 +436,21 @@ const BankForm = ({
 
                   {/* Usage For Field */}
                   <div>
-                    <FormLabel icon={Briefcase} label="Usage For *" isDark={isDark} />
-                    <Field
-                      as="select"
-                      name="uses_for"
-                      className={getInputStyles(isDark, errors.uses_for && touched.uses_for)}
-                    >
-                      <option value="">Select Usage</option>
-                      <option value="disbursement">Disbursement</option>
-                      <option value="collection">Collection</option>
-                      <option value="cheque">Cheque</option>
-                      <option value="all">All</option>
-                    </Field>
-                    <ErrorMessage name="uses_for">
-                      {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
-                    </ErrorMessage>
-                  </div>
+  <FormLabel icon={Briefcase} label="Usage For *" isDark={isDark} />
+  <Field
+    as="select"
+    name="uses_for"
+    className={getInputStyles(isDark, errors.uses_for && touched.uses_for)}
+  >
+    <option value="">Select Usage</option>
+    <option value="disbursement">Disbursement</option>
+    <option value="collection">Collection</option>
+    <option value="cheque">Cheque</option>
+  </Field>
+  <ErrorMessage name="uses_for">
+    {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
+  </ErrorMessage>
+</div>
 
                   {/* API Key Field */}
                   <div>

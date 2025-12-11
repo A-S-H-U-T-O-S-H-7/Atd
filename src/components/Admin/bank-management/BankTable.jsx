@@ -5,6 +5,23 @@ import { FileText, Loader } from 'lucide-react';
 import BankRow from './BankRow';
 import Pagination from '../Pagination';
 
+// Common Table Styles (same as above)
+const getHeaderStyles = (isDark) => ({
+  headerClass: `px-2 py-2 text-left text-sm font-bold border-r ${
+    isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+  }`,
+  gradientClass: `border-b-2 ${
+    isDark
+      ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
+      : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
+  }`,
+  tableClass: `rounded-2xl shadow-2xl border-2 overflow-hidden ${
+    isDark
+      ? "bg-gray-800 border-emerald-600/50 shadow-blue-900/20"
+      : "bg-white border-emerald-300 shadow-blue-500/10"
+  }`
+});
+
 const BankTable = ({ 
   paginatedBanks,
   filteredBanks,
@@ -17,68 +34,40 @@ const BankTable = ({
   onToggleStatus,
   isLoading = false
 }) => {
+  const styles = getHeaderStyles(isDark);
+
   return (
-    <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
-      isDark
-        ? "bg-gray-800 border-emerald-600/50 shadow-blue-900/20"
-        : "bg-white border-emerald-300 shadow-blue-500/10"
-    }`}>
+    <div className={styles.tableClass}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-max" style={{ minWidth: "900px" }}>
-          <thead className={`border-b-2 ${
-            isDark
-              ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50 border-emerald-300"
-          }`}>
+          <thead className={styles.gradientClass}>
             <tr>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "80px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "80px" }}>
                 S.No.
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Bank Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Account Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "250px" }}>
                 Account Name & Type
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Contact Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "90px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "90px" }}>
                 Amount
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "100px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "100px" }}>
                 Usage
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
-                API Details
-              </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "200px" }}>
+              
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Added Details
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "100px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "100px" }}>
                 Status
               </th>
               <th className={`px-2 py-5 text-left text-sm font-bold ${

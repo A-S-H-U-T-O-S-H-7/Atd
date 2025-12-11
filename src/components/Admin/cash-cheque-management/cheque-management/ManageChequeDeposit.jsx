@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
@@ -7,6 +7,18 @@ import { ChequeService, formatLoanDetails, formatDepositDataForAPI } from "@/lib
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
+
+// Helper functions
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
+const formatDateForInput = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
 
 const ManageChequeDepositPage = () => {
   const { theme } = useThemeStore();
@@ -21,16 +33,72 @@ const ManageChequeDepositPage = () => {
   const [isFetchingLoan, setIsFetchingLoan] = useState(false);
   const [loanFetched, setLoanFetched] = useState(false);
 
-  const relationOptions = [ "Son", "Daughter", "Spouse"];
+  const relationOptions = ["Son", "Daughter", "Spouse"];
   const chequeTypeOptions = ["Repayment Cheque", "Security Cheque", "Interest Cheque"];
   const statusOptions = ["Bounced", "Received/cleared"];
   const deliveryStatusOptions = ["Not Delivered", "Returned Back"];
 
+  // Reusable input classes
   const inputClasses = `w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
     isDark
       ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
       : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
   }`;
+
+  // Custom validation for date fields
+  const validateDates = (values) => {
+    const errors = {};
+    const depositDate = new Date(values.chequeDepositDate);
+    const chequeDate = new Date(values.chequeDate);
+    const today = new Date();
+
+    // Deposit date validation
+    if (values.chequeDepositDate) {
+      const deposit = new Date(values.chequeDepositDate);
+      if (deposit > today) {
+        errors.chequeDepositDate = "Deposit date cannot be in the future";
+      }
+    }
+
+    // Cheque date validation
+    if (values.chequeDate) {
+      const cheque = new Date(values.chequeDate);
+      if (cheque > today) {
+        errors.chequeDate = "Cheque date cannot be in the future";
+      }
+    }
+
+    // Post-deposit date validations
+    const postDepositFields = [
+      'bounceDate',
+      'chequeReturnMemoDate',
+      'chequeReturnMemoReceivedDate',
+      'intimationMailFromBankDate',
+      'intimationMailFromDispatchChequeDate'
+    ];
+
+    postDepositFields.forEach(field => {
+      if (values[field] && values.chequeDepositDate) {
+        const fieldDate = new Date(values[field]);
+        if (fieldDate < depositDate) {
+          errors[field] = `Date cannot be before deposit date (${values.chequeDepositDate})`;
+        }
+        if (fieldDate > today) {
+          errors[field] = "Date cannot be in the future";
+        }
+      }
+    });
+
+    return errors;
+  };
+
+  // Custom Yup validation for positive numbers
+  const positiveNumber = (message = "Amount must be positive") => {
+    return Yup.number()
+      .transform(value => (isNaN(value) ? undefined : value))
+      .min(0, message)
+      .typeError("Please enter a valid number");
+  };
 
   const validationSchema = Yup.object({
     loanNo: Yup.string().required("Loan number is required"),
@@ -41,14 +109,13 @@ const ManageChequeDepositPage = () => {
     chequeNo: Yup.string()
       .required("Cheque number is required")
       .matches(/^\d{6}$/, "Cheque number must be exactly 6 digits"),
-    principalAmount: Yup.number() 
-    .positive("Amount must be positive")
-    .nullable(),
-    chequeAmount: Yup.number()
-      .required("Cheque amount is required")
-      .positive("Amount must be positive"),
+    principalAmount: positiveNumber("Principal amount must be positive"),
+    chequeAmount: positiveNumber("Cheque amount is required and must be positive").required("Cheque amount is required"),
     chequeDate: Yup.date().required("Cheque date is required"),
     chequeDepositDate: Yup.date().required("Cheque deposit date is required"),
+    interest: positiveNumber("Interest must be positive"),
+    penalInterest: positiveNumber("Penal interest must be positive"),
+    penalty: positiveNumber("Penalty must be positive"),
   });
 
   const formik = useFormik({
@@ -91,12 +158,14 @@ const ManageChequeDepositPage = () => {
       applicationId: ""
     },
     validationSchema,
+    validate: validateDates,
     onSubmit: async (values) => {
       await handleSubmit(values);
     }
   });
 
   const isStatusReceived = formik.values.status === "Received/cleared";
+  const today = getTodayDate();
 
   useEffect(() => {
     if (isEdit && editId) {
@@ -105,42 +174,40 @@ const ManageChequeDepositPage = () => {
   }, [isEdit, editId]);
 
   useEffect(() => {
-  const fetchLoanDetails = async () => {
-    if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
-      setIsFetchingLoan(true);
-      try {
-        const response = await ChequeService.getLoanDetails(formik.values.loanNo);
-        
-        if (response.status && response.data) {
-          const loanDetails = formatLoanDetails(response.data);
+    const fetchLoanDetails = async () => {
+      if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
+        setIsFetchingLoan(true);
+        try {
+          const response = await ChequeService.getLoanDetails(formik.values.loanNo);
           
-          formik.setValues(prev => ({
-            ...prev,
-            ...loanDetails,
-            name: response.data.customer_name || "",
-            fatherName: response.data.fathername || "",
-            applicationId: response.data.application_id || "",
-            interest: response.data.details?.final_recommendation?.interest || "",
-            penalInterest: response.data.details?.final_recommendation?.penal_interest || "",
-            penalty: response.data.details?.final_recommendation?.penality || ""
-          }));
-          
-          setLoanFetched(true);
+          if (response.status && response.data) {
+            const loanDetails = formatLoanDetails(response.data);
+            
+            formik.setValues(prev => ({
+              ...prev,
+              ...loanDetails,
+              name: response.data.customer_name || "",
+              fatherName: response.data.fathername || "",
+              applicationId: response.data.application_id || "",
+              interest: response.data.details?.final_recommendation?.interest || "",
+              penalInterest: response.data.details?.final_recommendation?.penal_interest || "",
+              penalty: response.data.details?.final_recommendation?.penality || ""
+            }));
+            
+            setLoanFetched(true);
+          }
+        } catch (error) {
+          console.error("Error fetching loan details:", error);
+          setLoanFetched(false);
+        } finally {
+          setIsFetchingLoan(false);
         }
-      } catch (error) {
-        console.error("Error fetching loan details:", error);
-        setLoanFetched(false);
-      } finally {
-        setIsFetchingLoan(false);
       }
-    }
-  };
+    };
 
-  // Clear existing timeout
-  const timerId = setTimeout(fetchLoanDetails, 800);
-  
-  return () => clearTimeout(timerId);
-}, [formik.values.loanNo, loanFetched]);
+    const timerId = setTimeout(fetchLoanDetails, 800);
+    return () => clearTimeout(timerId);
+  }, [formik.values.loanNo, loanFetched]);
 
   useEffect(() => {
     setLoanFetched(false);
@@ -171,22 +238,22 @@ const ManageChequeDepositPage = () => {
           customerBankAC: apiData.customer_bank_ac || "",
           customerBankIFSC: apiData.customer_bank_ifsc || "",
           chequeNo: apiData.cheque_no || "",
-          chequeDate: apiData.cheque_date || "",
-          chequeDepositDate: apiData.deposit_date || "",
+          chequeDate: formatDateForInput(apiData.cheque_date),
+          chequeDepositDate: formatDateForInput(apiData.deposit_date),
           principalAmount: apiData.principal_amount || "",
           chequeAmount: apiData.deposit_amount || "",
           interest: apiData.interest || "",
           penalInterest: apiData.penal_interest || "",
           penalty: apiData.penality || "",
           status: apiData.status || "",
-          bounceDate: apiData.bounce_date || "",
+          bounceDate: formatDateForInput(apiData.bounce_date),
           bounceCharge: apiData.bounce_charge || "",
           deliveryStatus: apiData.delivery_status || "",
           deliveryAddress: apiData.delivery_address || "",
-          chequeReturnMemoDate: apiData.cheque_return_memo_date || "",
-          chequeReturnMemoReceivedDate: apiData.cheque_return_memo_received_date || "",
-          intimationMailFromBankDate: apiData.intimation_mail_from_bank_date || "",
-          intimationMailFromDispatchChequeDate: apiData.intimation_mail_from_dispatch_cheque_date || "",
+          chequeReturnMemoDate: formatDateForInput(apiData.cheque_return_memo_date),
+          chequeReturnMemoReceivedDate: formatDateForInput(apiData.cheque_return_memo_received_date),
+          intimationMailFromBankDate: formatDateForInput(apiData.intimation_mail_from_bank_date),
+          intimationMailFromDispatchChequeDate: formatDateForInput(apiData.intimation_mail_from_dispatch_cheque_date),
           reasonOfBounce: apiData.reason_of_bounce || "",
           applicationId: apiData.application_id || ""
         });
@@ -199,6 +266,20 @@ const ManageChequeDepositPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Custom input handler to prevent negative numbers
+  const handleNumberInput = (e, fieldName) => {
+    const value = e.target.value;
+    // Allow empty, 0, or positive numbers
+    if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
+      formik.handleChange(e);
+    }
+  };
+
+  // Custom date handler to enforce max date
+  const handleDateChange = (e, fieldName) => {
+    formik.handleChange(e);
   };
 
   const handleSubmit = async (values) => {
@@ -225,7 +306,26 @@ const ManageChequeDepositPage = () => {
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error(error.response?.data?.message || "Failed to submit. Please try again.");
+      
+      // Extract proper error message from 422 response
+      let errorMessage = "Failed to submit. Please try again.";
+      
+      if (error.response?.status === 422 && error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        // Get first error message
+        const firstErrorKey = Object.keys(errors)[0];
+        if (errors[firstErrorKey] && errors[firstErrorKey][0]) {
+          errorMessage = errors[firstErrorKey][0];
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -235,28 +335,61 @@ const ManageChequeDepositPage = () => {
     router.push("/crm/cheque-management");
   };
 
-  const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => (
-    <div className={`col-span-${colSpan}`}>
-      <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-        {label}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={formik.values[name]}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
-          formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
-        }`}
-      />
-      {formik.touched[name] && formik.errors[name] && (
-        <div className="text-red-500 text-xs mt-1">{formik.errors[name]}</div>
-      )}
-    </div>
-  );
+  // Custom renderField with number validation
+  const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
+    const isNumberField = type === "number";
+    const isDateField = type === "date";
+    
+    let maxDate = "";
+    if (isDateField) {
+      if (name === "chequeDate" || name === "chequeDepositDate") {
+        maxDate = today;
+      } else if (name === "bounceDate" || 
+                 name === "chequeReturnMemoDate" || 
+                 name === "chequeReturnMemoReceivedDate" ||
+                 name === "intimationMailFromBankDate" ||
+                 name === "intimationMailFromDispatchChequeDate") {
+        maxDate = today;
+      }
+    }
+
+    return (
+  <div className={`col-span-${colSpan}`}>
+    <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      {label}
+    </label>
+    <input
+      type={type}
+      name={name}
+      value={formik.values[name]}
+      onChange={(e) => {
+        if (isNumberField) {
+          handleNumberInput(e, name);
+        } else if (isDateField) {
+          handleDateChange(e, name);
+        } else {
+          formik.handleChange(e);
+        }
+      }}
+      onBlur={formik.handleBlur}
+      placeholder={placeholder}
+      disabled={disabled}
+      min={isNumberField ? "0" : 
+           (isDateField && name !== "chequeDate" && name !== "chequeDepositDate" && formik.values.chequeDepositDate) 
+             ? formik.values.chequeDepositDate 
+             : undefined}
+      step={isNumberField ? "any" : undefined}
+      max={isDateField ? maxDate : undefined}
+      className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
+        formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
+      }`}
+    />
+    {formik.touched[name] && formik.errors[name] && (
+      <div className="text-red-500 text-xs mt-1">{formik.errors[name]}</div>
+    )}
+  </div>
+);
+  };
 
   const renderSelect = (name, label, options, colSpan = 1, disabled = false) => (
     <div className={`col-span-${colSpan}`}>
@@ -446,8 +579,8 @@ const ManageChequeDepositPage = () => {
                   {renderField("chequeDate", "Cheque Date", "date", "", 1)}
                   {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
                   {renderField("chequeAmount", "Cheque Amount", "number", "Enter cheque amount", 1)}
-                  {renderField("principalAmount", "Principal Amount", "number", "Auto-filled from loan", 1)} 
-                  {renderField("interest", "Interest", "number", "Enter Interest Amount", 1 )} 
+                  {renderField("principalAmount", "Principal Amount", "number", "Enter Principal Amount", 1)} 
+                  {renderField("interest", "Interest", "number", "Enter Interest Amount", 1)} 
                   {renderField("penalInterest", "Penal Interest", "number", "Enter Penal Interest", 1)} 
                   {renderField("penalty", "Penalty", "number", "Enter Penalty Amount", 1)} 
                 </div>
@@ -464,7 +597,9 @@ const ManageChequeDepositPage = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {renderSelect("status", "Status", statusOptions, 1)}
-                        {renderField("bounceDate", "Bounce Date / Cheque Clear Date", "date", "", 1, isStatusReceived)}
+                        {renderField("bounceDate", "Bounce Date / Cheque Clear Date", "date", "", 1, 
+                          isStatusReceived && formik.values.status !== "" ? false : isStatusReceived
+                        )}
                         {renderField("bounceCharge", "Bounce Charge", "number", "Enter bounce charge", 1, isStatusReceived)}
                         {renderSelect("deliveryStatus", "Cheque Delivery Status", deliveryStatusOptions, 1, isStatusReceived)}
                       </div>
