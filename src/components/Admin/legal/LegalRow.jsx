@@ -82,11 +82,6 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
     }
     return isDark ? "text-yellow-400 font-semibold" : "text-yellow-600 font-semibold";
   };
-
-  // Bounce Logic Explanation:
-  // Show bounce details when:
-  // 1. bounceDate is not null/N/A AND
-  // 2. Either bounceReason is provided OR cheque was bounced
   
   const hasBounceDetails = legal.bounceDate && 
                           legal.bounceDate !== 'N/A' && 
@@ -115,15 +110,15 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
           : ""
       }`}
     >
-      {/* S.No - Fixed: Use index + 1 */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* S.No */}
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {index + 1}
         </span>
       </td>
 
       {/* Customer Information */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <User className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -159,7 +154,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Address - Single column with Show Address button */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
         <div className="space-y-3">
           <div className="flex items-start space-x-2">
             <MapPin className={`w-4 h-4 mt-0.5 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -193,7 +188,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Financial Information */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center space-x-2">
@@ -261,7 +256,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Loan Details */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "200px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "200px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <CreditCard className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -307,7 +302,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* ATD Bank Details */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Building2 className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -334,7 +329,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Customer Bank Details */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Building2 className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
@@ -366,7 +361,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Cheque Details */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -414,7 +409,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Cheque Return Details - Fixed Logic */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           {/* BOUNCE LOGIC: Show bounce details only when bounceDate exists */}
           {isChequeBounced ? (
@@ -491,7 +486,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Important Dates - Updated to remove statement dates */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Calendar className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -533,7 +528,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Legal Notice Status - Updated heading */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           {/* Make Delivery Status more prominent */}
           <div className="flex items-center space-x-2 mb-2">
@@ -587,7 +582,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* NEW: Criminal Case Status */}
-      <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2 mb-2">
             {legal.criminalCaseStatus?.toLowerCase() === 'filed' ? (
@@ -619,7 +614,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Actions - Added new buttons */}
-      <td className="px-4 py-4" style={{ minWidth: "350px" }}>
+      <td className="px-2 py-4" style={{ minWidth: "350px" }}>
         <div className="flex flex-wrap gap-2">
           <button
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
