@@ -96,8 +96,8 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
   const baseData = {
     loan_no: formData.loanNo || "",
     id: formData.applicationId || "",
-    name: formData.name || "",
-    fathername: formData.fatherName || "",
+    customer_name: formData.name || "",
+    fathername: formData.fatherName || "", 
     relation: formData.relation || "",
     company_bank_name: formData.companyBankName || "",
     company_bank_branch: formData.companyBankBranch || "",
@@ -108,14 +108,14 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
     customer_bank_ac: formData.customerBankAC || "",
     customer_bank_ifsc: formData.customerBankIFSC || "",
     cheque_no: formData.chequeNo || "",
+    cheque_present: "Repayment Cheque", 
     cheque_date: formData.chequeDate || "",
     deposit_date: formData.chequeDepositDate || "",
     deposit_amount: parseFloat(formData.chequeAmount) || 0,
     principal_amount: parseFloat(formData.principalAmount) || 0,
     interest: parseFloat(formData.interest) || 0,
     penal_interest: parseFloat(formData.penalInterest) || 0,
-    penality: parseFloat(formData.penalty) || 0,
-    cheque_present: 1
+    penality: parseFloat(formData.penalty) || 0
   };
 
   if (isEdit) {
@@ -125,11 +125,11 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
       bounce_charge: parseFloat(formData.bounceCharge) || 0,
       delivery_status: formData.deliveryStatus || "",
       delivery_address: formData.deliveryAddress || "",
-      cheque_return_memo_date: formData.chequeReturnMemoDate || "",
-      cheque_return_memo_received_date: formData.chequeReturnMemoReceivedDate || "",
-      intimation_mail_from_bank_date: formData.intimationMailFromBankDate || "",
-      intimation_mail_from_dispatch_cheque_date: formData.intimationMailFromDispatchChequeDate || "",
-      reason_of_bounce: formData.reasonOfBounce || ""
+      cheque_return_memo: formData.chequeReturnMemoDate || "", 
+      memo_received_date: formData.chequeReturnMemoReceivedDate || "", 
+      intimation_mail_despatch: formData.intimationMailFromBankDate || "", 
+      intimation_mail_deliver: formData.intimationMailFromDispatchChequeDate || "",
+      reason_bounce: formData.reasonOfBounce || "" 
     });
   }
 
@@ -148,9 +148,9 @@ export const formatDepositsForTable = (apiData) => {
     depositDate: deposit.deposit_date ? new Date(deposit.deposit_date).toLocaleDateString('en-GB') : "",
     amount: parseFloat(deposit.deposit_amount) || 0,
     user: deposit.admin_name || "",
-    name: deposit.name || "",
-    fatherName: deposit.f_name || "",
+    name: deposit.customer_name || "", 
+    fatherName: deposit.customer_father_name || "", 
     relation: deposit.relation_with || "",
-    status: deposit.delivery_status || "Pending"
+    status: deposit.status || "Pending" 
   }));
 };

@@ -276,71 +276,77 @@ const ManageChequeDepositPage = () => {
   };
 
   const fetchDepositData = async (depositId) => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
+    
+    const depositResponse = await ChequeService.getChequeDeposit(depositId);
+    
+    console.log("Edit API Response:", depositResponse); 
+    
+    if (depositResponse.status && depositResponse.data) {
+      const apiData = depositResponse.data;
       
-      const depositResponse = await ChequeService.getChequeDeposit(depositId);
+      console.log("API Data for Edit:", apiData); 
       
-      if (depositResponse.status && depositResponse.data) {
-        const apiData = depositResponse.data;
-        
-        const initialValues = {
-          loanNo: apiData.loan_no || "",
-          name: apiData.name || "",
-          fatherName: apiData.f_name || "",
-          relation: apiData.relation_with || "",
-          chequePresented: "Repayment Cheque",
-          companyBankName: apiData.company_bank_name || "",
-          companyBankBranch: apiData.company_bank_branch || "",
-          companyBankAC: apiData.company_bank_ac || "",
-          companyBankIFSC: apiData.company_bank_ifsc || "",
-          customerBankName: apiData.customer_bank_name || "",
-          customerBankBranch: apiData.customer_bank_branch || "",
-          customerBankAC: apiData.customer_bank_ac || "",
-          customerBankIFSC: apiData.customer_bank_ifsc || "",
-          chequeNo: apiData.cheque_no || "",
-          chequeDate: formatDateForInput(apiData.cheque_date),
-          chequeDepositDate: formatDateForInput(apiData.deposit_date),
-          principalAmount: apiData.principal_amount || "",
-          chequeAmount: apiData.deposit_amount || "",
-          interest: apiData.interest || "",
-          penalInterest: apiData.penal_interest || "",
-          penalty: apiData.penality || "",
-          status: apiData.status || "",
-          bounceDate: formatDateForInput(apiData.bounce_date),
-          bounceCharge: apiData.bounce_charge || "",
-          deliveryStatus: apiData.delivery_status || "",
-          deliveryAddress: apiData.delivery_address || "",
-          chequeReturnMemoDate: formatDateForInput(apiData.cheque_return_memo_date),
-          chequeReturnMemoReceivedDate: formatDateForInput(apiData.cheque_return_memo_received_date),
-          intimationMailFromBankDate: formatDateForInput(apiData.intimation_mail_from_bank_date),
-          intimationMailFromDispatchChequeDate: formatDateForInput(apiData.intimation_mail_from_dispatch_cheque_date),
-          reasonOfBounce: apiData.reason_of_bounce || "",
-          applicationId: apiData.application_id || ""
-        };
-        
-        formik.setValues(initialValues);
-        setLoanFetched(true);
-        
-        // Fetch loan data for reference values
-        if (apiData.loan_no) {
-          try {
-            const loanResponse = await ChequeService.getLoanDetails(apiData.loan_no);
-            if (loanResponse.status && loanResponse.data) {
-              setLoanData(loanResponse.data);
-            }
-          } catch (error) {
-            console.error("Error fetching loan data for reference:", error);
+      const initialValues = {
+        loanNo: apiData.loan_no || "",
+        name: apiData.name || "",
+        fatherName: apiData.fathername || apiData.f_name || "", 
+        relation: apiData.relation_with || "",
+        chequePresented: "Repayment Cheque",
+        companyBankName: apiData.company_bank_name || "",
+        companyBankBranch: apiData.company_bank_branch || "",
+        companyBankAC: apiData.company_bank_ac || "",
+        companyBankIFSC: apiData.company_bank_ifsc || "",
+        customerBankName: apiData.customer_bank_name || "",
+        customerBankBranch: apiData.customer_bank_branch || "",
+        customerBankAC: apiData.customer_bank_ac || "",
+        customerBankIFSC: apiData.customer_bank_ifsc || "",
+        chequeNo: apiData.cheque_no || "",
+        chequeDate: formatDateForInput(apiData.cheque_date),
+        chequeDepositDate: formatDateForInput(apiData.deposit_date),
+        principalAmount: apiData.principal_amount || "",
+        chequeAmount: apiData.deposit_amount || "",
+        interest: apiData.interest || "",
+        penalInterest: apiData.penal_interest || "",
+        penalty: apiData.penality || "",
+        status: apiData.status || "",
+        bounceDate: formatDateForInput(apiData.bounce_date),
+        bounceCharge: apiData.bounce_charge || "",
+        deliveryStatus: apiData.delivery_status || "",
+        deliveryAddress: apiData.delivery_address || "",
+        chequeReturnMemoDate: formatDateForInput(apiData.cheque_return_memo || apiData.cheque_return_memo_date), // Try both
+        chequeReturnMemoReceivedDate: formatDateForInput(apiData.memo_received_date || apiData.cheque_return_memo_received_date), // Try both
+        intimationMailFromBankDate: formatDateForInput(apiData.intimation_mail_despatch || apiData.intimation_mail_from_bank_date), // Try both
+        intimationMailFromDispatchChequeDate: formatDateForInput(apiData.intimation_mail_deliver || apiData.intimation_mail_from_dispatch_cheque_date), // Try both
+        reasonOfBounce: apiData.reason_bounce || apiData.reason_of_bounce || "", // Try both
+        applicationId: apiData.application_id || ""
+      };
+      
+      console.log("Form Values Set:", initialValues); 
+      
+      formik.setValues(initialValues);
+      setLoanFetched(true);
+      
+      // Fetch loan data for reference values
+      if (apiData.loan_no) {
+        try {
+          const loanResponse = await ChequeService.getLoanDetails(apiData.loan_no);
+          if (loanResponse.status && loanResponse.data) {
+            setLoanData(loanResponse.data);
           }
+        } catch (error) {
+          console.error("Error fetching loan data for reference:", error);
         }
       }
-    } catch (error) {
-      console.error("Error fetching deposit data:", error);
-      toast.error("Failed to load deposit data");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching deposit data:", error);
+    toast.error("Failed to load deposit data");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Custom input handler to prevent negative numbers
   const handleNumberInput = (e, fieldName) => {
@@ -356,90 +362,51 @@ const ManageChequeDepositPage = () => {
   };
 
   const handleSubmit = async (values) => {
-    setSubmitting(true);
+  setSubmitting(true);
 
-    try {
-      // Format the data for API
-      const depositData = {
-        loan_no: values.loanNo,
-        id: values.applicationId,
-        customer_name: values.name,
-        fathername: values.fatherName,
-        relation: values.relation,
-        company_bank_name: values.companyBankName,
-        company_bank_branch: values.companyBankBranch,
-        company_bank_ac: values.companyBankAC,
-        company_bank_ifsc: values.companyBankIFSC,
-        customer_bank_name: values.customerBankName,
-        customer_bank_branch: values.customerBankBranch,
-        customer_bank_ac: values.customerBankAC,
-        customer_bank_ifsc: values.customerBankIFSC,
-        cheque_no: values.chequeNo,
-        cheque_present: "Repayment Cheque",
-        cheque_date: values.chequeDate,
-        deposit_date: values.chequeDepositDate,
-        deposit_amount: parseFloat(values.chequeAmount) || 0,
-        principal_amount: parseFloat(values.principalAmount) || 0,
-        interest: parseFloat(values.interest) || 0,
-        penal_interest: parseFloat(values.penalInterest) || 0,
-        penality: parseFloat(values.penalty) || 0
-      };
-
-      if (isEdit) {
-        Object.assign(depositData, {
-          status: values.status || "",
-          bounce_date: values.bounceDate || "",
-          bounce_charge: parseFloat(values.bounceCharge) || 0,
-          delivery_status: values.deliveryStatus || "",
-          delivery_address: values.deliveryAddress || "",
-          cheque_return_memo_date: values.chequeReturnMemoDate || "",
-          cheque_return_memo_received_date: values.chequeReturnMemoReceivedDate || "",
-          intimation_mail_from_bank_date: values.intimationMailFromBankDate || "",
-          intimation_mail_from_dispatch_cheque_date: values.intimationMailFromDispatchChequeDate || "",
-          reason_of_bounce: values.reasonOfBounce || ""
-        });
-      }
-
-      let response;
-      if (isEdit) {
-        response = await ChequeService.updateChequeDeposit(editId, depositData);
-      } else {
-        response = await ChequeService.addChequeDeposit(depositData);
-      }
-
-      if (response.status) {
-        toast.success(isEdit ? "Deposit updated successfully!" : "Deposit added successfully!");
-        
-        setTimeout(() => {
-          router.push("/crm/cheque-management");
-        }, 1500);
-      } else {
-        toast.error(response.message || "Operation failed");
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      
-      let errorMessage = "Failed to submit. Please try again.";
-      
-      if (error.response?.status === 422 && error.response?.data?.errors) {
-        const errors = error.response.data.errors;
-        const firstErrorKey = Object.keys(errors)[0];
-        if (errors[firstErrorKey] && errors[firstErrorKey][0]) {
-          errorMessage = errors[firstErrorKey][0];
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast.error(errorMessage);
-    } finally {
-      setSubmitting(false);
+  try {
+    const depositData = formatDepositDataForAPI(values, isEdit);
+    
+    let response;
+    if (isEdit) {
+      response = await ChequeService.updateChequeDeposit(editId, depositData);
+    } else {
+      response = await ChequeService.addChequeDeposit(depositData);
     }
-  };
+
+    if (response.status) {
+      toast.success(isEdit ? "Deposit updated successfully!" : "Deposit added successfully!");
+      
+      setTimeout(() => {
+        router.push("/crm/cheque-management");
+      }, 1500);
+    } else {
+      toast.error(response.message || "Operation failed");
+    }
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    
+    let errorMessage = "Failed to submit. Please try again.";
+    
+    if (error.response?.status === 422 && error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const firstErrorKey = Object.keys(errors)[0];
+      if (errors[firstErrorKey] && errors[firstErrorKey][0]) {
+        errorMessage = errors[firstErrorKey][0];
+      } else if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.error(errorMessage);
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleCancel = () => {
     router.push("/crm/cheque-management");

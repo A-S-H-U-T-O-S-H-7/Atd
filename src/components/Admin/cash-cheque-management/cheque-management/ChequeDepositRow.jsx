@@ -1,5 +1,5 @@
 import React from "react";
-import { Calendar, User, Building2, IndianRupee, SquarePen } from "lucide-react";
+import { Calendar, User, Building2, IndianRupee, SquarePen, UserCircle } from "lucide-react";
 
 const ChequeDepositRow = ({
   deposit,
@@ -12,7 +12,7 @@ const ChequeDepositRow = ({
     
     switch (statusLower) {
       case "delivered":
-      case "received":
+      case "received/cleared":
       case "completed":
         return isDark
           ? "bg-green-900/50 text-green-300 border-green-700"
@@ -24,6 +24,7 @@ const ChequeDepositRow = ({
           ? "bg-red-900/50 text-red-300 border-red-700"
           : "bg-red-100 text-red-800 border-red-200";
       case "pending":
+      case "not delivered":
       case "processing":
         return isDark
           ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
@@ -53,7 +54,7 @@ const ChequeDepositRow = ({
         : ""}`}
     >
       {/* SR No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium ${isDark
             ? "text-gray-100"
@@ -64,7 +65,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Loan No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-semibold text-sm ${isDark
             ? "text-emerald-400"
@@ -74,8 +75,29 @@ const ChequeDepositRow = ({
         </span>
       </td>
 
+      {/* Customer Name - NEW COLUMN */}
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+        <div className="flex items-center space-x-2">
+          <UserCircle
+            className={`w-4 h-4 ${isDark
+              ? "text-emerald-400"
+              : "text-emerald-600"}`}
+          />
+          <div className="flex flex-col">
+            <span
+              className={`text-sm font-medium ${isDark
+                ? "text-gray-200"
+                : "text-gray-800"}`}
+            >
+              {deposit.name}
+            </span>
+            
+          </div>
+        </div>
+      </td>
+
       {/* Cheque No */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-200"
@@ -86,7 +108,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Bank Name */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Building2
             className={`w-4 h-4 ${isDark
@@ -104,7 +126,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Deposit Date */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
             className={`w-4 h-4 ${isDark
@@ -122,9 +144,8 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Amount */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          
           <span
             className={`text-sm font-bold ${isDark
               ? "text-green-400"
@@ -136,7 +157,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* User */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <User
             className={`w-4 h-4 ${isDark
@@ -153,8 +174,8 @@ const ChequeDepositRow = ({
         </div>
       </td>
 
-      {/* Status - Show actual status from API */}
-      <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+      {/* Status - Use actual status from API */}
+      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getStatusColor(
             deposit.status
@@ -165,7 +186,7 @@ const ChequeDepositRow = ({
       </td>
 
       {/* Edit Action */}
-      <td className="px-6 py-4">
+      <td className="px-2 py-4">
         <button
           onClick={() => onEditClick(deposit)}
           className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${isDark

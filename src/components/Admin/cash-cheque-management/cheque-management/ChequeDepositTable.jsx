@@ -11,7 +11,8 @@ const ChequeDepositTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onEditClick
+  onEditClick,
+  loading
 }) => {
   return (
     <>
@@ -21,62 +22,60 @@ const ChequeDepositTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "1200px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "1000px"}}> 
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
                 : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
             }`}>
               <tr>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "120px" }}>
+                }`} style={{ minWidth: "80px" }}>
                   Sr No
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Loan No
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
+                }`} style={{ minWidth: "150px" }}>
+                  Customer Name {/* NEW COLUMN */}
+                </th>
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "120px" }}>
                   Cheque No
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "150px" }}>
                   Bank Name
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "140px" }}>
                   Deposit Date
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "120px" }}>
                   Amount
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "100px" }}>
                   User
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "120px" }}>
                   Status
                 </th>
-                <th className={`px-6 py-5 text-left text-sm font-bold border-r ${
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-
                 }`} style={{ minWidth: "100px" }}>
                   Edit
                 </th>
@@ -96,8 +95,17 @@ const ChequeDepositTable = ({
           </table>
         </div>
         
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className={`inline-block animate-spin rounded-full h-8 w-8 border-b-2 ${
+              isDark ? "border-emerald-400" : "border-emerald-600"
+            }`}></div>
+          </div>
+        )}
+        
         {/* Empty State */}
-        {paginatedDeposits.length === 0 && (
+        {!loading && paginatedDeposits.length === 0 && (
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <Landmark className="w-16 h-16 opacity-50" />
@@ -106,21 +114,20 @@ const ChequeDepositTable = ({
             </div>
           </div>
         )}
+        
         {/* Pagination */}
-      {totalPages > 0 && (
-        <div >
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            totalItems={filteredDeposits.length}  
-            itemsPerPage={itemsPerPage}   
-          />
-        </div>
-      )}
+        {totalPages > 0 && (
+          <div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              totalItems={filteredDeposits.length}  
+              itemsPerPage={itemsPerPage}   
+            />
+          </div>
+        )}
       </div>
-
-      
     </>
   );
 };
