@@ -37,7 +37,7 @@ const CallDetailsModal = ({
     } finally {
       setLoadingHistory(false);
     }
-  }, [data?.userId, data?.id]);
+  }, [ data?.id]);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,7 +58,7 @@ const CallDetailsModal = ({
     }
 
     try {
-      const customerId = data?.userId || data?.id;
+      const customerId = data?.id;
       
       if (!customerId) {
         setSubmitError("Customer ID is missing");
@@ -462,15 +462,16 @@ const CallDetailsModal = ({
                     <th className={`px-4 py-2 text-center font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Date & Time</th>
-                    <th className={`px-4 py-2 text-center font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
-                    }`}>User</th>
+                    
                     <th className={`px-4 py-2 text-center font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Remark</th>
                     <th className={`px-4 py-2 text-center font-semibold ${
                       isDark ? "text-gray-200" : "text-gray-700"
                     }`}>Next Call</th>
+                    <th className={`px-4 py-2 text-center font-semibold ${
+                      isDark ? "text-gray-200" : "text-gray-700"
+                    }`}>User</th>
                   </tr>
                 </thead>
                 <tbody className={isDark ? "bg-gray-800" : "bg-white"}>
@@ -500,14 +501,15 @@ const CallDetailsModal = ({
                             minute: '2-digit'
                           })}
                         </td>
-                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                          {call.admin_name || "System"}
-                        </td>
+                        
                         <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.remark}
                         </td>
                         <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.nextcall ? formatDate(call.nextcall) : "--"}
+                        </td>
+                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                          {call.admin_name || "System"}
                         </td>
                       </tr>
                     ))

@@ -128,7 +128,7 @@ export const callService = {
     prepareCallDataV2: (remark, nextCallDate = "") => {
         return {
             remark: remark?.trim() || "",
-            next_call_date: nextCallDate || null  // Try different field name
+            next_call_date: nextCallDate || null  
         };
     },
 
