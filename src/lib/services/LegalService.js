@@ -1,3 +1,4 @@
+// Update LegalService.js with new address APIs
 "use client";
 import api from "@/utils/axiosInstance";
 
@@ -56,12 +57,41 @@ export const legalService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  // NEW: Get addresses for a legal case
+  getAddresses: async (chequeId) => {
+    try {
+      const response = await api.get(`/crm/legal/addresses/${chequeId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // NEW: Add address to a legal case
+  addAddress: async (chequeId, addressData) => {
+    try {
+      const response = await api.put(`/crm/legal/address/add/${chequeId}`, addressData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // NEW: Update address
+  updateAddress: async (addressId, addressData) => {
+    try {
+      const response = await api.put(`/crm/legal/address/update/${addressId}`, addressData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
 // Format legal case data for UI
 export const formatLegalCaseForUI = (legalCase) => {
-
   const customer = legalCase.customer_details || {};
   const address = legalCase.customer_address || {};
   const financial = legalCase.financial_details || {};
@@ -72,6 +102,25 @@ export const formatLegalCaseForUI = (legalCase) => {
   const customerBank = bank.customer_bank || {};
   const companyBank = bank.company_bank || {};
 
+  // Format date function for consistent date formatting
+  const formatDateString = (dateString) => {
+    if (!dateString || dateString === 'N/A' || dateString === null || dateString === 'null') return 'N/A';
+    
+    try {
+      // Handle different date formats
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString.split(' ')[0]; 
+      
+      // Format as dd-mm-yyyy
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      return dateString.split(' ')[0] || 'N/A';
+    }
+  };
+
   // Calculate derived values
   const principal = parseFloat(financial.approved_amount) || 0;
   const processingFee = parseFloat(financial.process_fee) || 0;
@@ -79,18 +128,33 @@ export const formatLegalCaseForUI = (legalCase) => {
   const interest = parseFloat(cheque.interest) || 0;
   const penalInterest = parseFloat(cheque.penal_interest) || 0;
   const penalty = parseFloat(cheque.penality) || 0;
+  const bounceCharge = parseFloat(cheque.bounce_charge) || 0;
   const chequeAmount = parseFloat(cheque.deposit_amount) || 0;
   
-  // Calculate total PF + GST
+  
   const totalPfGst = processingFee + gst;
   
   // Calculate total amount (Principal + Interest + Penal Interest + Penalty)
   const totalAmount = principal + interest + penalInterest + penalty;
 
+
+  // Combine addresses for display
+  const addresses = [];
+  if (address.permanent_address && address.permanent_address !== 'N/A') {
+    addresses.push({ type: "Permanent", address: address.permanent_address });
+  }
+  if (address.current_address && address.current_address !== 'N/A') {
+    addresses.push({ type: "Current", address: address.current_address });
+  }
+  if (address.company_address && address.company_address !== 'N/A') {
+    addresses.push({ type: "Company", address: address.company_address });
+  }
+
   return {
     id: legalCase.cheque_deposit_id,
     sNo: legalCase.cheque_deposit_id,
     applicationId: legalCase.application_id,
+    chequeId: legalCase.cheque_deposit_id, // Added for address APIs
     
     // Customer Details
     customerName: customer.customer_name || 'N/A',
@@ -101,22 +165,26 @@ export const formatLegalCaseForUI = (legalCase) => {
     loanId: customer.loan_no || 'N/A',
     crnNo: customer.crnno || 'N/A',
     
-    // Address Details
+    // Address Details - Combined for display
+    addresses: addresses,
     permanentAddress: address.permanent_address || 'N/A',
     currentAddress: address.current_address || 'N/A',
     companyAddress: address.company_address || 'N/A',
     
     // Financial Details
     principal: principal,
-    roi: parseFloat(financial.roi) || 0,
+    roi: financial.roi, 
     tenure: financial.tenure || 0,
     interest: interest,
     penalInterest: penalInterest,
     penalty: penalty,
     processingFee: processingFee,
     gst: gst,
-    totalPfGst: totalPfGst,
+    totalPfGst: totalPfGst, // Calculated as processingFee + gst
     disbursementAmount: parseFloat(financial.disburse_amount) || 0,
+    bounceCharge: bounceCharge,
+    emiCollection: parseFloat(financial.emi_collection) || 0,
+    dwCollection: parseFloat(financial.dw_collection) || 0,
     
     // Bank Details
     bankName: customerBank.customer_bank || 'N/A',
@@ -134,29 +202,34 @@ export const formatLegalCaseForUI = (legalCase) => {
     
     // Cheque Details
     chequeNo: cheque.cheque_no || 'N/A',
-    chequeDate: cheque.cheque_date || 'N/A',
+    chequeDate: formatDateString(cheque.cheque_date),
     chequeAmount: chequeAmount,
-    depositDate: cheque.deposit_date || 'N/A',
+    depositDate: formatDateString(cheque.deposit_date),
     
-    // Important Dates
-    approvedDate: dates.approved_date || 'N/A',
-    transactionDate: dates.transaction_date || 'N/A',
-    dueDate: dates.duedate || 'N/A',
-    lastCollectionDate: dates.last_collection_date || 'N/A',
-    bounceDate: dates.bounce_date || 'N/A',
-    memoReceivedDate: dates.memo_received_date || 'N/A',
+    // Important Dates - All formatted as dd-mm-yyyy
+    approvedDate: formatDateString(dates.approved_date),
+    transactionDate: formatDateString(dates.transaction_date),
+    dueDate: formatDateString(dates.duedate),
+    lastCollectionDate: formatDateString(dates.last_collection_date),
+    bounceDate: formatDateString(dates.bounce_date),
+    memoReceivedDate: formatDateString(dates.memo_received_date),
+    closeDate: formatDateString(dates.closed_date),
     
-    // Legal Documents Dates (mostly null)
-    statementDisburDate: dates.statement_date_disbur || 'N/A',
-    statementDespatchDate: dates.statement_date_despatch || 'N/A',
-    noticeDate: dates.notice_date || 'N/A',
-    legalNoticeSpeedPostDate: dates.legal_notice_speed_post_date || 'N/A',
-    speedpostReceivedDate: dates.speedpost_received_date_customer || 'N/A',
-    boardResolutionDate: dates.board_resolution_date || 'N/A',
-    loanAgreementDate: dates.loan_agreement_date || 'N/A',
-    loanApplicationDate: dates.loan_application_date || 'N/A',
-    replyReceivedDate: dates.reply_received_date || 'N/A',
-    caseFilledDate: dates.case_filled_date || 'N/A',
+    // Intimation dates from legal_status
+    intimationMail: legalStatus.intimation_mail || 'N/A',
+    intimationMailDespatch: formatDateString(legalStatus.intimation_mail_despatch),
+    intimationMailDeliver: formatDateString(legalStatus.intimation_mail_deliver),
+    chequeReturnMemo: formatDateString(legalStatus.cheque_return_memo),
+    
+    // Legal Documents Dates
+    noticeDate: formatDateString(dates.notice_date),
+    legalNoticeSpeedPostDate: formatDateString(dates.legal_notice_speed_post_date),
+    speedpostReceivedDate: formatDateString(dates.speedpost_received_date_customer),
+    boardResolutionDate: formatDateString(dates.board_resolution_date),
+    loanAgreementDate: formatDateString(dates.loan_agreement_date),
+    loanApplicationDate: formatDateString(dates.loan_application_date),
+    replyReceivedDate: formatDateString(dates.reply_received_date),
+    caseFilledDate: formatDateString(dates.case_filled_date),
     
     // Legal Status
     deliveryStatus: legalStatus.delivery_status || 'N/A',
@@ -164,13 +237,15 @@ export const formatLegalCaseForUI = (legalCase) => {
     policeStation: legalStatus.police_station || 'N/A',
     bounceReason: legalStatus.reason_bounce || cheque.reason_bounce || 'N/A',
     remarkWithCaseDetails: legalStatus.remark_with_case_details || 'N/A',
+    criminalCaseStatus: legalStatus.criminal_case_status || 'Pending', // NEW field
     
     // Calculated totals
     totalAmount: totalAmount,
     
     // Other
     updatedBy: legalCase.updated_by || 'N/A',
-    chequePresent: chequeAmount > 0
+    chequePresent: chequeAmount > 0,
+    status: legalStatus.status || 'N/A'
   };
 };
 

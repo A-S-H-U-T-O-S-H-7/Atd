@@ -35,7 +35,7 @@ const DigitalLoanAgreement = ({ enabled, user, VerificationIcon, VerificationBut
       };
 
       const response = await fetch(
-        `https://api.atdmoney.in/api/user/loan-agreement/leegality/${user.user_id}`, 
+        `https://api.atdmoney.in/api/user/loan-agreement/leegality/${user.application_id}`, 
         requestOptions
       );
       

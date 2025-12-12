@@ -47,6 +47,25 @@ export const ChequeService = {
     }
   },
 
+  getBanks: async () => {
+    try {
+      const response = await api.get("/crm/deposit/banks");
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getBankDetails: async (bankId) => {
+    try {
+      const response = await api.get(`/crm/deposit/bank/${bankId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+
   getChequeDeposits: async (params = {}) => {
     try {
       const response = await api.get("/crm/deposit/cheque/manage", { params });
@@ -66,7 +85,7 @@ export const formatLoanDetails = (loanData) => {
     companyBankAC: loanData.company_bank_account_no || "",
     companyBankIFSC: loanData.company_bank_ifsc_code || "",
     customerBankName: loanData.customer_bank_name || "",
-    customerBankBranch: loanData.customer_bank_branch_name || "",
+    customerBankBranch: loanData.customer_bank_branch_name || "", 
     customerBankAC: loanData.customer_bank_account_no || "",
     customerBankIFSC: loanData.customer_bank_ifsc_code || "",
     principalAmount: loanData.details?.final_recommendation?.principal_amount || ""
@@ -80,7 +99,6 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
     name: formData.name || "",
     fathername: formData.fatherName || "",
     relation: formData.relation || "",
-    other_address: formData.otherAddress || "",
     company_bank_name: formData.companyBankName || "",
     company_bank_branch: formData.companyBankBranch || "",
     company_bank_ac: formData.companyBankAC || "",

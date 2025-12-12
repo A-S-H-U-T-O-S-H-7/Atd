@@ -11,7 +11,8 @@ const LegalTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onCreateNotice,    
+  onCreateNotice, 
+  onShowAddress,   
   onCriminalCase,
   isLoading = false
 }) => {
@@ -43,19 +44,12 @@ const LegalTable = ({
                   Customer Details
                 </th>
                 
-                {/* Address Columns */}
-<th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`} style={{ minWidth: "200px" }}>
-  Current Address
-</th>
-<th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`} style={{ minWidth: "200px" }}>
-  Permanent Address
-</th>
-<th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`} style={{ minWidth: "200px" }}>
-  Company Address
-</th>
-<th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`} style={{ minWidth: "200px" }}>
-  Other Address
-</th>
+                {/* Address - Single Column */}
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                }`} style={{ minWidth: "300px" }}>
+                  Address
+                </th>
                 
                 {/* Financial Details */}
                 <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
@@ -105,11 +99,18 @@ const LegalTable = ({
                   Important Dates
                 </th>
                 
-                {/* Legal Status */}
+                {/* Legal Notice Status - Updated heading */}
                 <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "350px" }}>
-                  Legal Status
+                  Legal Notice Status
+                </th>
+                
+                {/* NEW: Criminal Case Status */}
+                <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                }`} style={{ minWidth: "250px" }}>
+                  Criminal Case Status
                 </th>
                 
                 {/* Actions */}
@@ -123,7 +124,7 @@ const LegalTable = ({
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="13" className="px-4 py-8 text-center">
+                  <td colSpan="14" className="px-4 py-8 text-center">
                     <div className="flex items-center justify-center space-x-2">
                       <Loader className="w-5 h-5 animate-spin" />
                       <span className={isDark ? "text-gray-300" : "text-gray-600"}>
@@ -141,6 +142,7 @@ const LegalTable = ({
                     isDark={isDark}
                     onCreateNotice={onCreateNotice}    
                     onCriminalCase={onCriminalCase}
+                    onShowAddress={onShowAddress}
                   />
                 ))
               )}

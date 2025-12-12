@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,6 +32,8 @@ const ManageChequeDepositPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isFetchingLoan, setIsFetchingLoan] = useState(false);
   const [loanFetched, setLoanFetched] = useState(false);
+  const [banks, setBanks] = useState([]);
+  const [loanData, setLoanData] = useState(null);
 
   const relationOptions = ["Son", "Daughter", "Spouse"];
   const chequeTypeOptions = ["Repayment Cheque", "Security Cheque", "Interest Cheque"];
@@ -125,9 +127,9 @@ const ManageChequeDepositPage = () => {
       fatherName: "",
       relation: "",
       chequePresented: "Repayment Cheque",
-      otherAddress: "",
       
       companyBankName: "",
+      companyBankId: "",
       companyBankBranch: "",
       companyBankAC: "",
       companyBankIFSC: "",
@@ -167,6 +169,47 @@ const ManageChequeDepositPage = () => {
   const isStatusReceived = formik.values.status === "Received/cleared";
   const today = getTodayDate();
 
+  // Fetch banks on component mount
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = async () => {
+    try {
+      const response = await ChequeService.getBanks();
+      if (response.success && response.data) {
+        setBanks(response.data.map(bank => ({
+          id: bank.id,
+          name: bank.bank_name
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+      toast.error("Failed to load banks");
+    }
+  };
+
+  // Fetch bank details when bank is selected
+  const fetchBankDetails = async (bankId) => {
+    if (!bankId) return;
+    
+    try {
+      const response = await ChequeService.getBankDetails(bankId);
+      if (response.success && response.data) {
+        const bankData = response.data;
+        formik.setValues(prev => ({
+          ...prev,
+          companyBankBranch: bankData.branch_name || "",
+          companyBankAC: bankData.account_no || "",
+          companyBankIFSC: bankData.ifsc_code || ""
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching bank details:", error);
+      toast.error("Failed to load bank details");
+    }
+  };
+
   useEffect(() => {
     if (isEdit && editId) {
       fetchDepositData(editId);
@@ -189,11 +232,9 @@ const ManageChequeDepositPage = () => {
               name: response.data.customer_name || "",
               fatherName: response.data.fathername || "",
               applicationId: response.data.application_id || "",
-              interest: response.data.details?.final_recommendation?.interest || "",
-              penalInterest: response.data.details?.final_recommendation?.penal_interest || "",
-              penalty: response.data.details?.final_recommendation?.penality || ""
             }));
             
+            setLoanData(response.data);
             setLoanFetched(true);
           }
         } catch (error) {
@@ -213,6 +254,27 @@ const ManageChequeDepositPage = () => {
     setLoanFetched(false);
   }, [formik.values.loanNo]);
 
+  // Handle bank selection change
+  const handleBankChange = async (e) => {
+    const bankName = e.target.value;
+    const selectedBank = banks.find(bank => bank.name === bankName);
+    
+    formik.handleChange(e);
+    
+    if (selectedBank) {
+      formik.setFieldValue('companyBankId', selectedBank.id);
+      await fetchBankDetails(selectedBank.id);
+    } else {
+      formik.setFieldValue('companyBankId', '');
+      formik.setValues(prev => ({
+        ...prev,
+        companyBankBranch: "",
+        companyBankAC: "",
+        companyBankIFSC: ""
+      }));
+    }
+  };
+
   const fetchDepositData = async (depositId) => {
     try {
       setLoading(true);
@@ -222,13 +284,12 @@ const ManageChequeDepositPage = () => {
       if (depositResponse.status && depositResponse.data) {
         const apiData = depositResponse.data;
         
-        formik.setValues({
+        const initialValues = {
           loanNo: apiData.loan_no || "",
           name: apiData.name || "",
           fatherName: apiData.f_name || "",
           relation: apiData.relation_with || "",
           chequePresented: "Repayment Cheque",
-          otherAddress: apiData.other_address || "",
           companyBankName: apiData.company_bank_name || "",
           companyBankBranch: apiData.company_bank_branch || "",
           companyBankAC: apiData.company_bank_ac || "",
@@ -256,9 +317,22 @@ const ManageChequeDepositPage = () => {
           intimationMailFromDispatchChequeDate: formatDateForInput(apiData.intimation_mail_from_dispatch_cheque_date),
           reasonOfBounce: apiData.reason_of_bounce || "",
           applicationId: apiData.application_id || ""
-        });
+        };
         
+        formik.setValues(initialValues);
         setLoanFetched(true);
+        
+        // Fetch loan data for reference values
+        if (apiData.loan_no) {
+          try {
+            const loanResponse = await ChequeService.getLoanDetails(apiData.loan_no);
+            if (loanResponse.status && loanResponse.data) {
+              setLoanData(loanResponse.data);
+            }
+          } catch (error) {
+            console.error("Error fetching loan data for reference:", error);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching deposit data:", error);
@@ -271,7 +345,6 @@ const ManageChequeDepositPage = () => {
   // Custom input handler to prevent negative numbers
   const handleNumberInput = (e, fieldName) => {
     const value = e.target.value;
-    // Allow empty, 0, or positive numbers
     if (value === '' || (!isNaN(value) && parseFloat(value) >= 0)) {
       formik.handleChange(e);
     }
@@ -286,8 +359,47 @@ const ManageChequeDepositPage = () => {
     setSubmitting(true);
 
     try {
-      const depositData = formatDepositDataForAPI(values, isEdit);
-      
+      // Format the data for API
+      const depositData = {
+        loan_no: values.loanNo,
+        id: values.applicationId,
+        customer_name: values.name,
+        fathername: values.fatherName,
+        relation: values.relation,
+        company_bank_name: values.companyBankName,
+        company_bank_branch: values.companyBankBranch,
+        company_bank_ac: values.companyBankAC,
+        company_bank_ifsc: values.companyBankIFSC,
+        customer_bank_name: values.customerBankName,
+        customer_bank_branch: values.customerBankBranch,
+        customer_bank_ac: values.customerBankAC,
+        customer_bank_ifsc: values.customerBankIFSC,
+        cheque_no: values.chequeNo,
+        cheque_present: "Repayment Cheque",
+        cheque_date: values.chequeDate,
+        deposit_date: values.chequeDepositDate,
+        deposit_amount: parseFloat(values.chequeAmount) || 0,
+        principal_amount: parseFloat(values.principalAmount) || 0,
+        interest: parseFloat(values.interest) || 0,
+        penal_interest: parseFloat(values.penalInterest) || 0,
+        penality: parseFloat(values.penalty) || 0
+      };
+
+      if (isEdit) {
+        Object.assign(depositData, {
+          status: values.status || "",
+          bounce_date: values.bounceDate || "",
+          bounce_charge: parseFloat(values.bounceCharge) || 0,
+          delivery_status: values.deliveryStatus || "",
+          delivery_address: values.deliveryAddress || "",
+          cheque_return_memo_date: values.chequeReturnMemoDate || "",
+          cheque_return_memo_received_date: values.chequeReturnMemoReceivedDate || "",
+          intimation_mail_from_bank_date: values.intimationMailFromBankDate || "",
+          intimation_mail_from_dispatch_cheque_date: values.intimationMailFromDispatchChequeDate || "",
+          reason_of_bounce: values.reasonOfBounce || ""
+        });
+      }
+
       let response;
       if (isEdit) {
         response = await ChequeService.updateChequeDeposit(editId, depositData);
@@ -307,12 +419,10 @@ const ManageChequeDepositPage = () => {
     } catch (error) {
       console.error("Error submitting form:", error);
       
-      // Extract proper error message from 422 response
       let errorMessage = "Failed to submit. Please try again.";
       
       if (error.response?.status === 422 && error.response?.data?.errors) {
         const errors = error.response.data.errors;
-        // Get first error message
         const firstErrorKey = Object.keys(errors)[0];
         if (errors[firstErrorKey] && errors[firstErrorKey][0]) {
           errorMessage = errors[firstErrorKey][0];
@@ -335,12 +445,14 @@ const ManageChequeDepositPage = () => {
     router.push("/crm/cheque-management");
   };
 
-  // Custom renderField with number validation
+  // Custom renderField with number and date validation
   const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
     const isNumberField = type === "number";
     const isDateField = type === "date";
     
     let maxDate = "";
+    let minDate = "";
+    
     if (isDateField) {
       if (name === "chequeDate" || name === "chequeDepositDate") {
         maxDate = today;
@@ -350,45 +462,49 @@ const ManageChequeDepositPage = () => {
                  name === "intimationMailFromBankDate" ||
                  name === "intimationMailFromDispatchChequeDate") {
         maxDate = today;
+        // Set min date to chequeDepositDate for post-deposit dates
+        if (formik.values.chequeDepositDate) {
+          minDate = formik.values.chequeDepositDate;
+        }
       }
     }
 
     return (
-  <div className={`col-span-${colSpan}`}>
-    <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-      {label}
-    </label>
-    <input
-      type={type}
-      name={name}
-      value={formik.values[name]}
-      onChange={(e) => {
-        if (isNumberField) {
-          handleNumberInput(e, name);
-        } else if (isDateField) {
-          handleDateChange(e, name);
-        } else {
-          formik.handleChange(e);
-        }
-      }}
-      onBlur={formik.handleBlur}
-      placeholder={placeholder}
-      disabled={disabled}
-      min={isNumberField ? "0" : 
-           (isDateField && name !== "chequeDate" && name !== "chequeDepositDate" && formik.values.chequeDepositDate) 
-             ? formik.values.chequeDepositDate 
-             : undefined}
-      step={isNumberField ? "any" : undefined}
-      max={isDateField ? maxDate : undefined}
-      className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
-        formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
-      }`}
-    />
-    {formik.touched[name] && formik.errors[name] && (
-      <div className="text-red-500 text-xs mt-1">{formik.errors[name]}</div>
-    )}
-  </div>
-);
+      <div className={`col-span-${colSpan}`}>
+        <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+          {label}
+        </label>
+        <input
+          type={type}
+          name={name}
+          value={formik.values[name]}
+          onChange={(e) => {
+            if (isNumberField) {
+              handleNumberInput(e, name);
+            } else if (isDateField) {
+              handleDateChange(e, name);
+            } else {
+              formik.handleChange(e);
+            }
+          }}
+          onBlur={formik.handleBlur}
+          placeholder={placeholder}
+          disabled={disabled}
+          min={isNumberField ? "0" : 
+               (isDateField && name !== "chequeDate" && name !== "chequeDepositDate" && formik.values.chequeDepositDate) 
+                 ? formik.values.chequeDepositDate 
+                 : undefined}
+          step={isNumberField ? "any" : undefined}
+          max={isDateField ? maxDate : undefined}
+          className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
+            formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
+          }`}
+        />
+        {formik.touched[name] && formik.errors[name] && (
+          <div className="text-red-500 text-xs mt-1">{formik.errors[name]}</div>
+        )}
+      </div>
+    );
   };
 
   const renderSelect = (name, label, options, colSpan = 1, disabled = false) => (
@@ -417,8 +533,33 @@ const ManageChequeDepositPage = () => {
     </div>
   );
 
+  const renderBankSelect = () => (
+    <div>
+      <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+        Bank Name
+      </label>
+      <select
+        name="companyBankName"
+        value={formik.values.companyBankName}
+        onChange={handleBankChange}
+        onBlur={formik.handleBlur}
+        className={`${inputClasses} ${
+          formik.touched.companyBankName && formik.errors.companyBankName ? "border-red-500" : ""
+        }`}
+      >
+        <option value="">----SELECT BANK----</option>
+        {banks.map(bank => (
+          <option key={bank.id} value={bank.name}>{bank.name}</option>
+        ))}
+      </select>
+      {formik.touched.companyBankName && formik.errors.companyBankName && (
+        <div className="text-red-500 text-xs mt-1">{formik.errors.companyBankName}</div>
+      )}
+    </div>
+  );
+
   const renderTextArea = (name, label, rows = 3, colSpan = 2, disabled = false) => (
-    <div className={`col-span-${colSpan} mt-4`}>
+    <div className={`col-span-${colSpan}`}>
       <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
         {label}
       </label>
@@ -498,7 +639,21 @@ const ManageChequeDepositPage = () => {
               </div>
             )}
 
+            {isFetchingLoan && (
+              <div className={`p-3 rounded-lg mb-4 ${isDark ? "bg-blue-900/20" : "bg-blue-50"}`}>
+                <div className="flex items-center space-x-2">
+                  <div className={`animate-spin rounded-full h-4 w-4 border-b-2 ${
+                    isDark ? "border-blue-400" : "border-blue-600"
+                  }`}></div>
+                  <span className={`text-sm ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                    Fetching loan details...
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-8">
+              {/* Basic Information */}
               <div>
                 <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
                   isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
@@ -507,43 +662,48 @@ const ManageChequeDepositPage = () => {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {renderField("loanNo", "Loan No", "text", "Enter loan number", 1, isEdit)}
-                  {renderField("name", "Name", "text", "Enter name", 1, true)}
-                  {renderField("fatherName", "Father Name", "text", "Enter father's name", 1, true)}
+                  {renderField("name", "Name", "text", "Enter name", 1)}
+                  {renderField("fatherName", "Father Name", "text", "Enter father's name", 1)}
                   {renderSelect("relation", "Relation", relationOptions, 1)}
                   {renderSelect("chequePresented", "Cheque Presented", chequeTypeOptions, 1)}
                 </div>
-                {renderTextArea("otherAddress", "Other Address", 2, 3)}
               </div>
 
+              {/* Bank Details */}
               <div>
                 <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
                   isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
                 }`}>
                   Bank Details
                 </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Company Bank Details */}
                   <div className={`rounded-xl border-2 p-4 ${
                     isDark
                       ? "bg-gray-800/50 border-blue-600/30"
                       : "bg-blue-50 border-blue-200"
                   }`}>
-                    <h4 className={`font-semibold mb-4 ${
+                    <h4 className={`font-semibold  ${
                       isDark ? "text-blue-300" : "text-blue-700"
                     }`}>
                       Company Bank Details
                     </h4>
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {renderField("companyBankName", "Bank Name", "text", "Enter bank name", 1)}
-                        {renderField("companyBankBranch", "Branch", "text", "Enter branch", 1)}
+                      <div className="grid grid-cols-1 gap-4">
+                        
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderBankSelect()}
                         {renderField("companyBankAC", "Account No.", "text", "Enter account number", 1)}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {renderField("companyBankBranch", "Branch", "text", "Enter branch", 1)}
                         {renderField("companyBankIFSC", "IFSC Code", "text", "Enter IFSC code", 1)}
                       </div>
                     </div>
                   </div>
 
+                  {/* Customer Bank Details */}
                   <div className={`rounded-xl border-2 p-4 ${
                     isDark
                       ? "bg-gray-800/50 border-purple-500/40"
@@ -568,24 +728,70 @@ const ManageChequeDepositPage = () => {
                 </div>
               </div>
 
+              {/* Cheque Details */}
               <div>
                 <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
                   isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
                 }`}>
                   Cheque Details
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {renderField("chequeNo", "Cheque No (6 digits)", "text", "Enter 6-digit cheque number", 1)}
-                  {renderField("chequeDate", "Cheque Date", "date", "", 1)}
-                  {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
-                  {renderField("chequeAmount", "Cheque Amount", "number", "Enter cheque amount", 1)}
-                  {renderField("principalAmount", "Principal Amount", "number", "Enter Principal Amount", 1)} 
-                  {renderField("interest", "Interest", "number", "Enter Interest Amount", 1)} 
-                  {renderField("penalInterest", "Penal Interest", "number", "Enter Penal Interest", 1)} 
-                  {renderField("penalty", "Penalty", "number", "Enter Penalty Amount", 1)} 
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {renderField("chequeNo", "Cheque No (6 digits)", "text", "Enter 6-digit cheque number", 1)}
+                    {renderField("chequeDate", "Cheque Date", "date", "", 1)}
+                    {renderField("chequeDepositDate", "Cheque Deposit Date", "date", "", 1)}
+                    {renderField("chequeAmount", "Cheque Amount", "number", "Enter cheque amount", 1)}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      {renderField("principalAmount", "Principal Amount", "number", "Enter Principal Amount", 1)}
+                      {loanData?.details?.final_recommendation?.principal_amount && (
+                        <div className="mt-1">
+                          <span className={`text-xs ml-2 font-semibold ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                            Principal: {loanData.details.final_recommendation.principal_amount}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      {renderField("interest", "Interest", "number", "Enter Interest Amount", 1)}
+                      {loanData?.details?.final_recommendation?.interest && (
+                        <div className="mt-1">
+                          <span className={`text-xs ml-2 font-semibold ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                            Interest: {loanData.details.final_recommendation.interest}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      {renderField("penalInterest", "Penal Interest", "number", "Enter Penal Interest", 1)}
+                      {loanData?.details?.final_recommendation?.penal_interest && (
+                        <div className="mt-1">
+                          <span className={`text-xs ml-2 font-semibold ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                            Penal Interest: {loanData.details.final_recommendation.penal_interest}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      {renderField("penalty", "Penalty", "number", "Enter Penalty Amount", 1)}
+                      {loanData?.details?.final_recommendation?.penality && (
+                        <div className="mt-1">
+                          <span className={`text-xs ml-2 font-semibold ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                            Penalty: {loanData.details.final_recommendation.penality}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* Edit Mode Sections */}
               {isEdit && (
                 <>
                   <div>
@@ -603,7 +809,7 @@ const ManageChequeDepositPage = () => {
                         {renderField("bounceCharge", "Bounce Charge", "number", "Enter bounce charge", 1, isStatusReceived)}
                         {renderSelect("deliveryStatus", "Cheque Delivery Status", deliveryStatusOptions, 1, isStatusReceived)}
                       </div>
-                      {renderTextArea("deliveryAddress", "Delivery Address", 2, 3, isStatusReceived)}
+                      {renderTextArea("deliveryAddress", "Delivery Address", 2, 4, isStatusReceived)}
                     </div>
                   </div>
 
@@ -620,7 +826,7 @@ const ManageChequeDepositPage = () => {
                         {renderField("intimationMailFromBankDate", "Intimation Mail from Bank Date", "date", "", 1, isStatusReceived)}
                         {renderField("intimationMailFromDispatchChequeDate", "Intimation Mail from Dispatch Cheque Date", "date", "", 1, isStatusReceived)}
                       </div>
-                      {renderTextArea("reasonOfBounce", "Reason of Bounce", 2, 3, isStatusReceived)}
+                      {renderTextArea("reasonOfBounce", "Reason of Bounce", 2, 4, isStatusReceived)}
                     </div>
                   </div>
                 </>

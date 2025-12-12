@@ -353,15 +353,15 @@ const DisbursementPage = () => {
   };
 
   const handleTransactionSubmit = async (transactionData) => {
-    try {
-      await disbursementService.updateTransaction(transactionData.disburse_id, transactionData, transactionData);
-      toast.success("Transaction updated successfully!");
-      fetchDisbursementData();
-      handleTransactionModalClose();
-    } catch (error) {
-      toast.error("Failed to update transaction");
-    }
-  };
+  try {
+    await disbursementService.updateTransaction(transactionData.disburse_id, transactionData, transactionData);
+    toast.success("Transaction updated successfully!");
+    fetchDisbursementData();
+    handleTransactionModalClose();
+  } catch (error) {
+    toast.error("Failed to update transaction");
+  }
+};
 
   const handleTransferModalOpen = (disbursementData) => {
     setTransferModal({ isOpen: true, disbursementData });

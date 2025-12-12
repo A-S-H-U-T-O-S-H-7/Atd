@@ -127,83 +127,61 @@ const TransactionDetailsModal = ({
         }
       } catch (error) {
         console.error('Error loading bank branch:', error);
-        // Continue without setting branch name
       }
     }
   };
 
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.transactionId.trim()) {
-      toast.error('Please enter Transaction ID');
-      return;
-    }
+  if (!formData.transactionId.trim()) {
+    toast.error('Please enter Transaction ID');
+    return;
+  }
 
-    if (!formData.transactionDate) {
-      toast.error('Please select Transaction Date');
-      return;
-    }
+  if (!formData.transactionDate) {
+    toast.error('Please select Transaction Date');
+    return;
+  }
 
-    const today = new Date().toISOString().split('T')[0];
-    if (formData.transactionDate > today) {
-      toast.error('Transaction date cannot be in the future');
-      return;
-    }
+  const today = new Date().toISOString().split('T')[0];
+  if (formData.transactionDate > today) {
+    toast.error('Transaction date cannot be in the future');
+    return;
+  }
 
-    if (!formData.bankName) {
-      toast.error('Please select Bank Name');
-      return;
-    }
+  if (!formData.bankName) {
+    toast.error('Please select Bank Name');
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
-      
-      // Call the actual API to update manual transaction
-      const response = await disbursementService.updateTransaction(
-        disbursementData.disburse_id,
-        formData,
-        disbursementData
-      );
-      
-      if (response.success) {
-        toast.success('Transaction updated successfully!');
-        
-        // Reset form
-        setFormData({
-          disbursementAmount: disbursementData.disbursedAmount || '',
-          transactionId: '',
-          transactionDate: '', // Reset to blank
-          dueDate: '',
-          bankName: '',
-          branchName: ''
-        });
-        
-        // Call parent onSubmit callback if provided
-        if (onSubmit) {
-          await onSubmit({
-            ...disbursementData,
-            ...formData,
-            updatedAt: new Date().toISOString()
-          });
-        }
-        
-        onClose();
-      } else {
-        throw new Error(response.message || 'Failed to update transaction');
-      }
-    } catch (error) {
-      console.error('Error updating transaction:', error);
-      toast.error(error.message || 'Failed to update transaction. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  try {
+    setIsSubmitting(true);
+    
+    const transactionData = {
+      ...formData,
+      disburse_id: disbursementData.disburse_id,
+      application_id: disbursementData.application_id,
+      loan_no: disbursementData.loanNo,
+      customer_name: disbursementData.beneficiaryAcName
+    };
+    
+    if (onSubmit) {
+      await onSubmit(transactionData);
     }
-  };
+    
+    onClose();
+  } catch (error) {
+    console.error('Error:', error);
+    toast.error('Failed to update transaction.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleClose = () => {
     setFormData({
       disbursementAmount: disbursementData?.disbursedAmount || '',
       transactionId: '',
-      transactionDate: '', // Reset to blank
+      transactionDate: '', 
       dueDate: '',
       bankName: '',
       branchName: ''

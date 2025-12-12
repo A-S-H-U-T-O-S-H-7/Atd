@@ -7,6 +7,7 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
 import CreateNoticeModal from "./CreateNoticeModal";
 import CreateCriminalCaseModal from "./CriminalCaseModal";
+import AddressModal from "./AddressModal"; // Import AddressModal
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { legalService, formatLegalCaseForUI } from "@/lib/services/LegalService";
 
@@ -21,6 +22,7 @@ const LegalPage = () => {
   const router = useRouter();
   const [isCreateNoticeModalOpen, setIsCreateNoticeModalOpen] = useState(false);
   const [isCriminalCaseModalOpen, setIsCriminalCaseModalOpen] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); // New state
   const [selectedLegal, setSelectedLegal] = useState(null);
   
   const [legals, setLegals] = useState([]);
@@ -100,6 +102,11 @@ const LegalPage = () => {
   const handleCriminalCase = (legal) => {
     setSelectedLegal(legal);
     setIsCriminalCaseModalOpen(true);
+  };
+
+  const handleShowAddress = (legal) => {
+    setSelectedLegal(legal);
+    setIsAddressModalOpen(true);
   };
 
   const handlePageChange = (page) => {
@@ -345,11 +352,12 @@ const LegalPage = () => {
           onPageChange={handlePageChange}
           onCreateNotice={handleCreateNotice}    
           onCriminalCase={handleCriminalCase}
+          onShowAddress={handleShowAddress} // Pass the handler
           isLoading={isLoading}
         />
       </div>
 
-      {/* Modals */}
+      {/* Modals - Rendered at root level */}
       <CreateNoticeModal
         isOpen={isCreateNoticeModalOpen}
         onClose={() => setIsCreateNoticeModalOpen(false)}
@@ -360,6 +368,13 @@ const LegalPage = () => {
       <CreateCriminalCaseModal
         isOpen={isCriminalCaseModalOpen}
         onClose={() => setIsCriminalCaseModalOpen(false)}
+        legal={selectedLegal}
+        isDark={isDark}
+        onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
+      />
+      <AddressModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
         legal={selectedLegal}
         isDark={isDark}
         onSuccess={() => fetchLegalCases(currentPage, searchTerm)}

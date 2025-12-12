@@ -22,20 +22,17 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
   const [atdBanks, setAtdBanks] = useState([]);
   const [tenure, setTenure] = useState(0);
 
-  // Load ATD banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
-      // Extract tenure from API data - IN DAYS
       const loanTenure = disbursementData.tenure || 0;
       setTenure(loanTenure);
 
-      // Calculate due date from API transaction date + tenure days
       let dueDate = "";
       if (disbursementData.tranDate && loanTenure > 0) {
         const transactionDate = new Date(disbursementData.tranDate);
         const calculatedDueDate = new Date(transactionDate);
         calculatedDueDate.setDate(calculatedDueDate.getDate() + loanTenure);
-        dueDate = calculatedDueDate.toISOString().split('T')[0];
+        dueDate = formatLocalDate(calculatedDueDate);
       }
 
       // Extract ATD bank name from sender_acno
@@ -101,6 +98,15 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     }
   }, [isOpen, disbursementData]);
 
+  const formatLocalDate = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -110,7 +116,6 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
   };
 
   const handleSubmit = async () => {
-    // Validate required fields
     if (!formData.authCode1.trim()) {
       toast.error('Please enter Authorization Code 1');
       return;
@@ -124,7 +129,6 @@ const TransferModal = ({ isOpen, onClose, onSubmit, isDark, disbursementData }) 
     try {
       setIsSubmitting(true);
       
-      // Call the actual API to process transfer
       const response = await disbursementService.processTransfer(formData, disbursementData);
       
       if (response.success) {
