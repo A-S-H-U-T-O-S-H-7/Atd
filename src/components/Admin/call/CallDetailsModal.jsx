@@ -20,7 +20,7 @@ const CallDetailsModal = ({
   const [submitError, setSubmitError] = useState("");
 
   const fetchCallHistory = useCallback(async () => {
-    const customerId = data?.userId || data?.id;
+    const customerId =  data?.id;
     
     if (!customerId) {
       return;
