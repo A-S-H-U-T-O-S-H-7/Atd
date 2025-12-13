@@ -8,6 +8,20 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
   const [viewLoading, setViewLoading] = useState(false);
   const fileInputRef = useRef(null);
 
+  const getAcceptedTypes = () => {
+    if (name === 'bankVerificationReport') {
+      return '.xlsx,.xls,.csv';
+    }
+    return '.pdf,.jpg,.jpeg,.png,.mp4,.avi,.mov';
+  };
+
+  const getFileTypeText = () => {
+    if (name === 'bankVerificationReport') {
+      return 'XLSX, XLS, CSV (Max 10MB)';
+    }
+    return 'PDF, JPG, PNG, MP4 (Max 10MB)';
+  };
+
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,7 +53,7 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
 
   const handleFileSelection = (file) => {
     try {
-      kycService.validateFile(file);
+      kycService.validateFile(file, name);
       onFileChange(name, file);
       toast.success(`${file.name} selected for upload`);
     } catch (error) {
@@ -106,7 +120,7 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.jpg,.jpeg,.png,.mp4,.avi,.mov"
+        accept={getAcceptedTypes()}
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -230,7 +244,7 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
             <p className={`text-xs mt-0.5 ${
               isDark ? "text-gray-500" : "text-gray-500"
             }`}>
-              PDF, JPG, PNG, MP4 (Max 10MB)
+              {getFileTypeText()}
             </p>
           </button>
         )}

@@ -3,41 +3,29 @@ import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 
-// Allowed document fields mapping
 export const DOCUMENT_FIELDS_MAPPING = {
-  // Required Documents
   photo: 'selfie',
   panCard: 'pan_proof', 
   addressProof: 'address_proof',
   idProof: 'id_proof',
-  
-  // Salary Slips
   salarySlip1: 'salary_slip',
   salarySlip2: 'second_salary_slip',
   salarySlip3: 'third_salary_slip',
-  
-  // Bank Documents
   bankStatement: 'bank_statement',
   bankVerificationReport: 'bank_verif_report',
-  
-  // Reports
   camSheet: 'cam_sheet',
   socialScoreReport: 'social_score_report',
   cibilScoreReport: 'cibil_score_report',
-  
-  // Other Documents
   nachForm: 'nach_form',
   pdc: 'pdc',
   agreement: 'aggrement',
   video: 'video'
 };
 
-// Reverse mapping for API field to UI field
 export const REVERSE_DOCUMENT_MAPPING = Object.fromEntries(
   Object.entries(DOCUMENT_FIELDS_MAPPING).map(([key, value]) => [value, key])
 );
 
-// Folder mappings for Firebase storage
 export const FOLDER_MAPPINGS = {
   'selfie': 'photo',
   'pan_proof': 'pan',
@@ -58,43 +46,34 @@ export const FOLDER_MAPPINGS = {
 };
 
 export const kycService = {
-  // Get KYC details for an application
   getKYCDetails: async (applicationId) => {
     try {
       const response = await api.get(`/crm/application/kyc/edit/${applicationId}`);
       
-      // Handle different response structures
       if (response.status && response.data) {
         return formatKYCDataForUI(response.data);
       } else if (response.data?.status && response.data?.data) {
         return formatKYCDataForUI(response.data.data);
       } else if (response.data) {
-        // Try to format whatever data we got
         return formatKYCDataForUI(response.data);
       }
       
       throw new Error(response.data?.message || response.message || 'Failed to fetch KYC details');
     } catch (error) {
-      
-      // Better error messages
       if (error.response?.status === 404) {
         throw new Error('KYC record not found for this application');
       } else if (error.response?.status === 401) {
         throw new Error('Unauthorized. Please log in again.');
       } else if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
-      } else if (error.message) {
-        throw error;
       }
       
       throw new Error('Failed to fetch KYC details. Please try again.');
     }
   },
 
-  // Update KYC document
   updateKYCDocument: async (documentId, field, fileName) => {
     try {
-      // Validate field
       if (!Object.values(DOCUMENT_FIELDS_MAPPING).includes(field)) {
         throw new Error(`Invalid document field: ${field}`);
       }
@@ -106,12 +85,10 @@ export const kycService = {
 
       const response = await api.put(`/crm/application/kyc/update/${documentId}`, payload);
       
-      // Check if the message indicates success
       const successMessage = response.data?.message || response.message || '';
       const isSuccess = successMessage.toLowerCase().includes('updated successfully') || 
                         successMessage.toLowerCase().includes('success');
       
-      // Handle different response structures
       if (response.status === 200 || response.data?.status === true || response.data?.status === 'success' || isSuccess) {
         return {
           success: true,
@@ -122,7 +99,6 @@ export const kycService = {
       
       throw new Error(response.data?.message || response.message || 'Failed to update document');
     } catch (error) {
-      // If the error message itself indicates success, don't treat it as an error
       const errorMessage = error.message || error.response?.data?.message || '';
       if (errorMessage.toLowerCase().includes('updated successfully')) {
         return {
@@ -140,7 +116,6 @@ export const kycService = {
     }
   },
 
-  // Upload file to Firebase Storage
   uploadFileToStorage: async (file, documentType) => {
     try {
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
@@ -153,7 +128,6 @@ export const kycService = {
         throw new Error(`Folder mapping not found for: ${apiField}`);
       }
 
-      // Generate unique file name
       const timestamp = Date.now();
       const fileExtension = file.name.split('.').pop();
       const fileName = `${timestamp}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
@@ -161,7 +135,6 @@ export const kycService = {
       const filePath = `${folder}/${fileName}`;
       const storageRef = ref(storage, filePath);
       
-      // Upload file
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
@@ -176,7 +149,6 @@ export const kycService = {
     }
   },
 
-  // View/download file from Firebase Storage
   viewFile: async (fileName, documentType) => {
     try {
       if (!fileName) {
@@ -204,13 +176,9 @@ export const kycService = {
     }
   },
 
-  // Complete file upload and update process
   uploadAndUpdateDocument: async (file, documentType, documentId) => {
     try {
-      // Step 1: Upload to Firebase Storage
       const uploadResult = await kycService.uploadFileToStorage(file, documentType);
-      
-      // Step 2: Update KYC record with new file name
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
       const updateResult = await kycService.updateKYCDocument(
         documentId, 
@@ -228,22 +196,46 @@ export const kycService = {
     }
   },
 
-  // Validate file before upload
-  validateFile: (file) => {
-    const validTypes = [
-      'application/pdf',
-      'image/jpeg',
-      'image/jpg', 
-      'image/png',
-      'video/mp4',
-      'video/avi',
-      'video/mov'
-    ];
-    
-    const maxSize = 10 * 1024 * 1024; // 10MB
+  validateFile: (file, documentType = null) => {
+    const getAcceptedTypes = (type) => {
+      if (type === 'bankVerificationReport') {
+        return ['.xlsx', '.xls', '.csv'];
+      }
+      return ['.pdf', '.jpg', '.jpeg', '.png', '.mp4', '.avi', '.mov'];
+    };
 
-    if (!validTypes.includes(file.type)) {
-      throw new Error('Invalid file type. Please upload PDF, JPG, PNG, or MP4 files.');
+    const getMimeTypes = (type) => {
+      if (type === 'bankVerificationReport') {
+        return [
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+          'text/csv',
+          'application/csv',
+          'text/x-csv',
+          'application/x-csv'
+        ];
+      }
+      return [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'video/mp4',
+        'video/avi',
+        'video/mov'
+      ];
+    };
+
+    const maxSize = 10 * 1024 * 1024;
+    const acceptedExtensions = getAcceptedTypes(documentType);
+    const mimeTypes = getMimeTypes(documentType);
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+    if (!mimeTypes.includes(file.type) && !acceptedExtensions.includes(fileExtension)) {
+      const allowedFiles = documentType === 'bankVerificationReport' 
+        ? 'Excel (XLSX, XLS) or CSV' 
+        : 'PDF, JPG, PNG, MP4';
+      throw new Error(`Invalid file type. Please upload ${allowedFiles} files.`);
     }
 
     if (file.size > maxSize) {
@@ -254,7 +246,6 @@ export const kycService = {
   }
 };
 
-// Format KYC API data for UI
 export const formatKYCDataForUI = (apiData) => {
   if (!apiData) {
     throw new Error('No data received from API');
@@ -262,7 +253,6 @@ export const formatKYCDataForUI = (apiData) => {
   
   const kycDocuments = {};
 
-  // Map all document fields
   Object.entries(DOCUMENT_FIELDS_MAPPING).forEach(([uiField, apiField]) => {
     const fileName = apiData[apiField];
     kycDocuments[uiField] = {
@@ -280,11 +270,10 @@ export const formatKYCDataForUI = (apiData) => {
     fullName: apiData.full_name || apiData.fullName || apiData.name || 'N/A',
     crnNo: apiData.crnno || apiData.crnNo || 'N/A',
     kycDocuments: kycDocuments,
-    rawData: apiData // Keep original data for reference
+    rawData: apiData
   };
 };
 
-// Format UI data for KYC update
 export const formatUIForKYCUpdate = (uiData) => {
   const updateData = {};
   
@@ -300,7 +289,6 @@ export const formatUIForKYCUpdate = (uiData) => {
   return updateData;
 };
 
-// Document configuration for UI
 export const DOCUMENT_CONFIG = [
   { name: 'photo', label: 'Photo', required: true },
   { name: 'panCard', label: 'PAN Proof', required: true },
@@ -320,5 +308,4 @@ export const DOCUMENT_CONFIG = [
   { name: 'video', label: 'Video', required: false }
 ];
 
-// Export for use in components
 export default kycService;
