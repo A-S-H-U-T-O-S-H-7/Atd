@@ -1,7 +1,37 @@
 // Updated OverdueAmountModal with applicant name color change
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
+  const modalRef = useRef(null);
+
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !applicant) return null;
 
   const overdueDetails = applicant.overdue_details?.overdue;
@@ -16,8 +46,16 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50">
+    <div 
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
+        ref={modalRef}
         className={`relative w-full max-w-md mx-4 rounded-lg shadow-xl ${
           isDark ? "bg-gray-800 text-white" : "bg-white text-gray-900"
         }`}

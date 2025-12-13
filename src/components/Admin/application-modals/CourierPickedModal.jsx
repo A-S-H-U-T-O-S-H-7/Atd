@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Calendar, Package, CheckCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const CourierPickedModal = ({ 
@@ -10,40 +10,81 @@ const CourierPickedModal = ({
   loanNo 
 }) => {
   const [pickedDate, setPickedDate] = useState('');
-  const [isPicked, setIsPicked] = useState(true); // Default to "Yes"
+  const [isPicked, setIsPicked] = useState(true); 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const modalRef = useRef(null);
+
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target) && !isSubmitting) {
+        handleClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !isSubmitting) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isSubmitting]);
 
   const handleSubmit = async () => {
-  try {
-    setIsSubmitting(true);
-    await onSubmit(isPicked, isPicked ? pickedDate : null);
-    setPickedDate('');
-    setIsPicked(true);
-    onClose();
-  } catch (error) {
-    console.error('Error submitting courier picked status:', error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      setIsSubmitting(true);
+      await onSubmit(isPicked, isPicked ? pickedDate : null);
+      setPickedDate('');
+      setIsPicked(true);
+      onClose();
+    } catch (error) {
+      console.error('Error submitting courier picked status:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleClose = () => {
-    setPickedDate('');
-    setIsPicked(true);
-    onClose();
+    if (!isSubmitting) {
+      setPickedDate('');
+      setIsPicked(true);
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className={`
-        max-w-md w-full rounded-2xl shadow-2xl border-2 
-        ${isDark 
-          ? 'bg-gray-800 border-emerald-600/50' 
-          : 'bg-white border-emerald-300'
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          handleClose();
         }
-      `}>
+      }}
+    >
+      <div 
+        ref={modalRef}
+        className={`
+          max-w-md w-full rounded-2xl shadow-2xl border-2 
+          ${isDark 
+            ? 'bg-gray-800 border-emerald-600/50' 
+            : 'bg-white border-emerald-300'
+          }
+        `}
+      >
         {/* Header */}
         <div className={`
           p-6 border-b rounded-t-2xl
@@ -80,8 +121,10 @@ const CourierPickedModal = ({
             </div>
             <button
               onClick={handleClose}
+              disabled={isSubmitting}
               className={`
                 p-2 rounded-lg transition-colors duration-200
+                ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
                 ${isDark 
                   ? 'hover:bg-gray-700 text-gray-400' 
                   : 'hover:bg-gray-100 text-gray-500'
@@ -142,8 +185,11 @@ const CourierPickedModal = ({
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
-                  onClick={() => setIsPicked(true)}
+                  onClick={() => !isSubmitting && setIsPicked(true)}
+                  disabled={isSubmitting}
                   className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 flex-1 ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${
                     isPicked
                       ? isDark
                         ? 'bg-emerald-900/30 border-emerald-500 text-emerald-400'
@@ -163,8 +209,11 @@ const CourierPickedModal = ({
 
                 <button
                   type="button"
-                  onClick={() => setIsPicked(false)}
+                  onClick={() => !isSubmitting && setIsPicked(false)}
+                  disabled={isSubmitting}
                   className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-2 transition-all duration-200 flex-1 ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${
                     !isPicked
                       ? isDark
                         ? 'bg-red-900/30 border-red-500 text-red-400'
@@ -205,10 +254,12 @@ const CourierPickedModal = ({
                     type="date"
                     id="pickedDate"
                     value={pickedDate}
-                    onChange={(e) => setPickedDate(e.target.value)}
+                    onChange={(e) => !isSubmitting && setPickedDate(e.target.value)}
+                    disabled={isSubmitting}
                     max={new Date().toISOString().split('T')[0]}
                     className={`
                       w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
+                      ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
                       ${isDark
                         ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500 focus:bg-gray-600'
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500 focus:bg-gray-50'
@@ -232,8 +283,10 @@ const CourierPickedModal = ({
               <button
                 type="button"
                 onClick={handleClose}
+                disabled={isSubmitting}
                 className={`
                   flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200
+                  ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
                   ${isDark
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 border border-gray-600'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'

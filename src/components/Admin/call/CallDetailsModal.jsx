@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { X, Phone, User, CreditCard, Clock, Smartphone, Building } from "lucide-react";
 import { callAPI } from "@/lib/services/CallServices";
+import RefMobileModal from "./Ref-MobileModal";
+import AccountDetailsModal from "./AccountDetailsModal";
 
 const CallDetailsModal = ({ 
   isOpen, 
@@ -18,13 +20,47 @@ const CallDetailsModal = ({
   const [showRefModal, setShowRefModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [references, setReferences] = useState([]);
+  const [loadingReferences, setLoadingReferences] = useState(false);
+
+  const userId = data?.userId || data?.user_id;
+  const customerId = data?.id || data?.customer_id || data?.application_id;
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOpen, onClose]);
+
+  const fetchReferences = useCallback(async () => {
+    if (!userId) return;
+    
+    setLoadingReferences(true);
+    try {
+      const response = await callAPI.getReferences(userId);
+      if (response.success) {
+        setReferences(response.refferences || []);
+      }
+    } catch (error) {
+      setReferences([]);
+    } finally {
+      setLoadingReferences(false);
+    }
+  }, [userId]);
 
   const fetchCallHistory = useCallback(async () => {
-    const customerId =  data?.id;
-    
-    if (!customerId) {
-      return;
-    }
+    if (!customerId) return;
     
     setLoadingHistory(true);
     try {
@@ -37,16 +73,17 @@ const CallDetailsModal = ({
     } finally {
       setLoadingHistory(false);
     }
-  }, [ data?.id]);
+  }, [customerId]);
 
   useEffect(() => {
     if (isOpen) {
       fetchCallHistory();
+      fetchReferences();
       setRemarks("");
       setNextCallDate("");
       setSubmitError("");
     }
-  }, [isOpen, fetchCallHistory]);
+  }, [isOpen, fetchCallHistory, fetchReferences]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,8 +95,6 @@ const CallDetailsModal = ({
     }
 
     try {
-      const customerId = data?.id;
-      
       if (!customerId) {
         setSubmitError("Customer ID is missing");
         return;
@@ -138,14 +173,23 @@ const CallDetailsModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className={`w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-xl shadow-2xl border-2 ${
-        isDark
-          ? "bg-gray-900 border-gray-600"
-          : "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
-      }`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop - Click to close */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal Content - Stop click propagation */}
+      <div 
+        className={`relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-xl shadow-2xl border-2 z-10 ${
+          isDark
+            ? "bg-gray-900 border-gray-600"
+            : "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         
-        {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${
           isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/80"
         }`}>
@@ -172,18 +216,18 @@ const CallDetailsModal = ({
             </div>
           </div>
           
-          {/* Action Buttons */}
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowRefModal(true)}
+              disabled={loadingReferences}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isDark 
                   ? "bg-gray-700 hover:bg-gray-600 text-gray-200" 
                   : "bg-blue-100 hover:bg-blue-200 text-blue-700"
-              }`}
+              } ${loadingReferences ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Smartphone className="w-4 h-4" />
-              <span>Ref Mobile</span>
+              <span>{loadingReferences ? 'Loading...' : 'Ref Mobile'}</span>
             </button>
             
             <button
@@ -212,7 +256,6 @@ const CallDetailsModal = ({
         </div>
 
         <div className="p-4 space-y-4">
-          {/* Error Message */}
           {submitError && (
             <div className={`p-3 rounded-lg border ${
               isDark ? "border-red-500 bg-red-900/20" : "border-red-300 bg-red-50"
@@ -223,9 +266,7 @@ const CallDetailsModal = ({
             </div>
           )}
 
-          {/* Main Content - Compact Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Customer Information - Left Column */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -270,14 +311,12 @@ const CallDetailsModal = ({
                         gap: '8px'
                       }}
                     >
-                      {/* Label with colon */}
                       <div className="flex-shrink-0">
                         <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                           {item.label}: 
                         </span>
                       </div>
                       
-                      {/* Value with proper alignment */}
                       <div className="flex-grow text-right min-w-0">
                         <span className={`inline-block ${
                           isImportant 
@@ -303,7 +342,6 @@ const CallDetailsModal = ({
               </div>
             </div>
 
-            {/* Loan Information - Middle Column */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -342,14 +380,12 @@ const CallDetailsModal = ({
                         gap: '8px'
                       }}
                     >
-                      {/* Label with colon */}
                       <div className="flex-shrink-0">
                         <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                           {item.label}: 
                         </span>
                       </div>
                       
-                      {/* Value with proper alignment */}
                       <div className="flex-grow text-right min-w-0">
                         <span className={`inline-block ${
                           isAmount && displayValue && !isNaN(parseFloat(displayValue))
@@ -369,7 +405,6 @@ const CallDetailsModal = ({
               </div>
             </div>
 
-            {/* Call Form - Right Column */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -439,7 +474,6 @@ const CallDetailsModal = ({
             </div>
           </div>
 
-          {/* Call History */}
           <div className={`rounded-lg border overflow-hidden ${
             isDark ? "border-gray-600" : "border-blue-200"
           }`}>
@@ -460,17 +494,16 @@ const CallDetailsModal = ({
                 <thead className={`${isDark ? "bg-gray-800" : "bg-blue-50"}`}>
                   <tr>
                     <th className={`px-4 py-2 text-center font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
+                      isDark ? "text-cyan-300" : "text-gray-700"
                     }`}>Date & Time</th>
-                    
                     <th className={`px-4 py-2 text-center font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
+                      isDark ? "text-cyan-300" : "text-gray-700"
                     }`}>Remark</th>
                     <th className={`px-4 py-2 text-center font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
+                      isDark ? "text-cyan-300" : "text-gray-700"
                     }`}>Next Call</th>
                     <th className={`px-4 py-2 text-center font-semibold ${
-                      isDark ? "text-gray-200" : "text-gray-700"
+                      isDark ? "text-cyan-300" : "text-gray-700"
                     }`}>User</th>
                   </tr>
                 </thead>
@@ -492,7 +525,7 @@ const CallDetailsModal = ({
                       <tr key={call.id} className={`border-b transition-colors hover:${
                         isDark ? "bg-gray-700" : "bg-blue-50"
                       } ${isDark ? "border-gray-700" : "border-blue-100"}`}>
-                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                        <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {new Date(call.created_at).toLocaleString('en-GB', {
                             day: '2-digit',
                             month: '2-digit',
@@ -501,14 +534,13 @@ const CallDetailsModal = ({
                             minute: '2-digit'
                           })}
                         </td>
-                        
-                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                        <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.remark}
                         </td>
-                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                        <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.nextcall ? formatDate(call.nextcall) : "--"}
                         </td>
-                        <td className={`px-4 py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+                        <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.admin_name || "System"}
                         </td>
                       </tr>
@@ -521,145 +553,19 @@ const CallDetailsModal = ({
         </div>
       </div>
 
-      {/* Ref Mobile Modal */}
-      {showRefModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className={`w-full max-w-md rounded-xl shadow-2xl border-2 ${
-            isDark ? "bg-gray-900 border-gray-600" : "bg-white border-blue-200"
-          }`}>
-            <div className={`flex items-center justify-between p-4 border-b ${
-              isDark ? "border-gray-600" : "border-blue-200"
-            }`}>
-              <h3 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
-                Reference Mobile Numbers
-              </h3>
-              <button
-                onClick={() => setShowRefModal(false)}
-                className={`p-1 rounded-full ${
-                  isDark ? "hover:bg-gray-700 text-gray-400" : "hover:bg-red-100 text-gray-500"
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {customerDetails?.ref_details && customerDetails.ref_details.length > 0 ? (
-                  <div className="space-y-2">
-                    {customerDetails.ref_details.map((ref, index) => (
-                      <div key={index} className={`p-3 rounded border ${
-                        isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-blue-50"
-                      }`}>
-                        <div className="flex justify-between">
-                          <strong>Name:</strong> 
-                          <span>{ref.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <strong>Mobile:</strong> 
-                          <span className="font-bold text-blue-600 bg-blue-100 px-1 rounded">
-                            {ref.mobile}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <strong>Relation:</strong> 
-                          <span>{ref.relation}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No reference details available
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <RefMobileModal
+        isOpen={showRefModal}
+        onClose={() => setShowRefModal(false)}
+        references={references}
+        isDark={isDark}
+      />
 
-      {/* Account Details Modal */}
-      {showAccountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className={`w-full max-w-md rounded-xl shadow-2xl border-2 ${
-            isDark ? "bg-gray-900 border-gray-600" : "bg-white border-blue-200"
-          }`}>
-            <div className={`flex items-center justify-between p-4 border-b ${
-              isDark ? "border-gray-600" : "border-blue-200"
-            }`}>
-              <h3 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
-                Company Account Details
-              </h3>
-              <button
-                onClick={() => setShowAccountModal(false)}
-                className={`p-1 rounded-full ${
-                  isDark ? "hover:bg-gray-700 text-gray-400" : "hover:bg-red-100 text-gray-500"
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className={`text-sm space-y-3 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {customerDetails?.company_account_details ? (
-                  <>
-                    <div className={`p-3 rounded border ${
-                      isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-blue-50"
-                    }`}>
-                      <h4 className="font-semibold mb-2">Virtual Account</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between"><strong>Name:</strong> {customerDetails.company_account_details.virtual_details?.name}</div>
-                        <div className="flex justify-between">
-                          <strong>Account No:</strong> 
-                          <span className="font-bold text-blue-600 bg-blue-100 px-1 rounded">
-                            {customerDetails.company_account_details.virtual_details?.virtual_ac_no || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between"><strong>IFSC:</strong> {customerDetails.company_account_details.virtual_details?.ifsc}</div>
-                      </div>
-                    </div>
-                    
-                    <div className={`p-3 rounded border ${
-                      isDark ? "border-gray-600 bg-gray-800" : "border-green-200 bg-green-50"
-                    }`}>
-                      <h4 className="font-semibold mb-2">Bank Account</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between"><strong>Name:</strong> {customerDetails.company_account_details.account_details?.name}</div>
-                        <div className="flex justify-between">
-                          <strong>Account No:</strong> 
-                          <span className="font-bold text-green-700 bg-green-100 px-1 rounded">
-                            {customerDetails.company_account_details.account_details?.ac_no}
-                          </span>
-                        </div>
-                        <div className="flex justify-between"><strong>IFSC:</strong> {customerDetails.company_account_details.account_details?.ifsc}</div>
-                        <div className="flex justify-between"><strong>Bank:</strong> {customerDetails.company_account_details.account_details?.bank_name}</div>
-                        <div className="flex justify-between"><strong>Account Type:</strong> {customerDetails.company_account_details.account_details?.bank_ac_type}</div>
-                        <div className="flex justify-between"><strong>Branch:</strong> {customerDetails.company_account_details.account_details?.bank_branch}</div>
-                      </div>
-                    </div>
-                    
-                    <div className={`p-3 rounded border ${
-                      isDark ? "border-gray-600 bg-gray-800" : "border-purple-200 bg-purple-50"
-                    }`}>
-                      <h4 className="font-semibold mb-2">UPI Details</h4>
-                      <div className="flex justify-between">
-                        <strong>UPI ID:</strong> 
-                        <span className="font-bold text-purple-700 bg-purple-100 px-1 rounded">
-                          {customerDetails.company_account_details.upi_detial}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No account details available
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AccountDetailsModal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+        accountDetails={customerDetails?.company_account_details}
+        isDark={isDark}
+      />
     </div>
   );
 };

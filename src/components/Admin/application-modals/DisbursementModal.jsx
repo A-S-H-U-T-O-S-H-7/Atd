@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -19,6 +19,8 @@ const DisbursementModal = ({
     ifscCode: ""
   });
   const [loading, setLoading] = useState(false);
+  
+  const modalRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && application) {
@@ -41,6 +43,33 @@ const DisbursementModal = ({
     }
   }, [isOpen, application]);
 
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target) && !loading) {
+        handleClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !loading) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, loading]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -61,7 +90,7 @@ const DisbursementModal = ({
         }
       });
 
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Disbursement error:", error);
       toast.error('Failed to process disbursement. Please try again.', {
@@ -80,11 +109,25 @@ const DisbursementModal = ({
     }
   };
 
+  const handleClose = () => {
+    if (!loading) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !loading) {
+          handleClose();
+        }
+      }}
+    >
       <div 
+        ref={modalRef}
         className={`rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all ${
           isDark ? "bg-gray-800" : "bg-white"
         }`}
@@ -99,8 +142,11 @@ const DisbursementModal = ({
             Disbursement of {application?.name}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
+            disabled={loading}
             className={`p-1 rounded-lg transition-colors ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            } ${
               isDark 
                 ? "hover:bg-gray-700 text-gray-400" 
                 : "hover:bg-gray-100 text-gray-600"
@@ -271,9 +317,11 @@ const DisbursementModal = ({
           <div className="flex justify-end space-x-3 mt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
               className={`px-6 py-2 rounded-lg border transition-colors ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              } ${
                 isDark
                   ? "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
                   : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"

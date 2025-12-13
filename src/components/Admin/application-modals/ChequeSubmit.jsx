@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Edit } from "lucide-react";
 
 const ChequeModal = ({
@@ -13,16 +13,42 @@ const ChequeModal = ({
   const [chequeNumber, setChequeNumber] = useState(initialChequeNo);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  
+  const modalRef = useRef(null);
 
-  useEffect(
-    () => {
-      if (isOpen) {
-        setChequeNumber(initialChequeNo);
-        setError("");
+  useEffect(() => {
+    if (isOpen) {
+      setChequeNumber(initialChequeNo);
+      setError("");
+    }
+  }, [isOpen, initialChequeNo]);
+
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        handleClose();
       }
-    },
-    [isOpen, initialChequeNo]
-  );
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const handleSubmit = async () => {
     if (!chequeNumber.trim()) {
@@ -69,6 +95,7 @@ const ChequeModal = ({
 
       {/* Modal */}
       <div
+        ref={modalRef}
         className={`relative w-full max-w-lg mx-4 p-6 rounded-xl shadow-2xl transition-all duration-300 ${isDark
           ? "bg-gray-800 border border-gray-700"
           : "bg-white border border-gray-200"}`}

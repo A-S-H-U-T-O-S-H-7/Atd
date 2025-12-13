@@ -20,7 +20,7 @@ import {
   ExternalLink
 } from "lucide-react";
 
-const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowAddress }) => {
+const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowCriminalStatus, onShowAddress }) => {
   
   const getDeliveryStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -465,7 +465,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
                   <AlertCircle className={`w-4 h-4 mt-0.5 ${isDark ? "text-red-400" : "text-red-600"}`} />
                   <div>
                     <span className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                      Reason for Return:
+                      Reason for Bounce:
                     </span>
                     <span className={`text-sm ml-1 mt-0.5 ${getBounceReasonColor(legal.bounceReason)}`}>
                       {legal.bounceReason}
@@ -582,36 +582,49 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* NEW: Criminal Case Status */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 mb-2">
-            {legal.criminalCaseStatus?.toLowerCase() === 'filed' ? (
-              <CheckCircle className={`w-5 h-5 ${isDark ? "text-green-400" : "text-green-600"}`} />
-            ) : (
-              <AlertCircle className={`w-5 h-5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
-            )}
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getCriminalCaseStatusColor(legal.criminalCaseStatus)}`}>
-              {legal.criminalCaseStatus || 'Pending'}
-            </span>
-          </div>
-          
-          {legal.criminalComplaintNo && legal.criminalComplaintNo !== 'N/A' && (
-            <div className="flex items-center space-x-2">
-              <FileText className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                Complaint No: {legal.criminalComplaintNo}
-              </span>
-            </div>
-          )}
-          
-          <div className="flex items-center space-x-2">
-            <Building2 className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-              Police Station: {legal.policeStation || 'N/A'}
-            </span>
-          </div>
-        </div>
-      </td>
+<td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+  <div className="space-y-2">
+    <div className="flex items-center space-x-2 mb-2">
+      {legal.criminalCaseStatus?.toLowerCase() === 'filed' ? (
+        <CheckCircle className={`w-5 h-5 ${isDark ? "text-green-400" : "text-green-600"}`} />
+      ) : (
+        <AlertCircle className={`w-5 h-5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
+      )}
+      <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getCriminalCaseStatusColor(legal.criminalCaseStatus)}`}>
+        {legal.criminalCaseStatus || 'Pending'}
+      </span>
+    </div>
+    
+    {legal.criminalComplaintNo && legal.criminalComplaintNo !== 'N/A' && (
+      <div className="flex items-center space-x-2">
+        <FileText className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
+        <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+          Complaint No: {legal.criminalComplaintNo}
+        </span>
+      </div>
+    )}
+    
+    <div className="flex items-center space-x-2">
+      <Building2 className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+      <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+        Police Station: {legal.policeStation || 'N/A'}
+      </span>
+    </div>
+    
+    {/* Add Show Status Button */}
+    <button
+      onClick={() => onShowCriminalStatus(legal)}
+      className={`w-full px-3 py-2 mt-2 text-sm rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+        isDark
+          ? "bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-700/50"
+          : "bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200"
+      }`}
+    >
+      <Scale className="w-3 h-3" />
+      <span>Show Criminal Status</span>
+    </button>
+  </div>
+</td>
 
       {/* Actions - Added new buttons */}
       <td className="px-2 py-4" style={{ minWidth: "350px" }}>

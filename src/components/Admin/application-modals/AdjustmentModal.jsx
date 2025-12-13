@@ -34,7 +34,6 @@ const AdjustmentModal = ({ isOpen, onClose, applicant, isDark, onSubmit }) => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscapeKey);
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
     }
 

@@ -41,24 +41,32 @@ const InProcessStatusModal = ({
     }
   }, [isOpen, application]);
 
-  // Handle click outside to close modal
+  // Handle click outside and escape key to close modal
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+      if (modalRef.current && !modalRef.current.contains(event.target) && !loading) {
+        handleClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !loading) {
+        handleClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscapeKey);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, loading]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,7 +111,7 @@ const InProcessStatusModal = ({
         }
       });
 
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Status update error:", error);
       toast.error('Failed to update status. Please try again.', {
@@ -122,10 +130,23 @@ const InProcessStatusModal = ({
     }
   };
 
+  const handleClose = () => {
+    if (!loading) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !loading) {
+          handleClose();
+        }
+      }}
+    >
       <div 
         ref={modalRef}
         className={`rounded-2xl shadow-2xl w-full max-w-lg transform transition-all ${
@@ -159,8 +180,11 @@ const InProcessStatusModal = ({
               </label>
               <select
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                onChange={(e) => !loading && setSelectedStatus(e.target.value)}
+                disabled={loading}
                 className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark 
                     ? "bg-gray-700 border-gray-600 text-white" 
                     : "bg-white border-gray-300 text-gray-900"
@@ -185,8 +209,11 @@ const InProcessStatusModal = ({
               </label>
               <select
                 value={documentsReceived}
-                onChange={(e) => setDocumentsReceived(e.target.value)}
+                onChange={(e) => !loading && setDocumentsReceived(e.target.value)}
+                disabled={loading}
                 className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark 
                     ? "bg-gray-700 border-gray-600 text-white" 
                     : "bg-white border-gray-300 text-gray-900"
@@ -209,8 +236,11 @@ const InProcessStatusModal = ({
               </label>
               <select
                 value={bankVerified}
-                onChange={(e) => setBankVerified(e.target.value)}
+                onChange={(e) => !loading && setBankVerified(e.target.value)}
+                disabled={loading}
                 className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark 
                     ? "bg-gray-700 border-gray-600 text-white" 
                     : "bg-white border-gray-300 text-gray-900"
@@ -231,8 +261,11 @@ const InProcessStatusModal = ({
               </label>
               <select
                 value={selectedBank}
-                onChange={(e) => setSelectedBank(e.target.value)}
+                onChange={(e) => !loading && setSelectedBank(e.target.value)}
+                disabled={loading}
                 className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark 
                     ? "bg-gray-700 border-gray-600 text-white" 
                     : "bg-white border-gray-300 text-gray-900"
@@ -257,10 +290,13 @@ const InProcessStatusModal = ({
               </label>
               <textarea
                 value={remark}
-                onChange={(e) => setRemark(e.target.value)}
+                onChange={(e) => !loading && setRemark(e.target.value)}
+                disabled={loading}
                 rows={3}
                 placeholder="Add any remarks or notes..."
                 className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark 
                     ? "bg-gray-700 border-gray-600 text-white" 
                     : "bg-white border-gray-300 text-gray-900"
@@ -273,9 +309,11 @@ const InProcessStatusModal = ({
           <div className="flex space-x-3 mt-6">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
               className={`flex-1 px-4 py-2 rounded-lg border transition-colors ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              } ${
                 isDark
                   ? "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
                   : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200"

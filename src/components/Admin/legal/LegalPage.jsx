@@ -7,9 +7,10 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
 import CreateNoticeModal from "./CreateNoticeModal";
 import CreateCriminalCaseModal from "./CriminalCaseModal";
-import AddressModal from "./AddressModal"; // Import AddressModal
+import AddressModal from "./AddressModal"; 
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { legalService, formatLegalCaseForUI } from "@/lib/services/LegalService";
+import CriminalStatusModal from "./CriminalStatusModal";
 
 // Main Legal Management Component 
 const LegalPage = () => {
@@ -22,8 +23,10 @@ const LegalPage = () => {
   const router = useRouter();
   const [isCreateNoticeModalOpen, setIsCreateNoticeModalOpen] = useState(false);
   const [isCriminalCaseModalOpen, setIsCriminalCaseModalOpen] = useState(false);
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); // New state
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); 
   const [selectedLegal, setSelectedLegal] = useState(null);
+  const [isCriminalStatusModalOpen, setIsCriminalStatusModalOpen] = useState(false);
+
   
   const [legals, setLegals] = useState([]);
   const [pagination, setPagination] = useState({
@@ -115,8 +118,13 @@ const LegalPage = () => {
 
   const handleSearchChange = (term) => {
     setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1); 
   };
+
+  const handleShowCriminalStatus = (legal) => {
+  setSelectedLegal(legal);
+  setIsCriminalStatusModalOpen(true);
+};
 
   // Filter legals based on search term (client-side filtering as fallback)
   const filteredLegals = legals.filter(legal => {
@@ -352,7 +360,8 @@ const LegalPage = () => {
           onPageChange={handlePageChange}
           onCreateNotice={handleCreateNotice}    
           onCriminalCase={handleCriminalCase}
-          onShowAddress={handleShowAddress} // Pass the handler
+          onShowAddress={handleShowAddress}
+          onShowCriminalStatus={handleShowCriminalStatus} 
           isLoading={isLoading}
         />
       </div>
@@ -379,6 +388,14 @@ const LegalPage = () => {
         isDark={isDark}
         onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
       />
+      
+      <CriminalStatusModal
+  isOpen={isCriminalStatusModalOpen}
+  onClose={() => setIsCriminalStatusModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+  onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
+/>
     </div>
   );
 };

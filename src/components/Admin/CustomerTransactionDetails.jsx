@@ -32,6 +32,23 @@ const CustomerTransactionDetails = ({
     }
   }, [data]);
 
+  // Add this useEffect near your other useEffects
+useEffect(() => {
+  const handleEscKey = (event) => {
+    if (event.key === "Escape") {
+      onClose();
+    }
+  };
+
+  if (isOpen) {
+    document.addEventListener("keydown", handleEscKey);
+  }
+
+  return () => {
+    document.removeEventListener("keydown", handleEscKey);
+  };
+}, [isOpen, onClose]);
+
   if (!isOpen || !data) return null;
 
   const handleUpdateSubmit = () => {
@@ -68,12 +85,18 @@ const CustomerTransactionDetails = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/30 backdrop-blur-sm bg-opacity-50">
-      <div className={`w-full max-w-2xl backdrop-blur-sm max-h-[95vh] custom-scrollbar overflow-y-auto rounded-xl shadow-2xl border-2 ${
+<div className="fixed inset-0 z-50 flex items-center justify-center p-2">
+  <div 
+    className="absolute inset-0 bg-black/30 backdrop-blur-sm bg-opacity-50"
+    onClick={onClose}
+  />
+      <div className={`w-full max-w-2xl backdrop-blur-sm max-h-[95vh] custom-scrollbar overflow-y-auto rounded-xl shadow-2xl border-2 z-10 ${
         isDark
           ? "bg-gray-800 border-emerald-600/50"
           : "bg-white border-emerald-300"
-      }`}>
+      }`}
+      onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header with ATD Logo */}
         <div className={`flex items-center justify-between p-4 border-b-2 ${

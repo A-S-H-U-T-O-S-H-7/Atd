@@ -19,6 +19,10 @@ export const callAPI = {
     // Export calls to Excel
     exportCalls: (params = {}) => {
         return api.get("/crm/call/export", { params });
+    },
+
+     getReferences: (userId) => {
+        return api.get(`/crm/call/refferences/${userId}`);
     }
 };
 

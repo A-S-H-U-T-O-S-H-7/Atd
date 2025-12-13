@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, FileText, AlertCircle } from "lucide-react";
 
 const RefundPDCModal = ({ 
@@ -11,6 +11,35 @@ const RefundPDCModal = ({
 }) => {
   const [refundStatus, setRefundStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const modalRef = useRef(null);
+
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target) && !isSubmitting) {
+        handleClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !isSubmitting) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isSubmitting]);
 
   const handleSubmit = async () => {
     if (!refundStatus) {
@@ -31,19 +60,31 @@ const RefundPDCModal = ({
   };
 
   const handleClose = () => {
-    setRefundStatus("");
-    onClose();
+    if (!isSubmitting) {
+      setRefundStatus("");
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm bg-opacity-50">
-      <div className={`relative w-full max-w-md rounded-2xl shadow-2xl border-2 ${
-        isDark 
-          ? "bg-gray-800 border-emerald-600/50" 
-          : "bg-white border-emerald-300"
-      }`}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm bg-opacity-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          handleClose();
+        }
+      }}
+    >
+      <div 
+        ref={modalRef}
+        className={`relative w-full max-w-md rounded-2xl shadow-2xl border-2 ${
+          isDark 
+            ? "bg-gray-800 border-emerald-600/50" 
+            : "bg-white border-emerald-300"
+        }`}
+      >
         {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${
           isDark ? "border-emerald-600/30" : "border-emerald-200"
@@ -71,7 +112,10 @@ const RefundPDCModal = ({
           </div>
           <button
             onClick={handleClose}
+            disabled={isSubmitting}
             className={`p-2 rounded-lg transition-colors ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+            } ${
               isDark 
                 ? "hover:bg-gray-700 text-gray-400 hover:text-white" 
                 : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
@@ -83,8 +127,6 @@ const RefundPDCModal = ({
 
         {/* Content */}
         <div className="p-6">
-          
-
           {/* Form */}
           <div className="space-y-4">
             <div>
@@ -95,8 +137,11 @@ const RefundPDCModal = ({
               </label>
               <select
                 value={refundStatus}
-                onChange={(e) => setRefundStatus(e.target.value)}
+                onChange={(e) => !isSubmitting && setRefundStatus(e.target.value)}
+                disabled={isSubmitting}
                 className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark
                     ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
                     : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
@@ -113,7 +158,10 @@ const RefundPDCModal = ({
               <button
                 type="button"
                 onClick={handleClose}
+                disabled={isSubmitting}
                 className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark
                     ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
                     : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -126,10 +174,14 @@ const RefundPDCModal = ({
                 onClick={handleSubmit}
                 disabled={isSubmitting || !refundStatus}
                 className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  isSubmitting || !refundStatus
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'shadow-lg hover:shadow-xl transform hover:scale-105'
+                } ${
                   isDark
                     ? "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white"
                     : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
-                } disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105`}
+                }`}
               >
                 {isSubmitting ? "Submitting..." : "Submit"}
               </button>

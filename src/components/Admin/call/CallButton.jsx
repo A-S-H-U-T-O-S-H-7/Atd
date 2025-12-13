@@ -20,7 +20,6 @@ const CallButton = ({
 
   const handleCallSubmit = async (success, response) => {
     if (success) {
-      // Call the callback if provided
       if (onCallSubmitted) {
         onCallSubmitted(response);
       }

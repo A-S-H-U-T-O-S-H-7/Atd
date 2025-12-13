@@ -14,6 +14,7 @@ const LegalTable = ({
   onCreateNotice, 
   onShowAddress,   
   onCriminalCase,
+  onShowCriminalStatus,
   isLoading = false
 }) => {
   return (
@@ -143,6 +144,7 @@ const LegalTable = ({
                     onCreateNotice={onCreateNotice}    
                     onCriminalCase={onCriminalCase}
                     onShowAddress={onShowAddress}
+                    onShowCriminalStatus ={onShowCriminalStatus}
                   />
                 ))
               )}

@@ -1,9 +1,8 @@
-// Update LegalService.js with new address APIs
 "use client";
 import api from "@/utils/axiosInstance";
+import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 export const legalService = {
-  // Get all legal cases with pagination and search
   getLegalCases: async (params = {}) => {
     try {
       const response = await api.get("/crm/legal/manage", { 
@@ -59,7 +58,7 @@ export const legalService = {
     }
   },
 
-  // NEW: Get addresses for a legal case
+  // Get addresses for a legal case
   getAddresses: async (chequeId) => {
     try {
       const response = await api.get(`/crm/legal/addresses/${chequeId}`);
@@ -69,7 +68,7 @@ export const legalService = {
     }
   },
 
-  // NEW: Add address to a legal case
+  // Add address to a legal case
   addAddress: async (chequeId, addressData) => {
     try {
       const response = await api.put(`/crm/legal/address/add/${chequeId}`, addressData);
@@ -79,12 +78,52 @@ export const legalService = {
     }
   },
 
-  // NEW: Update address
+  // Update address
   updateAddress: async (addressId, addressData) => {
     try {
       const response = await api.put(`/crm/legal/address/update/${addressId}`, addressData);
       return response;
     } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get hearings for a criminal case
+  getHearings: async (chequeId) => {
+    try {
+      const response = await api.get(`/crm/legal/case/hearings/${chequeId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Add hearing to a criminal case (FormData version)
+  addHearing: async (chequeId, formData) => {
+    try {
+      const response = await api.post(`/crm/legal/case/hearing/add/${chequeId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Error adding hearing:', error);
+      throw error;
+    }
+  },
+
+  // Update hearing (FormData version)
+  updateHearing: async (hearingId, formData) => {
+    try {
+      const response = await api.post(`/crm/legal/case/hearing/update/${hearingId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Error updating hearing:', error);
       throw error;
     }
   }
@@ -131,12 +170,10 @@ export const formatLegalCaseForUI = (legalCase) => {
   const bounceCharge = parseFloat(cheque.bounce_charge) || 0;
   const chequeAmount = parseFloat(cheque.deposit_amount) || 0;
   
-  
   const totalPfGst = processingFee + gst;
   
   // Calculate total amount (Principal + Interest + Penal Interest + Penalty)
   const totalAmount = principal + interest + penalInterest + penalty;
-
 
   // Combine addresses for display
   const addresses = [];
@@ -271,3 +308,51 @@ export const legalStatusService = {
     }
   }
 };
+
+// Hearing status utilities
+export const hearingStatusService = {
+  getHearingStatus: (hearing) => {
+    const today = new Date().toISOString().split('T')[0];
+    const nextDate = hearing.next_hearing_date?.split('T')[0];
+    
+    if (!nextDate) return 'pending';
+    if (new Date(nextDate) < new Date(today)) return 'overdue';
+    if (nextDate === today) return 'today';
+    return 'upcoming';
+  },
+
+  getStatusColor: (status, isDark = false) => {
+    switch (status) {
+      case 'today':
+        return isDark 
+          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700" 
+          : "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case 'overdue':
+        return isDark 
+          ? "bg-red-900/50 text-red-300 border-red-700" 
+          : "bg-red-100 text-red-800 border-red-200";
+      case 'upcoming':
+        return isDark 
+          ? "bg-green-900/50 text-green-300 border-green-700" 
+          : "bg-green-100 text-green-800 border-green-200";
+      default:
+        return isDark 
+          ? "bg-gray-700 text-gray-300 border-gray-600" 
+          : "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  },
+
+  getStatusIcon: (status) => {
+    switch (status) {
+      case 'today':
+        return <AlertCircle className="w-4 h-4 text-yellow-600" />;
+      case 'overdue':
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      case 'upcoming':
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-600" />;
+    }
+  }
+};
+

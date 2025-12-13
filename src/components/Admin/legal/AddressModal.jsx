@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { X, MapPin, Plus, Edit, Calendar, Truck, Package, Clock, AlertCircle, CheckCircle, User } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, MapPin, Plus, Edit, Calendar, Truck, Package, Clock, AlertCircle, CheckCircle, User, Phone, FileText } from "lucide-react";
 import { legalService } from "@/lib/services/LegalService";
 
 const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
@@ -10,6 +10,8 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   
+  const modalRef = useRef(null);
+
   // New address form state
   const [newAddress, setNewAddress] = useState({
     advocate_id: "",
@@ -29,17 +31,32 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
     }
   }, [isOpen, legal]);
 
-  // Close modal on Escape key
+  // Outside click, escape key, and scroll lock functionality
   useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target) && !isLoading) {
+        handleClose();
       }
     };
-    
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !isLoading) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isLoading]);
 
   const fetchAddresses = async () => {
     try {
@@ -129,35 +146,53 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
     });
   };
 
-  const getStatusColor = (status) => {
+  const handleClose = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
+
+  const getStatusColor = (status, isDarkMode) => {
     switch (status?.toLowerCase()) {
       case "delivered":
-        return "bg-green-100 text-green-800 border-green-200";
+        return isDarkMode
+          ? "bg-emerald-900/40 text-emerald-200 border-emerald-700/60"
+          : "bg-emerald-100 text-emerald-800 border-emerald-300";
       case "posted":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return isDarkMode
+          ? "bg-blue-900/40 text-blue-200 border-blue-700/60"
+          : "bg-blue-100 text-blue-800 border-blue-300";
       case "returned":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return isDarkMode
+          ? "bg-amber-900/40 text-amber-200 border-amber-700/60"
+          : "bg-amber-100 text-amber-800 border-amber-300";
       case "pending":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return isDarkMode
+          ? "bg-slate-800/50 text-slate-200 border-slate-700"
+          : "bg-slate-100 text-slate-800 border-slate-300";
       case "unknown":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return isDarkMode
+          ? "bg-purple-900/40 text-purple-200 border-purple-700/60"
+          : "bg-purple-100 text-purple-800 border-purple-300";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return isDarkMode
+          ? "bg-slate-800/50 text-slate-200 border-slate-700"
+          : "bg-slate-100 text-slate-800 border-slate-300";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case "delivered":
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-3.5 h-3.5" />;
       case "posted":
-        return <Truck className="w-4 h-4 text-blue-600" />;
+        return <Truck className="w-3.5 h-3.5" />;
       case "returned":
-        return <Package className="w-4 h-4 text-yellow-600" />;
+        return <Package className="w-3.5 h-3.5" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-gray-600" />;
+        return <Clock className="w-3.5 h-3.5" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-600" />;
+        return <AlertCircle className="w-3.5 h-3.5" />;
     }
   };
 
@@ -165,26 +200,19 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
 
   return (
     <>
-      {/* Backdrop - Fixed to prevent interaction with background */}
-      <div 
-        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-md bg-opacity-50 transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity" aria-hidden="true" />
       
-      {/* Modal Container - Fixed positioning with proper z-index */}
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center">
-          {/* Modal - More compact */}
           <div 
-            className={`relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all w-full max-w-2xl ${
-              isDark ? "bg-gray-800" : "bg-white"
+            ref={modalRef}
+            className={`relative transform overflow-hidden rounded-xl text-left shadow-xl transition-all w-full max-w-4xl ${
+              isDark ? "bg-gray-900" : "bg-white"
             }`}
-            onClick={(e) => e.stopPropagation()} 
           >
-            {/* Header - More compact */}
-            <div className={`px-5 py-3 border-b flex items-center justify-between ${
-              isDark ? "border-gray-700" : "border-gray-200"
+            {/* Header */}
+            <div className={`px-5 py-3.5 border-b flex items-center justify-between ${
+              isDark ? "border-gray-800" : "border-gray-200"
             }`}>
               <div className="flex items-center space-x-2">
                 <MapPin className={`w-5 h-5 ${
@@ -199,15 +227,18 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
                   <p className={`text-xs ${
                     isDark ? "text-gray-400" : "text-gray-600"
                   }`}>
-                    {legal?.customerName || 'Customer'} • Loan ID: {legal?.loanId || 'N/A'}
+                    {legal?.customerName || 'Customer'} • Loan: {legal?.loanId || 'N/A'}
                   </p>
                 </div>
               </div>
               <button
-                onClick={onClose}
+                onClick={handleClose}
+                disabled={isLoading}
                 className={`p-1.5 rounded-lg transition-colors ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
                   isDark
-                    ? "hover:bg-gray-700 text-gray-400"
+                    ? "hover:bg-gray-800 text-gray-300"
                     : "hover:bg-gray-100 text-gray-500"
                 }`}
               >
@@ -215,428 +246,489 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
               </button>
             </div>
 
-            {/* Body - More compact */}
             <div className="px-5 py-4 max-h-[70vh] overflow-y-auto">
-              {/* Customer Info Card - Compact */}
-              <div className={`mb-4 p-3 rounded-lg border ${
+              {/* Customer Info Card - Matching CriminalStatusModal design */}
+              <div className={`mb-4 p-3.5 rounded-lg border ${
                 isDark
-                  ? "bg-gray-700/30 border-gray-600"
-                  : "bg-gray-50 border-gray-200"
+                  ? "bg-gray-800/40 border-gray-700"
+                  : "bg-blue-50/50 border-blue-100"
               }`}>
-                <div className="flex items-start space-x-3">
-                  <div className={`p-2 rounded ${
-                    isDark ? "bg-blue-900/30" : "bg-blue-100"
-                  }`}>
-                    <User className={`w-4 h-4 ${
-                      isDark ? "text-blue-400" : "text-blue-600"
-                    }`} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <div className={`p-1.5 rounded ${
+                      isDark ? "bg-gray-700" : "bg-blue-100"
+                    }`}>
+                      <User className={`w-3 h-3 ${
+                        isDark ? "text-blue-400" : "text-blue-600"
+                      }`} />
+                    </div>
+                    <div>
+                      <span className={isDark ? "text-gray-400" : "text-gray-600"}>Customer</span>
+                      <p className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                        {legal?.customerName || 'N/A'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className={isDark ? "text-gray-400" : "text-gray-600"}>Mobile:</span>
-                        <p className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                          {legal?.mobileNo || 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <span className={isDark ? "text-gray-400" : "text-gray-600"}>CRN:</span>
-                        <p className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                          {legal?.crnNo || 'N/A'}
-                        </p>
-                      </div>
+                  <div className="flex items-center space-x-2">
+                    <div className={`p-1.5 rounded ${
+                      isDark ? "bg-gray-700" : "bg-blue-100"
+                    }`}>
+                      <Phone className={`w-3 h-3 ${
+                        isDark ? "text-blue-400" : "text-blue-600"
+                      }`} />
+                    </div>
+                    <div>
+                      <span className={isDark ? "text-gray-400" : "text-gray-600"}>Mobile</span>
+                      <p className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                        {legal?.mobileNo || 'N/A'}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-            {/* Original Addresses - More compact */}
-            <div className="mb-4">
-              <h4 className={`text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Original Addresses
-              </h4>
-              <div className="space-y-2">
-                {legal?.addresses && legal.addresses.map((addr, index) => (
-                  <div
-                    key={index}
-                    className={`p-2.5 rounded border text-xs ${
-                      isDark
-                        ? "bg-gray-700/20 border-gray-600 text-gray-300"
-                        : "bg-gray-50 border-gray-200 text-gray-700"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+              {/* Original Addresses - Enhanced design */}
+              {legal?.addresses && legal.addresses.length > 0 && (
+                <div className="mb-4">
+                  <h4 className={`text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Original Addresses
+                  </h4>
+                  <div className="space-y-2">
+                    {legal.addresses.map((addr, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded border ${
                           isDark
-                            ? "bg-blue-900/50 text-blue-300"
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
-                          {addr.type}
-                        </span>
-                        <p className="mt-1 line-clamp-2">
+                            ? "bg-gray-800/30 border-gray-700"
+                            : "bg-gray-50 border-gray-200"
+                        }`}
+                      >
+                        <div className="flex items-center space-x-1.5 mb-1.5">
+                          <span className={`text-xs font-medium px-2 py-1 rounded ${
+                            isDark
+                              ? "bg-blue-900/50 text-blue-300 border border-blue-800/50"
+                              : "bg-blue-100 text-blue-700 border border-blue-300"
+                          }`}>
+                            {addr.type}
+                          </span>
+                        </div>
+                        <p className={`text-xs ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                           {addr.address}
                         </p>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
 
-            {/* Legal Addresses Header with Add Button */}
-            <div className="flex items-center justify-between mb-3">
-              <h4 className={`text-sm font-medium ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Legal Addresses
-              </h4>
-              <button
-                onClick={() => {
-                  setIsAddingAddress(true);
-                  setEditingAddress(null);
-                  resetForm();
-                }}
-                className={`px-3 py-1.5 text-xs rounded-lg flex items-center space-x-1.5 ${
-                  isDark
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Address</span>
-              </button>
-            </div>
-
-            {/* Add/Edit Form - More compact */}
-            {(isAddingAddress || editingAddress) && (
-              <div className={`mb-4 p-3 rounded-lg border ${
-                isDark
-                  ? "bg-gray-700/30 border-gray-600"
-                  : "bg-gray-50 border-gray-200"
-              }`}>
-                <h5 className={`text-sm font-medium mb-2 ${
+              {/* Legal Addresses Header with Add Button */}
+              <div className="flex items-center justify-between mb-3">
+                <h4 className={`text-sm font-medium ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  {editingAddress ? "Edit Address" : "Add New Address"}
-                </h5>
-                
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Advocate ID
-                      </label>
-                      <input
-                        type="number"
-                        value={newAddress.advocate_id}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          advocate_id: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                        placeholder="Advocate ID"
-                      />
-                    </div>
-
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Type
-                      </label>
-                      <select
-                        value={newAddress.types}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          types: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                      >
-                        <option value="138 Notice">Legal Notice (138)</option>
-                        <option value="Arbitration">Arbitration</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className={`block text-xs font-medium mb-1 ${
-                      isDark ? "text-gray-400" : "text-gray-600"
-                    }`}>
-                      Address
-                    </label>
-                    <textarea
-                      value={newAddress.address}
-                      onChange={(e) => setNewAddress({
-                        ...newAddress,
-                        address: e.target.value
-                      })}
-                      rows="2"
-                      className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                        isDark
-                          ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                          : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                      }`}
-                      placeholder="Enter full address"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Posted Date
-                      </label>
-                      <input
-                        type="date"
-                        value={newAddress.posted_date}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          posted_date: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Status
-                      </label>
-                      <select
-                        value={newAddress.status}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          status: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="Posted">Posted</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Returned">Returned</option>
-                        <option value="Unknown">Unknown</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Tracking No.
-                      </label>
-                      <input
-                        type="text"
-                        value={newAddress.tracking_no}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          tracking_no: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                        placeholder="Tracking number"
-                      />
-                    </div>
-
-                    <div>
-                      <label className={`block text-xs font-medium mb-1 ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      }`}>
-                        Remarks
-                      </label>
-                      <input
-                        type="text"
-                        value={newAddress.remarks}
-                        onChange={(e) => setNewAddress({
-                          ...newAddress,
-                          remarks: e.target.value
-                        })}
-                        className={`w-full px-2.5 py-1.5 text-xs rounded border ${
-                          isDark
-                            ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-500"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500"
-                        }`}
-                        placeholder="Optional remarks"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-2 mt-3">
-                  <button
-                    onClick={() => {
-                      setIsAddingAddress(false);
-                      setEditingAddress(null);
-                      resetForm();
-                    }}
-                    className={`px-3 py-1.5 text-xs rounded ${
-                      isDark
-                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                    }`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
-                    disabled={isLoading}
-                    className={`px-3 py-1.5 text-xs rounded text-white ${
-                      isDark
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-blue-500 hover:bg-blue-600"
-                    } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    {isLoading ? "Processing..." : editingAddress ? "Update" : "Add"}
-                  </button>
-                </div>
+                  Legal Addresses ({addresses.length})
+                </h4>
+                <button
+                  onClick={() => {
+                    setIsAddingAddress(true);
+                    setEditingAddress(null);
+                    resetForm();
+                  }}
+                  disabled={isLoading}
+                  className={`px-3 py-1.5 text-xs rounded-lg flex items-center space-x-1.5 transition-all ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${
+                    isDark
+                      ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+                      : "bg-blue-500 hover:bg-blue-600 text-white shadow-md"
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Address</span>
+                </button>
               </div>
-            )}
 
-            {/* Addresses List - More compact */}
-            {isLoading ? (
-              <div className="text-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                <p className={`mt-2 text-xs ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  Loading addresses...
-                </p>
-              </div>
-            ) : addresses.length === 0 ? (
-              <div className={`text-center py-6 rounded border ${
-                isDark
-                  ? "bg-gray-700/20 border-gray-600"
-                  : "bg-gray-50 border-gray-200"
-              }`}>
-                <MapPin className={`w-8 h-8 mx-auto mb-2 ${
-                  isDark ? "text-gray-500" : "text-gray-400"
-                }`} />
-                <p className={`text-xs ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`}>
-                  No legal addresses added yet
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {addresses.map((address) => (
-                  <div
-                    key={address.address_id}
-                    className={`p-3 rounded border ${
-                      isDark
-                        ? "bg-gray-700/20 border-gray-600"
-                        : "bg-gray-50 border-gray-200"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center space-x-1.5">
-                        {getStatusIcon(address.status)}
-                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded border ${getStatusColor(address.status)}`}>
-                          {address.status}
-                        </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          isDark
-                            ? "bg-blue-900/50 text-blue-300"
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
-                          {address.types}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleEditAddress(address)}
-                        className={`p-1 rounded ${
-                          isDark
-                            ? "hover:bg-gray-600 text-gray-400"
-                            : "hover:bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    
-                    <p className={`text-xs mb-2 line-clamp-2 ${
-                      isDark ? "text-gray-300" : "text-gray-700"
-                    }`}>
-                      {address.address}
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-1.5 text-xs">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3 opacity-70" />
-                        <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                          Posted: {address.posted_date?.split('T')[0] || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Truck className="w-3 h-3 opacity-70" />
-                        <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                          Track: {address.tracking_no || 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {address.remarks && (
-                      <div className={`mt-2 p-1.5 rounded text-xs ${
-                        isDark ? "bg-gray-600/30" : "bg-gray-100"
-                      }`}>
-                        <p className={isDark ? "text-gray-300" : "text-gray-600"}>
-                          <span className="font-medium">Remarks:</span> {address.remarks}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Footer - More compact */}
-          <div className={`px-5 py-3 border-t ${
-            isDark ? "border-gray-700" : "border-gray-200"
-          }`}>
-            <div className="flex justify-end">
-              <button
-                onClick={onClose}
-                className={`px-4 py-1.5 text-sm rounded ${
+              {/* Add/Edit Form - Enhanced design */}
+              {(isAddingAddress || editingAddress) && (
+                <div className={`mb-4 p-3.5 rounded-lg border ${
                   isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                }`}
-              >
-                Close
-              </button>
+                    ? "bg-gray-800/40 border-gray-700"
+                    : "bg-gray-50 border-gray-200"
+                }`}>
+                  <h5 className={`text-sm font-medium mb-2 ${
+                    isDark ? "text-emerald-300" : "text-teal-600"
+                  }`}>
+                    {editingAddress ? "Edit Address" : "Add New Address"}
+                  </h5>
+                  
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Advocate ID
+                        </label>
+                        <input
+                          type="number"
+                          value={newAddress.advocate_id}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            advocate_id: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                          placeholder="Advocate ID"
+                        />
+                      </div>
+
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Type
+                        </label>
+                        <select
+                          value={newAddress.types}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            types: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                        >
+                          <option value="138 Notice">Legal Notice (138)</option>
+                          <option value="Arbitration">Arbitration</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-xs font-medium mb-1 ${
+                        isDark ? "text-gray-300" : "text-gray-600"
+                      }`}>
+                        Address
+                      </label>
+                      <textarea
+                        value={newAddress.address}
+                        onChange={(e) => !isLoading && setNewAddress({
+                          ...newAddress,
+                          address: e.target.value
+                        })}
+                        disabled={isLoading}
+                        rows="2"
+                        className={`w-full px-3 py-2 text-xs rounded border ${
+                          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        } ${
+                          isDark
+                            ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                        }`}
+                        placeholder="Enter full address"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Posted Date
+                        </label>
+                        <input
+                          type="date"
+                          value={newAddress.posted_date}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            posted_date: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Status
+                        </label>
+                        <select
+                          value={newAddress.status}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            status: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Posted">Posted</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Returned">Returned</option>
+                          <option value="Unknown">Unknown</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Tracking No.
+                        </label>
+                        <input
+                          type="text"
+                          value={newAddress.tracking_no}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            tracking_no: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                          placeholder="Tracking number"
+                        />
+                      </div>
+
+                      <div>
+                        <label className={`block text-xs font-medium mb-1 ${
+                          isDark ? "text-gray-300" : "text-gray-600"
+                        }`}>
+                          Remarks
+                        </label>
+                        <input
+                          type="text"
+                          value={newAddress.remarks}
+                          onChange={(e) => !isLoading && setNewAddress({
+                            ...newAddress,
+                            remarks: e.target.value
+                          })}
+                          disabled={isLoading}
+                          className={`w-full px-3 py-2 text-xs rounded border ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+                          }`}
+                          placeholder="Optional remarks"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-2 mt-3">
+                    <button
+                      onClick={() => {
+                        setIsAddingAddress(false);
+                        setEditingAddress(null);
+                        resetForm();
+                      }}
+                      disabled={isLoading}
+                      className={`px-3 py-1.5 text-xs rounded transition-all ${
+                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      } ${
+                        isDark
+                          ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
+                      disabled={isLoading || !newAddress.address.trim()}
+                      className={`px-3 py-1.5 text-xs rounded text-white transition-all ${
+                        isLoading || !newAddress.address.trim()
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      } ${
+                        isDark
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "bg-blue-500 hover:bg-blue-600"
+                      }`}
+                    >
+                      {isLoading ? "Processing..." : editingAddress ? "Update" : "Add"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Addresses List - Enhanced design */}
+              {isLoading ? (
+                <div className="text-center py-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                  <p className={`mt-2 text-xs ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}>
+                    Loading addresses...
+                  </p>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className={`text-center py-6 rounded border ${
+                  isDark
+                    ? "bg-gray-800/30 border-gray-700"
+                    : "bg-gray-50 border-gray-200"
+                }`}>
+                  <MapPin className={`w-8 h-8 mx-auto mb-2 ${
+                    isDark ? "text-gray-500" : "text-gray-400"
+                  }`} />
+                  <p className={`text-xs ${
+                    isDark ? "text-gray-400" : "text-gray-600"
+                  }`}>
+                    No legal addresses added yet
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {addresses.map((address) => (
+                    <div
+                      key={address.address_id}
+                      className={`p-3.5 rounded border ${
+                        isDark
+                          ? "bg-gray-800/30 border-gray-700"
+                          : "bg-gray-50 border-gray-200"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center space-x-1.5">
+                          <div className={`p-1 rounded ${
+                            isDark ? "bg-gray-700/50" : "bg-gray-100"
+                          }`}>
+                            {getStatusIcon(address.status)}
+                          </div>
+                          <span className={`text-xs font-medium px-2 py-1 rounded border ${
+                            getStatusColor(address.status, isDark)
+                          }`}>
+                            {address.status}
+                          </span>
+                          <span className={`text-xs font-medium px-2 py-1 rounded ${
+                            isDark
+                              ? "bg-blue-900/50 text-blue-300 border border-blue-800/50"
+                              : "bg-blue-100 text-blue-700 border border-blue-300"
+                          }`}>
+                            {address.types}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => !isLoading && handleEditAddress(address)}
+                          disabled={isLoading}
+                          className={`p-1 rounded ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          } ${
+                            isDark
+                              ? "hover:bg-gray-700 text-gray-400"
+                              : "hover:bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      
+                      <p className={`text-xs mb-2 ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        {address.address}
+                      </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 text-xs">
+                        <div className="flex items-center space-x-1.5">
+                          <Calendar className={`w-3 h-3 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                          <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                            Posted:
+                          </span>
+                          <span className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                            {address.posted_date?.split('T')[0] || 'N/A'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-1.5">
+                          <Truck className={`w-3 h-3 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                          <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                            Tracking:
+                          </span>
+                          <span className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                            {address.tracking_no || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {address.remarks && (
+                        <div className={`mt-2 p-1.5 rounded text-xs ${
+                          isDark ? "bg-gray-700/50" : "bg-gray-100"
+                        }`}>
+                          <p className={`font-medium mb-0.5 ${
+                            isDark ? "text-gray-300" : "text-gray-600"
+                          }`}>
+                            Remarks:
+                          </p>
+                          <p className={isDark ? "text-gray-300" : "text-gray-600"}>
+                            {address.remarks}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className={`px-5 py-3.5 border-t ${
+              isDark ? "border-gray-800" : "border-gray-200"
+            }`}>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleClose}
+                  disabled={isLoading}
+                  className={`px-4 py-1.5 text-sm rounded transition-all ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  } ${
+                    isDark
+                      ? "bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700"
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-700 border border-gray-300"
+                  }`}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

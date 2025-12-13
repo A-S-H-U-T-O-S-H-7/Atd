@@ -1,5 +1,5 @@
 // components/modals/ChargeICICIModal.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, CreditCard, Calendar, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { overdueApplicantService } from '@/lib/services/OverdueApplicantServices';
@@ -17,6 +17,8 @@ const ChargeICICIModal = ({
   const [chargeAmount, setChargeAmount] = useState('');
   const [emandateDetails, setEmandateDetails] = useState(null);
   const [chargeHistory, setChargeHistory] = useState([]);
+  
+  const modalRef = useRef(null);
 
   useEffect(() => {
     if (applicant && isOpen) {
@@ -27,6 +29,33 @@ const ChargeICICIModal = ({
       fetchEmandateDetails();
     }
   }, [applicant, isOpen]);
+
+  // Outside click, escape key, and scroll lock functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        handleClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const fetchEmandateDetails = async () => {
     if (!applicant?.id) return;
@@ -105,8 +134,17 @@ const ChargeICICIModal = ({
     }
   };
 
+  const handleClose = () => {
+    if (!submitting) {
+      onClose();
+    }
+  };
+
+  // Keep the existing handleOutsideClick for backward compatibility
   const handleOutsideClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget && !submitting) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -146,8 +184,14 @@ const ChargeICICIModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm" onClick={handleOutsideClick}>
-      <div className={`relative w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl ${isDark ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-600/30' : 'bg-gradient-to-br from-white to-gray-50 border border-emerald-300'}`}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm" 
+      onClick={handleOutsideClick}
+    >
+      <div 
+        ref={modalRef}
+        className={`relative w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl ${isDark ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-600/30' : 'bg-gradient-to-br from-white to-gray-50 border border-emerald-300'}`}
+      >
         
         <div className={`px-4 py-3 border-b rounded-t-xl ${isDark ? 'border-emerald-600/50 bg-gradient-to-r from-gray-800 to-gray-900' : 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50'}`}>
           <div className="flex items-center justify-between">
@@ -168,8 +212,9 @@ const ChargeICICIModal = ({
               </div>
             </div>
             <button 
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'}`}
+              onClick={handleClose}
+              disabled={submitting}
+              className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-200 text-gray-600'}`}
             >
               <X size={20} />
             </button>
@@ -216,7 +261,8 @@ const ChargeICICIModal = ({
                       value={scheduleDate}
                       onChange={(e) => setScheduleDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className={`w-full pl-10 pr-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 ${isDark ? 'bg-gray-900 border-emerald-600/50 text-gray-100 focus:ring-emerald-500 focus:border-emerald-500' : 'bg-white border-emerald-300 text-gray-900 focus:ring-emerald-400 focus:border-emerald-400'}`}
+                      disabled={submitting}
+                      className={`w-full pl-10 pr-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'bg-gray-900 border-emerald-600/50 text-gray-100 focus:ring-emerald-500 focus:border-emerald-500' : 'bg-white border-emerald-300 text-gray-900 focus:ring-emerald-400 focus:border-emerald-400'}`}
                       required
                     />
                   </div>
@@ -232,7 +278,8 @@ const ChargeICICIModal = ({
                     onChange={(e) => setChargeAmount(e.target.value)}
                     min="1"
                     step="1"
-                    className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 ${isDark ? 'bg-gray-900 border-emerald-600/50 text-gray-100 focus:ring-emerald-500 focus:border-emerald-500' : 'bg-white border-emerald-300 text-gray-900 focus:ring-emerald-400 focus:border-emerald-400'}`}
+                    disabled={submitting}
+                    className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'bg-gray-900 border-emerald-600/50 text-gray-100 focus:ring-emerald-500 focus:border-emerald-500' : 'bg-white border-emerald-300 text-gray-900 focus:ring-emerald-400 focus:border-emerald-400'}`}
                     placeholder="Amount"
                     required
                   />
@@ -269,8 +316,8 @@ const ChargeICICIModal = ({
                 </h3>
                 <button
                   onClick={fetchEmandateDetails}
-                  disabled={loading}
-                  className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${isDark ? 'hover:bg-gray-700 text-emerald-400' : 'hover:bg-emerald-100 text-emerald-600'}`}
+                  disabled={loading || submitting}
+                  className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${(loading || submitting) ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'hover:bg-gray-700 text-emerald-400' : 'hover:bg-emerald-100 text-emerald-600'}`}
                 >
                   <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </button>
