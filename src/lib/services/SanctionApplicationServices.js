@@ -14,6 +14,15 @@ export const sanctionApplicationAPI = {
     }
   },
 
+  sendSanctionEmail: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/application/sanction/send-email/${applicationId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   exportSanctionApplications: async (params = {}) => {
     try {
       const response = await api.get("/crm/application/export/sanction", { params });

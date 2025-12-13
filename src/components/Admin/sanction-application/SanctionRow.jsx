@@ -1,5 +1,8 @@
 import React from "react";
-import { Calendar, Mail, Edit, CheckCircle, X, Edit2 } from "lucide-react";
+import { useState } from "react";
+import { Calendar, Mail, Edit, CheckCircle, X, Edit2, Loader2 } from "lucide-react";
+import Swal from 'sweetalert2';
+import { sanctionApplicationAPI } from "@/lib/services/SanctionApplicationServices";
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -43,6 +46,9 @@ const SanctionRow = ({
   loadingFileName
 }) => {
 
+    const [isSendingMail, setIsSendingMail] = useState(false);
+
+
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
   };
@@ -59,7 +65,6 @@ const SanctionRow = ({
 
   // Validation logic for loan status modal
   const canOpenLoanStatusModal = () => {
-    // Use raw values if available, otherwise fallback to formatted strings
     const sendCourierValue = application.sendToCourierRaw !== undefined 
       ? application.sendToCourierRaw === 1 
       : application.sendToCourier === "Yes";
@@ -93,8 +98,59 @@ const SanctionRow = ({
     if (canOpenLoanStatusModal()) {
       onStatusClick(application);
     }
-    // No action if validation fails - button appears disabled
   };
+
+  // Sanction Mail 
+  const handleSendSanctionMail = async () => {
+  const result = await Swal.fire({
+    title: 'Send Sanction Email?',
+    text: `Are you sure you want to send sanction email to ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Send Email',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) return;
+
+  setIsSendingMail(true);
+  
+  try {
+    const response = await sanctionApplicationAPI.sendSanctionEmail(application.id);
+    
+    if (response.success) {
+      toast.success('Sanction email sent successfully!', {
+        duration: 4000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#374151' : '#98f268',
+          color: isDark ? '#f3f4f6' : '#1f2937',
+          border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`,
+        },
+        icon: '📧',
+      });
+      
+    }
+  } catch (error) {
+    console.error('Error sending sanction email:', error);
+    toast.error('Failed to send sanction email. Please try again.', {
+      duration: 4000,
+      position: 'top-right',
+      style: {
+        background: isDark ? '#7f1d1d' : '#fef2f2',
+        color: isDark ? '#fca5a5' : '#991b1b',
+        border: `1px solid ${isDark ? '#ef4444' : '#f87171'}`,
+      },
+      icon: '❌',
+    });
+  } finally {
+    setIsSendingMail(false);
+  }
+};
 
   // Common cell styles
   const cellBase = "px-2 py-4 border-r";
@@ -627,24 +683,30 @@ const SanctionRow = ({
 
       {/* Sanction Mail */}
 <td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    {application.sanctionMail === "Sent" ? (
-      <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-        <CheckCircle className="w-3 h-3" />
-        <span>Sent</span>
-      </span>
-    ) : (
-      <button
-        
-        className="px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-        title="Send sanction letter via email"
-      >
-        <Mail className="w-4 h-4" />
-        <span>Send Mail</span>
-      </button>
-    )}
-  </div>
-</td>
+        <div className="flex items-center justify-center">
+          {application.sanctionMail === "Sent" ? (
+            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+              <CheckCircle className="w-3 h-3" />
+              <span>Sent</span>
+            </span>
+          ) : (
+            <button
+              onClick={handleSendSanctionMail}
+              disabled={isSendingMail}
+              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed`}
+              title="Send sanction letter via email"
+            >
+              {isSendingMail ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Mail className="w-4 h-4" />
+              )}
+              <span>{isSendingMail ? 'Sending...' : 'Send Mail'}</span>
+            </button>
+          )}
+        </div>
+      </td>
+
 
       {/* ICICI Emandate Status */}
 <td className={cellStyle}>
