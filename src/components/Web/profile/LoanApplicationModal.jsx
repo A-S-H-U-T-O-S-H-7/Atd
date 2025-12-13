@@ -1,8 +1,8 @@
-// components/LoanApplicationModal.jsx
 import { useState, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { TokenManager } from '@/utils/tokenManager';
 
-const LoanApplicationModal = ({ isOpen, onClose, onSuccess }) => {
+const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
   const [loanAmount, setLoanAmount] = useState('');
   const [tenure, setTenure] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,7 +13,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess }) => {
     { value: 10, label: '10 Days' },
     { value: 20, label: '20 Days' },
     { value: 30, label: '30 Days' },
-    { value: 95, label: '95 Days' } // Based on your API example
+    { value: 95, label: '95 Days' } 
   ];
 
   const validateForm = () => {
@@ -34,49 +34,66 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
+  e.preventDefault();
+  
+  if (!validateForm()) return;
 
-    setIsSubmitting(true);
-    setErrors({});
+  // Add authentication check
+  const tokenData = TokenManager.getToken();
+  if (!tokenData || !tokenData.token) {
+    setErrors({ submit: 'You are not logged in. Please log in again.' });
+    return;
+  }
 
-    try {
-      const myHeaders = new Headers();
-      myHeaders.append("Accept", "application/json");
-      myHeaders.append("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS5hdGRtb25leS5pbi9hcGkvdXNlci9sb2dpbi92ZXJpZnkiLCJpYXQiOjE3NjM0NzEwMDAsImV4cCI6MTc2NTI3MTAwMCwibmJmIjoxNzYzNDcxMDAwLCJqdGkiOiJ0NURPMWhZTnEzY0pIb0RkIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.Q86fViVmuhgWYfCRVR8Dd5sqRvAhZc-B-s-mAj5u5fQ");
-      myHeaders.append("Content-Type", "application/json");
+  if (!userId) {
+    setErrors({ submit: 'User information not available. Please refresh the page.' });
+    return;
+  }
 
-      const raw = JSON.stringify({
-        "loan_amount": parseInt(loanAmount),
-        "tenure": parseInt(tenure),
-        "enquiry_type": "Desktop"
-      });
+  setIsSubmitting(true);
+  setErrors({});
 
-      const response = await fetch("https://api.atdmoney.in/api/user/apply/loan/1", {
-        method: "PUT",
-        headers: myHeaders,
-        body: raw,
-      });
+  try {
+    const myHeaders = new Headers();
+    myHeaders.append("Accept", "application/json");
+    myHeaders.append("Authorization", `Bearer ${tokenData.token}`); 
+    myHeaders.append("Content-Type", "application/json");
 
-      const result = await response.json();
+    const raw = JSON.stringify({
+      "loan_amount": parseInt(loanAmount),
+      "tenure": parseInt(tenure),
+      "enquiry_type": "Desktop"
+    });
 
-      if (result.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          onSuccess();
-          resetForm();
-          onClose();
-        }, 2000);
+    const response = await fetch(`https://api.atdmoney.in/api/user/apply/loan/${userId}`, {
+      method: "PUT",
+      headers: myHeaders,
+      body: raw,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      setSuccess(true);
+      setTimeout(() => {
+        onSuccess();
+        resetForm();
+        onClose();
+      }, 2000);
+    } else {
+      if (result.message && result.message.includes('not authenticated')) {
+        setErrors({ submit: 'Session expired. Please log in again.' });
+        TokenManager.clearAllTokens();
       } else {
         setErrors({ submit: result.message || 'Failed to apply for loan. Please try again.' });
       }
-    } catch (error) {
-      setErrors({ submit: 'Network error. Please check your connection and try again.' });
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (error) {
+    setErrors({ submit: 'Network error. Please check your connection and try again.' });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const resetForm = () => {
     setLoanAmount('');

@@ -22,6 +22,7 @@ import LoanInformation from './LoanHistoryInformation';
 import LoanApplicationModal from './LoanApplicationModal';
 import PaymentModal from './PaymentModal';
 import { TokenManager } from '@/utils/tokenManager';
+import toast from 'react-hot-toast';
 
 
 export default function StepCompleteProfile({ 
@@ -85,7 +86,7 @@ export default function StepCompleteProfile({
   
   const handleClientHistory = () => router.push('/client-history');
   const handleLoanApplicationSuccess = () => {
-    
+    toast.success('Loan application submitted successfully!');
   };
    const handleApplyNewLoan = () => {
     setIsLoanModalOpen(true);
@@ -180,7 +181,7 @@ export default function StepCompleteProfile({
              <LoanButtons 
                 loanStatus={currentStatus} 
                 onApplyNewLoan={handleApplyNewLoan}
-                onPayNow={handlePayNow}
+                onPayNow={handlePayNow} 
               /> 
               {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">
@@ -239,6 +240,7 @@ export default function StepCompleteProfile({
         isOpen={isLoanModalOpen}
         onClose={() => setIsLoanModalOpen(false)}
         onSuccess={handleLoanApplicationSuccess}
+        userId={user?.user_id}
       />
 
       <PaymentModal
