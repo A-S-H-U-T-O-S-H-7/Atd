@@ -39,7 +39,7 @@ const ClientProfile = ({ clientData, isDark }) => {
         ? "bg-gray-800 border-emerald-600/30"
         : "bg-white border-emerald-200"
     }`}>
-      <div className={`px-6  py-4 border-b ${
+      <div className={`px-6  py-3 border-b ${
         isDark
           ? "bg-cyan-700 border-emerald-600/30"
           : "bg-emerald-50 border-emerald-200"
@@ -98,7 +98,7 @@ const ClientProfile = ({ clientData, isDark }) => {
         </div>
       </div>
       
-      <div className="p-6">
+      <div className="px-4 py-2">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="flex items-start space-x-3">

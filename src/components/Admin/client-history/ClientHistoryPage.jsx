@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { clientService } from "@/lib/services/ClientHistoryService";
 import Swal from 'sweetalert2';
+import { useAdminAuthStore } from "@/lib/store/authAdminStore";
 
 const ClientHistoryPage = () => {
   const { theme } = useThemeStore();
@@ -59,42 +60,150 @@ const ClientHistoryPage = () => {
   };
 
   // Fetch client histories
-  const fetchClientHistories = async () => {
+const fetchClientHistories = async () => {
+  try {
+    console.log("🟡 START: fetchClientHistories called");
+    setLoading(true);
+    setError(null);
+    
+    const params = buildApiParams();
+    console.log("📤 API Params:", params);
+    
+    // DEBUG: Log the API call details
+    console.log("🌐 Making API call to: /crm/clients/histories");
+    console.log("🔐 Token status:", useAdminAuthStore.getState().getToken() ? "Token exists" : "NO TOKEN!");
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("API request timeout after 15s")), 15000)
+    );
+    
     try {
-      setLoading(true);
-      setError(null);
+      const apiCall = clientService.getClientHistories(params);
+      const response = await Promise.race([apiCall, timeoutPromise]);
       
-      const params = buildApiParams();
-      const response = await clientService.getClientHistories(params);
+      console.log("✅ API Response received:", response);
+      console.log("📊 Response type:", typeof response);
+      console.log("🔍 Response keys:", Object.keys(response || {}));
       
-      if (response.success) {
-        // Transform API data to match your component structure
-        const transformedData = response.clients.map((client, index) => ({
-          id: client.user_id,
-          sn: index + 1,
-          name: client.fullname,
-          loanNo: "N/A",
-          fatherName: client.fathername,
-          crnNo: client.crnno,
-          accountId: client.accountId,
-          phone: client.phone,
-          email: client.email,
-          date: "2025-07-10" // You might need to add this field to your API
-        }));
-        
-        setClientHistoryData(transformedData);
-        setTotalCount(response.clients.length);
-        setTotalPages(Math.ceil(response.clients.length / itemsPerPage));
+      // Handle different response structures
+      if (response && typeof response === 'object') {
+        // Check if response has success property
+        if (response.success !== undefined) {
+          if (response.success) {
+            // Check if clients array exists
+            if (response.clients && Array.isArray(response.clients)) {
+              console.log(`📋 Found ${response.clients.length} clients`);
+              
+              // Transform API data
+              const transformedData = response.clients.map((client, index) => {
+                console.log(`👤 Client ${index}:`, client);
+                return {
+                  id: client.user_id || client.id || `client-${index}`,
+                  sn: index + 1,
+                  name: client.fullname || client.name || "Unknown",
+                  loanNo: client.loan_no || "N/A",
+                  fatherName: client.fathername || client.father_name || "N/A",
+                  crnNo: client.crnno || client.crn || "N/A",
+                  accountId: client.accountId || client.account_id || "N/A",
+                  phone: client.phone || client.phone_number || "N/A",
+                  email: client.email || client.email_address || "N/A",
+                  date: client.created_at || client.date || "2025-07-10"
+                };
+              });
+              
+              console.log("🔄 Transformed data:", transformedData);
+              
+              setClientHistoryData(transformedData);
+              setTotalCount(response.clients.length);
+              setTotalPages(Math.ceil(response.clients.length / itemsPerPage));
+              console.log("✅ Data set successfully");
+            } else {
+              console.error("❌ No clients array in response:", response);
+              setError("No client data found in response");
+              setClientHistoryData([]);
+            }
+          } else {
+            console.error("❌ API returned success: false", response);
+            setError(response.message || "Failed to fetch client histories");
+            setClientHistoryData([]);
+          }
+        } 
+        // If response is directly an array
+        else if (Array.isArray(response)) {
+          console.log(`📋 Response is array with ${response.length} items`);
+          
+          const transformedData = response.map((client, index) => ({
+            id: client.user_id || client.id || `client-${index}`,
+            sn: index + 1,
+            name: client.fullname || client.name || "Unknown",
+            loanNo: client.loan_no || "N/A",
+            fatherName: client.fathername || client.father_name || "N/A",
+            crnNo: client.crnno || client.crn || "N/A",
+            accountId: client.accountId || client.account_id || "N/A",
+            phone: client.phone || client.phone_number || "N/A",
+            email: client.email || client.email_address || "N/A",
+            date: client.created_at || client.date || "2025-07-10"
+          }));
+          
+          setClientHistoryData(transformedData);
+          setTotalCount(response.length);
+          setTotalPages(Math.ceil(response.length / itemsPerPage));
+        }
+        // Unknown structure
+        else {
+          console.error("❌ Unexpected response structure:", response);
+          setError("Unexpected data format from server");
+          setClientHistoryData([]);
+        }
       } else {
-        setError("Failed to fetch client histories");
+        console.error("❌ Invalid response:", response);
+        setError("Invalid response from server");
+        setClientHistoryData([]);
       }
-    } catch (err) {
-      setError("Failed to fetch client histories. Please try again.");
-      console.error("Error fetching client histories:", err);
-    } finally {
-      setLoading(false);
+      
+    } catch (apiError) {
+      console.error("❌ API Call Error:", apiError);
+      console.error("❌ Error details:", {
+        message: apiError.message,
+        response: apiError.response,
+        status: apiError.response?.status,
+        data: apiError.response?.data
+      });
+      
+      if (apiError.response) {
+        switch (apiError.response.status) {
+          case 401:
+            setError("Authentication failed. Please login again.");
+            // Auto logout handled by interceptor
+            break;
+          case 404:
+            setError("API endpoint not found. Please contact support.");
+            break;
+          case 500:
+            setError("Server error. Please try again later.");
+            break;
+          default:
+            setError(`Server error (${apiError.response.status}): ${apiError.response.data?.message || 'Unknown error'}`);
+        }
+      } else if (apiError.message.includes("timeout")) {
+        setError("Request timeout. Please check your connection.");
+      } else if (apiError.message.includes("Network Error")) {
+        setError("Network error. Please check your internet connection.");
+      } else {
+        setError("Failed to fetch client histories. Please try again.");
+      }
     }
-  };
+    
+  } catch (err) {
+    console.error("❌ Unexpected error in fetchClientHistories:", err);
+    console.error("❌ Stack trace:", err.stack);
+    setError("An unexpected error occurred. Please refresh the page.");
+  } finally {
+    console.log("🏁 FINISH: fetchClientHistories completed");
+    setLoading(false);
+  }
+};
 
   // Load data when filters or page changes
   useEffect(() => {
@@ -111,36 +220,34 @@ const ClientHistoryPage = () => {
   }, [searchField, searchTerm]);
 
   const handleViewClick = async (client) => {
-    try {
-      setLoading(true);
-      const response = await clientService.getClientDetails(client.id);
+  try {
+    setLoading(true);
+    const response = await clientService.getClientDetails(client.id);
+    
+    if (response.success) {
+      const clientDetails = {
+        ...client,
+        dob: response.details.dob,
+        selfie: response.details.selfie,
+        gender: response.details.gender,
+        location: response.details.address || response.details.current_address,
+        panNo: response.details.pan_no,
+        aadharNo: response.details.aadhar_no,
+        loans: response.loans || [],
+        references: response.references || [],  
+        verified_references: response.verified_references || []  
+      };
       
-      if (response.success) {
-        // Transform the detailed client data
-        const clientDetails = {
-          ...client,
-          dob: response.details.dob,
-          selfie: response.details.selfie,
-          gender: response.details.gender,
-          location: response.details.address,
-          panNo: response.details.pan_no,
-          aadharNo: response.details.aadhar_no,
-          // Add loan information if available
-          loans: response.loans || [],
-          references: response.references || []
-        };
-        
-        setSelectedClient(clientDetails);
-        setIsViewModalOpen(true);
-      }
-    } catch (err) {
-      setError("Failed to fetch client details");
-      console.error("Error fetching client details:", err);
-    } finally {
-      setLoading(false);
+      setSelectedClient(clientDetails);
+      setIsViewModalOpen(true);
     }
-  };
-
+  } catch (err) {
+    setError("Failed to fetch client details");
+    console.error("Error fetching client details:", err);
+  } finally {
+    setLoading(false);
+  }
+};
   const handleCloseModal = () => {
     setIsViewModalOpen(false);
     setSelectedClient(null);

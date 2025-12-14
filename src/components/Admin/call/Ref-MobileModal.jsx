@@ -1,9 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Smartphone, User, Phone, Mail, Users, Copy, Check } from "lucide-react";
+import { X, Smartphone, User, Phone, Mail, Users, Copy, Check, Loader2 } from "lucide-react";
+import { callAPI } from "@/lib/services/CallServices";
+import toast from "react-hot-toast";
 
-const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
+const RefMobileModal = ({ isOpen, onClose, userId, isDark }) => {
+  const [references, setReferences] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const modalRef = useRef(null);
+
+  // Fetch references when modal opens
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchReferences();
+    } else {
+      // Reset state when modal closes
+      setReferences([]);
+      setLoading(false);
+    }
+  }, [isOpen, userId]);
 
   // Handle outside click
   useEffect(() => {
@@ -39,13 +54,45 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  const fetchReferences = async () => {
+    if (!userId) {
+      toast.error('User ID not found');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('Fetching references for userId:', userId);
+      const response = await callAPI.getReferences(userId);
+      console.log('References API response:', response);
+      
+      if (response.success) {
+        setReferences(response.refferences || response.data || []);
+      } else {
+        toast.error(response.message || 'Failed to fetch references');
+        setReferences([]);
+      }
+    } catch (error) {
+      console.error('Error fetching references:', error);
+      toast.error('Error fetching references. Please try again.');
+      setReferences([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const copyToClipboard = (text, field) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
   };
+
+  const handleRefresh = () => {
+    fetchReferences();
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3">
@@ -74,20 +121,51 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-white" />
             <h3 className="text-sm font-bold text-white">
-              References ({references.length})
+              References {!loading && `(${references.length})`}
             </h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all disabled:opacity-50"
+              title="Refresh references"
+            >
+              <svg 
+                className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+            </button>
+            
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Compact Content */}
         <div className="p-3 max-h-[70vh] overflow-y-auto">
-          {references && references.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+              <p className={`text-sm ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+                Loading references...
+              </p>
+            </div>
+          ) : references.length > 0 ? (
             <div className="space-y-2">
               {references.map((ref, index) => (
                 <div 
@@ -111,7 +189,7 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
                       <span className={`text-xs font-semibold ${
                         isDark ? "text-white" : "text-gray-900"
                       }`}>
-                        {ref.ref_name}
+                        {ref.ref_name || 'N/A'}
                       </span>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -119,7 +197,7 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
                         ? "bg-slate-700 text-slate-300" 
                         : "bg-gray-200 text-gray-600"
                     }`}>
-                      {ref.ref_relation}
+                      {ref.ref_relation || 'Unknown'}
                     </span>
                   </div>
 
@@ -134,15 +212,16 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
                       <span className={`text-xs font-medium ${
                         isDark ? "text-green-400" : "text-green-600"
                       }`}>
-                        {ref.ref_mobile}
+                        {ref.ref_mobile || 'N/A'}
                       </span>
                     </div>
                     <button
                       onClick={() => copyToClipboard(ref.ref_mobile, `mobile-${index}`)}
+                      disabled={!ref.ref_mobile}
                       className={`p-1 rounded transition-all ${
                         isDark 
-                          ? "bg-slate-600 hover:bg-slate-500 text-slate-300" 
-                          : "bg-gray-200 hover:bg-gray-300 text-gray-600"
+                          ? "bg-slate-600 hover:bg-slate-500 text-slate-300 disabled:opacity-50" 
+                          : "bg-gray-200 hover:bg-gray-300 text-gray-600 disabled:opacity-50"
                       }`}
                     >
                       {copiedField === `mobile-${index}` ? (
@@ -193,6 +272,18 @@ const RefMobileModal = ({ isOpen, onClose, references = [], isDark }) => {
             }`}>
               <Users className="w-8 h-8 mb-2" />
               <p className="text-xs font-medium">No references available</p>
+              {userId && !loading && (
+                <button
+                  onClick={handleRefresh}
+                  className={`mt-2 px-3 py-1 text-xs rounded transition-colors ${
+                    isDark 
+                      ? "bg-slate-700 hover:bg-slate-600 text-slate-300" 
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  }`}
+                >
+                  Try Again
+                </button>
+              )}
             </div>
           )}
         </div>

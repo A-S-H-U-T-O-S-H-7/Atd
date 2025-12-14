@@ -51,7 +51,8 @@ export const formatSanctionApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
-    user_Id: application.user_id,
+    userId: application.user_id,
+    user_id: application.user_id,
 
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),

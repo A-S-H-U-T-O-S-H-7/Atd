@@ -161,80 +161,7 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
     return Math.round((passed / verifications.length) * 100);
   };
 
-  // API integration functions using new service
-  const handlePanVerification = async () => {
-    if (!formik.values.panNo) {
-      toast.error('PAN number is required');
-      return;
-    }
-
-    if (!formik.values.applicationId) {
-      toast.error('Application ID is required');
-      return;
-    }
-
-    try {
-      setPanVerifying(true);
-      
-      const panData = {
-        application_id: parseInt(formik.values.applicationId),
-        crnno: formik.values.crnNo || '',
-        pan_no: formik.values.panNo.toUpperCase().trim()
-      };
-
-      const response = await personalVerificationService.verifyPAN(panData);
-      
-      // Auto-update verification status based on response
-      if (response?.success) {
-        formik.setFieldValue('personal_pan', 'Yes');
-        formik.setFieldValue('pan_status', response.status || 'Positive');
-        toast.success('PAN verification completed successfully');
-      } else {
-        toast.error(response?.message || 'PAN verification failed');
-      }
-    } catch (error) {
-      toast.error(error?.response?.data?.message || 'PAN verification failed');
-    } finally {
-      setPanVerifying(false);
-    }
-  };
-
-  const handleAadharVerification = async () => {
-    if (!formik.values.aadharNo) {
-      toast.error('Aadhar number is required');
-      return;
-    }
-
-    if (!formik.values.applicationId) {
-      toast.error('Application ID is required');
-      return;
-    }
-
-    try {
-      setAadharVerifying(true);
-      
-      const aadharData = {
-        application_id: parseInt(formik.values.applicationId),
-        crnno: formik.values.crnNo || '',
-        aadhar_no: formik.values.aadharNo
-      };
-
-      const response = await personalVerificationService.verifyAadhar(aadharData);
-      
-      // Auto-update verification status based on response
-      if (response?.success) {
-        formik.setFieldValue('personal_aadhar', 'Yes');
-        formik.setFieldValue('aadhar_status', response.status || 'Positive');
-        toast.success('Aadhar verification completed successfully');
-      } else {
-        toast.error(response?.message || 'Aadhar verification failed');
-      }
-    } catch (error) {
-      toast.error(error?.response?.data?.message || 'Aadhar verification failed');
-    } finally {
-      setAadharVerifying(false);
-    }
-  };
+  
 
   const handleReportClick = async (type) => {
     // Validate required fields
@@ -284,19 +211,19 @@ const DocumentVerification = ({ formik, onSectionSave, isDark, saving }) => {
       }));
       
       // Auto-update verification status based on response
-      if (response?.success) {
-        if (type === 'pan') {
-          formik.setFieldValue('personal_pan', 'Yes');
-          formik.setFieldValue('pan_status', 'Positive');
-          toast.success('PAN verification completed successfully');
-        } else if (type === 'aadhar') {
-          formik.setFieldValue('personal_aadhar', 'Yes');
-          formik.setFieldValue('aadhar_status', 'Positive');
-          toast.success('Aadhar verification completed successfully');
-        }
-      } else {
-        toast.error(response?.message || `${type.toUpperCase()} verification failed`);
-      }
+if (!response?.success) {
+  if (type === 'pan') {
+    formik.setFieldValue('personal_pan', 'No');
+    formik.setFieldValue('pan_status', 'Negative');
+  } else if (type === 'aadhar') {
+    formik.setFieldValue('personal_aadhar', 'No');
+    formik.setFieldValue('aadhar_status', 'Negative');
+  }
+}
+// For SUCCESS cases - just show toast, don't auto-set
+if (response?.success) {
+  toast.success(`${type.toUpperCase()} verification completed successfully. Please manually verify details.`);
+}
     } catch (error) {
       const errorResponse = {
         success: false,

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Phone, User, CreditCard, Clock, Smartphone, Building } from "lucide-react";
 import { callAPI } from "@/lib/services/CallServices";
 import RefMobileModal from "./Ref-MobileModal";
 import AccountDetailsModal from "./AccountDetailsModal";
+import toast from "react-hot-toast";
 
 const CallDetailsModal = ({ 
   isOpen, 
@@ -20,10 +21,9 @@ const CallDetailsModal = ({
   const [showRefModal, setShowRefModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [references, setReferences] = useState([]);
-  const [loadingReferences, setLoadingReferences] = useState(false);
 
-  const userId = data?.userId || data?.user_id;
+  // Get user ID from data
+  const userId = data?.user_id || data?.userId;
   const customerId = data?.id || data?.customer_id || data?.application_id;
 
   // Close on Escape key
@@ -43,23 +43,7 @@ const CallDetailsModal = ({
     };
   }, [isOpen, onClose]);
 
-  const fetchReferences = useCallback(async () => {
-    if (!userId) return;
-    
-    setLoadingReferences(true);
-    try {
-      const response = await callAPI.getReferences(userId);
-      if (response.success) {
-        setReferences(response.refferences || []);
-      }
-    } catch (error) {
-      setReferences([]);
-    } finally {
-      setLoadingReferences(false);
-    }
-  }, [userId]);
-
-  const fetchCallHistory = useCallback(async () => {
+  const fetchCallHistory = async () => {
     if (!customerId) return;
     
     setLoadingHistory(true);
@@ -68,22 +52,22 @@ const CallDetailsModal = ({
       setCallHistory(response.calls || []);
       setCustomerDetails(response.details || null);
     } catch (error) {
+      console.error('Error fetching call history:', error);
       setCallHistory([]);
       setCustomerDetails(null);
     } finally {
       setLoadingHistory(false);
     }
-  }, [customerId]);
+  };
 
   useEffect(() => {
     if (isOpen) {
       fetchCallHistory();
-      fetchReferences();
       setRemarks("");
       setNextCallDate("");
       setSubmitError("");
     }
-  }, [isOpen, fetchCallHistory, fetchReferences]);
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -170,6 +154,14 @@ const CallDetailsModal = ({
     return new Date().toISOString().split('T')[0];
   };
 
+  const handleOpenRefModal = () => {
+    if (!userId) {
+      toast.error('User ID not found. Cannot fetch references.');
+      return;
+    }
+    setShowRefModal(true);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -218,16 +210,17 @@ const CallDetailsModal = ({
           
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setShowRefModal(true)}
-              disabled={loadingReferences}
+              onClick={handleOpenRefModal}
+              disabled={!userId}
               className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isDark 
                   ? "bg-gray-700 hover:bg-gray-600 text-gray-200" 
                   : "bg-blue-100 hover:bg-blue-200 text-blue-700"
-              } ${loadingReferences ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${!userId ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title={!userId ? "User ID not available" : "View References"}
             >
               <Smartphone className="w-4 h-4" />
-              <span>{loadingReferences ? 'Loading...' : 'Ref Mobile'}</span>
+              <span>Ref Mobile</span>
             </button>
             
             <button
@@ -556,7 +549,7 @@ const CallDetailsModal = ({
       <RefMobileModal
         isOpen={showRefModal}
         onClose={() => setShowRefModal(false)}
-        references={references}
+        userId={userId}
         isDark={isDark}
       />
 

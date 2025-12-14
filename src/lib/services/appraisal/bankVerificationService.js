@@ -23,7 +23,6 @@ class BankVerificationService {
       }
 
       const response = await this.saveBankRemarks(data);
-      // Toast shown in component layer to avoid duplicates
       return response;
     } catch (error) {
       console.error('Error saving bank remark:', error);

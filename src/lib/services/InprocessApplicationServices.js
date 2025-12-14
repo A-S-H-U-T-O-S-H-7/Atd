@@ -58,6 +58,7 @@ export const formatInProgressApplicationForUI = (application) => {
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
     userId: application.user_id,
+    user_id: application.user_id,
 
 
     // Date and time information

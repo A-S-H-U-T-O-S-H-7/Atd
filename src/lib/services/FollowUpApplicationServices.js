@@ -65,6 +65,7 @@ export const formatFollowUpApplicationForUI = (application) => {
     crnNo: application.crnno,
     accountId: application.accountId,
     userId: application.user_id,
+    user_id: application.user_id,
 
 
     // Date and time information

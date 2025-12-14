@@ -1,6 +1,36 @@
+import { useState, useEffect, useRef } from "react";
 import { X, FileText, Calendar, IndianRupee, User, MapPin, CreditCard, Clock, Mail, Phone } from "lucide-react";
 
 const LoanDetailsModal = ({ isOpen, onClose, loanData, isDark, clientData }) => {
+  const modalRef = useRef(null);
+
+  // Outside click and escape key functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !loanData) return null;
 
   // Format transaction data from API or use empty array if not available
@@ -67,10 +97,20 @@ const LoanDetailsModal = ({ isOpen, onClose, loanData, isDark, clientData }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className={`relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        ref={modalRef}
+        className={`relative w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl ${
+          isDark ? "bg-gray-900" : "bg-white"
+        }`}
+      >
         {/* Header */}
         <div className={`sticky top-0 z-10 px-6 py-4 border-b ${
           isDark

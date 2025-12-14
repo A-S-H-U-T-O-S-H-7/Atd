@@ -1,47 +1,59 @@
 import { useState } from "react";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import LoanDetailsModal from "./LoanDetailsModal";
 import { getStatusName } from "@/utils/applicationStatus";
 import { clientService } from "@/lib/services/ClientHistoryService";
-import { formatLedgerDetailsForUI } from "@/lib/services/LedgerServices";
 
 const ClientTables = ({ clientData, isDark }) => {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingLoanId, setLoadingLoanId] = useState(null);
+  const [isReferenceExpanded, setIsReferenceExpanded] = useState(false); 
 
   // Transform references data from API
-  const transformReferences = (references) => {
-    if (!references || references.length === 0) return [];
-    
-    const refData = references[0]; 
-    const transformed = [];
-    
-    for (let i = 1; i <= 6; i++) {
-      const refName = refData[`refName${i}`];
-      const refPhone = refData[`refPhone${i}`];
-      const refEmail = refData[`refEmail${i}`];
-      
-      if (refName && refPhone) {
-        transformed.push({
-          id: i,
-          name: refName,
-          email: refEmail || "Not Available",
-          mobile: refPhone
-        });
-      }
+  const transformReferences = (references, verifiedReferences) => {
+    if (references && Array.isArray(references) && references.length > 0) {
+      return references.map((ref, index) => ({
+        id: index + 1,
+        name: ref.name || "N/A",
+        email: ref.email || "Not Available",
+        mobile: ref.mobile || ref.phone || "Not Available"
+      }));
     }
     
-    return transformed;
+    // Fallback to verified_references if simple references not available
+    if (verifiedReferences && verifiedReferences.length > 0) {
+      const refData = verifiedReferences[0];
+      const transformed = [];
+      
+      for (let i = 1; i <= 6; i++) {
+        const refName = refData[`refName${i}`];
+        const refPhone = refData[`refPhone${i}`];
+        const refEmail = refData[`refEmail${i}`];
+        
+        if (refName && refPhone) {
+          transformed.push({
+            id: i,
+            name: refName,
+            email: refEmail || "Not Available",
+            mobile: refPhone
+          });
+        }
+      }
+      
+      return transformed;
+    }
+    
+    return [];
   };
 
-  // Transform loan data from API - FIXED VERSION
+  // Transform loan 
   const transformLoans = (loans) => {
     if (!loans || loans.length === 0) return [];
     
     return loans.map((loan, index) => ({
-      application_id: loan.application_id, // Make sure this is correctly mapped
+      application_id: loan.application_id, 
       loanNo: loan.loan_no || `LOAN-${index + 1}`,
       sanctionAmount: loan.approved_amount || loan.sanction_amount,
       transactionDate: loan.transaction_date,
@@ -87,7 +99,7 @@ const ClientTables = ({ clientData, isDark }) => {
     }
   };
 
-  const referenceData = transformReferences(clientData.references);
+  const referenceData = transformReferences(clientData.references, clientData.verified_references);
   const loanHistoryData = transformLoans(clientData.loans);
 
   const formatDate = (dateString) => {
@@ -162,96 +174,124 @@ const ClientTables = ({ clientData, isDark }) => {
 
   return (
     <>
-      {/* Reference Details Section */}
-      <div className={`rounded-xl border-2 overflow-hidden ${
+      {/* Reference Details Section - Collapsible */}
+      <div className={`rounded-xl border-2 overflow-hidden transition-all duration-300 ${
         isDark
           ? "bg-gray-800 border-emerald-600/30"
           : "bg-white border-emerald-200"
       }`}>
-        <div className={`px-6 py-4 border-b ${
-          isDark
-            ? "bg-emerald-700 border-emerald-600/30"
-            : "bg-emerald-50 border-emerald-200"
-        }`}>
-          <div className="flex items-center space-x-2">
-            <h3 className={`text-lg font-semibold ${
-              isDark ? "text-white" : "text-gray-900"
+        {/* Header - Clickable for toggle */}
+        <button 
+          onClick={() => setIsReferenceExpanded(!isReferenceExpanded)}
+          className={`w-full px-6 py-4 border-b text-left transition-all duration-200 hover:opacity-90 ${
+            isDark
+              ? "bg-emerald-700 border-emerald-600/30 hover:bg-emerald-600/80"
+              : "bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <h3 className={`text-lg font-semibold ${
+                isDark ? "text-white" : "text-gray-900"
+              }`}>
+                Reference Details
+              </h3>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                isDark 
+                  ? "bg-emerald-800/50 text-emerald-300" 
+                  : "bg-emerald-100 text-emerald-800"
+              }`}>
+                {referenceData.length} {referenceData.length === 1 ? 'reference' : 'references'}
+              </span>
+            </div>
+            <div className={`transform transition-transform duration-300 ${
+              isReferenceExpanded ? 'rotate-180' : ''
             }`}>
-              Reference Details
-            </h3>
+              {isReferenceExpanded ? (
+                <ChevronUp className={`w-5 h-5 ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`} />
+              ) : (
+                <ChevronDown className={`w-5 h-5 ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`} />
+              )}
+            </div>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className={`${
-              isDark ? "bg-gray-700" : "bg-gray-50"
-            }`}>
-              <tr>
-                <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  SN
-                </th>
-                <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  Reference Name
-                </th>
-                <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  Reference Email
-                </th>
-                <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
-                  isDark ? "text-gray-300" : "text-gray-600"
-                }`}>
-                  Reference Mobile
-                </th>
-              </tr>
-            </thead>
-            <tbody className={`divide-y ${
-              isDark ? "divide-gray-700" : "divide-gray-200"
-            }`}>
-              {referenceData.length > 0 ? (
-                referenceData.map((ref, index) => (
-                  <tr key={ref.id} className={`${
-                    index % 2 === 0
-                      ? isDark ? "bg-gray-800" : "bg-white"
-                      : isDark ? "bg-gray-700/50" : "bg-gray-50"
+        </button>
+        
+        {/* Collapsible Content */}
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isReferenceExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className={`${
+                isDark ? "bg-gray-700" : "bg-gray-50"
+              }`}>
+                <tr>
+                  <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
+                    isDark ? "text-gray-300" : "text-gray-600"
                   }`}>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                      isDark ? "text-gray-300" : "text-gray-900"
+                    SN
+                  </th>
+                  <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
+                    isDark ? "text-gray-300" : "text-gray-600"
+                  }`}>
+                    Reference Name
+                  </th>
+                  <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
+                    isDark ? "text-gray-300" : "text-gray-600"
+                  }`}>
+                    Reference Email
+                  </th>
+                  <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
+                    isDark ? "text-gray-300" : "text-gray-600"
+                  }`}>
+                    Reference Mobile
+                  </th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${
+                isDark ? "divide-gray-700" : "divide-gray-200"
+              }`}>
+                {referenceData.length > 0 ? (
+                  referenceData.map((ref, index) => (
+                    <tr key={ref.id} className={`${
+                      index % 2 === 0
+                        ? isDark ? "bg-gray-800" : "bg-white"
+                        : isDark ? "bg-gray-700/50" : "bg-gray-50"
                     }`}>
-                      {ref.id}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                      isDark ? "text-white" : "text-gray-900"
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        isDark ? "text-gray-300" : "text-gray-900"
+                      }`}>
+                        {ref.id}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                        isDark ? "text-white" : "text-gray-900"
+                      }`}>
+                        {ref.name}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        {ref.email}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
+                        isDark ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        {ref.mobile}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className={`px-6 py-4 text-center text-sm ${
+                      isDark ? "text-gray-400" : "text-gray-500"
                     }`}>
-                      {ref.name}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                      isDark ? "text-gray-300" : "text-gray-700"
-                    }`}>
-                      {ref.email}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-mono ${
-                      isDark ? "text-gray-300" : "text-gray-700"
-                    }`}>
-                      {ref.mobile}
+                      No reference data available
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className={`px-6 py-4 text-center text-sm ${
-                    isDark ? "text-gray-400" : "text-gray-500"
-                  }`}>
-                    No reference data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -261,7 +301,7 @@ const ClientTables = ({ clientData, isDark }) => {
           ? "bg-gray-800 border-emerald-600/30"
           : "bg-white border-emerald-200"
       }`}>
-        <div className={`px-6 py-4 border-b ${
+        <div className={`px-6 py-3 border-b ${
           isDark
             ? "bg-indigo-400 border-emerald-600/30"
             : "bg-emerald-50 border-emerald-200"
@@ -322,7 +362,7 @@ const ClientTables = ({ clientData, isDark }) => {
             }`}>
               {loanHistoryData.length > 0 ? (
                 loanHistoryData.map((loan, index) => (
-                  <tr key={loan.loanNo} className={`${
+                  <tr key={`${loan.loanNo}-${index}-${loan.transactionDate}-${loan.collectionAmount}`} className={`${
                     index % 2 === 0
                       ? isDark ? "bg-gray-800" : "bg-white"
                       : isDark ? "bg-gray-700/50" : "bg-gray-50"

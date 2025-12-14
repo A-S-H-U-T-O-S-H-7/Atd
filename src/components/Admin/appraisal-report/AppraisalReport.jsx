@@ -12,8 +12,6 @@ import { documentVerificationSchema } from '@/lib/schema/documentVerificationSch
 import { salaryVerificationService } from '@/lib/services/appraisal';
 import { bankVerificationService } from '@/lib/services/appraisal';
 
-
-
 // Import components
 import BasicInformation from './BasicInfo';
 import PersonalVerification from './PersonalVerification';

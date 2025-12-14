@@ -191,7 +191,7 @@ const SanctionRow = ({
     applicant={application}
     isDark={isDark}
     size="small"
-    variant="default"
+    variant="default" 
     className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
   />
 </td>

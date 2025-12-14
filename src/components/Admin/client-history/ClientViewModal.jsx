@@ -1,16 +1,55 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { X, User } from "lucide-react";
 import ClientProfile from "./ClientViewProfile";
 import ClientTables from "./ClientViewTables";
 
 const ClientViewModal = ({ isOpen, onClose, clientData, isDark, loading }) => {
+  const modalRef = useRef(null);
+
+  // Outside click and escape key functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className={`relative w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        ref={modalRef}
+        className={`relative w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl ${
+          isDark ? "bg-gray-900" : "bg-white"
+        }`}
+      >
         {/* Header */}
         <div className={`sticky top-0 z-10 px-6 py-4 border-b-2 ${
           isDark
@@ -55,7 +94,7 @@ const ClientViewModal = ({ isOpen, onClose, clientData, isDark, loading }) => {
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-8">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
                 <p className={`mt-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
@@ -64,7 +103,7 @@ const ClientViewModal = ({ isOpen, onClose, clientData, isDark, loading }) => {
               </div>
             </div>
           ) : clientData ? (
-            <div className="p-6 space-y-8">
+            <div className="p-6 space-y-4">
               <ClientProfile clientData={clientData} isDark={isDark} />
               <ClientTables clientData={clientData} isDark={isDark} />
             </div>
