@@ -62,8 +62,9 @@ const ApplicationRow = ({
     return `${numAmount.toLocaleString("en-IN", {})}`;
   };
 
-  // Check if loan is closed (status 13)
+  // Check loan status
   const isLoanClosed = application.loanStatusId === 13;
+  const isRenewalLoan = application.loanStatusId === 18;
 
   // Common cell styles
   const cellBase = "px-2 py-4 border-r";
@@ -75,10 +76,18 @@ const ApplicationRow = ({
     const baseClasses = "border-b transition-all duration-200 hover:shadow-lg";
     
     if (isLoanClosed) {
+      // Deep orange for closed loans in light mode, lighter in dark mode
       if (isDark) {
-        return `${baseClasses} bg-gradient-to-r from-orange-950/40 via-orange-900/30 to-orange-950/40 border-orange-800/30 hover:bg-gradient-to-r hover:from-orange-900/50 hover:via-orange-800/40 hover:to-orange-900/50 shadow-orange-900/20`;
+        return `${baseClasses} bg-gradient-to-r from-orange-900/40 via-orange-800/30 to-orange-900/40 border-orange-700/30 hover:bg-gradient-to-r hover:from-orange-900/50 hover:via-orange-800/40 hover:to-orange-900/50 shadow-orange-900/10`;
       } else {
-        return `${baseClasses} bg-gradient-to-r from-orange-50 via-orange-100/70 to-orange-50 border-orange-200 hover:bg-gradient-to-r hover:from-orange-100 hover:via-orange-50 hover:to-orange-100 shadow-orange-100`;
+        return `${baseClasses} bg-gradient-to-r from-orange-100 via-orange-50 to-orange-100 border-orange-300 hover:bg-gradient-to-r hover:from-orange-200 hover:via-orange-100 hover:to-orange-200 shadow-orange-100`;
+      }
+    } else if (isRenewalLoan) {
+      // Blue shade for renewal loans (status 18) - using blue-900/10 in light, blue-900/20 in dark
+      if (isDark) {
+        return `${baseClasses} bg-gradient-to-r from-blue-900/20 via-blue-900/15 to-blue-900/20 border-blue-800/30 hover:bg-gradient-to-r hover:from-blue-900/25 hover:via-blue-900/20 hover:to-blue-900/25 shadow-blue-900/10`;
+      } else {
+        return `${baseClasses} bg-gradient-to-r from-blue-50 via-blue-50/80 to-blue-50 border-blue-200 hover:bg-gradient-to-r hover:from-blue-100 hover:via-blue-50 hover:to-blue-100 shadow-blue-100`;
       }
     } else {
       // Normal row styling
@@ -134,7 +143,7 @@ const ApplicationRow = ({
           {application.loanStatusId === 18 && (
             <button
               onClick={() => onCollectionClick && onCollectionClick(application, 'renewal')}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
               title="Renewal"
             >
               Renewal
@@ -150,8 +159,8 @@ const ApplicationRow = ({
             </button>
           )}
           {application.loanStatusId === 13 && (
-            <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-emerald-400 bg-emerald-900' : 'border-emerald-500 bg-emerald-400'}`}>
-              <CheckCircle className={`w-5 h-5 ${isDark ? 'text-emerald-500' : 'text-emerald-100'}`} />
+            <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-orange-400 bg-orange-900/30' : 'border-orange-500 bg-orange-100'}`}>
+              <CheckCircle className={`w-5 h-5 ${isDark ? 'text-orange-300' : 'text-orange-600'}`} />
             </div>
           )}
           {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
@@ -253,6 +262,8 @@ const ApplicationRow = ({
       "Applied Amount": () => (
         <div className={`px-2 rounded-md ${isLoanClosed ? 
           (isDark ? "bg-orange-900/40 text-orange-200 border border-orange-700/50" : "bg-orange-100 text-orange-800 border border-orange-300") 
+          : isRenewalLoan ?
+          (isDark ? "bg-blue-900/30 text-blue-200 border border-blue-700/40" : "bg-blue-100 text-blue-800 border border-blue-300")
           : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"}`}>
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.appliedAmount)}
@@ -262,6 +273,8 @@ const ApplicationRow = ({
       "Amount Approved": () => (
         <div className={`px-2 rounded-md ${isLoanClosed ? 
           (isDark ? "bg-orange-900/40 text-orange-200 border border-orange-700/50" : "bg-orange-100 text-orange-800 border border-orange-300") 
+          : isRenewalLoan ?
+          (isDark ? "bg-blue-900/30 text-blue-200 border border-blue-700/40" : "bg-blue-100 text-blue-800 border border-blue-300")
           : "bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border border-orange-300"}`}>
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.approvedAmount)}
@@ -754,11 +767,17 @@ const ApplicationRow = ({
         );
       },
       "Disburse": () => (
-        <div className={`border-2 rounded-md px-1 py-1 text-center ${isLoanClosed ? 
-          (isDark ? 'border-orange-400 bg-orange-900/30' : 'border-orange-500 bg-orange-100') 
+        <div className={`border-2 rounded-md px-1 py-1 text-center ${
+          isLoanClosed ? 
+          (isDark ? 'border-emerald-400 text-center bg-emerald-900/30' : 'border-emerald-500 text-center bg-emerald-100') 
+          : isRenewalLoan ?
+          (isDark ? 'border-blue-400 bg-blue-900/30' : 'border-blue-500 bg-blue-100')
           : 'border-green-500 bg-green-500'}`}>
-          <CheckCircle className={`w-5 h-5 ${isLoanClosed ? 
-            (isDark ? 'text-orange-300' : 'text-orange-600') 
+          <CheckCircle className={`w-5 h-5 ${
+            isLoanClosed ? 
+            (isDark ? 'text-emerald-300' : 'text-emerald-600') 
+            : isRenewalLoan ?
+            (isDark ? 'text-blue-300' : 'text-blue-600')
             : 'text-white'}`} />
         </div>
       ),

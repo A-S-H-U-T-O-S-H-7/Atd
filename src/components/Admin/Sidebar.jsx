@@ -6,14 +6,16 @@ import { FiMenu, FiX, FiChevronRight } from 'react-icons/fi';
 import {
   FaHome, FaSms, FaFileExport, FaMoneyCheckAlt, FaBook, FaHandHoldingUsd, FaMobileAlt,
   FaEnvelopeOpenText, FaHourglassHalf, FaBriefcase,
-  FaUserTie
+  FaUserTie,
+  FaShieldAlt
 } from 'react-icons/fa';
 import {
   MdReviews, MdReportProblem, MdOutlineAccessTimeFilled, MdFlashAuto, MdOutlineQrCode2,
   MdAssignmentTurnedIn, MdCreditScore, MdPendingActions, MdDoneAll, MdCancel, MdMenuBook,
   MdDownload, MdSupportAgent, MdAttachMoney, MdOutlineHistoryEdu,
   MdSettings,
-  MdAccountBalance
+  MdAccountBalance,
+  MdAutorenew
 } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
 import { RiAccountPinBoxFill} from "react-icons/ri";
@@ -106,6 +108,8 @@ const menuList = [
     subItems: [
       { name: 'Cheque Management', link: '/crm/cheque-management', icon: <BanknoteArrowUp size={16} /> },
       { name: 'Cash Management', link: '/crm/cash-management', icon: <IoMdCash /> },
+      { name: 'E-Mandate Management', link: '/crm/e-mandate-management', icon: <FaShieldAlt/> },
+
     ]
   },
   { name: 'Legal Case', link: '/crm/legal', icon: <Scale /> },

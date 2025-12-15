@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaSignature } from 'react-icons/fa';
 import { TokenManager } from '@/utils/tokenManager';
 
-const DigitalLoanAgreement = ({ enabled, user, VerificationIcon, VerificationButton }) => {
+const DigitalLoanAgreement = ({ enabled, completed, user, VerificationIcon, VerificationButton }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [esignUrl, setEsignUrl] = useState(null);
@@ -44,6 +44,9 @@ const DigitalLoanAgreement = ({ enabled, user, VerificationIcon, VerificationBut
       if (result.success && result.url) {
         setEsignUrl(result.url);
         window.open(result.url, '_blank');
+        
+        // Poll for agreement status
+        checkAgreementStatus();
       } else {
         throw new Error(result.message || 'Failed to generate eSign link');
       }
@@ -53,6 +56,62 @@ const DigitalLoanAgreement = ({ enabled, user, VerificationIcon, VerificationBut
       setIsLoading(false);
     }
   };
+
+  const checkAgreementStatus = async () => {
+    try {
+      const tokenData = TokenManager.getToken();
+      const userToken = tokenData.token;
+      
+      const interval = setInterval(async () => {
+        const response = await fetch(
+          `https://api.atdmoney.in/api/user/loan-agreement/status/${user.application_id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${userToken}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        const result = await response.json();
+        
+        if (result.success && result.agreement_status === 1) {
+          clearInterval(interval);
+          // Refresh the page to update status
+          window.location.reload();
+        }
+      }, 5000); // Check every 5 seconds
+      
+      // Stop checking after 5 minutes
+      setTimeout(() => {
+        clearInterval(interval);
+      }, 300000);
+    } catch (error) {
+      console.error('Error checking agreement status:', error);
+    }
+  };
+
+  if (completed) {
+    return (
+      <div className="flex flex-col items-center gap-2 sm:gap-4 flex-1 w-full sm:w-auto">
+        <VerificationIcon 
+          icon={FaSignature}
+          title="Digital Loan Agreement"
+          enabled={false}
+          completed={true}
+          colorScheme="purple"
+        />
+        <VerificationButton
+          enabled={false}
+          completed={true}
+          tooltipText="Agreement completed!"
+          colorScheme="purple"
+        >
+          Digital Loan Agreement
+        </VerificationButton>
+      </div>
+    );
+  }
 
   if (esignUrl) {
     return (
@@ -71,6 +130,9 @@ const DigitalLoanAgreement = ({ enabled, user, VerificationIcon, VerificationBut
         >
           Open Agreement
         </VerificationButton>
+        <p className="text-xs text-blue-600 text-center mt-1">
+          ✅ Agreement sent for signing. Please check the opened tab.
+        </p>
       </div>
     );
   }

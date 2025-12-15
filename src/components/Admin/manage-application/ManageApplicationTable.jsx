@@ -174,9 +174,39 @@ const ManageApplicationTable = ({
 
   return (
     <>
+    {/* Loan Status Color Indicators */}
+    <div className={`flex justify-end items-center gap-6 mb-4 px-3   ${
+      isDark ? "bg-gray-900 " : "bg-gray-50/80 "
+    }`}>
+      {/* Closed Loans Indicator */}
+      <div className="flex items-center gap-2">
+        <div className={`w-5 h-5 rounded-sm ${
+          isDark ? "bg-orange-900/60 border border-orange-700/50" : "bg-orange-100 border border-orange-300"
+        }`}></div>
+        <span className={`text-xs font-medium tracking-wide ${
+          isDark ? "text-orange-200" : "text-orange-700"
+        }`}>
+          Closed
+        </span>
+      </div>
+      
+      {/* Renewal Loans Indicator */}
+      <div className="flex items-center gap-2">
+        <div className={`w-5 h-5 rounded-sm ${
+          isDark ? "bg-blue-900/50 border border-blue-700/40" : "bg-blue-50 border border-blue-300"
+        }`}></div>
+        <span className={`text-xs font-medium tracking-wide ${
+          isDark ? "text-blue-200" : "text-blue-700"
+        }`}>
+          Renewal
+        </span>
+      </div>
+       </div>
+
       {/* Minimal Compact Controls - Integrated with table */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
+          
           {/* Column Group Controls */}
           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
             isDark ? "bg-gray-800/50" : "bg-gray-100"
@@ -305,29 +335,7 @@ const ManageApplicationTable = ({
         </div>
       </div>
 
-      {/* Status Indicator - Minimal */}
-      {/* <div className={`flex items-center gap-4 mb-3 px-3 py-2 rounded-lg ${
-        isDark ? "bg-gray-800/30" : "bg-gray-100"
-      }`}>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${
-            isDark ? "bg-emerald-500" : "bg-emerald-400"
-          }`}></div>
-          <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-            Showing {getVisibleHeaders().length} of 44 columns
-          </span>
-        </div>
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Personal: {collapsedSections.personalInfo ? 'Hidden' : 'Visible'}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Documents: {collapsedSections.documents ? 'Hidden' : 'Visible'}</span>
-          </div>
-        </div>
-      </div> */}
+      
 
       {/* Animated Table */}
       <motion.div

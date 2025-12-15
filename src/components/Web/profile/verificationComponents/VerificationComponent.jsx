@@ -5,24 +5,18 @@ import EMandate from "./EMandate";
 import DigitalLoanAgreement from "./DigitalLoanAgreement";
 
 const VerificationComponent = ({ loanStatus = 2, user }) => {
-  // Loan status mapping
-  const getLoanStatusLabel = (statusCode) => {
-    switch (parseInt(statusCode)) {
-      case 2: return 'applied';
-      case 3: return 'rejected';
-      case 6: return 'sanctioned';
-      case 9: return 'disbursed';
-      case 13: return 'closed';
-      case 5: return 'inprogress';
-      default: return 'applied';
-    }
-  };
-
-  // Convert API status code to string label
-  const statusLabel = getLoanStatusLabel(loanStatus);
+  const currentLoanStatus = parseInt(loanStatus);
   
-  // Verification is enabled only when loan is sanctioned
-  const isVerificationEnabled = statusLabel === 'sanctioned';
+  const isSanctioned = currentLoanStatus >= 6;
+  
+  const isEMandateEnabled = isSanctioned && user?.emandate_status !== "0300";
+  const isEMandateCompleted = user?.emandate_status === "0300";
+  
+  const isAgreementEnabled = isSanctioned && user?.agreement_status !== 1;
+  const isAgreementCompleted = user?.agreement_status === 1;
+  
+  const isVideoEnabled = isSanctioned && user?.video_status !== 1;
+  const isVideoCompleted = user?.video_status === 1;
 
   // Tooltip component
   const Tooltip = ({ children, text, show }) => (
@@ -38,21 +32,35 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
   );
 
   // Shared VerificationButton component
-  const VerificationButton = ({ children, enabled, tooltipText, colorScheme, onClick, isLoading = false }) => {
+  const VerificationButton = ({ children, enabled, tooltipText, colorScheme, onClick, isLoading = false, completed = false }) => {
     const colors = {
       blue: {
         enabled: 'border-blue-400 bg-blue-500 hover:bg-blue-600 text-white',
-        disabled: 'border-blue-200 bg-blue-200 text-blue-400 cursor-not-allowed'
+        disabled: 'border-blue-200 bg-blue-200 text-blue-400 cursor-not-allowed',
+        completed: 'border-green-400 bg-green-500 text-white'
       },
       green: {
         enabled: 'border-green-400 bg-green-500 hover:bg-green-600 text-white',
-        disabled: 'border-green-200 bg-green-200 text-green-400 cursor-not-allowed'
+        disabled: 'border-green-200 bg-green-200 text-green-400 cursor-not-allowed',
+        completed: 'border-green-400 bg-green-500 text-white'
       },
       purple: {
         enabled: 'border-purple-400 bg-purple-500 hover:bg-purple-600 text-white',
-        disabled: 'border-purple-200 bg-purple-200 text-purple-400 cursor-not-allowed'
+        disabled: 'border-purple-200 bg-purple-200 text-purple-400 cursor-not-allowed',
+        completed: 'border-green-400 bg-green-500 text-white'
       }
     };
+
+    if (completed) {
+      return (
+        <button 
+          className={`border-2 text-xs sm:text-sm md:text-base font-medium md:font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow-md w-full sm:w-auto flex items-center justify-center space-x-1 ${colors[colorScheme].completed}`}
+          disabled
+        >
+          <span>✅ Completed</span>
+        </button>
+      );
+    }
 
     return (
       <Tooltip text={tooltipText} show={!enabled}>
@@ -73,21 +81,35 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
   };
 
   // Shared VerificationIcon component
-  const VerificationIcon = ({ icon: Icon, title, enabled, colorScheme }) => {
+  const VerificationIcon = ({ icon: Icon, title, enabled, colorScheme, completed = false }) => {
     const colors = {
       blue: {
         enabled: 'border-blue-300 bg-blue-100 text-blue-600',
-        disabled: 'border-blue-100 bg-blue-50 text-blue-300'
+        disabled: 'border-blue-100 bg-blue-50 text-blue-300',
+        completed: 'border-green-300 bg-green-100 text-green-600'
       },
       green: {
         enabled: 'border-green-300 bg-green-100 text-green-600',
-        disabled: 'border-green-100 bg-green-50 text-green-300'
+        disabled: 'border-green-100 bg-green-50 text-green-300',
+        completed: 'border-green-300 bg-green-100 text-green-600'
       },
       purple: {
         enabled: 'border-purple-300 bg-purple-100 text-purple-600',
-        disabled: 'border-purple-100 bg-purple-50 text-purple-300'
+        disabled: 'border-purple-100 bg-purple-50 text-purple-300',
+        completed: 'border-green-300 bg-green-100 text-green-600'
       }
     };
+
+    if (completed) {
+      return (
+        <div className={`rounded-full font-semibold border-2 flex flex-col justify-center items-center text-center w-20 h-20 md:w-24 md:h-24 shadow-md ${colors[colorScheme].completed}`}>
+          <span className="text-2xl">✅</span>
+          <p className={`text-xs md:text-sm font-semibold md:font-bold text-green-800`}>
+            {title}
+          </p>
+        </div>
+      );
+    }
 
     return (
       <div className={`rounded-full font-semibold border-2 flex flex-col justify-center items-center text-center w-20 h-20 md:w-24 md:h-24 shadow-md transition-all duration-300 ${
@@ -108,7 +130,7 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
   return (
     <div>
       {/* Status Message */}
-      {!isVerificationEnabled && (
+      {!isSanctioned && (
         <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-sm text-amber-700 font-medium text-center">
             🔒 Verification options will be available once your loan is sanctioned.
@@ -116,35 +138,42 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         </div>
       )}
 
-      {isVerificationEnabled && (
+      {isSanctioned && (
         <div className="mb-2 p-2 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-700 font-medium text-center">
-            ✅ 🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps:<br/> <span className="font-semibold text-blue-500">Video Verification</span>, <span className="font-semibold text-green-500">E-Mandate</span>, and <span className="font-semibold text-purple-500">Digital loan agreement</span>.
+            ✅ 🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps:<br/> 
+            <span className="font-semibold text-blue-500">Video Verification</span>, 
+            <span className="font-semibold text-green-500">E-Mandate</span>, and 
+            <span className="font-semibold text-purple-500">Digital loan agreement</span>.
           </p>
         </div>
       )}
       
       <div className={`border-2 p-2 sm:p-4 flex flex-col sm:flex-row justify-between items-center rounded-2xl shadow-lg gap-4 sm:gap-6 lg:gap-4 transition-all duration-300 ${
-        isVerificationEnabled 
+        isSanctioned 
           ? 'border-blue-300 bg-gradient-to-r from-blue-50 to-indigo-100' 
           : 'border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100'
       }`}>
         
         <VideoVerification 
-          enabled={isVerificationEnabled}
+          enabled={isVideoEnabled}
+          completed={isVideoCompleted}
           VerificationIcon={VerificationIcon}
           VerificationButton={VerificationButton}
+          user={user}
         />
         
         <EMandate 
-          enabled={isVerificationEnabled}
+          enabled={isEMandateEnabled}
+          completed={isEMandateCompleted}
           VerificationIcon={VerificationIcon}
           VerificationButton={VerificationButton}
           user={user}
         />
         
         <DigitalLoanAgreement 
-          enabled={isVerificationEnabled}
+          enabled={isAgreementEnabled}
+          completed={isAgreementCompleted}
           user={user}
           VerificationIcon={VerificationIcon}
           VerificationButton={VerificationButton}
