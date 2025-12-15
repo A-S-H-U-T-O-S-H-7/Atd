@@ -1,5 +1,6 @@
+// ApplicationRow.js - COMPLETE VERSION
 import React from "react";
-import { Calendar, Mail, Edit, CheckCircle, X, Edit2, FileText } from "lucide-react";
+import { Calendar, Mail, Edit, CheckCircle, X, FileText } from "lucide-react";
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -27,6 +28,7 @@ const ApplicationRow = ({
   application,
   index,
   isDark,
+  visibleHeaders, // New prop: array of visible headers
   onLoanEligibilityClick,
   onCheckClick,
   onChequeModalOpen,
@@ -49,82 +51,41 @@ const ApplicationRow = ({
   onDisburseApproval,
   onCollectionClick
 }) => {
+  
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
   };
 
   const formatCurrency = amount => {
-  if (!amount && amount !== 0) return "0";
-  const numAmount = parseFloat(amount);
-  if (isNaN(numAmount)) return "0";
-  return `${numAmount.toLocaleString("en-IN", {
-  })}`;
-};
-
-  // Status update handlers
-  const handleReadyForApproveClick = () => {
-    if (application.readyForApprove === "pending") {
-      onReadyForApprove(application);
-    }
-  };
-
-  const handleBankVerificationClick = () => {
-    if (application.bankVerification === "not_verified") {
-      onBankVerification(application);
-    }
-  };
-
-  const handleDisburseApprovalClick = () => {
-    if (application.disburseApproval === "not_approved") {
-      onDisburseApproval(application);
-    }
+    if (!amount && amount !== 0) return "0";
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount)) return "0";
+    return `${numAmount.toLocaleString("en-IN", {})}`;
   };
 
   // Common cell styles
-  const cellBase = "px-2 py-4  border-r";
+  const cellBase = "px-2 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
-  
-  // Text styles
-  const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
-  const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
-  const textAccent = isDark ? "text-emerald-400" : "text-emerald-600";
-  
-  // Icon styles
-  const iconAccent = `w-4 h-4 ${textAccent}`;
 
-  return (
-    <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-emerald-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
-      }`}
-    >
-      {/* SR No */}
-      <td className={cellStyle}>
-        <span className={`font-medium ${textPrimary}`}>
+  // Create a map of header label to render function
+  const renderCell = (headerLabel) => {
+    const cellMap = {
+      "SR. No": () => (
+        <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {application.srNo}
         </span>
-      </td>
-
-      {/* Call */}
-      <td className={cellStyle}>
-  <CallButton
-    applicant={application}
-    isDark={isDark}
-    size="small"
-    variant="default"
-    className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
-  />
-</td>
-
-{/* Collection */}
-      <td className={cellStyle}>
+      ),
+      "Call": () => (
+        <CallButton
+          applicant={application}
+          isDark={isDark}
+          size="small"
+          variant="default"
+          className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
+        />
+      ),
+      "Collection": () => (
         <div className="flex items-center justify-center">
           {application.loanStatusId === 11 && (
             <button
@@ -171,181 +132,133 @@ const ApplicationRow = ({
             <span className="text-sm text-gray-500">-</span>
           )}
         </div>
-      </td>
-      
-      {/* Loan No. */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Loan No.": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.loanNo}
         </span>
-      </td>
-
-      {/* CRN No */}
-      <td className={cellStyle}>
-      <CRNLink 
-        crnNo={application.crnNo} 
-        userId={application.userId}
-        onSuccess={(data) => {
-          toast.success('Profile loaded');
-        }}
-        onError={(error) => {
-          toast.error(error);
-        }}
-      />
-      </td>
-
-      {/* Account ID */}
-      {/* <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
-          {application.accountId}
-        </span>
-      </td> */}
-
-      {/* Approved Date */}
-      <td className={cellStyle}>
+      ),
+      "CRN No.": () => (
+        <CRNLink 
+          crnNo={application.crnNo} 
+          userId={application.userId}
+          onSuccess={(data) => {
+            toast.success('Profile loaded');
+          }}
+          onError={(error) => {
+            toast.error(error);
+          }}
+        />
+      ),
+      "Approved Date": () => (
         <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
+          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
             {application.approvedDate || 'N/A'}
           </span>
         </div>
-      </td>
-
-      {/* Disburse Date */}
-      <td className={cellStyle}>
+      ),
+      "Disburse Date": () => (
         <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
+          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
             {application.disburseDate}
           </span>
         </div>
-      </td>
-
-      {/* Due Date */}
-      <td className={cellStyle}>
+      ),
+      "Due Date": () => (
         <div className="flex items-center space-x-2">
-          <Calendar className={iconAccent} />
-          <span className={`text-sm font-medium ${textSecondary}`}>
+          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
             {application.dueDate}
           </span>
         </div>
-      </td>
-
-      {/* Name */}
-      <td className={cellStyle}>
-        <span className={`font-medium text-sm ${textPrimary}`}>
+      ),
+      "Name": () => (
+        <span className={`font-medium text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {application.name}
         </span>
-      </td>
-
-      {/* Current Address */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Current Address": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.currentAddress}
         </span>
-      </td>
-
-      {/* Current State */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Current State": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.currentState}
         </span>
-      </td>
-
-      {/* Current City */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Current City": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.currentCity}
         </span>
-      </td>
-
-      {/* Permanent Address */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Permanent Address": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.permanentAddress}
         </span>
-      </td>
-
-      {/* State */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "State": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.state}
         </span>
-      </td>
-
-      {/* City */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "City": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.city}
         </span>
-      </td>
-
-      {/* Phone No */}
-      <td className={cellStyle}>
+      ),
+      "Phone No.": () => (
         <div className="flex items-center space-x-2">
-          <span className={`text-sm ${textSecondary}`}>
+          <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
             {application.phoneNo}
           </span>
         </div>
-      </td>
-
-      {/* E-mail */}
-      <td className={cellStyle}>
+      ),
+      "E-mail": () => (
         <div className="flex items-center space-x-2">
-          <Mail className={iconAccent} />
-          <span className={`text-sm ${textSecondary}`}>
+          <Mail className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
             {application.email}
           </span>
         </div>
-      </td>
-
-      {/* Applied Amount */}
-      <td className={cellStyle}>
+      ),
+      "Applied Amount": () => (
         <div className="bg-gradient-to-r px-2 rounded-md from-blue-100 to-blue-200 text-blue-800 border border-blue-300">
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.appliedAmount)}
           </span>
         </div>
-      </td>
-
-      {/* Approved Amount */}
-      <td className={cellStyle}>
+      ),
+      "Amount Approved": () => (
         <div className="bg-gradient-to-r px-2 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.approvedAmount)}
           </span>
         </div>
-      </td>
-
-      {/* Admin Fee */}
-      <td className={cellStyle}>
-  <div className="flex flex-col">
-    <span className={`text-sm font-semibold ${textSecondary}`}>
-      {formatCurrency(application.adminFee)}
-    </span>
-    <span className={`text-xs ${isDark ? "text-emerald-300" : "text-emerald-600 font-semibold "}`}>
-      ({application.processPercent || 0}%)
-    </span>
-  </div>
-</td>
-
-      {/* ROI */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Admin Fee": () => (
+        <div className="flex flex-col">
+          <span className={`text-sm font-semibold ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            {formatCurrency(application.adminFee)}
+          </span>
+          <span className={`text-xs ${isDark ? "text-emerald-300" : "text-emerald-600 font-semibold"}`}>
+            ({application.processPercent || 0}%)
+          </span>
+        </div>
+      ),
+      "ROI": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.roi}%
         </span>
-      </td>
-
-      {/* Tenure */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Tenure": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.tenure} days
         </span>
-      </td>
-
-
-      {/* Photo */}
-      <td className={cellStyle}>
+      ),
+      "Photo": () => (
         <PhotoDocument
           fileName={application.photoFileName}
           hasDoc={application.hasPhoto}
@@ -354,10 +267,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Pan Card */}
-      <td className={cellStyle}>
+      ),
+      "Pan Proof": () => (
         <PanCardDocument
           fileName={application.panCardFileName}
           hasDoc={application.hasPanCard}
@@ -366,10 +277,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Address Proof */}
-      <td className={cellStyle}>
+      ),
+      "Address Proof": () => (
         <AddressProofDocument
           fileName={application.addressProofFileName}
           hasDoc={application.hasAddressProof}
@@ -378,10 +287,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* ID Proof */}
-      <td className={cellStyle}>
+      ),
+      "ID Proof": () => (
         <IdProofDocument
           fileName={application.idProofFileName}
           hasDoc={application.hasIdProof}
@@ -390,10 +297,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Salary Proof */}
-      <td className={cellStyle}>
+      ),
+      "Salary Proof": () => (
         <SalaryProofDocument
           fileName={application.salarySlip1}
           hasDoc={application.hasSalaryProof}
@@ -406,10 +311,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Bank Statement */}
-      <td className={cellStyle}>
+      ),
+      "Bank Statement": () => (
         <BankStatementDocument
           fileName={application.bankStatementFileName}
           hasDoc={application.hasBankStatement}
@@ -418,10 +321,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Video KYC */}
-      <td className={cellStyle}>
+      ),
+      "Video KYC": () => (
         <VideoKYCDocument
           fileName={application.videoKycFileName}
           hasDoc={application.hasVideoKyc}
@@ -430,24 +331,18 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Approval Note */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Approval Note": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.approvalNote || "N/A"}
         </span>
-      </td>
-
-      {/* Application Source */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Enquiry Source": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.enquirySource || "N/A"}
         </span>
-      </td>
-
-      {/* Bank Verification Report */}
-      <td className={cellStyle}>
+      ),
+      "Bank Verification Report": () => (
         <BankVerificationDocument
           fileName={application.bankVerificationFileName}
           hasDoc={application.hasBankVerificationReport}
@@ -456,10 +351,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Social Score Report */}
-      <td className={cellStyle}>
+      ),
+      "Social Score Report": () => (
         <SocialScoreDocument
           fileName={application.socialScoreFileName}
           hasDoc={application.hasSocialScoreReport}
@@ -468,10 +361,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* CIBIL Score Report */}
-      <td className={cellStyle}>
+      ),
+      "Cibil Score Report": () => (
         <CibilScoreDocument
           fileName={application.cibilScoreFileName}
           hasDoc={application.hasCibilScoreReport}
@@ -480,10 +371,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* NACH Form */}
-      <td className={cellStyle}>
+      ),
+      "NACH Form": () => (
         <NachFormDocument
           fileName={application.nachFormFileName}
           hasDoc={application.hasNachForm}
@@ -492,10 +381,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* PDC */}
-      <td className={cellStyle}>
+      ),
+      "PDC": () => (
         <PDCDocument
           fileName={application.pdcFileName}
           hasDoc={application.hasPdc}
@@ -504,10 +391,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Agreement */}
-      <td className={cellStyle}>
+      ),
+      "Agreement": () => (
         <AgreementDocument
           fileName={application.agreementFileName}
           hasDoc={application.hasAgreement}
@@ -516,10 +401,8 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-      {/* Cheque */}
-      <td className={cellStyle}>
+      ),
+      "Cheque No.": () => (
         <div className="flex items-center space-x-2">
           {application.chequeNo ? (
             <div className="flex items-center space-x-2">
@@ -557,116 +440,102 @@ const ApplicationRow = ({
             </button>
           )}
         </div>
-      </td>
-
-      {/* Send To Courier - READ ONLY */}
-<td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
-      application.sendToCourier === "Yes" 
-        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
-    }`}>
-      {application.sendToCourier === "Yes" ? (
-        <>
-          <CheckCircle className="w-3 h-3" />
-          <span>Yes</span>
-        </>
-      ) : (
-        <>
-          <X className="w-3 h-3" />
-          <span>No</span>
-        </>
-      )}
-    </span>
-  </div>
-</td>
-
-{/* Courier Picked - READ ONLY */}
-<td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
-      application.courierPicked === "Yes" 
-        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
-    }`}>
-      {application.courierPicked === "Yes" ? (
-        <>
-          <CheckCircle className="w-3 h-3" />
-          <span>Yes</span>
-        </>
-      ) : (
-        <>
-          <X className="w-3 h-3" />
-          <span>No</span>
-        </>
-      )}
-    </span>
-  </div>
-</td>
-
-{/* Original Documents Received - READ ONLY */}
-<td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
-      application.originalDocuments === "Yes" 
-        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
-    }`}>
-      {application.originalDocuments === "Yes" ? (
-        <>
-          <CheckCircle className="w-3 h-3" />
-          <span>Yes</span>
-        </>
-      ) : (
-        <>
-          <X className="w-3 h-3" />
-          <span>No</span>
-        </>
-      )}
-    </span>
-  </div>
-</td>
-
-{/* Disburse Behalf of E-mandate - READ ONLY */}
-<td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
-      application.receivedDisburse === "Yes" 
-        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-        : "bg-gradient-to-r from-red-400 to-red-600 text-white"
-    }`}>
-      {application.receivedDisburse === "Yes" ? (
-        <>
-          <CheckCircle className="w-3 h-3" />
-          <span>Yes</span>
-        </>
-      ) : (
-        <>
-          <X className="w-3 h-3" />
-          <span>No</span>
-        </>
-      )}
-    </span>
-  </div>
-</td>
-
-      {/* Loan Term */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Send To Courier": () => (
+        <div className="flex items-center justify-center">
+          <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+            application.sendToCourier === "Yes" 
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+              : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+          }`}>
+            {application.sendToCourier === "Yes" ? (
+              <>
+                <CheckCircle className="w-3 h-3" />
+                <span>Yes</span>
+              </>
+            ) : (
+              <>
+                <X className="w-3 h-3" />
+                <span>No</span>
+              </>
+            )}
+          </span>
+        </div>
+      ),
+      "Courier Picked": () => (
+        <div className="flex items-center justify-center">
+          <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+            application.courierPicked === "Yes" 
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+              : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+          }`}>
+            {application.courierPicked === "Yes" ? (
+              <>
+                <CheckCircle className="w-3 h-3" />
+                <span>Yes</span>
+              </>
+            ) : (
+              <>
+                <X className="w-3 h-3" />
+                <span>No</span>
+              </>
+            )}
+          </span>
+        </div>
+      ),
+      "Original Documents Received": () => (
+        <div className="flex items-center justify-center">
+          <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+            application.originalDocuments === "Yes" 
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+              : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+          }`}>
+            {application.originalDocuments === "Yes" ? (
+              <>
+                <CheckCircle className="w-3 h-3" />
+                <span>Yes</span>
+              </>
+            ) : (
+              <>
+                <X className="w-3 h-3" />
+                <span>No</span>
+              </>
+            )}
+          </span>
+        </div>
+      ),
+      "Disburse Behalf of E-mandate": () => (
+        <div className="flex items-center justify-center">
+          <span className={`px-3 py-1 rounded-2xl text-xs font-semibold flex items-center space-x-1 ${
+            application.receivedDisburse === "Yes" 
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+              : "bg-gradient-to-r from-red-400 to-red-600 text-white"
+          }`}>
+            {application.receivedDisburse === "Yes" ? (
+              <>
+                <CheckCircle className="w-3 h-3" />
+                <span>Yes</span>
+              </>
+            ) : (
+              <>
+                <X className="w-3 h-3" />
+                <span>No</span>
+              </>
+            )}
+          </span>
+        </div>
+      ),
+      "Loan Term": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.loanTerm}
         </span>
-      </td>
-
-      {/* Disbursal Account */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Disbursal Account": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.disbursalAccount}
         </span>
-      </td>
-
-      {/* Customer A/c Verified */}
-      <td className={cellStyle}>
+      ),
+      "Customer A/c Verified": () => (
         <div className="flex items-center justify-center">
           {application.customerAcVerified === "Yes" ? (
             <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
@@ -680,10 +549,8 @@ const ApplicationRow = ({
             </button>
           )}
         </div>
-      </td>
-
-      {/* Sanction Letter */}
-      <td className={cellStyle}>
+      ),
+      "Sanction Letter": () => (
         <SanctionLetterDocument
           fileName={application.sanctionLetterFileName}
           hasDoc={application.sanctionLetter}
@@ -692,210 +559,184 @@ const ApplicationRow = ({
           loadingFileName={loadingFileName}
           isDark={isDark}
         />
-      </td>
-
-     {/* ICICI Emandate Status */}
-<td className={cellStyle}>
-  {(() => {
-    let enachAccount = null;
-    let customerAccount = null;
-    
-    if (application.enachDetails?.details) {
-      const enachMatch = application.enachDetails.details.match(/enach_ac_no:\s*(\d+)/);
-      if (enachMatch) {
-        enachAccount = enachMatch[1];
-      }
-      
-      // Extract customer_ac_no from enach_details
-      const customerMatch = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
-      if (customerMatch) {
-        customerAccount = customerMatch[1];
-      }
-    }
-    
-    // Check if E-Nach Account and Customer Account match
-    const accountsMatch = enachAccount && customerAccount && enachAccount === customerAccount;
-    
-    const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
-    const isSuccess = application.enachDetails?.status === "Success";
-    
-    return (
-      <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
-        isDark 
-          ? "bg-gray-800/50 border border-gray-700/50" 
-          : "bg-gray-50 border border-gray-200"
-      }`}>
+      ),
+      "ICICI Emandate Status": () => {
+        let enachAccount = null;
+        let customerAccount = null;
         
-        {/* Status with Badge */}
-        <div className="flex items-center space-x-1.5">
-          <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
-            application.enachDetails?.status === "Success" 
-              ? "bg-green-500 text-white" 
-              : application.enachDetails?.status === "Failed"
-              ? "bg-red-500 text-white"
-              : "bg-yellow-500 text-white"
+        if (application.enachDetails?.details) {
+          const enachMatch = application.enachDetails.details.match(/enach_ac_no:\s*(\d+)/);
+          if (enachMatch) {
+            enachAccount = enachMatch[1];
+          }
+          
+          const customerMatch = application.enachDetails.details.match(/customer_ac_no:\s*(\d+)/);
+          if (customerMatch) {
+            customerAccount = customerMatch[1];
+          }
+        }
+        
+        const accountsMatch = enachAccount && customerAccount && enachAccount === customerAccount;
+        const isPending = !application.enachDetails?.status || application.enachDetails?.status === "Pending";
+        const isSuccess = application.enachDetails?.status === "Success";
+        
+        return (
+          <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
+            isDark 
+              ? "bg-gray-800/50 border border-gray-700/50" 
+              : "bg-gray-50 border border-gray-200"
           }`}>
-            {application.enachDetails?.status === "Success" 
-              ? "✓"
-              : application.enachDetails?.status === "Failed"
-              ? "✕"
-              : "⋯"
-            }
-          </div>
-          <span className={`text-sm font-semibold ${
-            application.enachDetails?.status === "Success" 
-              ? isDark ? "text-green-400" : "text-green-700"
-              : application.enachDetails?.status === "Failed"
-              ? isDark ? "text-red-400" : "text-red-700"
-              : isDark ? "text-yellow-400" : "text-yellow-700"
-          }`}>
-            {application.enachDetails?.status || "Pending"}
-          </span>
-        </div>
-        
-        {/* Date and Time */}
-        {application.enachDetails?.date && (
-          <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-            <div className="font-medium">{application.enachDetails.date}</div>
-            {application.enachDetails?.time && (
-              <div className={isDark ? "text-gray-400" : "text-gray-500"}>
-                {application.enachDetails.time}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Account Numbers - Only show if not pending and status is Success */}
-        {!isPending && isSuccess && (
-          <div className="space-y-1.5 pt-1">
             
-            {/* E-Nach Account Number - NO TICK/CROSS */}
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
-              <span className={`text-xs font-mono font-semibold ${
-                isDark ? "text-blue-300" : "text-blue-600"
+            <div className="flex items-center space-x-1.5">
+              <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
+                application.enachDetails?.status === "Success" 
+                  ? "bg-green-500 text-white" 
+                  : application.enachDetails?.status === "Failed"
+                  ? "bg-red-500 text-white"
+                  : "bg-yellow-500 text-white"
               }`}>
-                {enachAccount || "N/A"}
+                {application.enachDetails?.status === "Success" 
+                  ? "✓"
+                  : application.enachDetails?.status === "Failed"
+                  ? "✕"
+                  : "⋯"
+                }
+              </div>
+              <span className={`text-sm font-semibold ${
+                application.enachDetails?.status === "Success" 
+                  ? isDark ? "text-green-400" : "text-green-700"
+                  : application.enachDetails?.status === "Failed"
+                  ? isDark ? "text-red-400" : "text-red-700"
+                  : isDark ? "text-yellow-400" : "text-yellow-700"
+              }`}>
+                {application.enachDetails?.status || "Pending"}
               </span>
             </div>
             
-            {/* Customer Account Number - COMPARE WITH E-NACH ACCOUNT */}
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
-              <div className="flex items-center space-x-1.5">
-                <span className={`text-xs font-mono font-semibold ${
-                  isDark ? "text-amber-300" : "text-amber-600"
-                }`}>
-                  {customerAccount || "N/A"}
-                </span>
-                {/* Compare Customer Account with E-Nach Account */}
-                {enachAccount && customerAccount && (
-                  <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
-                    accountsMatch ? "bg-green-500" : "bg-red-500"
-                  }`}>
-                    <span className="text-white text-[10px] font-bold">
-                      {accountsMatch ? "✓" : "✕"}
-                    </span>
+            {application.enachDetails?.date && (
+              <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                <div className="font-medium">{application.enachDetails.date}</div>
+                {application.enachDetails?.time && (
+                  <div className={isDark ? "text-gray-400" : "text-gray-500"}>
+                    {application.enachDetails.time}
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Customer Name - Only show if not pending */}
-        {!isPending && (
-          <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-            <span className="font-medium">{application.name || "N/A"}</span>
-          </div>
-        )}
-        
-      </div>
-    );
-  })()}
-</td>
-
-      {/* Bank A/c Verification */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={handleBankVerificationClick}
-            className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-              application.bankVerification === "not_verified"
-                ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-                : "bg-green-100 text-green-600 cursor-default"
-            }`}
-          >
-            {application.bankVerification === "not_verified" ? (
-              <span>Not Verified</span>
-            ) : (
-              <>
-                <CheckCircle size={14} />
-                <span>Verified</span>
-              </>
             )}
-          </button>
-        </div>
-      </td>
-
-      {/* Disburse Approval */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={handleDisburseApprovalClick}
-            className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-              application.disburseApproval === "not_approved"
-                ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-                : "bg-green-100 text-green-600 cursor-default"
-            }`}
-          >
-            {application.disburseApproval === "not_approved" ? (
-              <span>Not Approved</span>
-            ) : (
-              <>
-                <CheckCircle size={14} />
-                <span>Approved</span>
-              </>
+            
+            {!isPending && isSuccess && (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
+                  <span className={`text-xs font-mono font-semibold ${
+                    isDark ? "text-blue-300" : "text-blue-600"
+                  }`}>
+                    {enachAccount || "N/A"}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`text-xs font-mono font-semibold ${
+                      isDark ? "text-amber-300" : "text-amber-600"
+                    }`}>
+                      {customerAccount || "N/A"}
+                    </span>
+                    {enachAccount && customerAccount && (
+                      <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
+                        accountsMatch ? "bg-green-500" : "bg-red-500"
+                      }`}>
+                        <span className="text-white text-[10px] font-bold">
+                          {accountsMatch ? "✓" : "✕"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
+            
+            {!isPending && (
+              <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                <span className="font-medium">{application.name || "N/A"}</span>
+              </div>
+            )}
+          </div>
+        );
+      },
+      "Bank A/c Verification": () => {
+        const handleBankVerificationClick = () => {
+          if (application.bankVerification === "not_verified") {
+            onBankVerification(application);
+          }
+        };
+        
+        return (
+          <div className="flex items-center justify-center">
+            <button
+              onClick={handleBankVerificationClick}
+              className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
+                application.bankVerification === "not_verified"
+                  ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
+                  : "bg-green-100 text-green-600 cursor-default"
+              }`}
+            >
+              {application.bankVerification === "not_verified" ? (
+                <span>Not Verified</span>
+              ) : (
+                <>
+                  <CheckCircle size={14} />
+                  <span>Verified</span>
+                </>
+              )}
+            </button>
+          </div>
+        );
+      },
+      "Disburse Approval": () => {
+        const handleDisburseApprovalClick = () => {
+          if (application.disburseApproval === "not_approved") {
+            onDisburseApproval(application);
+          }
+        };
+        
+        return (
+          <div className="flex items-center justify-center">
+            <button
+              onClick={handleDisburseApprovalClick}
+              className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
+                application.disburseApproval === "not_approved"
+                  ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
+                  : "bg-green-100 text-green-600 cursor-default"
+              }`}
+            >
+              {application.disburseApproval === "not_approved" ? (
+                <span>Not Approved</span>
+              ) : (
+                <>
+                  <CheckCircle size={14} />
+                  <span>Approved</span>
+                </>
+              )}
+            </button>
+          </div>
+        );
+      },
+      "Disburse": () => (
+        <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
+          <CheckCircle className="w-5 h-5 text-white mx-auto" />
         </div>
-      </td>
-      
-      {/* Disburse */}
-      <td className={cellStyle}>
-  <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
-    <CheckCircle className="w-5 h-5 text-white mx-auto" />
-  </div>
-</td>
-
-      
-
-      {/* Change Status */}
-      {/* <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => onChangeStatusClick(application)}
-            className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            title="Change Status"
-          >
-            <Edit2 className="w-4 h-4" />
-            <span>Change Status</span>
-          </button>
-        </div>
-      </td> */}
-
-      {/* Action */}
-      <td className={cellStyle}>
+      ),
+      "Action": () => (
         <ActionButton
           enquiry={application}
           isDark={isDark}
           onVerifyClick={onActionClick} 
           className="w-full flex justify-center"
         />
-      </td>
-
-      {/* Remarks */}
-      <td className={cellStyle}>
+      ),
+      "Remarks": () => (
         <button
           onClick={() => onRemarksClick(application)}
           className={`text-sm underline cursor-pointer transition-colors duration-200 ${
@@ -906,10 +747,8 @@ const ApplicationRow = ({
         >
           View Remarks
         </button>
-      </td>
-
-      {/* Document Status */}
-      <td className={cellStyle}>
+      ),
+      "Document Status": () => (
         <div className="flex items-center justify-center">
           <button
             onClick={() => onDocumentStatusClick(application)}
@@ -924,15 +763,11 @@ const ApplicationRow = ({
             <span>Check Status</span>
           </button>
         </div>
-      </td>
-
-      {/* NOC */}
-      <td className={cellStyle}>
+      ),
+      "NOC": () => (
         <span className="text-sm text-gray-500">-</span>
-      </td>
-
-      {/* Refund PDC */}
-      <td className={cellStyle}>
+      ),
+      "Refund PDC": () => (
         <div className="flex items-center justify-center">
           <button
             onClick={() => onRefundPDCClick(application)}
@@ -951,10 +786,8 @@ const ApplicationRow = ({
             </span>
           </button>
         </div>
-      </td>
-
-      {/* Appraisal Report */}
-      <td className={cellStyle}>
+      ),
+      "Appraisal Report": () => (
         <AppraisalReportButton
           enquiry={application}
           isDark={isDark}
@@ -962,20 +795,16 @@ const ApplicationRow = ({
           onCheckClick={onCheckClick}
           className="w-full flex justify-center"
         />
-      </td>
-
-      {/* Eligibility */}
-      <td className={cellStyle}>
+      ),
+      "Eligibility": () => (
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
           onLoanEligibilityClick={onLoanEligibilityClick}
           className="w-full flex justify-center"
         />
-      </td>
-
-      {/* Replace KYC */}
-      <td className={cellStyle}>
+      ),
+      "Replace KYC": () => (
         <button
           onClick={() => onReplaceKYCClick(application)}
           className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
@@ -986,20 +815,43 @@ const ApplicationRow = ({
         >
           Replace KYC
         </button>
-      </td>
-
-      {/* Settled */}
-      <td className={cellStyle}>
-        <span className={`text-sm ${textSecondary}`}>
+      ),
+      "Settled": () => (
+        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.settled}
         </span>
-      </td>
+      ),
+    };
 
-      
+    if (cellMap[headerLabel]) {
+      return cellMap[headerLabel]();
+    }
+    
+    // Default cell if not found
+    return (
+      <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+        {application[headerLabel] || "N/A"}
+      </span>
+    );
+  };
 
-      
-
-      
+  return (
+    <tr
+      className={`border-b transition-all duration-200 hover:shadow-lg ${
+        isDark
+          ? "border-emerald-700 hover:bg-gray-700/50"
+          : "border-emerald-300 hover:bg-emerald-50/50"
+      } ${
+        index % 2 === 0
+          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+          : ""
+      }`}
+    >
+      {visibleHeaders.map((header, idx) => (
+        <td key={idx} className={cellStyle}>
+          {renderCell(header.label)}
+        </td>
+      ))}
     </tr>
   );
 };

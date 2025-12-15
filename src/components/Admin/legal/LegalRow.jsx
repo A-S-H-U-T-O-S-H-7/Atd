@@ -20,7 +20,7 @@ import {
   ExternalLink
 } from "lucide-react";
 
-const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowCriminalStatus, onShowAddress }) => {
+const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowCriminalStatus, onShowAddress,onEdit}) => {
   
   const getDeliveryStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -630,6 +630,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       <td className="px-2 py-4" style={{ minWidth: "350px" }}>
         <div className="flex flex-wrap gap-2">
           <button
+          onClick={() => onEdit(legal)} 
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300 border border-blue-700"

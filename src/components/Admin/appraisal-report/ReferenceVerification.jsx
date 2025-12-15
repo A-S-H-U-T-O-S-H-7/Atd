@@ -134,11 +134,13 @@ const handleRefreshReferences = async () => {
 
   // Existing validation functions
   const hasMinimumData = (ref) => {
-    const isValidPhone = ref.phone && ref.phone.trim().length === 10 && /^\d{10}$/.test(ref.phone.trim());
-    const isValidEmail = !ref.email || !ref.email.trim() || (ref.email.includes('@') && ref.email.includes('.'));
-    
-    return ref.name && ref.name.trim().length > 0 && isValidPhone && isValidEmail;
-  };
+  const phone = ref.phone ? ref.phone.trim() : '';
+  const startsWithValidDigit = phone && /^[6-9]/.test(phone);
+  const isValidPhone = phone.length === 10 && /^\d{10}$/.test(phone) && startsWithValidDigit;
+  const isValidEmail = !ref.email || !ref.email.trim() || (ref.email.includes('@') && ref.email.includes('.'));
+  
+  return ref.name && ref.name.trim().length > 0 && isValidPhone && isValidEmail;
+};
 
   const hasAnyData = (ref) => {
     return (ref.name && ref.name.trim()) || 
@@ -219,10 +221,13 @@ const handleRefreshReferences = async () => {
         
         if (hasAnyData) {
           if (ref.phone && ref.phone.trim()) {
-            if (ref.phone.trim().length !== 10 || !/^\d{10}$/.test(ref.phone.trim())) {
-              invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
-            }
-          }
+  const phone = ref.phone.trim();
+  if (phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+    invalidRefs.push(`Reference ${index + 1}: Phone must be exactly 10 digits`);
+  } else if (!/^[6-9]/.test(phone)) {
+    invalidRefs.push(`Reference ${index + 1}: Phone number must start with 6, 7, 8, or 9`);
+  }
+}
           
           if (ref.email && ref.email.trim()) {
             if (!ref.email.includes('@') || !ref.email.includes('.')) {
@@ -475,11 +480,11 @@ const handleRefreshReferences = async () => {
                     placeholder="10 digits *"
                     maxLength={10}
                   />
-                  {ref.phone && ref.phone.length > 0 && ref.phone.length !== 10 && (
-                    <p className="text-xs text-red-500 mt-1 text-center">
-                      {ref.phone.length}/10
-                    </p>
-                  )}
+                  {ref.phone && ref.phone.length === 10 && !/^[6-9]/.test(ref.phone) && (
+                   <p className="text-xs text-red-500 mt-1 text-center">
+                   Phone must start with 6, 7, 8, or 9
+                     </p>
+                   )}
                   {hasDuplicatePhone && (
                     <p className="text-xs text-orange-500 mt-1 text-center">
                       Duplicate phone

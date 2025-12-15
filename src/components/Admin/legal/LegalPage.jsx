@@ -97,6 +97,10 @@ const LegalPage = () => {
     }
   };
 
+const handleEdit = (legal) => {
+  router.push(`/crm/cheque-management/manage-cheque-deposit?id=${legal.id}`);
+};
+
   const handleCreateNotice = (legal) => {
     setSelectedLegal(legal);
     setIsCreateNoticeModalOpen(true);
@@ -361,7 +365,8 @@ const LegalPage = () => {
           onCreateNotice={handleCreateNotice}    
           onCriminalCase={handleCriminalCase}
           onShowAddress={handleShowAddress}
-          onShowCriminalStatus={handleShowCriminalStatus} 
+          onShowCriminalStatus={handleShowCriminalStatus}
+          onEdit={handleEdit} 
           isLoading={isLoading}
         />
       </div>

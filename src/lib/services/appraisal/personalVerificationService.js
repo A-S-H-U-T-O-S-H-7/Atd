@@ -182,10 +182,8 @@ saveReferences = async (data) => {
       const ref = additionalRefs[i] || {};
       const num = i + 1;
 
-      // Check if reference has minimum required data
       // Phone must be exactly 10 digits
       const isValidPhone = ref.phone && ref.phone.trim().length === 10 && /^\d{10}$/.test(ref.phone.trim());
-      // Email validation if provided (must contain @ and .)
       const isValidEmail = !ref.email || !ref.email.trim() || (ref.email.includes('@') && ref.email.includes('.'));
       
       const hasMinimumData = ref.name && ref.name.trim().length > 0 && isValidPhone && isValidEmail;
