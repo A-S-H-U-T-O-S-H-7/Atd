@@ -67,12 +67,12 @@ const ManageApplicationTable = ({
       { label: "SR. No", width: "90px" },
       { label: "Call", width: "20px" },
       { label: "Collection", width: "90px" },
+      { label: "Name", width: "150px" },
       { label: "Loan No.", width: "80px" },
       { label: "CRN No.", width: "60px" },
       { label: "Approved Date", width: "100px" },
       { label: "Disburse Date", width: "120px" },
       { label: "Due Date", width: "120px" },
-      { label: "Name", width: "150px" },
 
     ],
     personalInfo: [
