@@ -4,7 +4,7 @@ import { useFileUpload } from '@/hooks/useKycFileUpload';
 import Header from './Header';
 import DocumentGrid from './DocumentGrid';
 import { Toaster } from 'react-hot-toast';
-import { useThemeStore } from '@/lib/store/useThemeStore';
+import { useThemeStore } from '@/lib/store/useThemeStore'; 
 
 const ReplaceKYC = ({ enquiry, onBack }) => {
   const { theme } = useThemeStore();

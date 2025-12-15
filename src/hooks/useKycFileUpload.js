@@ -21,6 +21,12 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
       return;
     }
 
+    // Debug log
+    console.log('=== UPLOAD DEBUG ===');
+    filesToUpload.forEach(({ documentType, file }) => {
+      console.log(`Will upload ${documentType}: ${file.name} (${file.type})`);
+    });
+
     setSubmitting(true);
     const uploadToast = toast.loading(`Uploading ${filesToUpload.length} file(s)...`);
 
@@ -34,8 +40,12 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
       // Upload all files sequentially
       const uploadPromises = filesToUpload.map(async ({ documentType, file }) => {
         try {
-          // Validate file first
-          kycService.validateFile(file);
+          console.log(`Validating ${documentType}: ${file.name}`);
+          
+          // FIXED: Pass documentType to validateFile
+          kycService.validateFile(file, documentType);
+          
+          console.log(`Uploading ${documentType}: ${file.name}`);
           
           // Upload and update
           const result = await kycService.uploadAndUpdateDocument(
@@ -44,12 +54,15 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
             documentId
           );
           
+          console.log(`Successfully uploaded ${documentType}: ${file.name}`);
+          
           return {
             documentType,
             success: true,
             result
           };
         } catch (error) {
+          console.error(`Failed to upload ${documentType}:`, error.message);
           return {
             documentType,
             success: false,

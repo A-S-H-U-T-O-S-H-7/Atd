@@ -662,30 +662,33 @@ const CriminalStatusModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
                                 </span>
                               </td>
                               <td className={cellStyle}>
-                                {hearing.documents && hearing.documents.length > 0 ? (
-                                  <div className="flex justify-center items-center space-x-1">
-                                    {hearing.documents.map((_, index) => (
-                                      <div
-                                        key={index}
-                                        className={`p-1.5 rounded ${
-                                          isDark ? "bg-blue-600/20" : "bg-blue-100"
-                                        }`}
-                                        title={`Document ${index + 1}`}
-                                      >
-                                        <FileText className={`w-3.5 h-3.5 ${
-                                          isDark ? "text-blue-400" : "text-blue-600"
-                                        }`} />
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <span className={`text-xs ${
-                                    isDark ? "text-gray-400" : "text-gray-500"
-                                  }`}>
-                                    -
-                                  </span>
-                                )}
-                              </td>
+  {hearing.documents && hearing.documents.length > 0 ? (
+    <div className="flex justify-center items-center space-x-1">
+      {hearing.documents.map((doc, index) => (
+        <a
+          key={index}
+          href={doc}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`p-1.5 rounded transition-colors ${
+            isDark 
+              ? "bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 hover:text-blue-300" 
+              : "bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700"
+          }`}
+          title={`Document ${index + 1}`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+        </a>
+      ))}
+    </div>
+  ) : (
+    <span className={`text-xs ${
+      isDark ? "text-gray-400" : "text-gray-500"
+    }`}>
+      -
+    </span>
+  )}
+</td>
                               <td className={cellStyle}>
                                 <span className={`text-xs ${
                                   isDark ? "text-gray-300" : "text-gray-700"

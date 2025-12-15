@@ -126,7 +126,17 @@ export const legalService = {
       console.error('Error updating hearing:', error);
       throw error;
     }
+  },
+
+  // Get advocates list
+getAdvocates: async () => {
+  try {
+    const response = await api.get("/crm/legal/advocate");
+    return response;
+  } catch (error) {
+    throw error;
   }
+},
 };
 
 // Format legal case data for UI
