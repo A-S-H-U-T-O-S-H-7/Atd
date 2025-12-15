@@ -51,6 +51,8 @@ export const formatLedgerDataForUI = (ledger) => {
   return {
     id: ledger.application_id,
     application_id: ledger.application_id,
+    userId: ledger.user_id,
+    user_id: ledger.user_id,
     loanNo: ledger.loan_no || "N/A",
     dueDate: formatDate(ledger.duedate || ledger.due_date),
     name: ledger.name || "N/A",

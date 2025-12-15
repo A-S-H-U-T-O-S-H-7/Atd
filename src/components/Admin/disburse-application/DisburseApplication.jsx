@@ -6,15 +6,6 @@ import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import DisburseTable from "./DisburseTable";
-import ChequeModal from "../application-modals/ChequeSubmit";
-import SendToCourierModal from "../application-modals/SendToCourierModal";
-import CourierPickedModal from "../application-modals/CourierPickedModal";
-import OriginalDocumentsModal from "../application-modals/OriginalDocumentsModal";
-import DisburseEmandateModal from "../application-modals/DisburseEmandateModal";
-import ChangeStatusModal from "../application-modals/StatusModal";
-import RemarksModal from "../application-modals/RemarkModal";
-import RefundPDCModal from "../application-modals/RefundPdcModal";
-import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 import DisbursementModal from "../application-modals/DisbursementModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
@@ -38,26 +29,7 @@ const DisburseApplication = () => {
   const [fileLoading, setFileLoading] = useState(false);
   const [loadingFileName, setLoadingFileName] = useState('');
 
-  // Modal states
-  const [chequeModalOpen, setChequeModalOpen] = useState(false);
-  const [currentApplication, setCurrentApplication] = useState(null);
-  const [currentChequeNo, setCurrentChequeNo] = useState('');
-  const [courierModalOpen, setCourierModalOpen] = useState(false);
-  const [currentCourierApplication, setCurrentCourierApplication] = useState(null);
-  const [courierPickedModalOpen, setCourierPickedModalOpen] = useState(false);
-  const [currentCourierPickedApplication, setCurrentCourierPickedApplication] = useState(null);
-  const [originalDocumentsModalOpen, setOriginalDocumentsModalOpen] = useState(false);
-  const [currentOriginalDocumentsApplication, setCurrentOriginalDocumentsApplication] = useState(null);
-  const [disburseEmandateModalOpen, setDisburseEmandateModalOpen] = useState(false);
-  const [currentDisburseEmandateApplication, setCurrentDisburseEmandateApplication] = useState(null);
-  const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
-  const [currentChangeStatusApplication, setCurrentChangeStatusApplication] = useState(null);
-  const [remarksModalOpen, setRemarksModalOpen] = useState(false);
-  const [currentRemarksApplication, setCurrentRemarksApplication] = useState(null);
-  const [refundPDCModalOpen, setRefundPDCModalOpen] = useState(false);
-  const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
-  const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
-  const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+  // Modal state - only DisbursementModal is needed
   const [disbursementModalOpen, setDisbursementModalOpen] = useState(false);
   const [currentDisbursementApplication, setCurrentDisbursementApplication] = useState(null);
 
@@ -253,267 +225,26 @@ const DisburseApplication = () => {
     }
   };
 
+  // Disbursement modal handlers
   const handleDisbursementModalOpen = (application) => {
     setCurrentDisbursementApplication(application);
     setDisbursementModalOpen(true);
+  };
+
+  const handleDisbursementModalClose = () => {
+    setDisbursementModalOpen(false);
+    setCurrentDisbursementApplication(null);
   };
 
   const handleDisbursementSubmit = async (applicationId, formData) => {
     try {
       await disburseApprovalService.submitDisbursement(applicationId, formData);
       await fetchApplications();
+      toast.success('Disbursement processed successfully!');
     } catch (error) {
       toast.error('Failed to process disbursement');
       throw error;
     }
-  };
-
-  // Modal handlers
-  const handleChequeModalOpen = (application, chequeNumber) => {
-    setCurrentApplication(application);
-    setCurrentChequeNo(chequeNumber);
-    setChequeModalOpen(true);
-  };
-
-  const handleChequeModalClose = () => {
-    setChequeModalOpen(false);
-    setCurrentApplication(null);
-    setCurrentChequeNo('');
-  };
-
-  const handleChequeSubmit = async (newChequeNo) => {
-    try {
-      await disburseApprovalService.updateChequeNumber(currentApplication.id, newChequeNo);
-      setApplications(prev => prev.map(app => 
-        app.id === currentApplication.id 
-          ? { ...app, chequeNo: newChequeNo }
-          : app
-      ));
-      await fetchApplications();
-      toast.success('Cheque number updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update cheque number');
-      throw error;
-    }
-  };
-
-  const handleOriginalDocumentsModalOpen = (application) => {
-    setCurrentOriginalDocumentsApplication(application);
-    setOriginalDocumentsModalOpen(true);
-  };
-
-  const handleOriginalDocumentsModalClose = () => {
-    setOriginalDocumentsModalOpen(false);
-    setCurrentOriginalDocumentsApplication(null);
-  };
-
-  const handleOriginalDocumentsSubmit = async (isReceived, receivedDate) => {
-    try {
-      await disburseApprovalService.updateOriginalDocuments(
-        currentOriginalDocumentsApplication.id, 
-        isReceived, 
-        receivedDate
-      );
-      setApplications(prev => prev.map(app => 
-        app.id === currentOriginalDocumentsApplication.id 
-          ? { 
-              ...app, 
-              originalDocuments: isReceived ? "Yes" : "No",
-              ...(isReceived && { originalDocumentsDate: receivedDate })
-            }
-          : app
-      ));
-      await fetchApplications();
-      toast.success(isReceived ? 'Original documents received!' : 'Documents status updated!');
-    } catch (error) {
-      toast.error('Failed to update documents status');
-      throw error;
-    }
-  };
-
-  const handleRemarksModalOpen = (application) => {
-    setCurrentRemarksApplication(application);
-    setRemarksModalOpen(true);
-  };
-
-  const handleRemarksModalClose = () => {
-    setRemarksModalOpen(false);
-    setCurrentRemarksApplication(null);
-  };
-
-  const handleRemarksSubmit = async (remarks) => {
-    try {
-      await disburseApprovalService.updateRemarks(currentRemarksApplication.id, remarks);
-      await fetchApplications();
-      toast.success('Remarks updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update remarks');
-      throw error;
-    }
-  };
-
-  const handleRefundPDCModalOpen = (application) => {
-    setCurrentRefundPDCApplication(application);
-    setRefundPDCModalOpen(true);
-  };
-
-  const handleRefundPDCModalClose = () => {
-    setRefundPDCModalOpen(false);
-    setCurrentRefundPDCApplication(null);
-  };
-
-  const handleRefundPDCSubmit = async (refundStatus) => {
-    try {
-      console.log('Refund PDC status saved:', refundStatus);
-      setApplications(prev => prev.map(app => 
-        app.id === currentRefundPDCApplication.id 
-          ? { ...app, refundPdc: refundStatus }
-          : app
-      ));
-      await fetchApplications();
-      toast.success('Refund PDC status updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update refund PDC status');
-      throw error;
-    }
-  };
-
-  const handleChangeStatusModalOpen = (application) => {
-    setCurrentChangeStatusApplication(application);
-    setChangeStatusModalOpen(true);
-  };
-
-  const handleChangeStatusModalClose = () => {
-    setChangeStatusModalOpen(false);
-    setCurrentChangeStatusApplication(null);
-  };
-
-  const handleChangeStatusSubmit = async (updateData) => {
-    try {
-      await disburseApprovalService.updateStatusChange(currentChangeStatusApplication.id, updateData);
-      setApplications(prev => prev.map(app => 
-        app.id === currentChangeStatusApplication.id 
-          ? { 
-              ...app, 
-              ...(updateData.courierPickedDate && { 
-                courierPicked: "Yes", 
-                courierPickedDate: updateData.courierPickedDate 
-              }),
-              ...(updateData.originalDocumentsReceived && { 
-                originalDocuments: updateData.originalDocumentsReceived === "yes" ? "Yes" : "No" 
-              })
-            }
-          : app
-      ));
-      await fetchApplications();
-      toast.success('Status updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update status');
-      throw error;
-    }
-  };
-
-  const handleDisburseEmandateModalOpen = (application) => {
-    setCurrentDisburseEmandateApplication(application);
-    setDisburseEmandateModalOpen(true);
-  };
-
-  const handleDisburseEmandateModalClose = () => {
-    setDisburseEmandateModalOpen(false);
-    setCurrentDisburseEmandateApplication(null);
-  };
-
-  const handleDisburseEmandateSubmit = async (selectedOption) => {
-    try {
-      await disburseApprovalService.updateEmandateStatus(currentDisburseEmandateApplication.id, selectedOption);
-      setApplications(prev => prev.map(app => 
-        app.id === currentDisburseEmandateApplication.id 
-          ? { ...app, receivedDisburse: selectedOption }
-          : app
-      ));
-      await fetchApplications();
-      toast.success('E-mandate status updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update e-mandate status');
-      throw error;
-    }
-  };
-
-  const handleCourierPickedModalOpen = (application) => {
-    setCurrentCourierPickedApplication(application);
-    setCourierPickedModalOpen(true);
-  };
-
-  const handleCourierPickedModalClose = () => {
-    setCourierPickedModalOpen(false);
-    setCurrentCourierPickedApplication(null);
-  };
-
-  const handleCourierPickedSubmit = async (isPicked, pickedDate) => {
-    try {
-      await disburseApprovalService.updateCourierPicked(
-        currentCourierPickedApplication.id, 
-        isPicked, 
-        pickedDate
-      );
-      setApplications(prev => prev.map(app => 
-        app.id === currentCourierPickedApplication.id 
-          ? { 
-              ...app, 
-              courierPicked: isPicked ? "Yes" : "No",
-              ...(isPicked && { courierPickedDate: pickedDate })
-            }
-          : app
-      ));
-      await fetchApplications();
-      toast.success(isPicked ? 'Courier pickup recorded!' : 'Courier status updated!');
-    } catch (error) {
-      toast.error('Failed to update courier status');
-      throw error;
-    }
-  };
-
-  const handleCourierModalOpen = (application) => {
-    setCurrentCourierApplication(application);
-    setCourierModalOpen(true);
-  };
-
-  const handleCourierModalClose = () => {
-    setCourierModalOpen(false);
-    setCurrentCourierApplication(null);
-  };
-
-  const handleCourierSubmit = async (courierDate) => {
-    try {
-      await disburseApprovalService.updateSendToCourier(currentCourierApplication.id, courierDate);
-      setApplications(prev => prev.map(app => 
-        app.id === currentCourierApplication.id 
-          ? { ...app, sendToCourier: "Yes", courierDate: courierDate }
-          : app
-      ));
-      await fetchApplications();
-      toast.success('Courier scheduled successfully!');
-    } catch (error) {
-      toast.error('Failed to schedule courier');
-      throw error;
-    }
-  };
-
-  // Document verification handlers
-  const handleDocumentVerificationModalOpen = (application) => {
-    setCurrentDocumentApplication(application);
-    setDocumentVerificationModalOpen(true);
-  };
-
-  const handleDocumentVerificationModalClose = () => {
-    setDocumentVerificationModalOpen(false);
-    setCurrentDocumentApplication(null);
-  };
-
-  const handleDocumentVerify = (application, documentId) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-    setDocumentVerificationModalOpen(false);
   };
 
   // Handle Advanced Search
@@ -629,28 +360,7 @@ const DisburseApplication = () => {
     }
   };
 
-  // Navigation handlers
-  const handleLoanEligibilityClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/loan-eligibility/${application.id}`);
-  };
-
-  const handleCheckClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/appraisal-report/${application.id}`);
-  };
-
-  const handleReplaceKYCClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/replace-kyc/${application.id}`);
-  };
-
-  const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
-
-  // Handle file view
+  // Handle file view (still needed for any document viewing)
   const handleFileView = async (fileName, documentCategory) => {
     if (!fileName) {
       alert('No file available');
@@ -843,137 +553,20 @@ const DisburseApplication = () => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
-          onActionClick={handleActionClick}
-          loading={loading}
-          onChequeModalOpen={handleChequeModalOpen}
-          onCourierModalOpen={handleCourierModalOpen}
-          onCourierPickedModalOpen={handleCourierPickedModalOpen}
-          onOriginalDocumentsModalOpen={handleOriginalDocumentsModalOpen}  
-          onDisburseEmandateModalOpen={handleDisburseEmandateModalOpen}
-          onChangeStatusClick={handleChangeStatusModalOpen} 
-          onRemarksClick={handleRemarksModalOpen}
-          onRefundPDCClick={handleRefundPDCModalOpen}
-          onLoanEligibilityClick={handleLoanEligibilityClick}  
-          onCheckClick={handleCheckClick}
-          onReplaceKYCClick={handleReplaceKYCClick} 
-          onDocumentStatusClick={handleDocumentVerificationModalOpen}
-          onFileView={handleFileView}
-          fileLoading={fileLoading}
-          loadingFileName={loadingFileName}
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
           onStatusClick={handleDisbursementModalOpen}
         />
       </div>
 
-      {/* All Modals */}
+      {/* Only DisbursementModal remains */}
       {currentDisbursementApplication && (
         <DisbursementModal
           isOpen={disbursementModalOpen}
-          onClose={() => setDisbursementModalOpen(false)}
+          onClose={handleDisbursementModalClose}
           application={currentDisbursementApplication}
           onDisbursementSubmit={handleDisbursementSubmit}
           isDark={isDark}
-        />
-      )}
-
-      {currentDocumentApplication && (
-        <DocumentVerificationModal
-          isOpen={documentVerificationModalOpen}
-          onClose={handleDocumentVerificationModalClose}
-          onVerify={handleDocumentVerify}
-          isDark={isDark}
-          application={currentDocumentApplication}
-        />
-      )}
-
-      {currentRefundPDCApplication && (
-        <RefundPDCModal
-          isOpen={refundPDCModalOpen}
-          onClose={handleRefundPDCModalClose}
-          onSubmit={handleRefundPDCSubmit}
-          isDark={isDark}
-          customerName={currentRefundPDCApplication.name}
-          loanNo={currentRefundPDCApplication.loanNo}
-        />
-      )}
-
-      {currentApplication && (
-        <ChequeModal
-          isOpen={chequeModalOpen}
-          onClose={handleChequeModalClose}
-          onSubmit={handleChequeSubmit}
-          isDark={isDark}
-          initialChequeNo={currentChequeNo}
-          customerName={currentApplication.name}
-          isEdit={!!currentChequeNo}
-        />
-      )}
-
-      {currentCourierApplication && (
-        <SendToCourierModal
-          isOpen={courierModalOpen}
-          onClose={handleCourierModalClose}
-          onSubmit={handleCourierSubmit}
-          isDark={isDark}
-          customerName={currentCourierApplication.name}
-          loanNo={currentCourierApplication.loanNo}
-        />
-      )}
-
-      {currentCourierPickedApplication && (
-        <CourierPickedModal
-          isOpen={courierPickedModalOpen}
-          onClose={handleCourierPickedModalClose}
-          onSubmit={handleCourierPickedSubmit}
-          isDark={isDark}
-          customerName={currentCourierPickedApplication.name}
-          loanNo={currentCourierPickedApplication.loanNo}
-        />
-      )}
-
-      {currentOriginalDocumentsApplication && (
-        <OriginalDocumentsModal
-          isOpen={originalDocumentsModalOpen}
-          onClose={handleOriginalDocumentsModalClose}
-          onSubmit={handleOriginalDocumentsSubmit}
-          isDark={isDark}
-          customerName={currentOriginalDocumentsApplication.name}
-          loanNo={currentOriginalDocumentsApplication.loanNo}
-        />
-      )}
-
-      {currentDisburseEmandateApplication && (
-        <DisburseEmandateModal
-          isOpen={disburseEmandateModalOpen}
-          onClose={handleDisburseEmandateModalClose}
-          onSubmit={handleDisburseEmandateSubmit}
-          isDark={isDark}
-          customerName={currentDisburseEmandateApplication.name}
-          loanNo={currentDisburseEmandateApplication.loanNo}
-        />
-      )}
-
-      {currentChangeStatusApplication && (
-        <ChangeStatusModal
-          isOpen={changeStatusModalOpen}
-          onClose={handleChangeStatusModalClose}
-          onSubmit={handleChangeStatusSubmit}
-          isDark={isDark}
-          customerName={currentChangeStatusApplication.name}
-          loanNo={currentChangeStatusApplication.loanNo}
-        />
-      )}
-
-      {currentRemarksApplication && (
-        <RemarksModal
-          isOpen={remarksModalOpen}
-          onClose={handleRemarksModalClose}
-          onSubmit={handleRemarksSubmit}
-          isDark={isDark}
-          customerName={currentRemarksApplication.name}
-          loanNo={currentRemarksApplication.loanNo}
-          application={currentRemarksApplication}
         />
       )}
     </div>

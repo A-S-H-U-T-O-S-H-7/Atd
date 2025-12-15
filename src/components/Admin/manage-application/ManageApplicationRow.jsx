@@ -1,4 +1,3 @@
-// ApplicationRow.js - COMPLETE VERSION
 import React from "react";
 import { Calendar, Mail, Edit, CheckCircle, X, FileText } from "lucide-react";
 
@@ -28,7 +27,7 @@ const ApplicationRow = ({
   application,
   index,
   isDark,
-  visibleHeaders, // New prop: array of visible headers
+  visibleHeaders,
   onLoanEligibilityClick,
   onCheckClick,
   onChequeModalOpen,
@@ -63,10 +62,37 @@ const ApplicationRow = ({
     return `${numAmount.toLocaleString("en-IN", {})}`;
   };
 
+  // Check if loan is closed (status 13)
+  const isLoanClosed = application.loanStatusId === 13;
+
   // Common cell styles
   const cellBase = "px-2 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
+
+  // Get row styling based on loan status and theme
+  const getRowClasses = () => {
+    const baseClasses = "border-b transition-all duration-200 hover:shadow-lg";
+    
+    if (isLoanClosed) {
+      if (isDark) {
+        return `${baseClasses} bg-gradient-to-r from-orange-950/40 via-orange-900/30 to-orange-950/40 border-orange-800/30 hover:bg-gradient-to-r hover:from-orange-900/50 hover:via-orange-800/40 hover:to-orange-900/50 shadow-orange-900/20`;
+      } else {
+        return `${baseClasses} bg-gradient-to-r from-orange-50 via-orange-100/70 to-orange-50 border-orange-200 hover:bg-gradient-to-r hover:from-orange-100 hover:via-orange-50 hover:to-orange-100 shadow-orange-100`;
+      }
+    } else {
+      // Normal row styling
+      const hoverEffect = isDark 
+        ? "border-emerald-700 hover:bg-gray-700/50" 
+        : "border-emerald-300 hover:bg-emerald-50/50";
+      
+      const alternatingBg = index % 2 === 0 
+        ? (isDark ? "bg-gray-700/30" : "bg-gray-50")
+        : "";
+      
+      return `${baseClasses} ${hoverEffect} ${alternatingBg}`;
+    }
+  };
 
   // Create a map of header label to render function
   const renderCell = (headerLabel) => {
@@ -124,8 +150,8 @@ const ApplicationRow = ({
             </button>
           )}
           {application.loanStatusId === 13 && (
-            <div className="border-2 border-green-500 bg-green-500 rounded-md px-2 py-1">
-              <CheckCircle className="w-5 h-5 text-white" />
+            <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-emerald-400 bg-emerald-900' : 'border-emerald-500 bg-emerald-400'}`}>
+              <CheckCircle className={`w-5 h-5 ${isDark ? 'text-emerald-500' : 'text-emerald-100'}`} />
             </div>
           )}
           {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
@@ -225,14 +251,18 @@ const ApplicationRow = ({
         </div>
       ),
       "Applied Amount": () => (
-        <div className="bg-gradient-to-r px-2 rounded-md from-blue-100 to-blue-200 text-blue-800 border border-blue-300">
+        <div className={`px-2 rounded-md ${isLoanClosed ? 
+          (isDark ? "bg-orange-900/40 text-orange-200 border border-orange-700/50" : "bg-orange-100 text-orange-800 border border-orange-300") 
+          : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"}`}>
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.appliedAmount)}
           </span>
         </div>
       ),
       "Amount Approved": () => (
-        <div className="bg-gradient-to-r px-2 rounded-md from-orange-100 to-orange-200 text-orange-800 border border-orange-300">
+        <div className={`px-2 rounded-md ${isLoanClosed ? 
+          (isDark ? "bg-orange-900/40 text-orange-200 border border-orange-700/50" : "bg-orange-100 text-orange-800 border border-orange-300") 
+          : "bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border border-orange-300"}`}>
           <span className={`text-sm font-semibold`}>
             {formatCurrency(application.approvedAmount)}
           </span>
@@ -724,8 +754,12 @@ const ApplicationRow = ({
         );
       },
       "Disburse": () => (
-        <div className="border-2 border-green-500 bg-green-500 rounded-md px-1 py-1 text-center">
-          <CheckCircle className="w-5 h-5 text-white mx-auto" />
+        <div className={`border-2 rounded-md px-1 py-1 text-center ${isLoanClosed ? 
+          (isDark ? 'border-orange-400 bg-orange-900/30' : 'border-orange-500 bg-orange-100') 
+          : 'border-green-500 bg-green-500'}`}>
+          <CheckCircle className={`w-5 h-5 ${isLoanClosed ? 
+            (isDark ? 'text-orange-300' : 'text-orange-600') 
+            : 'text-white'}`} />
         </div>
       ),
       "Action": () => (
@@ -836,17 +870,7 @@ const ApplicationRow = ({
   };
 
   return (
-    <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-emerald-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
-      }`}
-    >
+    <tr className={getRowClasses()}>
       {visibleHeaders.map((header, idx) => (
         <td key={idx} className={cellStyle}>
           {renderCell(header.label)}

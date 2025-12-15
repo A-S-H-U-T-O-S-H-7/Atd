@@ -39,6 +39,58 @@ const DisbursementRow = ({
     })}`;
   };
 
+  // Date formatting function: Converts YYYY-MM-DD to DD-MM-YYYY
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === 'N/A') return 'N/A';
+    
+    try {
+      // Handle different date formats
+      let date;
+      
+      if (dateString.includes('-')) {
+        // If it's already in YYYY-MM-DD format
+        if (dateString.split('-')[0].length === 4) {
+          const [year, month, day] = dateString.split('-');
+          date = new Date(`${year}-${month}-${day}`);
+        } else {
+          // If it's in DD-MM-YYYY format, convert to YYYY-MM-DD first
+          const [day, month, year] = dateString.split('-');
+          date = new Date(`${year}-${month}-${day}`);
+        }
+      } else if (dateString.includes('/')) {
+        // Handle MM/DD/YYYY or DD/MM/YYYY format
+        const parts = dateString.split('/');
+        if (parts[0].length === 4) {
+          // YYYY/MM/DD
+          date = new Date(dateString.replace(/\//g, '-'));
+        } else if (parts[2].length === 4) {
+          // DD/MM/YYYY or MM/DD/YYYY
+          // Assuming it's DD/MM/YYYY for Indian format
+          const [day, month, year] = parts;
+          date = new Date(`${year}-${month}-${day}`);
+        }
+      } else {
+        // Try parsing directly
+        date = new Date(dateString);
+      }
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return dateString; // Return original if invalid
+      }
+      
+      // Format to DD-MM-YYYY
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString; // Return original if error
+    }
+  };
+
   // Common cell styles
   const cellBase = "px-2 py-3 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -90,7 +142,7 @@ const DisbursementRow = ({
         <div className="flex items-center space-x-2">
           <Calendar className={iconAccent} />
           <span className={`text-sm font-medium ${textSecondary}`}>
-            {item.disburseDate}
+            {formatDate(item.disburseDate)}
           </span>
         </div>
       </td>
@@ -116,7 +168,7 @@ const DisbursementRow = ({
         <div className="flex items-center space-x-2">
           <Calendar className={iconAccent} />
           <span className={`text-sm font-medium ${textSecondary}`}>
-            {item.tranDate}
+            {formatDate(item.tranDate)}
           </span>
         </div>
       </td>
@@ -232,8 +284,6 @@ const DisbursementRow = ({
           {item.beneficiaryAcNo}
         </span>
       </td>
-
-      
 
       {/* Send to Rec */}
       <td className={cellStyle}>

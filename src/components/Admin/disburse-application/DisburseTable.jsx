@@ -11,26 +11,9 @@ const DisburseTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onFileView,
-  onActionClick, 
-  onChequeModalOpen,
-  onCourierModalOpen,
-  onCourierPickedModalOpen,
-  onOriginalDocumentsModalOpen,
-  onDisburseEmandateModalOpen,
-  onChangeStatusClick,
-  onRemarksClick,
-  onRefundPDCClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
-  onReplaceKYCClick,  
-  onDocumentStatusClick,
-  fileLoading,
-  loadingFileName,
   onBankVerification,
   onDisburseApproval,
   onStatusClick
-
 }) => {
 
   const headerStyle = `px-2 py-3 text-left text-sm font-bold border-r ${
@@ -43,64 +26,19 @@ const DisburseTable = ({
     { label: "Call", width: "90px" },
     { label: "Loan No.", width: "100px" },
     { label: "CRN No.", width: "80px" },
-    // { label: "Account ID", width: "140px" },
     { label: "Approved Date", width: "100px" },
     { label: "Disburse Date", width: "100px" },
     { label: "Due Date", width: "100px" },
-    
     { label: "Name", width: "160px" },
-    // { label: "Current Address", width: "160px" },
-    // { label: "Current State", width: "100px" },
-    // { label: "Current City", width: "100px" },
-    // { label: "Permanent Address", width: "180px" },
-    // { label: "State", width: "90px" },
-    // { label: "City", width: "90px" },
-    // { label: "Phone No.", width: "100px" },
-    // { label: "E-mail", width: "200px" },
-
     { label: "Applied Amount", width: "120px" },
     { label: "Amount Approved", width: "120px" },
     { label: "Admin Fee", width: "80px" },
     { label: "ROI", width: "60px" },
     { label: "Tenure", width: "70px" },
-   
-    // { label: "Photo", width: "80px" },
-    // { label: "Pan Proof", width: "100px" },
-    // { label: "Address Proof", width: "120px" },
-    // { label: "ID Proof", width: "100px" },
-    // { label: "Salary Proof", width: "120px" },
-    // { label: "Bank Statement", width: "130px" },
-    // { label: "Video KYC", width: "100px" },
-    // { label: "Approval Note", width: "140px" },
-    // { label: "Enquiry Source", width: "140px" },
-    // { label: "Bank Verification Report", width: "140px" },
-    // { label: "Social Score Report", width: "160px" },
-    // { label: "Cibil Score Report", width: "160px" },
-    // { label: "NACH Form", width: "120px" },
-    // { label: "PDC", width: "80px" },
-    // { label: "Agreement", width: "120px" },
-
-    // { label: "Cheque No.", width: "120px" },
-    // { label: "Send To Courier", width: "140px" },
-    // { label: "Courier Picked", width: "140px" },
-    // { label: "Original Documents Received", width: "120px" },
-    // { label: "Disburse Behalf of E-mandate", width: "120px" },
-    // { label: "Loan Term", width: "100px" },
     { label: "Customer A/c Verified", width: "100px" },
-    // { label: "Sanction Letter", width: "140px" },
-    // { label: "ICICI Emandate Status", width: "180px" },
-
     { label: "Bank A/c Verification", width: "120px" },
     { label: "Disburse Approval", width: "120px" },
-
     { label: "Loan Status", width: "120px" },
-    // { label: "Change Status", width: "200px" },
-    // { label: "Remarks", width: "120px" },
-    // { label: "Document Status", width: "170px" },
-    // { label: "Action", width: "120px" },
-    // { label: "Appraisal Report", width: "120px" },
-    // { label: "Eligibility", width: "120px" },
-    // { label: "Replace KYC", width: "160px" },
   ];
 
   return (
@@ -136,22 +74,6 @@ const DisburseTable = ({
                   application={application}
                   index={index}
                   isDark={isDark}
-                  onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  onChequeModalOpen={onChequeModalOpen}
-                  onCourierModalOpen={onCourierModalOpen}
-                  onCourierPickedModalOpen={onCourierPickedModalOpen}
-                  onOriginalDocumentsModalOpen={onOriginalDocumentsModalOpen}
-                  onDisburseEmandateModalOpen={onDisburseEmandateModalOpen}
-                  onChangeStatusClick={onChangeStatusClick}
-                  onRemarksClick={onRemarksClick}
-                  onRefundPDCClick={onRefundPDCClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick={onReplaceKYCClick}
-                  onDocumentStatusClick={onDocumentStatusClick}
-                  fileLoading={fileLoading}
-                  loadingFileName={loadingFileName}
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
                   onStatusClick={onStatusClick}

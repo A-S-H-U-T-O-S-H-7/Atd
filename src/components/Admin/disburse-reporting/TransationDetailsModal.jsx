@@ -20,15 +20,19 @@ const TransactionDetailsModal = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
-  const [tenure, setTenure] = useState(0); 
+  const [tenure, setTenure] = useState(0);
+  const [disbursementDate, setDisbursementDate] = useState(''); // Add state for disbursement date
 
   // Load banks and set initial data when modal opens
   useEffect(() => {
     if (isOpen && disbursementData) {
       // Extract tenure from loan data - IN DAYS
-      // The tenure should come from the API response directly
       const loanTenure = disbursementData.tenure || 0;
       setTenure(loanTenure);
+
+      // Extract disbursement date
+      const disburseDate = disbursementData.disburseDate || '';
+      setDisbursementDate(disburseDate);
 
       // Check if transaction already exists
       const hasExistingTransaction = disbursementData.tranRefNo && disbursementData.tranRefNo !== 'N/A';
@@ -84,7 +88,7 @@ const TransactionDetailsModal = ({
     if (formData.transactionDate && tenure > 0) {
       const transactionDate = new Date(formData.transactionDate);
       const calculatedDueDate = new Date(transactionDate);
-      calculatedDueDate.setDate(calculatedDueDate.getDate() + tenure); // Add days
+      calculatedDueDate.setDate(calculatedDueDate.getDate() + tenure); 
       
       const formattedDueDate = calculatedDueDate.toISOString().split('T')[0];
       
@@ -112,10 +116,9 @@ const TransactionDetailsModal = ({
     setFormData(prev => ({
       ...prev,
       bankName: bankId,
-      branchName: '' // Reset branch name when bank changes
+      branchName: '' 
     }));
 
-    // Load branch name automatically when bank is selected
     if (bankId) {
       try {
         const bankDetails = await disbursementService.getBankDetails(bankId);
@@ -132,50 +135,56 @@ const TransactionDetailsModal = ({
   };
 
   const handleSubmit = async () => {
-  if (!formData.transactionId.trim()) {
-    toast.error('Please enter Transaction ID');
-    return;
-  }
-
-  if (!formData.transactionDate) {
-    toast.error('Please select Transaction Date');
-    return;
-  }
-
-  const today = new Date().toISOString().split('T')[0];
-  if (formData.transactionDate > today) {
-    toast.error('Transaction date cannot be in the future');
-    return;
-  }
-
-  if (!formData.bankName) {
-    toast.error('Please select Bank Name');
-    return;
-  }
-
-  try {
-    setIsSubmitting(true);
-    
-    const transactionData = {
-      ...formData,
-      disburse_id: disbursementData.disburse_id,
-      application_id: disbursementData.application_id,
-      loan_no: disbursementData.loanNo,
-      customer_name: disbursementData.beneficiaryAcName
-    };
-    
-    if (onSubmit) {
-      await onSubmit(transactionData);
+    if (!formData.transactionId.trim()) {
+      toast.error('Please enter Transaction ID');
+      return;
     }
-    
-    onClose();
-  } catch (error) {
-    console.error('Error:', error);
-    toast.error('Failed to update transaction.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+
+    if (!formData.transactionDate) {
+      toast.error('Please select Transaction Date');
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.transactionDate > today) {
+      toast.error('Transaction date cannot be in the future');
+      return;
+    }
+
+    // NEW VALIDATION: Transaction date should be equal to or greater than disbursement date
+    if (disbursementDate && formData.transactionDate < disbursementDate) {
+      toast.error(`Transaction date cannot be before disbursement date (${disbursementDate})`);
+      return;
+    }
+
+    if (!formData.bankName) {
+      toast.error('Please select Bank Name');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const transactionData = {
+        ...formData,
+        disburse_id: disbursementData.disburse_id,
+        application_id: disbursementData.application_id,
+        loan_no: disbursementData.loanNo,
+        customer_name: disbursementData.beneficiaryAcName
+      };
+      
+      if (onSubmit) {
+        await onSubmit(transactionData);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to update transaction.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleClose = () => {
     setFormData({
@@ -186,12 +195,15 @@ const TransactionDetailsModal = ({
       bankName: '',
       branchName: ''
     });
+    setDisbursementDate('');
     onClose();
   };
 
   if (!isOpen || !disbursementData) return null;
 
   const today = new Date().toISOString().split('T')[0];
+  // Set min date to disbursement date if available, otherwise today
+  const minDate = disbursementDate || today;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -232,7 +244,9 @@ const TransactionDetailsModal = ({
                   text-sm
                   ${isDark ? 'text-gray-400' : 'text-gray-600'}
                 `}>
-                  of {disbursementData?.beneficiaryAcName} (Tenure: {tenure} days)
+                  of {disbursementData?.beneficiaryAcName} 
+                  {disbursementDate && ` | Disbursed: ${disbursementDate}`}
+                  {tenure && ` | Tenure: ${tenure} days`}
                 </p>
               </div>
             </div>
@@ -341,6 +355,7 @@ const TransactionDetailsModal = ({
                   id="transactionDate"
                   value={formData.transactionDate}
                   onChange={(e) => handleInputChange('transactionDate', e.target.value)}
+                  min={minDate} 
                   max={today}
                   className={`
                     w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-200
@@ -352,6 +367,11 @@ const TransactionDetailsModal = ({
                   `}
                 />
               </div>
+              {disbursementDate && (
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Must be on or after disbursement date ({disbursementDate})
+                </p>
+              )}
             </div>
 
             {/* Due Date - Non-editable */}
