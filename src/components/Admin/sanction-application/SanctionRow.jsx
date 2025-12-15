@@ -4,7 +4,7 @@ import { Calendar, Mail, Edit, CheckCircle, X, Edit2, Loader2 } from "lucide-rea
 import Swal from 'sweetalert2';
 import { sanctionApplicationAPI } from "@/lib/services/SanctionApplicationServices";
 
-// Import reusable document components
+// Import reusable document components 
 import PhotoDocument from "../documents/PhotoDocument";
 import PanCardDocument from "../documents/PanCardDocument";
 import AddressProofDocument from "../documents/AddressProofDocument";

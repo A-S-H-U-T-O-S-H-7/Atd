@@ -72,9 +72,10 @@ const ManageApplicationTable = ({
       { label: "Approved Date", width: "100px" },
       { label: "Disburse Date", width: "120px" },
       { label: "Due Date", width: "120px" },
+      { label: "Name", width: "150px" },
+
     ],
     personalInfo: [
-      { label: "Name", width: "150px" },
       { label: "Current Address", width: "150px" },
       { label: "Current State", width: "80px" },
       { label: "Current City", width: "100px" },
