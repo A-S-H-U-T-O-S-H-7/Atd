@@ -207,6 +207,30 @@ const ManageApplicationTable = ({
               <ChevronDown className="w-3.5 h-3.5" />
             )}
           </button>
+          
+          {/* Loan Details Toggle */}
+          <button
+            onClick={() => toggleSection('loanDetails')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
+              collapsedSections.loanDetails
+                ? isDark 
+                  ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                : isDark
+                  ? "bg-amber-700/30 hover:bg-amber-700/40 text-amber-300 border border-amber-500/30"
+                  : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-300"
+            }`}
+          >
+            <IndianRupee className="w-3.5 h-3.5" />
+
+
+            <span>Loan</span>
+            {collapsedSections.loanDetails ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
 
           {/* Documents Toggle */}
           <button
@@ -252,29 +276,7 @@ const ManageApplicationTable = ({
             )}
           </button>
 
-          {/* Loan Details Toggle */}
-          <button
-            onClick={() => toggleSection('loanDetails')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
-              collapsedSections.loanDetails
-                ? isDark 
-                  ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                : isDark
-                  ? "bg-amber-700/30 hover:bg-amber-700/40 text-amber-300 border border-amber-500/30"
-                  : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-300"
-            }`}
-          >
-            <IndianRupee className="w-3.5 h-3.5" />
-
-
-            <span>Loan</span>
-            {collapsedSections.loanDetails ? (
-              <ChevronRight className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5" />
-            )}
-          </button>
+          
         </div>
 
         {/* Quick Actions */}
