@@ -896,7 +896,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
                   <div className="compact-option-icon bg-gradient-to-br p-2 from-blue-500 to-blue-600 text-white rounded-full shadow">
                     <FaCamera className="text-xl" />
                   </div>
-                  <div className="text-left  flex-1">
+                  <div className="text-center  flex-1">
                     <span className="compact-option-text font-bold text-gray-800 block">Record Video</span>
                     <span className="compact-option-subtext text-gray-600">Use camera to record</span>
                   </div>
@@ -910,7 +910,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
                   <div className="compact-option-icon p-2  bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full shadow">
                     <FaImage className="text-xl" />
                   </div>
-                  <div className="text-left flex-1">
+                  <div className="text-center flex-1">
                     <span className="compact-option-text font-bold text-gray-800 block">Upload from Gallery</span>
                     <span className="compact-option-subtext text-gray-600">Choose video file</span>
                   </div>
