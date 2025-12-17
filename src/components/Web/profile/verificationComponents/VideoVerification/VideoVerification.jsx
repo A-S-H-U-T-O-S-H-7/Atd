@@ -764,7 +764,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
 
   const uploadToFirebase = async (file, filename) => {
     try {
-      const storageRef = ref(storage, `verification-videos/${filename}`);
+      const storageRef = ref(storage, `video-kyc/${filename}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
