@@ -1,9 +1,9 @@
 import React from "react";
 import { Landmark } from "lucide-react";
-import EamandateDepositRow from "./E-MandateRow";
 import Pagination from "../../Pagination";
+import EmandateRow from "./E-MandateRow";
 
-const EamandateDepositTable = ({ 
+const EmandateTable = ({ 
   paginatedDeposits,
   filteredDeposits,
   currentPage,
@@ -42,12 +42,12 @@ const EamandateDepositTable = ({
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "150px" }}>
-                  Customer Name
+                  Customer Name {/* NEW COLUMN */}
                 </th>
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "180px" }}>
-                  E-Mandate No/Transaction ID
+                }`} style={{ minWidth: "120px" }}>
+                  Emandate No
                 </th>
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
@@ -57,7 +57,7 @@ const EamandateDepositTable = ({
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "140px" }}>
-                  Hit Date
+                  E-Mandate Hit Date
                 </th>
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
@@ -83,7 +83,7 @@ const EamandateDepositTable = ({
             </thead>
             <tbody>
               {paginatedDeposits.map((deposit, index) => (
-                <EamandateDepositRow
+                <EmandateRow
                   key={deposit.id}
                   deposit={deposit}
                   index={index}
@@ -109,7 +109,7 @@ const EamandateDepositTable = ({
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <Landmark className="w-16 h-16 opacity-50" />
-              <p className="text-lg font-medium">No E-Mandate deposits found</p>
+              <p className="text-lg font-medium">No deposits found</p>
               <p className="text-sm">Try adjusting your search criteria</p>
             </div>
           </div>
@@ -132,4 +132,4 @@ const EamandateDepositTable = ({
   );
 };
 
-export default EamandateDepositTable;
+export default EmandateTable;

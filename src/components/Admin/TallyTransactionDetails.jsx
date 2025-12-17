@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { X, Eye, CreditCard, Calendar, User, MapPin, Phone, Loader2, ArrowRight } from "lucide-react";
-import { formatLedgerDetailsForUI } from "@/lib/services/LedgerServices";
+import { X, Eye, CreditCard, Calendar, User, MapPin, Phone, ArrowRight } from "lucide-react";
+import { formatLedgerDetailsForUI } from "@/lib/services/TallyLedgerServices";
 
-const CustomerTransactionDetails = ({ 
+const TallyTransactionDetails = ({ 
   isOpen, 
   onClose, 
   data, 
   isDark, 
   onUpdateBalance,
-  showOtherCharges = false // New prop for conditional display
+  showOtherCharges = true 
 }) => {
   const [updateForm, setUpdateForm] = useState({
     date: '',
-    interest: '',
-    penalty: '',
-    penalInterest: '',
-    adjustment: 'DEBIT',
-    debitCredit: 'DEBIT',
-    remark: ''
+    amount: '',
+    trx_type: '', 
+    particular: '', 
   });
 
   const [transactions, setTransactions] = useState([]);
@@ -32,38 +29,54 @@ const CustomerTransactionDetails = ({
     }
   }, [data]);
 
-  // Add this useEffect near your other useEffects
-useEffect(() => {
-  const handleEscKey = (event) => {
-    if (event.key === "Escape") {
-      onClose();
+  // Add this useEffect for ESC key
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscKey);
     }
-  };
 
-  if (isOpen) {
-    document.addEventListener("keydown", handleEscKey);
-  }
-
-  return () => {
-    document.removeEventListener("keydown", handleEscKey);
-  };
-}, [isOpen, onClose]);
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen || !data) return null;
 
-  const handleUpdateSubmit = () => {
-    if (updateForm.date && updateForm.remark) {
-      console.log('Update submitted:', updateForm);
-      // Handle the update logic here
-      setUpdateForm({
-        date: '',
-        interest: '',
-        penalty: '',
-        penalInterest: '',
-        adjustment: 'DEBIT',
-        debitCredit: 'DEBIT',
-        remark: ''
-      });
+  const handleUpdateSubmit = async () => {
+    // Validate all required fields
+    if (updateForm.date && updateForm.amount && updateForm.trx_type && updateForm.particular && data.application_id) {
+      try {
+        setLoading(true);
+        
+        const adjustmentData = {
+          date: updateForm.date,
+          amount: updateForm.amount,
+          trx_type: updateForm.trx_type,
+          particular: updateForm.particular
+        };
+        
+        // Call the update balance function passed from parent
+        await onUpdateBalance(adjustmentData);
+        
+        // Reset form
+        setUpdateForm({
+          date: '',
+          amount: '',
+          trx_type: '',
+          particular: ''
+        });
+        
+      } catch (error) {
+        console.error("Error submitting adjustment:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -85,11 +98,11 @@ useEffect(() => {
   };
 
   return (
-<div className="fixed inset-0 z-50 flex items-center justify-center p-2">
-  <div 
-    className="absolute inset-0 bg-black/30 backdrop-blur-sm bg-opacity-50"
-    onClick={onClose}
-  />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2">
+      <div 
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm bg-opacity-50"
+        onClick={onClose}
+      />
       <div className={`w-full max-w-2xl backdrop-blur-sm max-h-[95vh] custom-scrollbar overflow-y-auto rounded-xl shadow-2xl border-2 z-10 ${
         isDark
           ? "bg-gray-800 border-emerald-600/50"
@@ -126,7 +139,7 @@ useEffect(() => {
             </div>
             <div>
               <h2 className={`text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-800"}`}>
-                ATD FINANCE
+                ATD FINANCE - TALLY LEDGER
               </h2>
               <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                 Customer Ledger Details
@@ -147,7 +160,7 @@ useEffect(() => {
 
         <div className="p-4 space-y-4">
           
-          {/* Customer Details - Enhanced with CRN Badge */}
+          {/* Customer Details */}
           <div className={`rounded-lg p-4 border ${
             isDark
               ? "bg-gray-700/50 border-emerald-600/30"
@@ -162,7 +175,6 @@ useEffect(() => {
                       {data.name}
                     </span>
                   </div>
-                  
                 </div>
                 
                 <div className="flex items-start space-x-2">
@@ -172,11 +184,11 @@ useEffect(() => {
                   </span>
                 </div>
                 
-                {data.phone && (
+                {data.phoneNo && (
                   <div className="flex items-center space-x-2">
                     <Phone className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                     <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                      {data.phone}
+                      {data.phoneNo}
                     </span>
                   </div>
                 )}
@@ -205,11 +217,11 @@ useEffect(() => {
                 </div>
 
                 {/* Phone number in right column too for mobile */}
-                {data.phone && (
+                {data.phoneNo && (
                   <div className="flex items-center space-x-2 lg:hidden">
                     <Phone className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                     <span className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                      {data.phone}
+                      {data.phoneNo}
                     </span>
                   </div>
                 )}
@@ -282,53 +294,63 @@ useEffect(() => {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction, index) => (
-                    <tr
-                      key={transaction.id || index}
-                      className={`border-b transition-all duration-200 ${
-                        isDark
-                          ? "border-emerald-700 hover:bg-gray-700/30"
-                          : "border-emerald-300 hover:bg-emerald-50/30"
-                      } ${
-                        index % 2 === 0
-                          ? isDark 
-                            ? "bg-gray-700/20" 
-                            : "bg-gray-50/50"
-                          : ""
-                      }`}
-                    >
-                      <td className={`px-3 py-2 text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                        {transaction.date}
-                      </td>
-                      <td className={`px-3 py-2 text-xs font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                        {transaction.particular}
-                      </td>
-                      <td className={`px-3 py-2 text-xs text-right font-semibold ${
-                        isDark ? "text-red-400" : "text-red-600"
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction, index) => (
+                      <tr
+                        key={transaction.id || index}
+                        className={`border-b transition-all duration-200 ${
+                          isDark
+                            ? "border-emerald-700 hover:bg-gray-700/30"
+                            : "border-emerald-300 hover:bg-emerald-50/30"
+                        } ${
+                          index % 2 === 0
+                            ? isDark 
+                              ? "bg-gray-700/20" 
+                              : "bg-gray-50/50"
+                            : ""
+                        }`}
+                      >
+                        <td className={`px-3 py-2 text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                          {transaction.date}
+                        </td>
+                        <td className={`px-3 py-2 text-xs font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                          {transaction.particular}
+                        </td>
+                        <td className={`px-3 py-2 text-xs text-right font-semibold ${
+                          isDark ? "text-red-400" : "text-red-600"
+                        }`}>
+                          {transaction.debit > 0 ? transaction.debit.toLocaleString() : "0"}
+                        </td>
+                        <td className={`px-3 py-2 text-xs text-right font-semibold ${
+                          isDark ? "text-green-400" : "text-green-600"
+                        }`}>
+                          {transaction.credit > 0 ? transaction.credit.toLocaleString() : "0"}
+                        </td>
+                        <td className={`px-3 py-2 text-xs text-right font-bold ${
+                          transaction.balance < 0 
+                            ? isDark ? "text-green-400" : "text-green-600"
+                            : isDark ? "text-emerald-400" : "text-emerald-600"
+                        }`}>
+                          {Math.abs(transaction.balance).toLocaleString()}
+                          {transaction.balance < 0 ? "" : ""}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className={`px-3 py-4 text-center text-sm ${
+                        isDark ? "text-gray-400" : "text-gray-500"
                       }`}>
-                        {transaction.debit > 0 ? transaction.debit.toLocaleString() : "0"}
-                      </td>
-                      <td className={`px-3 py-2 text-xs text-right font-semibold ${
-                        isDark ? "text-green-400" : "text-green-600"
-                      }`}>
-                        {transaction.credit > 0 ? transaction.credit.toLocaleString() : "0"}
-                      </td>
-                      <td className={`px-3 py-2 text-xs text-right font-bold ${
-                        transaction.balance < 0 
-                          ? isDark ? "text-green-400" : "text-green-600"
-                          : isDark ? "text-emerald-400" : "text-emerald-600"
-                      }`}>
-                        {Math.abs(transaction.balance).toLocaleString()}
-                        {transaction.balance < 0 ? "" : ""}
+                        No transactions found
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Conditional: Update Other Charges Section */}
+          {/* Update Other Charges Section - Always shown for tally ledger */}
           {showOtherCharges && (
             <div className={`rounded-lg p-4 border ${
               isDark
@@ -340,7 +362,6 @@ useEffect(() => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Date with Future Date Restriction */}
                 <div>
                   <label className={`block text-xs font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                     Date <span className="text-red-500">*</span>
@@ -361,26 +382,23 @@ useEffect(() => {
                   </p>
                 </div>
 
-                {/* Adjustment Type Dropdown */}
+                {/* Adjustment Type Dropdown (trx_type) */}
                 <div>
                   <label className={`block text-xs font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                    Adjustment Type <span className="text-red-500">*</span>
+                    Transaction Type <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={updateForm.adjustment}
-                    onChange={(e) => handleInputChange('adjustment', e.target.value)}
+                    value={updateForm.trx_type}
+                    onChange={(e) => handleInputChange('trx_type', e.target.value)}
                     className={`w-full px-2 py-1.5 text-xs rounded border transition-all duration-200 ${
                       isDark
                         ? "bg-gray-700 border-emerald-600/50 text-white focus:border-emerald-400"
                         : "bg-white border-emerald-300 text-gray-900 focus:border-emerald-500"
                     } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
                   >
-                    <option value="DEBIT">DEBIT</option>
-                    <option value="CREDIT">CREDIT</option>
-                    <option value="INTEREST">INTEREST</option>
-                    <option value="PENALTY">PENALTY</option>
-                    <option value="PENAL INTEREST">PENAL INTEREST</option>
-                    <option value="ADJUSTMENT">ADJUSTMENT</option>
+                    <option value="">Select</option>
+                    <option value="debit">Debit</option>
+                    <option value="credit">Credit</option>
                   </select>
                 </div>
 
@@ -391,8 +409,8 @@ useEffect(() => {
                   </label>
                   <input
                     type="number"
-                    value={updateForm.interest}
-                    onChange={(e) => handleInputChange('interest', e.target.value)}
+                    value={updateForm.amount}
+                    onChange={(e) => handleInputChange('amount', e.target.value)}
                     placeholder="Enter amount"
                     min="0.01"
                     step="0.01"
@@ -404,22 +422,26 @@ useEffect(() => {
                   />
                 </div>
 
-                {/* Remark */}
+                {/* Particular Dropdown (replaces remark) */}
                 <div className="md:col-span-2 lg:col-span-3">
                   <label className={`block text-xs font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                    Remark <span className="text-red-500">*</span>
+                    Particular <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    value={updateForm.remark}
-                    onChange={(e) => handleInputChange('remark', e.target.value)}
-                    rows={2}
+                  <select
+                    value={updateForm.particular}
+                    onChange={(e) => handleInputChange('particular', e.target.value)}
                     className={`w-full px-2 py-1.5 text-xs rounded border transition-all duration-200 ${
                       isDark
-                        ? "bg-gray-700 border-emerald-600/50 text-white focus:border-emerald-400 placeholder-gray-400"
-                        : "bg-white border-emerald-300 text-gray-900 focus:border-emerald-500 placeholder-gray-500"
-                    } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none resize-none`}
-                    placeholder="Enter remark..."
-                  />
+                        ? "bg-gray-700 border-emerald-600/50 text-white focus:border-emerald-400"
+                        : "bg-white border-emerald-300 text-gray-900 focus:border-emerald-500"
+                    } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+                  >
+                    <option value="">Select</option>
+                    <option value="INTEREST">INTEREST</option>
+                    <option value="PENALITY">PENALITY</option>
+                    <option value="PENAL INTEREST">PENAL INTEREST</option>
+                    <option value="ADJUSTMENT">ADJUSTMENT</option>
+                  </select>
                 </div>
               </div>
 
@@ -427,9 +449,9 @@ useEffect(() => {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={handleUpdateSubmit}
-                  disabled={!updateForm.date || !updateForm.interest || !updateForm.remark}
+                  disabled={!updateForm.date || !updateForm.amount || !updateForm.trx_type || !updateForm.particular || loading}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
-                    (!updateForm.date || !updateForm.interest || !updateForm.remark) 
+                    (!updateForm.date || !updateForm.amount || !updateForm.trx_type || !updateForm.particular || loading) 
                       ? 'opacity-50 cursor-not-allowed' 
                       : 'hover:scale-105 transform'
                   } ${
@@ -438,8 +460,8 @@ useEffect(() => {
                       : "bg-emerald-500 hover:bg-emerald-600 text-white"
                   }`}
                 >
-                  <span>Submit Other Charges</span>
-                  <ArrowRight size={14} />
+                  <span>{loading ? 'Submitting...' : 'Submit Other Charges'}</span>
+                  {!loading && <ArrowRight size={14} />}
                 </button>
               </div>
             </div>
@@ -464,4 +486,4 @@ useEffect(() => {
   );
 };
 
-export default CustomerTransactionDetails;
+export default TallyTransactionDetails;

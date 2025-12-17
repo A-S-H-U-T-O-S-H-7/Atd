@@ -1,7 +1,7 @@
 import React from "react";
 import { Calendar, User, Building2, IndianRupee, SquarePen, UserCircle } from "lucide-react";
 
-const EamandateDepositRow = ({
+const EmandateRow = ({
   deposit,
   index,
   isDark,
@@ -13,19 +13,18 @@ const EamandateDepositRow = ({
     switch (statusLower) {
       case "delivered":
       case "received/cleared":
-      case "successful":
       case "completed":
         return isDark
           ? "bg-green-900/50 text-green-300 border-green-700"
           : "bg-green-100 text-green-800 border-green-200";
       case "bounced":
       case "returned":
-      case "unsuccessful":
       case "failed":
         return isDark
           ? "bg-red-900/50 text-red-300 border-red-700"
           : "bg-red-100 text-red-800 border-red-200";
       case "pending":
+      case "not delivered":
       case "processing":
         return isDark
           ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
@@ -76,7 +75,7 @@ const EamandateDepositRow = ({
         </span>
       </td>
 
-      {/* Customer Name */}
+      {/* Customer Name - NEW COLUMN */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <UserCircle
@@ -92,18 +91,19 @@ const EamandateDepositRow = ({
             >
               {deposit.name}
             </span>
+            
           </div>
         </div>
       </td>
 
-      {/* E-Mandate No/Transaction ID */}
+      {/* Cheque No */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`font-medium text-sm ${isDark
             ? "text-gray-200"
             : "text-gray-800"}`}
         >
-          {deposit.emandateNo}
+          {deposit.chequeNo}
         </span>
       </td>
 
@@ -125,7 +125,7 @@ const EamandateDepositRow = ({
         </div>
       </td>
 
-      {/* Hit Date */}
+      {/* Deposit Date */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Calendar
@@ -138,7 +138,7 @@ const EamandateDepositRow = ({
               ? "text-gray-200"
               : "text-gray-800"}`}
           >
-            {deposit.hitDate}
+            {deposit.depositDate}
           </span>
         </div>
       </td>
@@ -174,7 +174,7 @@ const EamandateDepositRow = ({
         </div>
       </td>
 
-      {/* Status */}
+      {/* Status  */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${getStatusColor(
@@ -192,7 +192,7 @@ const EamandateDepositRow = ({
           className={`p-2 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105 ${isDark
             ? "bg-emerald-900/50 hover:bg-emerald-800 text-emerald-300"
             : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"}`}
-          title="Edit E-Mandate"
+          title="Edit Deposit"
         >
           <SquarePen size={16} />
         </button>
@@ -201,4 +201,4 @@ const EamandateDepositRow = ({
   );
 };
 
-export default EamandateDepositRow;
+export default EmandateRow;

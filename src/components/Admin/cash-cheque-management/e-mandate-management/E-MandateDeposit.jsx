@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import SearchBar from "../../SearchBar";
-import EamandateDepositTable from "./E-MandateTable";
+import EmandateTable from "./E-MandateTable";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-// import { EamandateService, formatEamandatesForTable } from "@/lib/services/EamandateService";
+import { EmandateService,formatDepositsForTable } from "@/lib/services/E-mandateService";
 
-const EamandateDepositPage = () => {
+const EmandateDepositPage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const router = useRouter();
@@ -29,17 +29,17 @@ const EamandateDepositPage = () => {
     try {
       setLoading(true);
       setError("");
-      const response = await EamandateService.getEamandateDeposits();
+      const response = await EmandateService.getEmandateDeposits();
       
       if (response.success && response.data) {
-        const formattedDeposits = formatEamandatesForTable(response.data);
+        const formattedDeposits = formatDepositsForTable(response.data);
         setDeposits(formattedDeposits);
       } else {
-        setError("Failed to load E-Mandate deposits");
+        setError("Failed to load deposits");
       }
     } catch (error) {
-      console.error("Error fetching E-Mandate deposits:", error);
-      setError("Failed to load E-Mandate deposits. Please try again.");
+      console.error("Error fetching deposits:", error);
+      setError("Failed to load deposits. Please try again.");
       setDeposits([]);
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ const EamandateDepositPage = () => {
   const filteredDeposits = deposits.filter(deposit => {
     const matchesSearch = 
       deposit.loanNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.emandateNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deposit.chequeNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deposit.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deposit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deposit.user.toLowerCase().includes(searchTerm.toLowerCase());
@@ -96,7 +96,7 @@ const EamandateDepositPage = () => {
               <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
-                Manage E-Mandate Deposits
+                Manage E-Mandate Deposit
               </h1>
             </div>
             
@@ -110,7 +110,7 @@ const EamandateDepositPage = () => {
               } shadow-lg`}
             >
               <Plus size={20} />
-              <span>Add E-Mandate</span>
+              <span>Add Deposit</span>
             </button>
           </div>
 
@@ -120,11 +120,11 @@ const EamandateDepositPage = () => {
               <SearchBar
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
-                placeholder="Search by loan no, E-Mandate no, bank name, customer name..."
+                placeholder="Search by loan no, cheque no, bank name, customer name..."
               />
             </div>
 
-            {/* Status filter options */}
+            {/* FIXED: Status filter options to match API values */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -135,10 +135,9 @@ const EamandateDepositPage = () => {
               } focus:ring-4 focus:ring-emerald-500/20 focus:outline-none`}
             >
               <option value="all">All Status</option>
-              <option value="successful">Successful</option>
+              <option value="delivered">Delivered</option>
               <option value="pending">Pending</option>
               <option value="bounced">Bounced</option>
-              <option value="unsuccessful">Unsuccessful</option>
             </select>
           </div>
         </div>
@@ -155,7 +154,7 @@ const EamandateDepositPage = () => {
         )}
 
         {/* Table */}
-        <EamandateDepositTable
+        <EmandateTable
           paginatedDeposits={paginatedDeposits}
           filteredDeposits={filteredDeposits}
           currentPage={currentPage}
@@ -171,4 +170,4 @@ const EamandateDepositPage = () => {
   );
 };
 
-export default EamandateDepositPage;
+export default EmandateDepositPage;

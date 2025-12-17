@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-// import { EamandateService, formatLoanDetails, formatEamandateDataForAPI } from "@/lib/services/EamandateService";
+import { EmandateService,formatLoanDetails, formatDepositDataForAPI } from "@/lib/services/E-mandateService";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
@@ -19,7 +19,7 @@ const formatDateForInput = (dateString) => {
   return date.toISOString().split('T')[0];
 };
 
-const ManageEamandateDepositPage = () => {
+const ManageEmandatePage = () => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const router = useRouter();
@@ -33,9 +33,10 @@ const ManageEamandateDepositPage = () => {
   const [loanFetched, setLoanFetched] = useState(false);
   const [banks, setBanks] = useState([]);
   const [loanData, setLoanData] = useState(null);
+  const [showOtherReason, setShowOtherReason] = useState(false);
 
   const relationOptions = ["Son", "Daughter", "Spouse"];
-  const eamandateTypeOptions = ["Repayment E-Mandate", "Security E-Mandate", "Interest E-Mandate"];
+  const emandateTypeOptions = ["Repayment E-Mandate", "Security E-Mandate", "Interest E-Mandate"];
   const statusOptions = ["Bounced", "Received/cleared"];
   const deliveryStatusOptions = ["Successful", "Unsuccessful"];
   
@@ -64,33 +65,36 @@ const ManageEamandateDepositPage = () => {
 
   const validateDates = (values) => {
     const errors = {};
-    const emandateHitDate = new Date(values.emandateHitDate);
+    const depositDate = new Date(values.chequeDepositDate);
     const today = new Date();
 
-    if (values.emandateHitDate) {
-      const hitDate = new Date(values.emandateHitDate);
-      if (hitDate > today) {
-        errors.emandateHitDate = "E-Mandate hit date cannot be in the future";
+    if (values.chequeDepositDate) {
+      const deposit = new Date(values.chequeDepositDate);
+      if (deposit > today) {
+        errors.chequeDepositDate = "Deposit date cannot be in the future";
       }
     }
 
-    if (values.emandateStatusDate) {
-      const statusDate = new Date(values.emandateStatusDate);
-      if (statusDate > today) {
-        errors.emandateStatusDate = "Status date cannot be in the future";
+    if (values.chequeDate) {
+      const cheque = new Date(values.chequeDate);
+      if (cheque > today) {
+        errors.chequeDate = "Emandate date cannot be in the future";
       }
     }
 
-    const postHitFields = [
+    const postDepositFields = [
       'bounceDate',
-      'bankNpcpDate'
+      'chequeReturnMemoDate',
+      'chequeReturnMemoReceivedDate',
+      'intimationMailFromBankDate',
+      'intimationMailFromDispatchChequeDate'
     ];
 
-    postHitFields.forEach(field => {
-      if (values[field] && values.emandateHitDate) {
+    postDepositFields.forEach(field => {
+      if (values[field] && values.chequeDepositDate) {
         const fieldDate = new Date(values[field]);
-        if (fieldDate < emandateHitDate) {
-          errors[field] = `Date cannot be before E-Mandate hit date (${values.emandateHitDate})`;
+        if (fieldDate < depositDate) {
+          errors[field] = `Date cannot be before deposit date (${values.chequeDepositDate})`;
         }
         if (fieldDate > today) {
           errors[field] = "Date cannot be in the future";
@@ -111,15 +115,16 @@ const ManageEamandateDepositPage = () => {
   const validationSchema = Yup.object({
     loanNo: Yup.string().required("Loan number is required"),
     name: Yup.string().required("Name is required"),
-    fatherSpouseName: Yup.string().required("Father/Spouse name is required"),
+    fatherName: Yup.string().required("Father name is required"),
     relation: Yup.string().required("Relation is required"),
-    eamandatePresented: Yup.string().required("E-Mandate type is required"),
-    emandateNumber: Yup.string()
-      .required("E-Mandate number/Transaction ID is required"),
+    chequePresented: Yup.string().required("Cheque type is required"),
+    chequeNo: Yup.string()
+      .required("Cheque number is required")
+      .matches(/^\d{6}$/, "Cheque number must be exactly 6 digits"),
     principalAmount: positiveNumber("Principal amount must be positive"),
-    emandateAmount: positiveNumber("E-Mandate amount is required and must be positive").required("E-Mandate amount is required"),
-    emandateStatusDate: Yup.date().required("Status date is required"),
-    emandateHitDate: Yup.date().required("E-Mandate hit date is required"),
+    chequeAmount: positiveNumber("Cheque amount is required and must be positive").required("Cheque amount is required"),
+    chequeDate: Yup.date().required("Cheque date is required"),
+    chequeDepositDate: Yup.date().required("Cheque deposit date is required"),
     interest: positiveNumber("Interest must be positive"),
     penalInterest: positiveNumber("Penal interest must be positive"),
     penalty: positiveNumber("Penalty must be positive"),
@@ -129,9 +134,10 @@ const ManageEamandateDepositPage = () => {
     initialValues: {
       loanNo: "",
       name: "",
-      fatherSpouseName: "",
+      applicationId: "",
+      fatherName: "",
       relation: "",
-      eamandatePresented: "Repayment E-Mandate",
+      chequePresented: "Repayment Cheque",
       
       companyBankName: "",
       companyBankId: "",
@@ -143,11 +149,11 @@ const ManageEamandateDepositPage = () => {
       customerBankAC: "",
       customerBankIFSC: "",
       
-      emandateNumber: "",
-      emandateStatusDate: "",
-      emandateHitDate: "",
+      chequeNo: "",
+      chequeDate: "",
+      chequeDepositDate: "",
       principalAmount: "",
-      emandateAmount: "",
+      chequeAmount: "",
       interest: "",
       penalInterest: "",
       penalty: "",
@@ -157,9 +163,12 @@ const ManageEamandateDepositPage = () => {
       bounceCharge: "",
       deliveryStatus: "",
       deliveryAddress: "",
+      chequeReturnMemoDate: "",
+      chequeReturnMemoReceivedDate: "",
+      intimationMailFromBankDate: "",
+      intimationMailFromDispatchChequeDate: "",
       reasonOfBounce: "",
       otherReason: "",
-      bankNpcpDate: "",
       applicationId: ""
     },
     validationSchema,
@@ -173,12 +182,20 @@ const ManageEamandateDepositPage = () => {
   const today = getTodayDate();
 
   useEffect(() => {
+    if (formik.values.reasonOfBounce === "Other") {
+      setShowOtherReason(true);
+    } else {
+      setShowOtherReason(false);
+    }
+  }, [formik.values.reasonOfBounce]);
+
+  useEffect(() => {
     fetchBanks();
   }, []);
 
   const fetchBanks = async () => {
     try {
-      const response = await EamandateService.getBanks();
+      const response = await EmandateService.getBanks();
       if (response.success && response.data) {
         setBanks(response.data.map(bank => ({
           id: bank.id,
@@ -195,7 +212,7 @@ const ManageEamandateDepositPage = () => {
     if (!bankId) return;
     
     try {
-      const response = await EamandateService.getBankDetails(bankId);
+      const response = await EmandateService.getBankDetails(bankId);
       if (response.success && response.data) {
         const bankData = response.data;
         formik.setValues(prev => ({
@@ -219,7 +236,7 @@ const ManageEamandateDepositPage = () => {
           if (banks.length === 0) {
             await fetchBanks();
           }
-          await fetchEamandateData(editId);
+          await fetchDepositData(editId);
         } catch (error) {
           console.error("Error loading edit data:", error);
           toast.error("Failed to load data");
@@ -239,7 +256,7 @@ const ManageEamandateDepositPage = () => {
       if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
         setIsFetchingLoan(true);
         try {
-          const response = await EamandateService.getLoanDetails(formik.values.loanNo);
+          const response = await EmandateService.getLoanDetails(formik.values.loanNo);
           
           if (response.status && response.data) {
             const loanDetails = formatLoanDetails(response.data);
@@ -248,7 +265,7 @@ const ManageEamandateDepositPage = () => {
               ...prev,
               ...loanDetails,
               name: response.data.customer_name || "",
-              fatherSpouseName: response.data.fathername || "",
+              fatherName: response.data.fathername || "",
               applicationId: response.data.application_id || "",
             }));
             
@@ -292,7 +309,7 @@ const ManageEamandateDepositPage = () => {
     }
   };
 
-  const fetchEamandateData = async (emandateId) => {
+  const fetchDepositData = async (depositId) => {
     try {
       setLoading(true);
       
@@ -300,17 +317,17 @@ const ManageEamandateDepositPage = () => {
         await fetchBanks();
       }
       
-      const emandateResponse = await EamandateService.getEamandateDeposit(emandateId);
+      const depositResponse = await EmandateService.getEmandateDeposit(depositId);
       
-      if (emandateResponse.status && emandateResponse.data) {
-        const apiData = emandateResponse.data;
+      if (depositResponse.status && depositResponse.data) {
+        const apiData = depositResponse.data;
         
         const initialValues = {
           loanNo: apiData.loan_no || "",
           name: apiData.customer_name || "",
-          fatherSpouseName: apiData.customer_father_name || "",
+          fatherName: apiData.customer_father_name || "",
           relation: apiData.relation_with || "",
-          eamandatePresented: apiData.emandate_presented || "Repayment E-Mandate",
+          chequePresented: "Repayment Cheque",
           companyBankName: apiData.company_bank_name || "",
           companyBankBranch: apiData.company_bank_branch || "",
           companyBankAC: apiData.company_bank_ac || "",
@@ -319,11 +336,11 @@ const ManageEamandateDepositPage = () => {
           customerBankBranch: apiData.customer_bank_branch || "",
           customerBankAC: apiData.customer_bank_ac || "",
           customerBankIFSC: apiData.customer_bank_ifsc || "",
-          emandateNumber: apiData.emandate_no || "",
-          emandateStatusDate: formatDateForInput(apiData.status_date),
-          emandateHitDate: formatDateForInput(apiData.hit_date),
+          chequeNo: apiData.cheque_no || "",
+          chequeDate: formatDateForInput(apiData.cheque_date),
+          chequeDepositDate: formatDateForInput(apiData.deposit_date),
           principalAmount: apiData.principal_amount || "",
-          emandateAmount: apiData.emandate_amount || "",
+          chequeAmount: apiData.deposit_amount || "",
           interest: apiData.interest || "",
           penalInterest: apiData.penal_interest || "",
           penalty: apiData.penality || "",
@@ -331,8 +348,13 @@ const ManageEamandateDepositPage = () => {
           bounceDate: formatDateForInput(apiData.bounce_date),
           bounceCharge: apiData.bounce_charge || "",
           deliveryStatus: apiData.delivery_status || "",
+          deliveryAddress: apiData.delivery_address || "",
+          chequeReturnMemoDate: formatDateForInput(apiData.cheque_return_memo),
+          chequeReturnMemoReceivedDate: formatDateForInput(apiData.memo_received_date),
+          intimationMailFromBankDate: formatDateForInput(apiData.intimation_mail_despatch),
+          intimationMailFromDispatchChequeDate: formatDateForInput(apiData.intimation_mail_deliver),
           reasonOfBounce: apiData.reason_bounce || "",
-          bankNpcpDate: formatDateForInput(apiData.bank_npcp_date),
+          otherReason: "",
           applicationId: apiData.application_id || ""
         };
         
@@ -341,7 +363,7 @@ const ManageEamandateDepositPage = () => {
         
         if (apiData.loan_no) {
           try {
-            const loanResponse = await EamandateService.getLoanDetails(apiData.loan_no);
+            const loanResponse = await EmandateService.getLoanDetails(apiData.loan_no);
             if (loanResponse.status && loanResponse.data) {
               setLoanData(loanResponse.data);
             }
@@ -351,8 +373,8 @@ const ManageEamandateDepositPage = () => {
         }
       }
     } catch (error) {
-      console.error("Error fetching emandate data:", error);
-      toast.error("Failed to load emandate data");
+      console.error("Error fetching deposit data:", error);
+      toast.error("Failed to load deposit data");
     } finally {
       setLoading(false);
     }
@@ -373,20 +395,20 @@ const ManageEamandateDepositPage = () => {
     setSubmitting(true);
 
     try {
-      const emandateData = formatEamandateDataForAPI(values, isEdit);
+      const depositData = formatDepositDataForAPI(values, isEdit);
       
       let response;
       if (isEdit) {
-        response = await EamandateService.updateEamandateDeposit(editId, emandateData);
+        response = await EmandateService.updateEmandateDeposit(editId, depositData);
       } else {
-        response = await EamandateService.addEamandateDeposit(emandateData);
+        response = await EmandateService.addEmandateDeposit(depositData);
       }
 
       if (response.status) {
-        toast.success(isEdit ? "E-Mandate updated successfully!" : "E-Mandate added successfully!");
+        toast.success(isEdit ? "Deposit updated successfully!" : "Deposit added successfully!");
         
         setTimeout(() => {
-          router.push("/crm/emandate-management");
+          router.push("/crm/e-mandate-management");
         }, 1500);
       } else {
         toast.error(response.message || "Operation failed");
@@ -417,7 +439,7 @@ const ManageEamandateDepositPage = () => {
   };
 
   const handleCancel = () => {
-    router.push("/crm/emandate-management");
+    router.push("/crm/e-mandate-management");
   };
 
   const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
@@ -428,12 +450,16 @@ const ManageEamandateDepositPage = () => {
     let minDate = "";
     
     if (isDateField) {
-      if (name === "emandateStatusDate" || name === "emandateHitDate") {
+      if (name === "chequeDate" || name === "chequeDepositDate") {
         maxDate = today;
-      } else if (name === "bounceDate" || name === "bankNpcpDate") {
+      } else if (name === "bounceDate" || 
+                 name === "chequeReturnMemoDate" || 
+                 name === "chequeReturnMemoReceivedDate" ||
+                 name === "intimationMailFromBankDate" ||
+                 name === "intimationMailFromDispatchChequeDate") {
         maxDate = today;
-        if (formik.values.emandateHitDate) {
-          minDate = formik.values.emandateHitDate;
+        if (formik.values.chequeDepositDate) {
+          minDate = formik.values.chequeDepositDate;
         }
       }
     }
@@ -460,8 +486,8 @@ const ManageEamandateDepositPage = () => {
           placeholder={placeholder}
           disabled={disabled}
           min={isNumberField ? "0" : 
-               (isDateField && name !== "emandateStatusDate" && name !== "emandateHitDate" && formik.values.emandateHitDate) 
-                 ? formik.values.emandateHitDate 
+               (isDateField && name !== "chequeDate" && name !== "chequeDepositDate" && formik.values.chequeDepositDate) 
+                 ? formik.values.chequeDepositDate 
                  : undefined}
           step={isNumberField ? "any" : undefined}
           max={isDateField ? maxDate : undefined}
@@ -516,7 +542,7 @@ const ManageEamandateDepositPage = () => {
           formik.touched.companyBankName && formik.errors.companyBankName ? "border-red-500" : ""
         }`}
       >
-        <option value="">----SELECT BANK----</option>
+        <option value="">SELECT BANK</option>
         {banks.map(bank => (
           <option key={bank.id} value={bank.name}>{bank.name}</option>
         ))}
@@ -568,7 +594,7 @@ const ManageEamandateDepositPage = () => {
           formik.touched.reasonOfBounce && formik.errors.reasonOfBounce ? "border-red-500" : ""
         }`}
       >
-        <option value="">----SELECT REASON----</option>
+        <option value="">SELECT REASON</option>
         {bounceReasonOptions.map(option => (
           <option key={option} value={option}>{option}</option>
         ))}
@@ -602,7 +628,7 @@ const ManageEamandateDepositPage = () => {
               <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
                 isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
               } bg-clip-text text-transparent`}>
-                {isEdit ? "Edit E-Mandate Deposit" : "Add E-Mandate Deposit"}
+                {isEdit ? "Edit E-mandate Deposit" : "Add E-mandate Deposit"}
               </h1>
             </div>
           </div>
@@ -657,9 +683,9 @@ const ManageEamandateDepositPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {renderField("loanNo", "Loan No", "text", "Enter loan number", 1, isEdit)}
                   {renderField("name", "Name", "text", "Enter name", 1)}
-                  {renderField("fatherSpouseName", "Father/Spouse Name", "text", "Enter father/spouse name", 1)}
+                  {renderField("fatherName", "Father/Spouse Name", "text", "Enter father's name", 1)}
                   {renderSelect("relation", "Relation", relationOptions, 1)}
-                  {renderSelect("eamandatePresented", "E-Mandate Presented", eamandateTypeOptions, 1)}
+                  {renderSelect("chequePresented", "E-Mandate Presented", emandateTypeOptions, 1)}
                 </div>
               </div>
 
@@ -675,7 +701,7 @@ const ManageEamandateDepositPage = () => {
                       ? "bg-gray-800/50 border-blue-600/30"
                       : "bg-blue-50 border-blue-200"
                   }`}>
-                    <h4 className={`font-semibold  ${
+                    <h4 className={`font-semibold mb-4 ${
                       isDark ? "text-blue-300" : "text-blue-700"
                     }`}>
                       Company Bank Details
@@ -724,10 +750,10 @@ const ManageEamandateDepositPage = () => {
                 </h3>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {renderField("emandateNumber", "E-Mandate Number/ Transaction ID", "text", "Nach/E-mandate payment report number/date", 1)}
-                    {renderField("emandateStatusDate", "E-Mandate Status Date", "date", "", 1)}
-                    {renderField("emandateHitDate", "E-Mandate Hit Date", "date", "", 1)}
-                    {renderField("emandateAmount", "E-Mandate Amount", "number", "Enter E-Mandate amount", 1)}
+                    {renderField("chequeNo", "E-Mandate No/ Transaction ID ", "text", "Nach/E-Mandate Payment Report No", 1)}
+                    {renderField("chequeDate", "E-Mandate Status Date Received from Bank", "date", "", 1)}
+                    {renderField("chequeDepositDate", "E-Mandate Hit Date", "date", "", 1)}
+                    {renderField("chequeAmount", "E-Mandate Amount", "number", "Enter E-Mandate amount", 1)}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -779,125 +805,95 @@ const ManageEamandateDepositPage = () => {
               </div>
 
               {isEdit && (
-  <>
-    <div>
-      <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-        isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
-      }`}>
-        E-Mandate Status Details
-      </h3>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {renderSelect("status", "E-Mandate Status", statusOptions, 1)}
-          {renderField("bounceDate", "E-Mandate Bounce Date / E-Mandate Clear Date", "date", "", 1, 
-            isStatusReceived && formik.values.status !== "" ? false : isStatusReceived
-          )}
-          {renderField("bounceCharge", "Bounce Charge", "number", "Enter bounce charge", 1, isStatusReceived)}
-          {renderSelect("deliveryStatus", "Delivery Status", deliveryStatusOptions, 1, isStatusReceived)}
-        </div>
-        
-        {/* Add Delivery Address Input */}
-        {formik.values.deliveryStatus && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="col-span-4">
-              <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-                Delivery Address
-              </label>
-              <textarea
-                name="deliveryAddress"
-                value={formik.values.deliveryAddress}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                rows={2}
-                disabled={isStatusReceived}
-                className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
-                  isDark
-                    ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                    : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-                } disabled:opacity-50 disabled:cursor-not-allowed ${
-                  formik.touched.deliveryAddress && formik.errors.deliveryAddress ? "border-red-500" : ""
-                }`}
-                placeholder="Enter delivery address..."
-              />
-              {formik.touched.deliveryAddress && formik.errors.deliveryAddress && (
-                <div className="text-red-500 text-xs mt-1">{formik.errors.deliveryAddress}</div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+                <>
+                  <div>
+                    <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
+                      isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
+                    }`}>
+                      E-Mandate Clear/Bounce Details
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {renderSelect("status", " E-Mandate Status", statusOptions, 1)}
+                        {renderField("bounceDate", "Bounce Date / E-Mandate Clear Date", "date", "", 1, 
+                          isStatusReceived && formik.values.status !== "" ? false : isStatusReceived
+                        )}
+                        {renderField("bounceCharge", "Bounce Charge", "number", "Enter bounce charge", 1, isStatusReceived)}
+                        {renderSelect("deliveryStatus", "Delivery Status", deliveryStatusOptions, 1, isStatusReceived)}
+                      </div>
+                      {renderTextArea("deliveryAddress", "Delivery Address", 2, 4, isStatusReceived)}
+                    </div>
+                  </div>
 
+                  <div>
+                    
+                    <div className="space-y-4">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {/* Bank/NPCP/Modline */}
+    {renderField("chequeReturnMemoDate", "Bank/NPCP/Modline", "date", "", 1, isStatusReceived)}
+    
+    {/* Reason of Bounce */}
     <div>
-  <h3 className={`text-lg font-semibold mb-4 pb-2 border-b ${
-    isDark ? "text-cyan-300 border-cyan-600/50" : "text-purple-700 border-purple-300"
-  }`}>
-    Bounce Details
-  </h3>
-  <div className="space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Bank/NPCP Date */}
-      {renderField("bankNpcpDate", "Bank/NPCP Date", "date", "", 1, isStatusReceived)}
-      
-      {/* Reason of Bounce */}
-      <div>
-        <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-          Reason of Bounce
-        </label>
-        <select
-          name="reasonOfBounce"
-          value={formik.values.reasonOfBounce}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          disabled={isStatusReceived}
-          className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
-            formik.touched.reasonOfBounce && formik.errors.reasonOfBounce ? "border-red-500" : ""
-          }`}
-        >
-          <option value="">----SELECT REASON----</option>
-          {bounceReasonOptions.map(option => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
-        {formik.touched.reasonOfBounce && formik.errors.reasonOfBounce && (
-          <div className="text-red-500 text-xs mt-1">{formik.errors.reasonOfBounce}</div>
-        )}
-      </div>
-      
-      {/* Other Reason (conditional) */}
-      <div>
-        {formik.values.reasonOfBounce === "Other" && (
-          <>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-              Specify Other Reason
-            </label>
-            <textarea
-              name="otherReason"
-              value={formik.values.otherReason}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              rows={2}
-              disabled={isStatusReceived}
-              className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
-                isDark
-                  ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                  : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-              } disabled:opacity-50 disabled:cursor-not-allowed ${
-                formik.touched.otherReason && formik.errors.otherReason ? "border-red-500" : ""
-              }`}
-              placeholder="Please specify the bounce reason..."
-            />
-            {formik.touched.otherReason && formik.errors.otherReason && (
-              <div className="text-red-500 text-xs mt-1">{formik.errors.otherReason}</div>
-            )}
-          </>
-        )}
-      </div>
+      <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+        Reason of Bounce
+      </label>
+      <select
+        name="reasonOfBounce"
+        value={formik.values.reasonOfBounce}
+        onChange={(e) => {
+          formik.handleChange(e);
+          setShowOtherReason(e.target.value === "Other");
+        }}
+        onBlur={formik.handleBlur}
+        disabled={isStatusReceived}
+        className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
+          formik.touched.reasonOfBounce && formik.errors.reasonOfBounce ? "border-red-500" : ""
+        }`}
+      >
+        <option value="">----SELECT REASON----</option>
+        {bounceReasonOptions.map(option => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+      {formik.touched.reasonOfBounce && formik.errors.reasonOfBounce && (
+        <div className="text-red-500 text-xs mt-1">{formik.errors.reasonOfBounce}</div>
+      )}
+    </div>
+    
+    {/* Other Reason (conditional) */}
+    <div>
+      {showOtherReason && (
+        <>
+          <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            Specify Other Reason
+          </label>
+          <textarea
+            name="otherReason"
+            value={formik.values.otherReason}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            rows={2}
+            disabled={isStatusReceived}
+            className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
+              isDark
+                ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+                : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
+            } disabled:opacity-50 disabled:cursor-not-allowed ${
+              formik.touched.otherReason && formik.errors.otherReason ? "border-red-500" : ""
+            }`}
+            placeholder="Please specify the bounce reason..."
+          />
+          {formik.touched.otherReason && formik.errors.otherReason && (
+            <div className="text-red-500 text-xs mt-1">{formik.errors.otherReason}</div>
+          )}
+        </>
+      )}
     </div>
   </div>
 </div>
-  </>
-)}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-emerald-200/50">
@@ -935,4 +931,4 @@ const ManageEamandateDepositPage = () => {
   );
 };
 
-export default ManageEamandateDepositPage;
+export default ManageEmandatePage;

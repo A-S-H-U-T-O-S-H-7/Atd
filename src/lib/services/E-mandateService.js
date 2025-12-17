@@ -1,7 +1,7 @@
 "use client";
 import api from "@/utils/axiosInstance";
 
-export const ChequeService = {
+export const EmandateService = {
   getLoans: async () => {
     try {
       const response = await api.get("/crm/deposit/loans");
@@ -20,7 +20,7 @@ export const ChequeService = {
     }
   },
 
-  addChequeDeposit: async (depositData) => {
+  addEmandateDeposit: async (depositData) => {
     try {
       const response = await api.post("/crm/deposit/cheque/add", depositData);
       return response;
@@ -29,7 +29,7 @@ export const ChequeService = {
     }
   },
 
-  updateChequeDeposit: async (depositId, depositData) => {
+  updateEmandateDeposit: async (depositId, depositData) => {
     try {
       const response = await api.put(`/crm/deposit/cheque/update/${depositId}`, depositData);
       return response;
@@ -38,7 +38,7 @@ export const ChequeService = {
     }
   },
 
-  getChequeDeposit: async (depositId) => {
+  getEmandateDeposit: async (depositId) => {
     try {
       const response = await api.get(`/crm/deposit/cheque/edit/${depositId}`);
       return response;
@@ -66,7 +66,7 @@ export const ChequeService = {
   },
 
 
-  getChequeDeposits: async (params = {}) => {
+  getEmandateDeposits: async (params = {}) => {
     try {
       const response = await api.get("/crm/deposit/cheque/manage", { params });
       return response;
@@ -116,7 +116,7 @@ export const formatDepositDataForAPI = (formData, isEdit = false) => {
     interest: parseFloat(formData.interest) || 0,
     penal_interest: parseFloat(formData.penalInterest) || 0,
     penality: parseFloat(formData.penalty) || 0,
-    medium: "Cheque"
+    medium: "Emandate"
   };
 
   if (isEdit) {
