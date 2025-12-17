@@ -38,7 +38,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         animation: scaleIn 0.3s ease-out;
       }
       
-      /* Mobile optimizations - Increased video height */
+      /* Mobile optimizations - LARGER video preview */
       @media (max-width: 640px) {
         .custom-toast {
           left: 4px;
@@ -48,72 +48,102 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
           max-width: none;
         }
         
-        /* Increased video height on mobile - 85% of viewport */
+        /* MUCH LARGER video on mobile - fill most of screen */
         .video-modal video {
-          max-height: 85vh !important;
-          max-width: 95vw !important;
+          height: 75vh !important;
+          width: 100vw !important;
+          max-height: 75vh !important;
+          max-width: 100vw !important;
+          object-fit: cover !important;
         }
         
         .video-container {
-          height: 70vh !important;
+          height: 75vh !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        /* Fix cancel button cropping */
+        .recording-controls {
+          padding: 12px !important;
+          padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        }
+        
+        .recording-controls button {
+          font-size: 14px !important;
+          padding: 10px !important;
+        }
+        
+        .stop-button {
+          padding: 12px !important;
+          font-size: 16px !important;
+        }
+      }
+      
+      /* Mobile landscape */
+      @media (max-width: 640px) and (orientation: landscape) {
+        .video-modal video {
+          height: 85vh !important;
+          width: 100vw !important;
+        }
+        
+        .video-container {
+          height: 85vh !important;
+        }
+        
+        .recording-header {
+          padding: 8px !important;
+        }
+        
+        .recording-controls {
+          padding: 8px !important;
+          padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
         }
       }
       
       /* Tablet optimizations */
       @media (min-width: 641px) and (max-width: 1024px) {
         .video-modal video {
-          max-height: 75vh !important;
-          max-width: 85vw !important;
-        }
-        
-        .video-container {
-          height: 65vh !important;
-        }
-      }
-      
-      /* Desktop optimizations - Fixed 80% width issue */
-      @media (min-width: 1025px) {
-        .video-modal video {
+          height: 70vh !important;
+          width: 90vw !important;
           max-height: 70vh !important;
-          max-width: 80vw !important;
+          max-width: 90vw !important;
         }
         
         .video-container {
-          height: 60vh !important;
-          max-width: 80vw !important;
+          height: 70vh !important;
+          max-width: 90vw !important;
           margin: 0 auto !important;
         }
       }
       
-      /* Extra large screens - Prevent cropping at 100% */
-      @media (min-width: 1440px) {
+      /* Desktop optimizations */
+      @media (min-width: 1025px) {
         .video-modal video {
+          height: 65vh !important;
+          width: 70vw !important;
           max-height: 65vh !important;
           max-width: 70vw !important;
         }
         
         .video-container {
-          height: 55vh !important;
+          height: 65vh !important;
           max-width: 70vw !important;
+          margin: 0 auto !important;
         }
       }
       
-      /* Ultra-wide screens */
-      @media (min-width: 1920px) {
+      /* Extra large screens */
+      @media (min-width: 1440px) {
         .video-modal video {
-          max-height: 60vh !important;
-          max-width: 60vw !important;
+          height: 60vh !important;
+          width: 60vw !important;
         }
         
         .video-container {
-          height: 50vh !important;
+          height: 60vh !important;
           max-width: 60vw !important;
         }
-      }
-      
-      /* Prevent cropping on all devices */
-      video {
-        object-fit: contain !important;
       }
       
       /* Video modal styling */
@@ -122,6 +152,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         flex-direction: column;
         height: 100vh;
         overflow: hidden;
+        background: #000;
       }
       
       .video-container {
@@ -134,15 +165,10 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         overflow: hidden;
       }
       
-      /* Full screen adjustments */
-      @media (max-width: 640px) and (orientation: landscape) {
-        .video-container {
-          height: 90vh !important;
-        }
-        
-        .video-modal video {
-          max-height: 85vh !important;
-          max-width: 85vw !important;
+      /* Safe area for mobile buttons */
+      @supports (padding: max(0px)) {
+        .recording-controls {
+          padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
         }
       }
     `;
@@ -249,11 +275,11 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       
       cleanupStream();
 
-      // Mobile-friendly constraints with better aspect ratio handling
+      // Optimized constraints for mobile face visibility
       const constraints = {
         video: {
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 },
+          width: { ideal: 1920, max: 2560 },
+          height: { ideal: 1080, max: 1440 },
           aspectRatio: { ideal: 16/9 },
           facingMode: 'user',
           frameRate: { ideal: 30 }
@@ -294,34 +320,31 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     modal.className = 'video-modal fixed inset-0 bg-black flex flex-col z-[9998]';
     recordingModalRef.current = modal;
 
-    // Header
+    // Header - Smaller on mobile
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center p-4 bg-black/80 backdrop-blur-sm shrink-0';
+    header.className = 'recording-header flex justify-between items-center p-3 md:p-4 bg-black/80 backdrop-blur-sm shrink-0';
     
     const title = document.createElement('div');
     title.className = 'flex items-center gap-2';
     title.innerHTML = `
-      <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-      <span class="text-white font-medium">Recording</span>
-      <span class="text-white/70 text-sm">(90 seconds max)</span>
+      <div class="w-2 h-2 md:w-3 md:h-3 bg-red-500 rounded-full animate-pulse"></div>
+      <span class="text-white font-medium text-sm md:text-base">Recording</span>
+      <span class="text-white/70 text-xs md:text-sm">(90s)</span>
     `;
     
     const timer = document.createElement('div');
-    timer.className = 'bg-red-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full font-mono text-base md:text-lg';
+    timer.className = 'bg-red-600 text-white px-2 py-1 md:px-4 md:py-2 rounded-full font-mono text-sm md:text-lg';
     timer.textContent = '00:00';
     
     header.appendChild(title);
     header.appendChild(timer);
 
-    // Video Container - Enhanced for mobile height
+    // Video Container - MUCH LARGER for mobile
     const videoContainer = document.createElement('div');
-    videoContainer.className = 'video-container flex items-center justify-center w-full';
-    
-    const videoWrapper = document.createElement('div');
-    videoWrapper.className = 'relative w-full h-full flex items-center justify-center';
+    videoContainer.className = 'video-container';
     
     const video = document.createElement('video');
-    video.className = 'w-full h-full object-contain bg-black';
+    video.className = 'w-full h-full object-cover';
     video.ref = videoRef;
     video.srcObject = stream;
     video.muted = true;
@@ -329,26 +352,25 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     video.playsInline = true;
     video.style.transform = 'scaleX(-1)'; // Mirror effect for selfie view
     
-    videoWrapper.appendChild(video);
-    videoContainer.appendChild(videoWrapper);
+    videoContainer.appendChild(video);
 
-    // Instructions
+    // Instructions - Minimal on mobile
     const instructions = document.createElement('div');
-    instructions.className = 'px-4 py-2 text-center shrink-0 bg-black/40';
+    instructions.className = 'px-3 py-2 text-center shrink-0 bg-black/40';
     instructions.innerHTML = `
-      <p class="text-white/80 text-sm">Speak clearly and ensure your face is well-lit</p>
-      <p class="text-white/60 text-xs mt-1">Video auto-stops at 90 seconds</p>
+      <p class="text-white/80 text-xs md:text-sm">Speak clearly, face well-lit</p>
+      <p class="text-white/60 text-xs mt-1">Auto-stops at 90 seconds</p>
     `;
 
-    // Controls
+    // Controls - Fixed for mobile cropping
     const controls = document.createElement('div');
-    controls.className = 'p-3 md:p-4 bg-black/50 backdrop-blur-sm shrink-0';
+    controls.className = 'recording-controls p-3 md:p-4 bg-black/50 backdrop-blur-sm shrink-0';
     
     const controlsInner = document.createElement('div');
     controlsInner.className = 'flex flex-col items-center gap-3 max-w-md mx-auto';
     
     const stopButton = document.createElement('button');
-    stopButton.className = 'w-full py-3 md:py-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3';
+    stopButton.className = 'stop-button w-full py-3 md:py-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3';
     stopButton.innerHTML = `
       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
         <rect x="6" y="6" width="12" height="12" rx="2"></rect>
@@ -357,7 +379,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     `;
     
     const cancelButton = document.createElement('button');
-    cancelButton.className = 'py-2 md:py-3 px-4 md:px-6 text-white/80 hover:text-white font-medium transition-colors';
+    cancelButton.className = 'cancel-button py-2 md:py-3 px-4 md:px-6 text-white/80 hover:text-white font-medium transition-colors text-sm md:text-base';
     cancelButton.textContent = 'Cancel';
     
     controlsInner.appendChild(stopButton);
@@ -377,38 +399,30 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       showToast('Could not start camera preview', 'error');
     });
 
-    // Adjust video size based on viewport
-    const adjustVideoSize = () => {
-      if (!video.parentElement) return;
+    // Adjust video for optimal face visibility
+    const adjustVideoForFace = () => {
+      if (!video) return;
       
-      const containerWidth = video.parentElement.clientWidth;
-      const containerHeight = video.parentElement.clientHeight;
-      
-      // Maintain aspect ratio while fitting in container
-      const aspectRatio = 16 / 9; // Standard video aspect ratio
-      
-      let videoWidth, videoHeight;
-      
-      if (containerWidth / containerHeight > aspectRatio) {
-        // Container is wider than video aspect ratio
-        videoHeight = containerHeight;
-        videoWidth = videoHeight * aspectRatio;
+      // On mobile, use object-fit: cover for better face visibility
+      if (window.innerWidth <= 640) {
+        video.style.objectFit = 'cover';
+        video.style.width = '100%';
+        video.style.height = '100%';
       } else {
-        // Container is taller than video aspect ratio
-        videoWidth = containerWidth;
-        videoHeight = videoWidth / aspectRatio;
+        video.style.objectFit = 'contain';
       }
-      
-      video.style.width = `${videoWidth}px`;
-      video.style.height = `${videoHeight}px`;
     };
 
     // Initial adjustment
-    setTimeout(adjustVideoSize, 100);
+    setTimeout(adjustVideoForFace, 100);
     
     // Adjust on window resize
-    const resizeObserver = new ResizeObserver(adjustVideoSize);
-    resizeObserver.observe(video.parentElement);
+    const resizeObserver = new ResizeObserver(() => {
+      adjustVideoForFace();
+      // Ensure controls are visible
+      controls.style.paddingBottom = 'max(12px, env(safe-area-inset-bottom))';
+    });
+    resizeObserver.observe(modal);
 
     // Recording logic
     let startTime;
@@ -503,7 +517,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         const seconds = elapsed % 60;
         timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-        // Auto-stop at 90 seconds (Increased from 60)
+        // Auto-stop at 90 seconds
         if (elapsed >= 90) {
           stopButton.click();
           showToast('Recording stopped automatically after 90 seconds', 'info');
@@ -534,6 +548,11 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
 
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
+    
+    // Ensure safe area for iOS
+    if (CSS.supports('padding: env(safe-area-inset-bottom)')) {
+      controls.style.paddingBottom = 'max(12px, env(safe-area-inset-bottom))';
+    }
 
     // Start recording with delay
     setTimeout(startRecording, 1000);
