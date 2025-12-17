@@ -38,7 +38,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         animation: scaleIn 0.3s ease-out;
       }
       
-      /* Mobile optimizations - LARGER video preview */
+      /* Mobile optimizations */
       @media (max-width: 640px) {
         .custom-toast {
           left: 4px;
@@ -48,7 +48,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
           max-width: none;
         }
         
-        /* MUCH LARGER video on mobile - fill most of screen */
+        /* Video preview - large for mobile */
         .video-modal video {
           height: 75vh !important;
           width: 100vw !important;
@@ -63,20 +63,62 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
           margin: 0 !important;
         }
         
-        /* Fix cancel button cropping */
+        /* Fixed button visibility - no cropping */
         .recording-controls {
           padding: 12px !important;
           padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+          min-height: auto !important;
         }
         
         .recording-controls button {
-          font-size: 14px !important;
-          padding: 10px !important;
+          min-height: 44px !important; /* Apple recommended minimum touch target */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
         
         .stop-button {
-          padding: 12px !important;
+          padding: 14px !important;
           font-size: 16px !important;
+          height: auto !important;
+          line-height: 1.2 !important;
+        }
+        
+        .cancel-button {
+          font-size: 14px !important;
+          padding: 10px !important;
+          height: auto !important;
+        }
+        
+        /* Options modal - compact height */
+        .options-modal {
+          max-height: 85vh !important;
+          overflow-y: auto !important;
+        }
+        
+        .options-content {
+          padding: 16px !important;
+        }
+        
+        .compact-option-button {
+          padding: 14px 12px !important;
+          margin-bottom: 10px !important;
+        }
+        
+        .compact-option-icon {
+          padding: 10px !important;
+          width: 44px !important;
+          height: 44px !important;
+        }
+        
+        .compact-option-text {
+          font-size: 14px !important;
+          line-height: 1.3 !important;
+        }
+        
+        .compact-option-subtext {
+          font-size: 12px !important;
+          line-height: 1.2 !important;
         }
       }
       
@@ -320,7 +362,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     modal.className = 'video-modal fixed inset-0 bg-black flex flex-col z-[9998]';
     recordingModalRef.current = modal;
 
-    // Header - Smaller on mobile
+    // Header - Clean without 90s text
     const header = document.createElement('div');
     header.className = 'recording-header flex justify-between items-center p-3 md:p-4 bg-black/80 backdrop-blur-sm shrink-0';
     
@@ -328,8 +370,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     title.className = 'flex items-center gap-2';
     title.innerHTML = `
       <div class="w-2 h-2 md:w-3 md:h-3 bg-red-500 rounded-full animate-pulse"></div>
-      <span class="text-white font-medium text-sm md:text-base">Recording</span>
-      <span class="text-white/70 text-xs md:text-sm">(90s)</span>
+      <span class="text-white font-medium text-sm md:text-base">Recording Video</span>
     `;
     
     const timer = document.createElement('div');
@@ -339,7 +380,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     header.appendChild(title);
     header.appendChild(timer);
 
-    // Video Container - MUCH LARGER for mobile
+    // Video Container - Large for mobile
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
     
@@ -354,12 +395,11 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     
     videoContainer.appendChild(video);
 
-    // Instructions - Minimal on mobile
+    // Instructions - Simplified
     const instructions = document.createElement('div');
     instructions.className = 'px-3 py-2 text-center shrink-0 bg-black/40';
     instructions.innerHTML = `
-      <p class="text-white/80 text-xs md:text-sm">Speak clearly, face well-lit</p>
-      <p class="text-white/60 text-xs mt-1">Auto-stops at 90 seconds</p>
+      <p class="text-white/80 text-xs md:text-sm">Make sure your face is clearly visible</p>
     `;
 
     // Controls - Fixed for mobile cropping
@@ -520,11 +560,11 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         // Auto-stop at 90 seconds
         if (elapsed >= 90) {
           stopButton.click();
-          showToast('Recording stopped automatically after 90 seconds', 'info');
+          showToast('Recording stopped automatically', 'info');
         }
       }, 1000);
       
-      showToast('Recording started - 90 seconds maximum', 'success');
+      showToast('Recording started', 'success');
     };
 
     // Event listeners
@@ -826,76 +866,63 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         </VerificationButton>
       </div>
 
-      {/* Options Modal - Mobile Optimized */}
+      {/* Options Modal - COMPACT and cleaned up */}
       {showOptions && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-5 md:p-6">
+          <div className="options-modal bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fadeIn">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 md:p-5">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold">Video Verification</h2>
-                  <p className="text-blue-100 text-sm md:text-base mt-0.5">Choose upload method</p>
+                  <h2 className="text-lg md:text-xl font-bold">Video Verification</h2>
+                  <p className="text-blue-100 text-xs md:text-sm mt-0.5">Choose upload method</p>
                 </div>
                 <button 
                   onClick={handleCloseOptions}
-                  className="p-2 hover:bg-blue-700 rounded-xl transition-all active:scale-95"
+                  className="p-1.5 hover:bg-blue-700 rounded-lg transition-all active:scale-95"
                   aria-label="Close"
                 >
-                  <FaTimes className="text-xl" />
+                  <FaTimes className="text-lg" />
                 </button>
               </div>
             </div>
             
-            <div className="p-5 md:p-6">
-              <div className="space-y-4 md:space-y-5">
-                {/* Camera Option */}
+            <div className="options-content p-4">
+              <div className="space-y-3 md:space-y-4">
+                {/* Camera Option - Compact */}
                 <button 
                   onClick={handleCameraClick}
-                  className="w-full p-4 md:p-5 bg-gradient-to-r from-blue-50 to-white border-2 border-blue-200 hover:border-blue-400 hover:from-blue-100 hover:to-blue-50 rounded-xl flex items-center gap-4 transition-all active:scale-95"
+                  className="compact-option-button w-full p-2 bg-gradient-to-r from-blue-50 to-white border border-blue-200 hover:border-blue-400 hover:from-blue-100 hover:to-blue-50 rounded-xl flex items-center gap-3 transition-all active:scale-95"
                 >
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow">
-                    <FaCamera className="text-xl md:text-2xl" />
+                  <div className="compact-option-icon bg-gradient-to-br p-2 from-blue-500 to-blue-600 text-white rounded-full shadow">
+                    <FaCamera className="text-xl" />
                   </div>
-                  <div className="text-left flex-1">
-                    <span className="font-bold text-gray-800 block text-base md:text-lg">Record Video</span>
-                    <span className="text-gray-600 text-sm md:text-base">Record new video (90 seconds max)</span>
+                  <div className="text-left  flex-1">
+                    <span className="compact-option-text font-bold text-gray-800 block">Record Video</span>
+                    <span className="compact-option-subtext text-gray-600">Use camera to record</span>
                   </div>
                 </button>
                 
-                {/* Gallery Option */}
+                {/* Gallery Option - Compact */}
                 <button 
                   onClick={handleGalleryClick}
-                  className="w-full p-4 md:p-5 bg-gradient-to-r from-purple-50 to-white border-2 border-purple-200 hover:border-purple-400 hover:from-purple-100 hover:to-purple-50 rounded-xl flex items-center gap-4 transition-all active:scale-95"
+                  className="compact-option-button w-full p-2 bg-gradient-to-r from-purple-50 to-white border border-purple-200 hover:border-purple-400 hover:from-purple-100 hover:to-purple-50 rounded-xl flex items-center gap-3 transition-all active:scale-95"
                 >
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow">
-                    <FaImage className="text-xl md:text-2xl" />
+                  <div className="compact-option-icon p-2  bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-full shadow">
+                    <FaImage className="text-xl" />
                   </div>
                   <div className="text-left flex-1">
-                    <span className="font-bold text-gray-800 block text-base md:text-lg">Upload from Gallery</span>
-                    <span className="text-gray-600 text-sm md:text-base">Choose existing video file</span>
+                    <span className="compact-option-text font-bold text-gray-800 block">Upload from Gallery</span>
+                    <span className="compact-option-subtext text-gray-600">Choose video file</span>
                   </div>
                 </button>
               </div>
               
               <button 
                 onClick={handleCloseOptions}
-                className="w-full mt-6 py-3.5 md:py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all active:scale-95"
+                className="w-full mt-4 md:mt-5 py-2.5 md:py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all active:scale-95"
               >
                 Cancel
               </button>
-              
-              <div className="mt-5 md:mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <p className="text-gray-600 text-xs md:text-sm">
-                  <span className="font-semibold block mb-1">Supported Formats:</span>
-                  MP4, WebM, MOV, AVI, OGG
-                  <br/>
-                  <span className="font-semibold">Maximum Size:</span> 100MB
-                  <br/>
-                  <span className="font-semibold">Recording Duration:</span> 90 seconds maximum
-                  <br/>
-                  <span className="font-semibold">Minimum Duration:</span> 3 seconds
-                </p>
-              </div>
             </div>
           </div>
         </div>
