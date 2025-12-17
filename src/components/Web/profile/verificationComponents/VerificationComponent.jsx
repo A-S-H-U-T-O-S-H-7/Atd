@@ -1,6 +1,6 @@
 import React from "react";
 import { Info } from 'lucide-react';
-import VideoVerification from "./VideoVerification";
+import VideoVerification from "./VideoVerification/VideoVerification";
 import EMandate from "./EMandate";
 import DigitalLoanAgreement from "./DigitalLoanAgreement";
 
