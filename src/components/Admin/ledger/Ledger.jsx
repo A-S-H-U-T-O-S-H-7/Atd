@@ -9,7 +9,7 @@ import LedgerTable from "./LedgerTable";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService } from "@/lib/services/LedgerServices";
+import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService,settleService } from "@/lib/services/LedgerServices";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
 
@@ -34,6 +34,8 @@ const LedgerPage = () => {
   const [ledgerData, setLedgerData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [settling, setSettling] = useState(false);
+
 
   const itemsPerPage = 10;
 
@@ -68,7 +70,6 @@ const LedgerPage = () => {
       const params = buildApiParams();
       const response = await ledgerAPI.getLedgerData(params);
       
-      // FOLLOW COMPLETE PAGE PATTERN
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       
       if (actualResponse && actualResponse.success) {
@@ -264,6 +265,41 @@ const LedgerPage = () => {
     setSearchTerm(term.trim());
     setCurrentPage(1);
   };
+
+  const handleSettleClick = async (applicant) => {
+  try {
+    setSettling(true);
+    
+    const result = await settleService.submitSettle(applicant.application_id);
+    
+    if (result && result.status) {
+      await Swal.fire({
+        title: 'Settlement Successful!',
+        text: result.message || 'Loan account has been settled successfully.',
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+      
+      fetchLedgerData();
+    } else {
+      throw new Error(result?.message || 'Settlement failed');
+    }
+  } catch (error) {
+    console.error("Settlement error:", error);
+    await Swal.fire({
+      title: 'Settlement Failed!',
+      text: error.message || 'Failed to settle loan account. Please try again.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } finally {
+    setSettling(false);
+  }
+};
 
   const handleDateFilter = (filters) => {
     setDateRange(filters.dateRange || { start: "", end: "" });
@@ -484,8 +520,9 @@ const LedgerPage = () => {
           onPageChange={setCurrentPage}
           onViewTransaction={handleViewTransaction}
           onAdjustment={handleAdjustmentClick}
-          onDownloadPDF={handleDownloadPDF} 
-          loading={loading}
+          onDownloadPDF={handleDownloadPDF}
+          onSettle={handleSettleClick}
+          loading={loading || settling} 
           totalItems={totalCount}
         />
       </div>

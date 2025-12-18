@@ -20,6 +20,15 @@ export const ledgerAPI = {
     }
   },
 
+  settleLoanAccount: async (applicationId, settleData = null) => {
+    try {
+      const response = await api.get(`/crm/ledger/settle/${applicationId}`, settleData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   submitAdjustment: async (applicationId, adjustmentData) => {
     try {
       const response = await api.put(`/crm/ledger/adjustment/${applicationId}`, adjustmentData);
@@ -62,6 +71,7 @@ export const formatLedgerDataForUI = (ledger) => {
     balance: ledger.balance || 0,
     over_due: ledger.over_due || 0,
     settled: (ledger.Settled === 1 || ledger.settled === 1),
+    passed_days: ledger.passed_days || 0, 
     crnno: ledger.crnno || "N/A",
     city: ledger.city || "",
     state: ledger.state || ""
@@ -661,6 +671,19 @@ export const adjustmentService = {
       return response;
     } catch (error) {
       throw new Error(error.response?.data?.message || error.message || 'Failed to submit adjustment');
+    }
+  }
+};
+
+export const settleService = {
+  submitSettle: async (applicationId) => {
+    try {
+      const response = await ledgerAPI.settleLoanAccount(applicationId, {
+        settle_date: new Date().toISOString().split('T')[0]
+      });
+      return response;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || error.message || 'Failed to settle loan account');
     }
   }
 };

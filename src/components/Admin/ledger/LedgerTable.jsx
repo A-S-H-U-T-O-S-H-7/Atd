@@ -15,6 +15,7 @@ const LedgerTable = ({
   onAdjustment,
   onDownloadPDF,
   loading,
+  onSettle,
   totalItems
 }) => {
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
@@ -79,6 +80,7 @@ const LedgerTable = ({
                   isDark={isDark}
                   onViewTransaction={onViewTransaction}
                   onAdjustment={onAdjustment}
+                  onSettle={onSettle}
                   onDownloadPDF={(appId, action) => onDownloadPDF(appId, action, item)}
                 />
               ))}
