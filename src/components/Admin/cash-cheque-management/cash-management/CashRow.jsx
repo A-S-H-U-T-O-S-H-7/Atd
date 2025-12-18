@@ -3,6 +3,7 @@ import { Building2, Calendar, CreditCard, User, Edit } from "lucide-react";
 
 const CashRow = ({ deposit, index, isDark, onEdit }) => {
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -17,7 +18,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   return (
@@ -39,7 +40,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
         <span className={`font-medium ${
           isDark ? "text-gray-100" : "text-gray-900"
         }`}>
-          {deposit.sNo}
+          {deposit.sNo || index + 1}
         </span>
       </td>
 
@@ -52,7 +53,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
           <span className={`font-medium ${
             isDark ? "text-gray-100" : "text-gray-900"
           }`}>
-            {deposit.bankName}
+            {deposit.bankName || "N/A"}
           </span>
         </div>
       </td>
@@ -74,9 +75,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
       {/* Amount */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          <CreditCard className={`w-4 h-4 ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`} />
+          
           <span className={`font-semibold text-lg ${
             isDark ? "text-emerald-400" : "text-emerald-600"
           }`}>
@@ -94,7 +93,7 @@ const CashRow = ({ deposit, index, isDark, onEdit }) => {
           <span className={`font-medium ${
             isDark ? "text-purple-400" : "text-purple-600"
           }`}>
-            {deposit.user}
+            {deposit.user || "admin"}
           </span>  
         </div>
       </td>

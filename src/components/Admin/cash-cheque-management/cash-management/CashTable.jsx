@@ -11,7 +11,9 @@ const CashTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onEditDeposit
+  onEditDeposit,
+  loading,
+  totalItems
 }) => {
   return (
     <>
@@ -74,8 +76,7 @@ const CashTable = ({
           </table>
         </div>
         
-        {/* Empty State */}
-        {paginatedDeposits.length === 0 && (
+        {paginatedDeposits.length === 0 && !loading && (
           <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             <div className="flex flex-col items-center space-y-4">
               <CreditCard className="w-16 h-16 opacity-50" />
@@ -84,20 +85,28 @@ const CashTable = ({
             </div>
           </div>
         )}
+
+        {loading && paginatedDeposits.length === 0 && (
+          <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className="flex flex-col items-center space-y-4">
+              <CreditCard className="w-16 h-16 opacity-50" />
+              <p className="text-lg font-medium">Loading cash deposits...</p>
+            </div>
+          </div>
+        )}
+
         {totalPages > 0 && (
-        <div >
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            totalItems={deposits.length}  
-            itemsPerPage={itemsPerPage}   
-          />
-        </div>
-      )}
+          <div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
+        )}
       </div>
-      
-      
     </>
   );
 };
