@@ -150,7 +150,7 @@ export default function StepCompleteProfile({
         <Header 
           user={user} 
           onLogout={handleLogout} 
-          onClientHistory={handleClientHistory} 
+          onClientHistory={handleClientHistory}
         />
         
         <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">

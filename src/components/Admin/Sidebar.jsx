@@ -79,7 +79,6 @@ const menuList = [
   { name: 'Tally Ledger', link: '/crm/tally-ledger', icon: <FaBook /> },
   { name: 'Tally Export', link: '/crm/tally-export', icon: <FaFileExport /> },
   { name: 'Overdue Applicants', link: '/crm/overdue-applicant-list', icon: <FaHourglassEnd /> },
-  { name: 'Overdue All Applicants', link: '/crm/overdue-all-applicant', icon: <MdOutlineAccessTimeFilled /> },
   { name: 'Payment Receipt', link: '/crm/payment-receipt', icon: <ReceiptIndianRupee /> },
   {
     name: 'Profit/Loss Deposit',

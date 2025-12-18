@@ -12,42 +12,32 @@ export default function LoanInformation({ user }) {
   const [error, setError] = useState(null);
 
   const fetchLoanHistoryData = async () => {
-    let token;
-    try {
-      // Prefer admin-provided token when viewing applicant profile from Admin
-      const adminViewToken = sessionStorage.getItem('view_user_token');
-      if (adminViewToken) {
-        token = adminViewToken;
-      } else {
-        token = localStorage.getItem('token');
-      }
-    } catch (err) {
-      console.error('Failed to access storage:', err);
-    }
-
+  setIsLoading(true);
+  setError(null);
+  
+  try {
+    let token = localStorage.getItem('user_auth_token') || 
+                sessionStorage.getItem('admin_view_token');
+    
     if (!token) {
-      setError('Authentication required. Please login again.');
+      setError('Please login again to view loan history');
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
     
-    try {
-      const result = await fetchLoanHistory(token);
-      
-      if (result.success) {
-        setLoanHistory(result.loans || []);
-      } else {
-        setError(result.message || 'Failed to fetch loan history');
-      }
-    } catch (err) {
-      setError('Unable to load loan history. Please try again.');
-      console.error('Loan history fetch error:', err);
-    } finally {
-      setIsLoading(false);
+    const result = await fetchLoanHistory(token);
+    
+    if (result.success) {
+      setLoanHistory(result.loans || []);
+    } else {
+      setError(result.message || 'Failed to fetch loan history');
     }
-  };
+  } catch (err) {
+    setError('Unable to load loan history. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleCheckHistory = () => {
     setIsModalOpen(true);
@@ -88,7 +78,7 @@ export default function LoanInformation({ user }) {
               Track all your loan applications & status
             </p>
           </div>
-
+ 
           <button
             onClick={handleCheckHistory}
             disabled={isLoading}
