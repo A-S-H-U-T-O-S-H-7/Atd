@@ -7,23 +7,24 @@ const API_ENDPOINTS = {
   GET_EMAILS: "/crm/notification/emails"
 };
 
+// Strip HTML tags from text
+const stripHtmlTags = (html) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]*>/g, '');
+  const textArea = document.createElement('textarea');
+  textArea.innerHTML = text;
+  return textArea.value.trim();
+};
+
 // Format notification data for UI
 export const formatNotificationForUI = (apiData, index, currentPage = 1, itemsPerPage = 10) => {
-  const stripHtmlFromComment = (html) => {
-    if (!html) return '';
-    const text = html.replace(/<[^>]*>/g, '');
-    const textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value.trim();
-  };
-
   return {
     id: apiData.notification_id,
     sNo: (currentPage - 1) * itemsPerPage + index + 1,
     userName: apiData.user_name,
     crnno: apiData.crnno,
     subject: apiData.subject,
-    comment: stripHtmlFromComment(apiData.comment), 
+    comment: stripHtmlTags(apiData.comment),
     status: apiData.status,
     createdAt: apiData.created_at,
     sender: apiData.sender,

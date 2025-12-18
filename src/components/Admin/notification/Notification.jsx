@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Send, Bell, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Send, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import FormFields from './FormFields';
 import RichTextEditor from '../RichTextEditor';
 import NotificationTable from './NotificationTable';
@@ -35,11 +35,11 @@ const NotificationPage = () => {
 
   const itemsPerPage = 10;
 
-  // Fetch email list - run once
+  // Fetch email list
   const fetchEmailList = async () => {
     try {
       const response = await notificationAPI.getEmailList();
-      if (response && response.success) {
+      if (response?.success) {
         setEmailOptions(response.data || []);
       }
     } catch (error) {
@@ -56,7 +56,7 @@ const NotificationPage = () => {
         page: currentPage,
       });
       
-      if (response && response.success) {
+      if (response?.success) {
         const notificationsData = response.notifications || [];
         const formattedNotifications = notificationsData.map((notification, index) => 
           formatNotificationForUI(notification, index, currentPage, itemsPerPage)
@@ -100,133 +100,119 @@ const NotificationPage = () => {
     }
   }, [currentPage]);
 
+  // Strip HTML tags from message
+  const stripHtmlTags = (html) => {
+    if (!html) return '';
+    const text = html.replace(/<[^>]*>/g, '');
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+  };
+
   // Handle notification submission
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!subject.trim()) {
-    toast.error("Please enter a subject", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    return;
-  }
-
-  if (!comment.trim()) {
-    toast.error("Please enter a message", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    return;
-  }
-
-  setIsSubmitting(true);
-  
-  try {
-    let usersPayload;
+    e.preventDefault();
     
-    if (customerType === 'all') {
-  usersPayload = 'All';
-} else {
-  try {
-    console.log('Raw emails string from state:', emails);
-    
-    const userIds = emails ? JSON.parse(emails) : [];
-    console.log('Parsed user IDs:', userIds);
-    console.log('User IDs type:', typeof userIds);
-    console.log('Is array?', Array.isArray(userIds));
-    
-    if (userIds.length === 0) {
-      toast.error("Please select at least one user", {
+    if (!subject.trim()) {
+      toast.error("Please enter a subject", {
         position: "top-right",
         autoClose: 3000,
       });
-      setIsSubmitting(false);
       return;
     }
-    
-    // Check what's in the array
-    userIds.forEach((id, index) => {
-      console.log(`User ID at index ${index}:`, id, 'Type:', typeof id);
-    });
-    
-    usersPayload = userIds;
-    
-  } catch (error) {
-    console.error('Error parsing user IDs:', error);
-    console.error('Error stack:', error.stack);
-    toast.error("Invalid user selection", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    setIsSubmitting(false);
-    return;
-  }
-}
-    
-    const payload = {
-      users: usersPayload, // This should be "All" or [1, 2, 3, 7]
-      subject: subject.trim(),
-      message: comment.trim(), // Don't strip HTML if backend expects HTML
-    };
-    
-    console.log('Complete Payload being sent:', payload);
-    console.log('Payload as JSON:', JSON.stringify(payload));
-    
-    const response = await notificationAPI.sendNotification(payload);
-    
-    if (response && response.success) {
-      toast.success(`${response.message} (Sent to ${response.count || 0} users)`, {
+
+    if (!comment.trim()) {
+      toast.error("Please enter a message", {
         position: "top-right",
         autoClose: 3000,
       });
-      
-      // Reset form
-      setCustomerType('all');
-      setEmails('');
-      setSubject('');
-      setComment('');
-      
-      // Collapse form after successful submission
-      setIsFormOpen(false);
-      
-      // Refresh notifications
-      fetchNotifications();
-    } else {
-      console.error('API Error Response:', response);
-      toast.error(response?.message || "Failed to send notification", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      return;
     }
-  } catch (error) {
-    console.error('Error sending notification:', error);
-    console.error('Error response:', error.response?.data);
-    console.error('Error status:', error.response?.status);
+
+    setIsSubmitting(true);
     
-    toast.error(error.response?.data?.message || "Failed to send notification", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      let payload;
+      
+      if (customerType === 'all') {
+        payload = {
+          users: "All",
+          subject: subject.trim(),
+          message: stripHtmlTags(comment.trim()),
+        };
+      } else {
+        try {
+          const userIds = emails ? JSON.parse(emails) : [];
+          
+          if (userIds.length === 0) {
+            toast.error("Please select at least one user", {
+              position: "top-right",
+              autoClose: 3000,
+            });
+            setIsSubmitting(false);
+            return;
+          }
+          
+          payload = {
+            users: "Custom",
+            user_ids: userIds,
+            subject: subject.trim(),
+            message: stripHtmlTags(comment.trim()),
+          };
+        } catch (error) {
+          toast.error("Invalid user selection", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      const response = await notificationAPI.sendNotification(payload);
+      
+      if (response?.success) {
+        toast.success(`${response.message} (Sent to ${response.count || 0} users)`, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        
+        // Reset form
+        setCustomerType('all');
+        setEmails('');
+        setSubject('');
+        setComment('');
+        setIsFormOpen(false);
+        fetchNotifications();
+      } else {
+        toast.error(response?.message || "Failed to send notification", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send notification", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-
-  // Handle delete notification with SweetAlert2 confirmation
+  // Handle delete notification with confirmation
   const handleDeleteNotification = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "This notification will be deleted permanently!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: isDark ? '#059669' : '#10b981', 
+      confirmButtonColor: isDark ? '#059669' : '#10b981',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel',
-      background: isDark ? '#1f2937' : '#ffffff', 
-      color: isDark ? '#e5e7eb' : '#374151', 
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#e5e7eb' : '#374151',
       customClass: {
         popup: 'rounded-xl',
         title: 'text-lg font-bold',
@@ -239,26 +225,15 @@ const NotificationPage = () => {
       try {
         const response = await notificationAPI.deleteNotification(id);
         
-        if (response && response.success) {
+        if (response?.success) {
           toast.success(response.message, {
             position: "top-right",
             autoClose: 3000,
           });
           
-          // Refresh notifications
           fetchNotifications();
           
-          // Show success alert
-          Swal.fire({
-            title: 'Deleted!',
-            text: 'Notification has been deleted.',
-            icon: 'success',
-            confirmButtonColor: isDark ? '#059669' : '#10b981',
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#e5e7eb' : '#374151',
-            timer: 1500,
-            showConfirmButton: false
-          });
+          
         } else {
           toast.error(response?.message || "Failed to delete notification", {
             position: "top-right",
@@ -266,7 +241,6 @@ const NotificationPage = () => {
           });
         }
       } catch (error) {
-        console.error('Error deleting notification:', error);
         toast.error(error.response?.data?.message || "Failed to delete notification", {
           position: "top-right",
           autoClose: 3000,
@@ -276,11 +250,7 @@ const NotificationPage = () => {
   };
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 ${
-        isDark ? "bg-gray-900" : "bg-emerald-50/30"
-      }`}
-    >
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-gray-900" : "bg-emerald-50/30"}`}>
       <div className="p-4 md:p-6">
         {/* Header */}
         <div className="mb-8">
@@ -294,25 +264,13 @@ const NotificationPage = () => {
                     : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
                 }`}
               >
-                <ArrowLeft
-                  className={`w-5 h-5 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`}
-                />
+                <ArrowLeft className={`w-5 h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
               </button>
               <div>
-                <h1
-                  className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                    isDark
-                      ? "from-emerald-400 to-teal-400"
-                      : "from-gray-800 to-black"
-                  } bg-clip-text text-transparent`}
-                >
+                <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${isDark ? "from-emerald-400 to-teal-400" : "from-gray-800 to-black"} bg-clip-text text-transparent`}>
                   Send Notification
                 </h1>
-                <p className={`text-sm mt-1 ${
-                  isDark ? "text-gray-400" : "text-gray-600"
-                }`}>
+                <p className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Send notifications to customers and track sent history
                 </p>
               </div>
@@ -342,13 +300,7 @@ const NotificationPage = () => {
         {/* Layout */}
         <div className="space-y-8">
           {/* Send New Notification Card - Collapsible */}
-          <div
-            className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
-              isDark
-                ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-                : "bg-white border-emerald-300 shadow-emerald-500/10"
-            }`}
-          >
+          <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${isDark ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20" : "bg-white border-emerald-300 shadow-emerald-500/10"}`}>
             {/* Card Header with Toggle */}
             <button
               onClick={() => setIsFormOpen(!isFormOpen)}
@@ -359,39 +311,21 @@ const NotificationPage = () => {
               }`}
             >
               <div className="text-left">
-                <h2
-                  className={`text-xl font-bold ${
-                    isDark ? "text-gray-100" : "text-gray-700"
-                  }`}
-                >
+                <h2 className={`text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
                   Send New Notification
                 </h2>
-                <p
-                  className={`text-sm mt-1 ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
+                <p className={`text-sm mt-1 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                   Configure and send notifications to your customers
                 </p>
               </div>
-              <div className={`flex items-center gap-2 ${
-                isDark ? "text-emerald-400" : "text-emerald-600"
-              }`}>
-                <span className="text-sm font-medium">
-                  {isFormOpen ? 'Collapse' : 'Expand'}
-                </span>
-                {isFormOpen ? (
-                  <ChevronUp className="w-5 h-5" />
-                ) : (
-                  <ChevronDown className="w-5 h-5" />
-                )}
+              <div className={`flex items-center gap-2 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                <span className="text-sm font-medium">{isFormOpen ? 'Collapse' : 'Expand'}</span>
+                {isFormOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </div>
             </button>
 
             {/* Collapsible Form Content */}
-            <div className={`transition-all duration-300 ease-in-out ${
-              isFormOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-            }`}>
+            <div className={`transition-all duration-300 ease-in-out ${isFormOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="space-y-8">
                   {/* Form Fields */}

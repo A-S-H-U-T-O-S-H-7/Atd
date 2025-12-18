@@ -32,26 +32,10 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
   };
 
   return (
-    <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-emerald-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark
-            ? "bg-gray-700/30"
-            : "bg-gray-50"
-          : ""
-      }`}
-    >
+    <tr className={`border-b transition-all duration-200 hover:shadow-lg ${isDark ? "border-emerald-700 hover:bg-gray-700/50" : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0 ? isDark ? "bg-gray-700/30" : "bg-gray-50" : ""}`}>
       {/* S.No */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-          isDark
-            ? "bg-emerald-900/50 text-emerald-300"
-            : "bg-emerald-100 text-emerald-700"
-        }`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isDark ? "bg-emerald-900/50 text-emerald-300" : "bg-emerald-100 text-emerald-700"}`}>
           {notification.sNo}
         </div>
       </td>
@@ -120,12 +104,8 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
           notification.status
-            ? isDark
-              ? "bg-green-900/50 text-green-300 border border-green-700"
-              : "bg-green-100 text-green-800 border border-green-300"
-            : isDark
-            ? "bg-yellow-900/50 text-yellow-300 border border-yellow-700"
-            : "bg-yellow-100 text-yellow-800 border border-yellow-300"
+            ? isDark ? "bg-green-900/50 text-green-300 border border-green-700" : "bg-green-100 text-green-800 border border-green-300"
+            : isDark ? "bg-yellow-900/50 text-yellow-300 border border-yellow-700" : "bg-yellow-100 text-yellow-800 border border-yellow-300"
         }`}>
           {notification.status ? (
             <>
@@ -156,11 +136,7 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={handleDelete}
-            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-              isDark
-                ? "bg-red-900/50 text-red-300 border border-red-700 hover:bg-red-800"
-                : "bg-red-100 text-red-800 border border-red-200 hover:bg-red-200"
-            }`}
+            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${isDark ? "bg-red-900/50 text-red-300 border border-red-700 hover:bg-red-800" : "bg-red-100 text-red-800 border border-red-200 hover:bg-red-200"}`}
             title="Delete Notification"
           >
             <Trash2 className="w-4 h-4" />
@@ -183,17 +159,9 @@ const NotificationTable = ({
   totalItems
 }) => {
   return (
-    <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
-      isDark
-        ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-        : "bg-white border-emerald-300 shadow-emerald-500/10"
-    }`}>
+    <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${isDark ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20" : "bg-white border-emerald-300 shadow-emerald-500/10"}`}>
       {/* Table Header */}
-      <div className={`px-6 py-5 border-b-2 ${
-        isDark
-          ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-          : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
-      }`}>
+      <div className={`px-6 py-5 border-b-2 ${isDark ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}>
         <h2 className={`text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
           Sent Notifications ({totalItems})
         </h2>
@@ -204,50 +172,30 @@ const NotificationTable = ({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-max">
-          <thead className={`border-b-2 ${
-            isDark
-              ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-              : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
-          }`}>
+          <thead className={`border-b-2 ${isDark ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}>
             <tr>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 S.No.
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 User
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Subject
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Message
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Date & Time
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Status
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Sender
               </th>
-              <th className={`px-4 py-5 text-left text-sm font-bold ${
-                isDark ? "text-gray-100" : "text-gray-700"
-              }`}>
+              <th className={`px-4 py-5 text-left text-sm font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
                 Actions
               </th>
             </tr>
