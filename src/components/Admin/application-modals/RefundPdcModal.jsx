@@ -11,7 +11,8 @@ const RefundPDCModal = ({
   isDark, 
   customerName, 
   loanNo,
-  currentRefundPDCApplication
+  currentRefundPDCApplication,
+  onSuccess
 }) => {
   const [refundStatus, setRefundStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +54,6 @@ const RefundPDCModal = ({
     try {
       setIsSubmitting(true);
       
-      // Call the API
       const response = await manageApplicationService.updateRefundPDC(
         currentRefundPDCApplication.id, 
         refundStatus
@@ -67,6 +67,11 @@ const RefundPDCModal = ({
           await onSubmit(refundStatus);
         }
         
+        // Call onSuccess callback to refresh parent data
+        if (onSuccess) {
+          onSuccess();
+        }
+        
         handleClose();
       } else {
         throw new Error(response.message || "Failed to update refund PDC");
@@ -78,6 +83,7 @@ const RefundPDCModal = ({
       setIsSubmitting(false);
     }
   };
+
 
   const handleClose = () => {
     if (!isSubmitting) {

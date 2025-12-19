@@ -946,6 +946,7 @@ const handleNOCGenerate = async (applicationId, nocData) => {
     customerName={currentNOCApplication.name}
     loanNo={currentNOCApplication.loanNo}
     applicationId={currentNOCApplication.id}
+    onSuccess={fetchApplications} 
   />
 )}
 
@@ -958,6 +959,7 @@ const handleNOCGenerate = async (applicationId, nocData) => {
           customerName={currentRefundPDCApplication.name}
           loanNo={currentRefundPDCApplication.loanNo}
           currentRefundPDCApplication={currentRefundPDCApplication}
+          onSuccess={fetchApplications}
         />
       )}
 

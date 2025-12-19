@@ -67,6 +67,15 @@ export const manageApplicationAPI = {
     }
   },
 
+  getNOCPDF: async (applicationId) => {
+  try {
+    const response = await api.get(`/crm/noc/pdf/${applicationId}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
+
 
   // Update disburse approval status (same endpoint as credit approval)
   updateDisburseApproval: async (applicationId) => {
@@ -120,7 +129,7 @@ export const formatManageApplicationForUI = (application) => {
     transactionDateTime: application.transaction_date,
 
     disburseDate: disburseDate ? disburseDate.toLocaleDateString('en-GB') : 'N/A',
-    disburseDateTime: application.disburse_date,    dueDate: dueDate ? dueDate.toLocaleDateString('en-GB') : 'N/A',
+    disburseDateTime: application.disburse_date,
     dueDate: dueDate ? dueDate.toLocaleDateString('en-GB') : 'N/A',
     dueDateTime: application.duedate,
     closedDate: closedDate ? closedDate.toLocaleDateString('en-GB') : 'N/A',
@@ -146,7 +155,7 @@ export const formatManageApplicationForUI = (application) => {
     // Loan information
     appliedAmount: application.applied_amount,
     approvedAmount: application.approved_amount,
-    adminFee: parseFloat(application.process_fee || 0) ,
+    adminFee: parseFloat(application.process_fee || 0),
     processPercent: application.process_percent,
     roi: application.roi,
     tenure: application.tenure,
@@ -216,9 +225,19 @@ export const formatManageApplicationForUI = (application) => {
     courierPicked: application.courier_picked === 1 ? "Yes" : "No",
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No",
     receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
-    emandateVerificationRaw: application.emandateverification,    readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
-    refundPdc: application.refund_pdc || "Update",
+    emandateVerificationRaw: application.emandateverification,
+    readyForApprove: application.ready_verification === 1 ? "ready_to_verify" : "pending",
+
+    // Refund PDC & NOC
+    refundPdc: application.refundpdc || "Update",
+    refundPdcStatus: application.refundpdc === "Yes" ? "refunded" : 
+                     application.refundpdc === "Cancel" ? "cancelled" : null,
+    pdcDate: application.pdc_date || null,  
     settled: application.settled || "-",
+
+    nocIssued: application.nocissued,
+    nocDate: application.nocdate,
+    nocIssuedStatus: application.nocissued === "issued" ? "issued" : null,
     
     // Bank verification and disburse approval 
     bankVerification: application.bank_veried === 1 ? "verified" : "not_verified",
@@ -429,6 +448,16 @@ export const manageApplicationService = {
       throw error;
     }
   },
+
+  getNOCPDF: async (applicationId) => {
+  try {
+    const response = await manageApplicationAPI.getNOCPDF(applicationId);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+},
+
 };
 
 // File view utility (same as other pages)

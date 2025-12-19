@@ -10,7 +10,8 @@ const NOCModal = ({
   isDark, 
   customerName, 
   loanNo,
-  applicationId 
+  applicationId,
+  onSuccess 
 }) => {
   const [nocDate, setNocDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +68,16 @@ const NOCModal = ({
         
         // Auto-download the file
         handleDownload(response.data);
+        
+        // Call onSuccess callback to refresh parent data
+        if (onSuccess) {
+          onSuccess();
+        }
+        
+        // Close modal after short delay
+        setTimeout(() => {
+          handleClose();
+        }, 1000);
       } else {
         throw new Error(response.message || "Failed to generate NOC");
       }

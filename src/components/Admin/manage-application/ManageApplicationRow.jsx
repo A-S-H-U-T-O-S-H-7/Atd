@@ -1,5 +1,7 @@
-import React from "react";
-import { Calendar, Mail, Edit, CheckCircle, X, FileText } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, Mail, Edit, CheckCircle,RefreshCw, X, FileText, Eye } from "lucide-react";
+import { manageApplicationService } from "@/lib/services/ManageApplicationServices";
+
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -22,6 +24,7 @@ import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import { FaFilePdf } from "react-icons/fa";
 
 const ApplicationRow = ({
   application,
@@ -51,6 +54,9 @@ const ApplicationRow = ({
   onCollectionClick,
   onNOCModalOpen,
 }) => {
+
+    const [nocLoading, setNocLoading] = useState(false);
+
   
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
@@ -818,46 +824,167 @@ const ApplicationRow = ({
           </button>
         </div>
       ),
-      "NOC": () => (
-    <div className="flex items-center justify-center">
-      {application.loanStatusId === 13 ? (
-        <button
-          onClick={() => onNOCModalOpen && onNOCModalOpen(application)}
-          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-semibold transition-all duration-200 bg-gradient-to-r ${
-            isDark
-              ? "from-cyan-200 to-cyan-300 hover:from-cyan-300 hover:to-cyan-500 text-cyan-900"
-              : "from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white"
-          } shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1`}
-          title="Generate NOC"
-        >
-          <FileText className="w-4 h-4" />
-          <span>NOC</span>
-        </button>
+      "NOC": () => {
+  const hasNOC = application.nocIssued === "issued";
+  
+  const handleNOCPDFView = async () => {
+    try {
+      // Use local state for NOC loading
+      setNocLoading(true);
+      
+      // Fetch NOC PDF URL from API
+      const response = await manageApplicationService.getNOCPDF(application.id);
+      
+      if (response.success && response.data.base64) {
+        // Convert base64 to blob
+        const binaryString = atob(response.data.base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        const blob = new Blob([bytes], { 
+          type: response.data.mime_type || 'application/pdf' 
+        });
+        const url = URL.createObjectURL(blob);
+        
+        // Open in new tab
+        const newWindow = window.open(url, '_blank');
+        if (!newWindow) {
+          toast.error('Popup blocked! Please allow popups for this site.');
+          URL.revokeObjectURL(url);
+        }
+      } else {
+        toast.error('Failed to load NOC PDF');
+      }
+    } catch (error) {
+      console.error('Error loading NOC PDF:', error);
+      toast.error('Failed to load NOC PDF');
+    } finally {
+      setNocLoading(false);
+    }
+  };
+  
+  return (
+    <div className="flex flex-col items-center justify-center space-y-1">
+      {hasNOC ? (
+        <div className="flex flex-col items-center space-y-1">
+          {/* Status button with PDF icon */}
+          <div className="flex items-center space-x-2">
+            <div className={`px-4 py-0.5 rounded-md text-sm font-medium bg-gradient-to-r ${
+              isDark
+                ? "from-emerald-700 to-emerald-800 text-emerald-100 border border-emerald-600"
+                : "from-emerald-200 to-emerald-300 text-emerald-800 border border-emerald-400"
+            } flex items-center space-x-1`}>
+              <CheckCircle className="w-4 h-4" />
+              <span>Issued</span>
+            </div>
+            
+            {/* PDF icon */}
+            <button
+              onClick={handleNOCPDFView}
+              disabled={nocLoading}
+              className={`p-1 rounded transition-colors ${
+                nocLoading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+              } ${isDark ? "text-red-400 bg-red-50" : "text-red-500 bg-red-200"}`}
+              title="View NOC PDF"
+            >
+              {nocLoading ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <FaFilePdf className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          
+          {/* NOC Date */}
+          {application.nocDate && (
+            <div className="flex items-center space-x-1">
+              <Calendar className={`w-3 h-3 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
+              <span className={`text-xs ${isDark ? "text-gray-100" : "text-gray-800"}`}>
+                {new Date(application.nocDate).toLocaleDateString('en-GB')}
+              </span>
+            </div>
+          )}
+        </div>
       ) : (
-        <span className="text-sm text-gray-500">-</span>
-      )}
-    </div>
-  ),
-      "Refund PDC": () => (
-        <div className="flex items-center justify-center">
+        // Show Generate NOC button only for closed loans, otherwise show --
+        application.loanStatusId === 13 ? (
           <button
-            onClick={() => onRefundPDCClick(application)}
-            className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 ${
-              application.refundPdc === "Yes"
-                ? "bg-gradient-to-r from-green-500 to-green-600 text-white"
-                : application.refundPdc === "Cancel"
-                  ? "bg-gradient-to-r from-red-500 to-red-600 text-white"
-                  : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+            onClick={() => onNOCModalOpen && onNOCModalOpen(application)}
+            className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
+              isDark
+                ? "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                : "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
             } shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1`}
-            title="Update Refund PDC Status"
+            title="Generate NOC"
           >
             <FileText className="w-4 h-4" />
-            <span>
-              {application.refundPdc || "Update"}
-            </span>
+            <span>Generate NOC</span>
           </button>
+        ) : (
+          <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+        )
+      )}
+    </div>
+  );
+},
+      "Refund PDC": () => {
+  const isRefunded = application.refundPdc === "Yes";
+  const isCancelled = application.refundPdc === "Cancel";
+  
+  return (
+    <div className="flex flex-col items-center justify-center space-y-1">
+      {isRefunded || isCancelled ? (
+        <div className="flex flex-col items-center space-y-1">
+          {/* Status button */}
+          <div className={`px-4 py-1 rounded-md text-sm font-medium ${
+            isRefunded
+              ? isDark
+                ? "bg-green-900/50 text-green-300 border border-green-700"
+                : "bg-green-100 text-green-800 border border-green-200"
+              : isDark
+                ? "bg-red-900/50 text-red-300 border border-red-700"
+                : "bg-red-100 text-red-800 border border-red-200"
+          } flex items-center space-x-1`}>
+            <CheckCircle className="w-4 h-4" />
+            <span>{isRefunded ? "Refunded" : "Cancelled"}</span>
+          </div>
+          
+          {/* Status date */}
+          {application.pdcDate && (
+            <div className="flex items-center space-x-1">
+              <Calendar className={`w-3 h-3 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
+              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                {application.pdcDate ? new Date(application.pdcDate).toLocaleDateString('en-GB') : ''}
+              </span>
+            </div>
+          )}
         </div>
-      ),
+      ) : (
+        <button
+          onClick={() => onRefundPDCClick && onRefundPDCClick(application)}
+          className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 ${
+            application.refundPdc === "Yes"
+              ? "bg-gradient-to-r from-green-500 to-green-600 text-white"
+              : application.refundPdc === "Cancel"
+                ? "bg-gradient-to-r from-red-500 to-red-600 text-white"
+                : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+          } shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1`}
+          title="Update Refund PDC Status"
+        >
+          <FileText className="w-4 h-4" />
+          <span>
+            {application.refundPdc || "Update"}
+          </span>
+        </button>
+      )}
+    </div>
+  );
+},
+
       "Appraisal Report": () => (
         <AppraisalReportButton
           enquiry={application}
