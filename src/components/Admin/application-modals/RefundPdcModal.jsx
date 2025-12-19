@@ -1,5 +1,8 @@
+"use client";
 import React, { useState, useEffect, useRef } from "react";
-import { X, FileText, AlertCircle } from "lucide-react";
+import { X, FileText } from "lucide-react";
+import { manageApplicationService } from "@/lib/services/ManageApplicationServices";
+import toast from "react-hot-toast";
 
 const RefundPDCModal = ({ 
   isOpen, 
@@ -7,14 +10,14 @@ const RefundPDCModal = ({
   onSubmit, 
   isDark, 
   customerName, 
-  loanNo 
+  loanNo,
+  currentRefundPDCApplication
 }) => {
   const [refundStatus, setRefundStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const modalRef = useRef(null);
 
-  // Outside click, escape key, and scroll lock functionality
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target) && !isSubmitting) {
@@ -43,17 +46,34 @@ const RefundPDCModal = ({
 
   const handleSubmit = async () => {
     if (!refundStatus) {
-      alert("Please select a refund status");
+      toast.error("Please select a refund status");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await onSubmit(refundStatus);
-      handleClose();
+      
+      // Call the API
+      const response = await manageApplicationService.updateRefundPDC(
+        currentRefundPDCApplication.id, 
+        refundStatus
+      );
+      
+      if (response.success) {
+        toast.success('Refund PDC status updated successfully!');
+        
+        // Call the parent onSubmit handler to update the UI
+        if (onSubmit) {
+          await onSubmit(refundStatus);
+        }
+        
+        handleClose();
+      } else {
+        throw new Error(response.message || "Failed to update refund PDC");
+      }
     } catch (error) {
       console.error("Error submitting refund PDC:", error);
-      alert("Failed to update refund PDC status. Please try again.");
+      toast.error('Failed to update refund PDC status. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

@@ -48,7 +48,8 @@ const ApplicationRow = ({
   onReadyForApprove,
   onBankVerification,
   onDisburseApproval,
-  onCollectionClick
+  onCollectionClick,
+  onNOCModalOpen,
 }) => {
   
   const handleChequeClick = () => {
@@ -818,8 +819,25 @@ const ApplicationRow = ({
         </div>
       ),
       "NOC": () => (
+    <div className="flex items-center justify-center">
+      {application.loanStatusId === 13 ? (
+        <button
+          onClick={() => onNOCModalOpen && onNOCModalOpen(application)}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-semibold transition-all duration-200 bg-gradient-to-r ${
+            isDark
+              ? "from-cyan-200 to-cyan-300 hover:from-cyan-300 hover:to-cyan-500 text-cyan-900"
+              : "from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white"
+          } shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1`}
+          title="Generate NOC"
+        >
+          <FileText className="w-4 h-4" />
+          <span>NOC</span>
+        </button>
+      ) : (
         <span className="text-sm text-gray-500">-</span>
-      ),
+      )}
+    </div>
+  ),
       "Refund PDC": () => (
         <div className="flex items-center justify-center">
           <button

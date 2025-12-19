@@ -45,6 +45,29 @@ export const manageApplicationAPI = {
     }
   },
 
+  // Create NOC
+  createNOC: async (applicationId, nocData) => {
+    try {
+      const response = await api.put(`/crm/create-noc/${applicationId}`, nocData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update Refund PDC
+  updateRefundPDC: async (applicationId, refundStatus) => {
+    try {
+      const response = await api.put(`/crm/refund-pdc/${applicationId}`, {
+        refundpdc: refundStatus
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+
   // Update disburse approval status (same endpoint as credit approval)
   updateDisburseApproval: async (applicationId) => {
     try {
@@ -375,7 +398,6 @@ export const manageApplicationService = {
     
     if (updateData.originalDocumentsReceived) {
       payload.original_documents = updateData.originalDocumentsReceived === "yes" ? "Yes" : "No";
-      // Send received_date if provided, regardless of yes/no selection
       if (updateData.documentsReceivedDate) {
         payload.received_date = updateData.documentsReceivedDate;
       }
@@ -388,16 +410,25 @@ export const manageApplicationService = {
   }
 },
 
+  // Update refund PDC 
   updateRefundPDC: async (applicationId, refundStatus) => {
     try {
-      const response = await api.put(`/crm/application/refund-pdc/${applicationId}`, {
-        refund_pdc: refundStatus
-      });
+      const response = await manageApplicationAPI.updateRefundPDC(applicationId, refundStatus);
       return response;
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  // Create NOC
+  createNOC: async (applicationId, nocData) => {
+    try {
+      const response = await manageApplicationAPI.createNOC(applicationId, nocData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 // File view utility (same as other pages)

@@ -27,6 +27,7 @@ import {
 } from "@/lib/services/ManageApplicationServices";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
+import NOCModal from "../application-modals/NOCModal";
 
 const ManageApplication = () => {
   const { theme } = useThemeStore();
@@ -61,6 +62,8 @@ const ManageApplication = () => {
   const [currentRefundPDCApplication, setCurrentRefundPDCApplication] = useState(null);
   const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
+  const [nocModalOpen, setNocModalOpen] = useState(false);
+   const [currentNOCApplication, setCurrentNOCApplication] = useState(null);
   
   // Collection modal states
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
@@ -423,6 +426,33 @@ const buildApiParams = () => {
       throw error;
     }
   };
+
+  const handleNOCModalOpen = (application) => {
+  // Only allow NOC generation for closed loans
+  if (application.loanStatusId !== 13) {
+    toast.error('NOC can only be generated for closed loans');
+    return;
+  }
+  
+  setCurrentNOCApplication(application);
+  setNocModalOpen(true);
+};
+
+const handleNOCModalClose = () => {
+  setNocModalOpen(false);
+  setCurrentNOCApplication(null);
+};
+
+const handleNOCGenerate = async (applicationId, nocData) => {
+  try {
+    
+    await fetchApplications();
+    toast.success('NOC generated successfully!');
+  } catch (error) {
+    toast.error('Failed to generate NOC');
+  }
+};
+
 
   const handleChangeStatusModalOpen = (application) => {
     setCurrentChangeStatusApplication(application);
@@ -893,6 +923,7 @@ const buildApiParams = () => {
           onBankVerification={handleBankVerification}
           onDisburseApproval={handleDisburseApproval}
           onCollectionClick={handleCollectionClick}
+          onNOCModalOpen={handleNOCModalOpen}
         />
       </div>
 
@@ -906,6 +937,17 @@ const buildApiParams = () => {
           application={currentDocumentApplication}
         />
       )}
+      {/* Add NOC modal to your modals section: */}
+{currentNOCApplication && (
+  <NOCModal
+    isOpen={nocModalOpen}
+    onClose={handleNOCModalClose}
+    isDark={isDark}
+    customerName={currentNOCApplication.name}
+    loanNo={currentNOCApplication.loanNo}
+    applicationId={currentNOCApplication.id}
+  />
+)}
 
       {currentRefundPDCApplication && (
         <RefundPDCModal
@@ -915,6 +957,7 @@ const buildApiParams = () => {
           isDark={isDark}
           customerName={currentRefundPDCApplication.name}
           loanNo={currentRefundPDCApplication.loanNo}
+          currentRefundPDCApplication={currentRefundPDCApplication}
         />
       )}
 

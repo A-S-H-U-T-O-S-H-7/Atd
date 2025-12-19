@@ -43,6 +43,7 @@ const ManageApplicationTable = ({
   onBankVerification,
   onDisburseApproval,
   onCollectionClick,
+  onNOCModalOpen,
 }) => {
 
   // State for collapsed sections
@@ -397,6 +398,7 @@ const ManageApplicationTable = ({
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
                   onCollectionClick={onCollectionClick}
+                  onNOCModalOpen = {onNOCModalOpen}
                   />
               ))}
             </tbody>
