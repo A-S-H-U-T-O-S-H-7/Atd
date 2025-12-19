@@ -62,23 +62,7 @@ const ChartCard = ({
           <div className={`p-2 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}>
             <Icon className="w-5 h-5 text-emerald-600" />
           </div>
-          {trend.direction !== "neutral" && (
-            <div className={`flex items-center px-2 py-1 rounded-full ${isDark 
-              ? trend.direction === "up" 
-                ? "bg-green-900/30 text-green-400" 
-                : "bg-red-900/30 text-red-400"
-              : trend.direction === "up"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}>
-              {trend.direction === "up" ? (
-                <TrendingUp className="w-4 h-4 mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 mr-1" />
-              )}
-              <span className="text-xs font-medium">{trend.value}</span>
-            </div>
-          )}
+          
         </div>
       </div>
 
