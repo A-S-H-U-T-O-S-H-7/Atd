@@ -1,8 +1,9 @@
+import DashboardPage from "@/components/Admin/dashboard/DashboardPage";
 
 export default function Dashboard() {
   return (
     <div >
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <DashboardPage/>
     </div>
   );
 }

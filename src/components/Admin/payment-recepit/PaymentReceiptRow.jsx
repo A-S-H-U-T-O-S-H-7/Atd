@@ -1,50 +1,29 @@
 import React from "react";
-import {
-  Calendar,
-  Phone,
-  Mail,
-  Building2,
-  SquarePen
-} from "lucide-react";
+import { Calendar, Phone, Mail } from "lucide-react";
 
-const PaymentReceiptRow = ({
-  payment,
-  index,
-  isDark,
-  onUpdateClick
-}) => {
+const PaymentReceiptRow = ({ payment, index, isDark, onUpdateClick }) => {
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${isDark
-        ? "border-emerald-700 hover:bg-gray-700/50"
-        : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0
-        ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-        : ""}`}
+      className={`border-b transition-all duration-200 hover:shadow-lg ${
+        isDark
+          ? "border-emerald-700 hover:bg-gray-700/50"
+          : "border-emerald-300 hover:bg-emerald-50/50"
+      } ${
+        index % 2 === 0
+          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+          : ""
+      }`}
     >
-      {/* SN */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span
-          className={`font-medium ${isDark
-            ? "text-gray-100"
-            : "text-gray-900"}`}
-        >
+        <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {payment.srNo}
         </span>
       </td>
 
-      {/* Date */}
       <td className={`px-6 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
-          <Calendar
-            className={`w-4 h-4 ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          />
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-800"}`}
-          >
+          <Calendar className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+          <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
             {payment.date}
           </span>
         </div>
