@@ -34,9 +34,6 @@ export default function Profile() {
 
   const userStep = user?.step || 1;
 
-  console.log("👤 Profile - isViewingApplicant:", isViewingApplicant);
-  console.log("👤 Profile - user:", user);
-  console.log("👤 Profile - user step:", userStep);
 
   const [showCongratulationsModal, setShowCongratulationsModal] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);

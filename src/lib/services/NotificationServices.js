@@ -45,7 +45,6 @@ export const notificationAPI = {
     }
   },
 
-  // Get email list for dropdown
   getEmailList: async () => {
     try {
       const response = await api.get(API_ENDPOINTS.GET_EMAILS);
@@ -56,7 +55,22 @@ export const notificationAPI = {
     }
   },
 
-  // Send notification
+  // NEW: Get all user IDs for "All Customers"
+  getAllUserIds: async () => {
+    try {
+      const response = await api.get(API_ENDPOINTS.GET_EMAILS);
+      if (response?.success) {
+        // Extract just the IDs from the email list
+        return response.data.map(user => user.id);
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting all user IDs:", error);
+      return [];
+    }
+  },
+
+  // Send notification (update to handle "All Customers")
   sendNotification: async (data) => {
     try {
       const response = await api.post(API_ENDPOINTS.CREATE, data);
@@ -66,7 +80,7 @@ export const notificationAPI = {
       throw error;
     }
   },
-
+  
   // Delete notification
   deleteNotification: async (id) => {
     try {

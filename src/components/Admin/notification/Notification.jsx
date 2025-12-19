@@ -9,6 +9,7 @@ import { useThemeStore } from '@/lib/store/useThemeStore';
 import { notificationAPI, formatNotificationForUI } from '@/lib/services/NotificationServices';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { FirebaseNotificationService } from '@/lib/services/FirebaseNotificationService';
 
 const NotificationPage = () => {
   const { theme } = useThemeStore();
@@ -100,6 +101,17 @@ const NotificationPage = () => {
     }
   }, [currentPage]);
 
+  // Add this useEffect
+useEffect(() => {
+  const testFirebase = async () => {
+    console.log('Testing Firebase connection...');
+    const result = await FirebaseNotificationService.testConnection();
+    console.log('Firebase test result:', result);
+  };
+  
+  testFirebase();
+}, []);
+
   // Strip HTML tags from message
   const stripHtmlTags = (html) => {
     if (!html) return '';
@@ -110,95 +122,154 @@ const NotificationPage = () => {
   };
 
   // Handle notification submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!subject.trim()) {
-      toast.error("Please enter a subject", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!subject.trim()) {
+    toast.error("Please enter a subject");
+    return;
+  }
 
-    if (!comment.trim()) {
-      toast.error("Please enter a message", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
+  if (!comment.trim()) {
+    toast.error("Please enter a message");
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
+  
+  try {
+    let payload;
+    let userIdsForFirebase = [];
     
-    try {
-      let payload;
+    // Get admin data
+    const getAdminData = () => {
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('adminUser');
+        return storedUser ? JSON.parse(storedUser) : null;
+      }
+      return null;
+    };
+    
+    const adminUser = getAdminData();
+    console.log('Admin User:', adminUser);
+    
+    if (customerType === 'all') {
+      // For "All Customers"
+      payload = {
+        users: "All",
+        subject: subject.trim(),
+        message: stripHtmlTags(comment.trim()),
+      };
       
-      if (customerType === 'all') {
-        payload = {
-          users: "All",
-          subject: subject.trim(),
-          message: stripHtmlTags(comment.trim()),
-        };
-      } else {
-        try {
-          const userIds = emails ? JSON.parse(emails) : [];
-          
-          if (userIds.length === 0) {
-            toast.error("Please select at least one user", {
-              position: "top-right",
-              autoClose: 3000,
-            });
-            setIsSubmitting(false);
-            return;
-          }
-          
-          payload = {
-            users: "Custom",
-            user_ids: userIds,
-            subject: subject.trim(),
-            message: stripHtmlTags(comment.trim()),
-          };
-        } catch (error) {
-          toast.error("Invalid user selection", {
-            position: "top-right",
-            autoClose: 3000,
-          });
+      console.log('Sending to ALL customers');
+      
+      // Get ALL user IDs from your API
+      try {
+        const emailResponse = await notificationAPI.getEmailList();
+        if (emailResponse?.success && emailResponse.data) {
+          userIdsForFirebase = emailResponse.data.map(user => user.id);
+          console.log(`Found ${userIdsForFirebase.length} users to send to:`, userIdsForFirebase);
+        } else {
+          console.error('Could not get user list from API');
+          toast.error("Could not retrieve user list");
           setIsSubmitting(false);
           return;
         }
+      } catch (error) {
+        console.error('Error getting all users:', error);
+        toast.error("Failed to get user list");
+        setIsSubmitting(false);
+        return;
       }
       
-      const response = await notificationAPI.sendNotification(payload);
+    } else {
+      // For "Custom" selection
+      try {
+        userIdsForFirebase = emails ? JSON.parse(emails) : [];
+        
+        if (userIdsForFirebase.length === 0) {
+          toast.error("Please select at least one user");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        payload = {
+          users: "Custom",
+          user_ids: userIdsForFirebase,
+          subject: subject.trim(),
+          message: stripHtmlTags(comment.trim()),
+        };
+        
+        console.log('Sending to specific users:', userIdsForFirebase);
+        
+      } catch (error) {
+        toast.error("Invalid user selection");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+    
+    // 1. Send to your existing MySQL API
+    console.log('Sending to MySQL API:', payload);
+    const response = await notificationAPI.sendNotification(payload);
+    
+    if (response?.success) {
+      console.log('MySQL API response:', response);
       
-      if (response?.success) {
-        toast.success(`${response.message} (Sent to ${response.count || 0} users)`, {
-          position: "top-right",
-          autoClose: 3000,
+      // 2. ALSO send to Firebase for real-time updates
+      if (userIdsForFirebase.length > 0) {
+        console.log(`🚀 Firebase: Sending to ${userIdsForFirebase.length} users`);
+        
+        // Use REAL admin data
+        const firebaseResult = await FirebaseNotificationService.sendNotification({
+          userIds: userIdsForFirebase,
+          subject: payload.subject,
+          message: payload.message,
+          sender: adminUser?.name || adminUser?.username || 'Admin',
+          adminId: adminUser?.id || 68
         });
         
-        // Reset form
-        setCustomerType('all');
-        setEmails('');
-        setSubject('');
-        setComment('');
-        setIsFormOpen(false);
-        fetchNotifications();
+        if (firebaseResult.success) {
+          console.log(`✅ Firebase: Successfully sent to ${firebaseResult.count} users`);
+          
+          // Show success message with count
+          toast.success(
+            <div>
+              <div>{response.message}</div>
+              <div className="text-sm opacity-80">
+                (MySQL: {response.count || 0} users, Firebase: {firebaseResult.count} users)
+              </div>
+            </div>,
+            { duration: 4000 }
+          );
+          
+        } else {
+          console.warn('⚠️ Firebase failed:', firebaseResult.error);
+          // Still show MySQL success
+          toast.success(`${response.message} (MySQL: ${response.count || 0} users)`);
+        }
       } else {
-        toast.error(response?.message || "Failed to send notification", {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        toast.success(`${response.message} (${response.count || 0} users)`);
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send notification", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } finally {
-      setIsSubmitting(false);
+      
+      // Reset form
+      setCustomerType('all');
+      setEmails('');
+      setSubject('');
+      setComment('');
+      setIsFormOpen(false);
+      fetchNotifications();
+      
+    } else {
+      toast.error(response?.message || "Failed to send notification");
     }
-  };
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    toast.error(error.response?.data?.message || "Failed to send notification");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Handle delete notification with confirmation
   const handleDeleteNotification = async (id) => {

@@ -910,7 +910,6 @@ const ApplicationRow = ({
           )}
         </div>
       ) : (
-        // Show Generate NOC button only for closed loans, otherwise show --
         application.loanStatusId === 13 ? (
           <button
             onClick={() => onNOCModalOpen && onNOCModalOpen(application)}
