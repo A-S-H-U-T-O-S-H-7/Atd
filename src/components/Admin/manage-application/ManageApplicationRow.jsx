@@ -808,22 +808,7 @@ const ApplicationRow = ({
           View Remarks
         </button>
       ),
-      "Document Status": () => (
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => onDocumentStatusClick(application)}
-            className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 ${
-              isDark 
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white" 
-                : "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white"
-            } shadow-lg hover:shadow-xl flex items-center space-x-1`}
-            title="Check Document Status"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Check Status</span>
-          </button>
-        </div>
-      ),
+      
       "NOC": () => {
   const hasNOC = application.nocIssued === "issued";
   
@@ -956,7 +941,7 @@ const ApplicationRow = ({
           {application.pdcDate && (
             <div className="flex items-center space-x-1">
               <Calendar className={`w-3 h-3 ${isDark ? "text-gray-400" : "text-gray-500"}`} />
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+              <span className={`text-xs ${isDark ? "text-gray-100" : "text-gray-800"}`}>
                 {application.pdcDate ? new Date(application.pdcDate).toLocaleDateString('en-GB') : ''}
               </span>
             </div>

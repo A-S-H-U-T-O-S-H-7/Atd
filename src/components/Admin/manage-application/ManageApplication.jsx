@@ -64,6 +64,8 @@ const ManageApplication = () => {
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
   const [nocModalOpen, setNocModalOpen] = useState(false);
    const [currentNOCApplication, setCurrentNOCApplication] = useState(null);
+   const [loadingRemarks, setLoadingRemarks] = useState(false);
+    const [remarksData, setRemarksData] = useState(null);
   
   // Collection modal states
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
@@ -166,6 +168,58 @@ const buildApiParams = () => {
       setCurrentPage(1);
     }
   }, [searchField, searchTerm, dateRange]);
+
+  const fetchRemarks = async (applicationId) => {
+    try {
+      setLoadingRemarks(true);
+      setRemarksData(null);
+      
+      const response = await manageApplicationService.getAppraisalRemarks(applicationId);
+      
+      if (response.success) {
+        // Format the API response into the expected structure
+        const formattedRemarks = {
+          PerRemark: response.data.PerRemark,
+          SalaryRemark: response.data.SalaryRemark,
+          OrganizationRemark: response.data.OrganizationRemark,
+          SalarySlipRemark: response.data.salary_remark,
+          BankRemark: response.data.BankRemark,
+          SocialRemark: response.data.SocialRemark,
+          CibilRemark: response.data.CibilRemark
+        };
+        
+        setRemarksData(formattedRemarks);
+      } else {
+        toast.error('Failed to load remarks');
+        // Set empty remarks structure
+        setRemarksData({
+          PerRemark: null,
+          SalaryRemark: null,
+          OrganizationRemark: null,
+          SalarySlipRemark: null,
+          BankRemark: null,
+          SocialRemark: null,
+          CibilRemark: null
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching remarks:', error);
+      toast.error('Failed to load remarks');
+      // Set empty remarks structure on error
+      setRemarksData({
+        PerRemark: null,
+        SalaryRemark: null,
+        OrganizationRemark: null,
+        SalarySlipRemark: null,
+        BankRemark: null,
+        SocialRemark: null,
+        CibilRemark: null
+      });
+    } finally {
+      setLoadingRemarks(false);
+    }
+  };
+
 
   // Status update handlers
   const handleReadyForApprove = async (application) => {
@@ -380,17 +434,20 @@ const buildApiParams = () => {
     }
   };
 
-  const handleRemarksModalOpen = (application) => {
+
+   const handleRemarksModalOpen = async (application) => {
     setCurrentRemarksApplication(application);
+    await fetchRemarks(application.id);
     setRemarksModalOpen(true);
   };
 
   const handleRemarksModalClose = () => {
     setRemarksModalOpen(false);
     setCurrentRemarksApplication(null);
+    setRemarksData(null);
   };
 
-  const handleRemarksSubmit = async (remarks) => {
+ const handleRemarksSubmit = async (remarks) => {
     try {
       await manageApplicationService.updateRemarks(currentRemarksApplication.id, remarks);
       await fetchApplications();
@@ -452,6 +509,7 @@ const handleNOCGenerate = async (applicationId, nocData) => {
     toast.error('Failed to generate NOC');
   }
 };
+
 
 
   const handleChangeStatusModalOpen = (application) => {
@@ -1034,11 +1092,11 @@ const handleNOCGenerate = async (applicationId, nocData) => {
         <RemarksModal
           isOpen={remarksModalOpen}
           onClose={handleRemarksModalClose}
-          onSubmit={handleRemarksSubmit}
           isDark={isDark}
           customerName={currentRemarksApplication.name}
           loanNo={currentRemarksApplication.loanNo}
-          application={currentRemarksApplication}
+          remarksData={remarksData}
+          loading={loadingRemarks}
         />
       )}
 

@@ -28,15 +28,7 @@ export const legalService = {
     }
   },
 
-  // Create legal notice
-  createLegalNotice: async (legalId, noticeData) => {
-    try {
-      const response = await api.post(`/crm/legal/${legalId}/notice`, noticeData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+
 
   // Create criminal case
   createCriminalCase: async (legalId, caseData) => {
@@ -45,6 +37,26 @@ export const legalService = {
       return response;
     } catch (error) {
       throw error;
+    }
+  },
+
+  createLegalNotice: async (legalId, noticeData) => {
+    try {
+      const responseData = await api.put(`/crm/legal/create-notice/${legalId}`, noticeData);
+      
+      if (responseData && (responseData.success || responseData.status === 'success')) {
+        return responseData;
+      } else {
+        return {
+          success: false,
+          message: responseData.message || "Unknown error"
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message || "Network error"
+      };
     }
   },
 

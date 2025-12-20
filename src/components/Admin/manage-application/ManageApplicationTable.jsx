@@ -129,7 +129,6 @@ const ManageApplicationTable = ({
     actions: [
       { label: "Action", width: "140px" },
       { label: "Remarks", width: "120px" },
-      { label: "Document Status", width: "160px" },
       { label: "NOC", width: "120px" },
       { label: "Refund PDC", width: "120px" },
       { label: "Appraisal Report", width: "120px" },

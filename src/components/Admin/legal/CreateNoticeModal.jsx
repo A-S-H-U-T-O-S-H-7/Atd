@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, FileText, User, ChevronDown } from "lucide-react";
-import { legalService } from "@/lib/services/LegalService"; 
+import { X, ChevronDown, Download } from "lucide-react";
+import api from "@/utils/axiosInstance";
+import toast from "react-hot-toast";
 
-const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
+const CreateNoticeModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
   const [formData, setFormData] = useState({
-    loanAgreementDate: legal?.loanAgreement || '',
+    loanAgreementDate: '',
     date: new Date().toISOString().split('T')[0],
     advocateId: "", 
   });
@@ -13,55 +14,150 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
   const [isLoadingAdvocates, setIsLoadingAdvocates] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch advocates when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchAdvocates();
+      
+      let formattedLoanDate = '';
+      if (legal?.loanAgreementDate && legal.loanAgreementDate !== 'N/A') {
+        if (legal.loanAgreementDate.match(/^\d{2}-\d{2}-\d{4}$/)) {
+          const parts = legal.loanAgreementDate.split('-');
+          formattedLoanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+      }
+      
+      setFormData({
+        loanAgreementDate: formattedLoanDate,
+        date: new Date().toISOString().split('T')[0],
+        advocateId: "", 
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, legal]);
 
   const fetchAdvocates = async () => {
     try {
       setIsLoadingAdvocates(true);
-      const response = await legalService.getAdvocates();
-      if (response.success && response.data) {
+      const response = await api.get("/crm/legal/advocate");
+      
+      if (Array.isArray(response)) {
+        setAdvocates(response);
+      } else if (response && Array.isArray(response.data)) {
         setAdvocates(response.data);
+      } else if (response && response.data && Array.isArray(response.data.advocates)) {
+        setAdvocates(response.data.advocates);
+      } else if (response && response.success && Array.isArray(response.data)) {
+        setAdvocates(response.data);
+      } else {
+        setAdvocates([]);
       }
     } catch (error) {
-      console.error('Error fetching advocates:', error);
+      toast.error("Failed to load advocates");
+      setAdvocates([]);
     } finally {
       setIsLoadingAdvocates(false);
     }
+  };
+
+  const formatDateForAPI = (dateString) => {
+    if (!dateString) return "";
+    
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString;
+    }
+    
+    if (dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
+      const parts = dateString.split('-');
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    
+    return dateString;
+  };
+
+  const handleDownloadFile = (blob, fileName) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.advocateId) {
-      alert("Please select an advocate");
+      toast.error("Please select an advocate");
+      return;
+    }
+
+    if (!formData.date) {
+      toast.error("Please select a notice date");
+      return;
+    }
+
+    if (!legal?.id) {
+      toast.error("Invalid legal case");
       return;
     }
 
     try {
       setIsSubmitting(true);
+      
       const noticeData = {
-        advocate_id: formData.advocateId,
-        loan_agreement_date: formData.loanAgreementDate,
-        notice_date: formData.date,
+        advocate_id: parseInt(formData.advocateId),
+        loan_agreement_date: formatDateForAPI(formData.loanAgreementDate),
+        notice_date: formatDateForAPI(formData.date),
       };
 
-      const response = await legalService.createLegalNotice(legal.id, noticeData);
-      
-      if (response.success) {
-        console.log('Notice created successfully:', response.data);
+      const response = await api.put(
+        `/crm/legal/create-notice/${legal.id}`,
+        noticeData,
+        { responseType: 'blob' }
+      );
+
+      if (response instanceof Blob) {
+        const customerName = legal.customerName || 'notice';
+        const fileName = `Legal_Notice_${customerName.replace(/\s+/g, '_')}_${formData.date}.docx`;
+        
+        handleDownloadFile(response, fileName);
+        toast.success("Notice created and downloaded successfully!");
+        
+        if (onSuccess) onSuccess();
         onClose();
       } else {
-        console.error('Failed to create notice:', response.message);
-        alert(response.message || "Failed to create notice");
+        const text = await response.text();
+        try {
+          const jsonResponse = JSON.parse(text);
+          if (jsonResponse.success) {
+            toast.success("Notice created successfully!");
+            if (onSuccess) onSuccess();
+            onClose();
+          } else {
+            toast.error(jsonResponse.message || "Failed to create notice");
+          }
+        } catch {
+          toast.error("Unexpected response from server");
+        }
       }
     } catch (error) {
-      console.error('Error creating notice:', error);
-      alert(error.message || "Failed to create notice");
+      if (error.response && error.response instanceof Blob) {
+        const errorText = await error.response.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          toast.error(errorJson.message || "Failed to create notice");
+        } catch {
+          const fileName = `Legal_Notice_${legal.customerName || 'notice'}_${formData.date}.docx`;
+          handleDownloadFile(error.response, fileName);
+          toast.success("Notice downloaded successfully!");
+          if (onSuccess) onSuccess();
+          onClose();
+        }
+      } else {
+        const errorMsg = error.response?.data?.message || error.message || "Failed to create notice";
+        toast.error(errorMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -71,17 +167,14 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      {/* Modal */}
       <div className={`relative z-10 w-full max-w-md mx-4 rounded-xl shadow-2xl ${
         isDark ? "bg-gray-800" : "bg-white"
       }`}>
-        {/* Header */}
         <div className={`px-6 py-4 border-b ${
           isDark ? "border-gray-700" : "border-gray-200"
         }`}>
@@ -104,11 +197,7 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-
-          {/* Loan Agreement Date */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
               isDark ? "text-gray-300" : "text-gray-700"
@@ -127,17 +216,17 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
             />
           </div>
 
-          {/* Notice Date */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
               isDark ? "text-gray-300" : "text-gray-700"
             }`}>
-              Notice Date
+              Notice Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({...formData, date: e.target.value})}
+              required
               className={`w-full px-3 py-2 rounded-lg border ${
                 isDark 
                   ? "bg-gray-700 border-gray-600 text-gray-100"
@@ -146,7 +235,6 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
             />
           </div>
 
-          {/* Advocate Dropdown */}
           <div>
             <label className={`block text-sm font-medium mb-2 ${
               isDark ? "text-gray-300" : "text-gray-700"
@@ -161,12 +249,12 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
                 disabled={isLoadingAdvocates}
                 className={`w-full px-3 py-2.5 rounded-lg border appearance-none ${
                   isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 disabled:bg-gray-800/60 disabled:text-gray-400"
-                    : "bg-white border-gray-300 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500"
+                    ? "bg-gray-700 border-gray-600 text-gray-100 disabled:bg-gray-800/60"
+                    : "bg-white border-gray-300 text-gray-900 disabled:bg-gray-100"
                 } ${isLoadingAdvocates ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <option value="">Select an advocate...</option>
-                {advocates.map((advocate) => (
+                {Array.isArray(advocates) && advocates.map((advocate) => (
                   <option key={advocate.id} value={advocate.id}>
                     {advocate.name}
                   </option>
@@ -187,7 +275,6 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
             )}
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end pt-4">
             <button
               type="submit"
@@ -205,14 +292,12 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark }) => {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Submitting...</span>
+                  <span>Creating & Downloading...</span>
                 </>
               ) : (
                 <>
-                  <span>Submit</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <Download className="w-4 h-4" />
+                  <span>Create & Download Notice</span>
                 </>
               )}
             </button>

@@ -420,11 +420,11 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
                         {unreadCount} new
                       </span>
                     )}
-                    {notifications.length > 0 && (
+                    {/* {notifications.length > 0 && (
                       <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs font-medium rounded-full">
                         Real-time
                       </span>
-                    )}
+                    )} */}
                   </div>
                   <button 
                     onClick={() => setShowNotifications(false)}

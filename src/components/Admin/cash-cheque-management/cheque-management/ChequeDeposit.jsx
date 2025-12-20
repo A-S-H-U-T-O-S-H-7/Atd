@@ -17,30 +17,55 @@ const ChequeDepositPage = () => {
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
 
-  // Fetch deposits on component mount
   useEffect(() => {
-    fetchDeposits();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchDeposits();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, searchTerm, statusFilter]);
 
   const fetchDeposits = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await ChequeService.getChequeDeposits();
+
+      const params = {
+        medium: "Cheque",
+        page: currentPage,
+        per_page: itemsPerPage,
+        ...(searchTerm && { search: searchTerm }),
+        ...(statusFilter !== "all" && { status: statusFilter })
+      };
+
+      const response = await ChequeService.getChequeDeposits(params);
       
       if (response.success && response.data) {
-        const formattedDeposits = formatDepositsForTable(response.data);
+        const formattedDeposits = formatDepositsForTable(response.data.data || response.data);
         setDeposits(formattedDeposits);
+        
+        if (response.data.total) {
+          setTotalRecords(response.data.total);
+        } else if (response.data.length) {
+          setTotalRecords(response.data.length);
+        } else {
+          setTotalRecords(0);
+        }
       } else {
         setError("Failed to load deposits");
+        setDeposits([]);
+        setTotalRecords(0);
       }
     } catch (error) {
       console.error("Error fetching deposits:", error);
       setError("Failed to load deposits. Please try again.");
       setDeposits([]);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
@@ -54,30 +79,11 @@ const ChequeDepositPage = () => {
     router.push(`/crm/cheque-management/manage-cheque-deposit?id=${deposit.id}`);
   };
 
-  // Filter deposits
-  const filteredDeposits = deposits.filter(deposit => {
-    const matchesSearch = 
-      deposit.loanNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.chequeNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.bankName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.user.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = statusFilter === "all" || deposit.status.toLowerCase() === statusFilter.toLowerCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalPages = Math.ceil(filteredDeposits.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedDeposits = filteredDeposits.slice(startIndex, startIndex + itemsPerPage);
-
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
       <div className="p-0 md:p-4">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -100,7 +106,6 @@ const ChequeDepositPage = () => {
               </h1>
             </div>
             
-            {/* Add Deposit Button */}
             <button
               onClick={handleAddDeposit}
               className={`px-6 py-3 cursor-pointer rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 hover:scale-105 ${
@@ -114,7 +119,6 @@ const ChequeDepositPage = () => {
             </button>
           </div>
 
-          {/* Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="md:col-span-2">
               <SearchBar
@@ -124,7 +128,6 @@ const ChequeDepositPage = () => {
               />
             </div>
 
-            {/* FIXED: Status filter options to match API values */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -142,7 +145,6 @@ const ChequeDepositPage = () => {
           </div>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className={`mb-6 p-4 rounded-xl border-2 ${
             isDark 
@@ -153,10 +155,9 @@ const ChequeDepositPage = () => {
           </div>
         )}
 
-        {/* Table */}
         <ChequeDepositTable
-          paginatedDeposits={paginatedDeposits}
-          filteredDeposits={filteredDeposits}
+          paginatedDeposits={deposits}
+          filteredDeposits={deposits}
           currentPage={currentPage}
           totalPages={totalPages}
           itemsPerPage={itemsPerPage}

@@ -373,12 +373,12 @@ const handleEdit = (legal) => {
 
       {/* Modals - Rendered at root level */}
       <CreateNoticeModal
-        isOpen={isCreateNoticeModalOpen}
-        onClose={() => setIsCreateNoticeModalOpen(false)}
-        legal={selectedLegal}
-        isDark={isDark}
-        onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
-      />
+  isOpen={isCreateNoticeModalOpen}
+  onClose={() => setIsCreateNoticeModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+  onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
+/>
       <CreateCriminalCaseModal
         isOpen={isCriminalCaseModalOpen}
         onClose={() => setIsCriminalCaseModalOpen(false)}

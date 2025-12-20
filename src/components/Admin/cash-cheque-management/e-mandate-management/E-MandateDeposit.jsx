@@ -23,13 +23,22 @@ const EmandateDepositPage = () => {
   // Fetch deposits on component mount
   useEffect(() => {
     fetchDeposits();
-  }, []);
+  }, [currentPage, searchTerm, statusFilter]);
 
   const fetchDeposits = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await EmandateService.getEmandateDeposits();
+
+      const params = {
+      medium: "Emandate",
+      page: currentPage,
+      per_page: itemsPerPage,
+      ...(searchTerm && { search: searchTerm }),
+      ...(statusFilter !== "all" && { status: statusFilter })
+    };
+
+      const response = await EmandateService.getEmandateDeposits(params);
       
       if (response.success && response.data) {
         const formattedDeposits = formatDepositsForTable(response.data);
@@ -155,10 +164,10 @@ const EmandateDepositPage = () => {
 
         {/* Table */}
         <EmandateTable
-          paginatedDeposits={paginatedDeposits}
-          filteredDeposits={filteredDeposits}
+          paginatedDeposits={deposits}
+          filteredDeposits={deposits} 
+           totalPages={totalPages} 
           currentPage={currentPage}
-          totalPages={totalPages}
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}

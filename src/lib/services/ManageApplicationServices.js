@@ -45,6 +45,16 @@ export const manageApplicationAPI = {
     }
   },
 
+  // Get appraisal remarks
+  getAppraisalRemarks: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/appraisal/remarks/${applicationId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Create NOC
   createNOC: async (applicationId, nocData) => {
     try {
@@ -389,6 +399,16 @@ export const manageApplicationService = {
         remark: remark
       };
       const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get appraisal remarks
+  getAppraisalRemarks: async (applicationId) => {
+    try {
+      const response = await manageApplicationAPI.getAppraisalRemarks(applicationId);
       return response;
     } catch (error) {
       throw error;
