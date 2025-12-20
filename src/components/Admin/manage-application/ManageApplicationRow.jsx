@@ -998,11 +998,26 @@ const ApplicationRow = ({
           Replace KYC
         </button>
       ),
-      "Settled": () => (
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-          {application.settled}
+      "Settled": () => {
+  if (application.settled === 1) {
+    return (
+      <div className="flex items-center justify-center">
+        <span className={`px-3 py-1 rounded-md text-sm font-semibold flex items-center space-x-1 ${
+          isDark 
+            ? "bg-green-900/50 text-green-300 border border-green-700"
+            : "bg-green-100 text-green-700 border border-green-200"
+        }`}>
+          <CheckCircle className="w-4 h-4" />
+          <span>Loan Settled</span>
         </span>
-      ),
+      </div>
+    );
+  } else {
+    return (
+      <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+    );
+  }
+},
     };
 
     if (cellMap[headerLabel]) {

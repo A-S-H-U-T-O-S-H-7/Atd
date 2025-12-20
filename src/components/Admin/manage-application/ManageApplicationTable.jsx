@@ -134,7 +134,7 @@ const ManageApplicationTable = ({
       { label: "Appraisal Report", width: "120px" },
       { label: "Eligibility", width: "120px" },
       { label: "Replace KYC", width: "120px" },
-      { label: "Settled", width: "100px" },
+      { label: "Settled", width: "150px" },
     ]
   };
 
