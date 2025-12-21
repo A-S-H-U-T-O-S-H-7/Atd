@@ -18,7 +18,7 @@ import {
   MdAutorenew
 } from "react-icons/md";
 import { SiBlogger } from "react-icons/si";
-import { RiAccountPinBoxFill} from "react-icons/ri";
+import { RiAccountPinBoxFill, RiAdminFill} from "react-icons/ri";
 import { IoMdNotifications, IoMdCash } from "react-icons/io";
 import { IoBarChart } from "react-icons/io5";
 import { VscReferences } from "react-icons/vsc";
@@ -96,6 +96,8 @@ const menuList = [
     subItems: [
       { name: 'Manage Advocate', link: '/crm/manage-advocate', icon: <FaUserTie/> },
       { name: 'Manage Banks', link: '/crm/manage-bank', icon: <MdAccountBalance /> },
+      { name: 'Manage Admin', link: '/crm/manage-admin', icon: < RiAdminFill /> },
+
     ]
   },
   { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack /> },

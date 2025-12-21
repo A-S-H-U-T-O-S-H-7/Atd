@@ -43,22 +43,22 @@ const AdvocateTable = ({
         <table className="w-full min-w-max" style={{ minWidth: "1400px" }}>
           <thead className={styles.gradientClass}>
             <tr>
-              <th className={styles.headerClass} style={{ minWidth: "80px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "60px" }}>
                 S.No.
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "250px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Advocate Details
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "170px" }}>
                 Court
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "250px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "230px" }}>
                 Address
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
                 Contact
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "150px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "130px" }}>
                 Licence No.
               </th>
               <th className={styles.headerClass} style={{ minWidth: "120px" }}>
@@ -67,7 +67,7 @@ const AdvocateTable = ({
               <th className={styles.headerClass} style={{ minWidth: "200px" }}>
                 Added Details
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "90px" }}>
                 Status
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold ${
