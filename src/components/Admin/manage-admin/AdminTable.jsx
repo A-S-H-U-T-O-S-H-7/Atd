@@ -13,8 +13,7 @@ const AdminTable = ({
   isDark,
   onPageChange,
   onEdit,
-  onToggleStatus,
-  onViewPermissions,
+  onResetPassword,
   isLoading = false
 }) => {
   const styles = {
@@ -46,18 +45,15 @@ const AdminTable = ({
                 Admin Details
               </th>
               <th className={styles.headerClass} style={{ minWidth: "200px" }}>
-                Contact & IDs
+                Contact
               </th>
               <th className={styles.headerClass} style={{ minWidth: "180px" }}>
                 Added Details
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "200px" }}>
-                Permissions
-              </th>
               <th className={styles.headerClass} style={{ minWidth: "100px" }}>
                 Status
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "180px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "150px" }}>
                 Actions
               </th>
             </tr>
@@ -65,7 +61,7 @@ const AdminTable = ({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="7" className="px-4 py-8 text-center">
+                <td colSpan="6" className="px-4 py-8 text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <Loader className="w-5 h-5 animate-spin" />
                     <span className={isDark ? "text-gray-300" : "text-gray-600"}>
@@ -82,8 +78,7 @@ const AdminTable = ({
                   index={index}
                   isDark={isDark}
                   onEdit={onEdit}
-                  onToggleStatus={onToggleStatus}
-                  onViewPermissions={onViewPermissions}
+                  onResetPassword={onResetPassword}
                 />
               ))
             )}

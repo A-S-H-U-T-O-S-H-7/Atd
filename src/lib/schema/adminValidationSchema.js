@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 
+// Updated validation schema based on API
 export const adminSchema = Yup.object().shape({
   username: Yup.string()
     .required('Username is required')
@@ -16,38 +17,26 @@ export const adminSchema = Yup.object().shape({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
     ),
-  confirmPassword: Yup.string()
-    .when('password', (password, schema) => {
-      return password ? schema.required('Please confirm password') : schema;
-    })
-    .oneOf([Yup.ref('password'), null], 'Passwords must match'),
   name: Yup.string()
     .required('Full name is required')
     .min(3, 'Name must be at least 3 characters')
     .max(100, 'Name must be less than 100 characters')
     .trim(),
   email: Yup.string()
-    .required('Email is required')
     .email('Please enter a valid email address')
-    .trim(),
+    .nullable()
+    .transform((value) => value === '' ? null : value),
   phone: Yup.string()
-    .required('Phone number is required')
-    .matches(/^[0-9+\s()-]+$/, 'Please enter a valid phone number')
-    .min(10, 'Phone number must be at least 10 digits')
-    .trim(),
+    .nullable()
+    .transform((value) => value === '' ? null : value)
+    .matches(/^[0-9+\s()-]*$/, 'Please enter a valid phone number'),
   type: Yup.string()
     .required('Admin type is required')
-    .oneOf(['Super Admin', 'Admin'], 'Please select a valid admin type'),
-  roleId: Yup.string()
-    .required('Role ID is required')
-    .trim(),
-  providerId: Yup.string()
-    .required('Provider ID is required')
-    .trim(),
+    .oneOf(['user', 'verifier', 'account', 'manager', 'admin', 'superadmin', 'collection', 'agency'], 'Please select a valid admin type'),
   isActive: Yup.string()
     .required('Status is required')
-    .oneOf(['yes', 'no'], 'Please select status'),
-  photo: Yup.mixed()
+    .oneOf(['1', '0'], 'Please select status'),
+  selfie: Yup.mixed()
     .nullable()
     .test('fileSize', 'File too large', (value) => {
       if (!value) return true;
@@ -56,53 +45,23 @@ export const adminSchema = Yup.object().shape({
     .test('fileType', 'Unsupported file format', (value) => {
       if (!value) return true;
       return ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(value.type);
-    }),
-  permissions: Yup.array().of(
-    Yup.object().shape({
-      page: Yup.string().required(),
-      actions: Yup.array().of(Yup.string())
     })
-  ).optional()
 });
 
-// Mock data
-export const mockAdmins = [
-  {
-    id: 1,
-    username: 'superadmin',
-    name: 'Ashutosh',
-    email: 'ashutosh@gamil.com',
-    phone: '+91 9876543210',
-    type: 'Super Admin',
-    roleId: 'ROLE001',
-    providerId: 'PROV001',
-    isActive: 'yes',
-    photo: null,
-    addedBy: 'System',
-    createdAt: '2024-01-15T10:30:00Z',
-    permissions: [
-      { page: 'Dashboard', actions: ['view', 'edit', 'delete'] },
-      { page: 'Users', actions: ['view', 'add', 'edit', 'delete'] },
-      { page: 'Reports', actions: ['view', 'generate'] }
-    ]
-  },
-  {
-    id: 2,
-    username: 'admin1',
-    name: 'Malay',
-    email: 'malay@gmail.com',
-    phone: '+91 8765432109',
-    type: 'Admin',
-    roleId: 'ROLE002',
-    providerId: 'PROV002',
-    isActive: 'yes',
-    photo: null,
-    addedBy: 'superadmin',
-    createdAt: '2024-01-20T14:45:00Z',
-    permissions: [
-      { page: 'Dashboard', actions: ['view'] },
-      { page: 'Users', actions: ['view', 'add'] }
-    ]
-  },
-  // Add more mock data as needed
+// Type options for dropdown
+export const adminTypes = [
+  { value: 'user', label: 'User' },
+  { value: 'verifier', label: 'Verifier' },
+  { value: 'account', label: 'Account' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'superadmin', label: 'Super Admin' },
+  { value: 'collection', label: 'Collection' },
+  { value: 'agency', label: 'Agency' }
+];
+
+// Status options for dropdown
+export const statusOptions = [
+  { value: '1', label: 'Active' },
+  { value: '0', label: 'Inactive' }
 ];

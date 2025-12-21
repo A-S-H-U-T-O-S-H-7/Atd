@@ -14,11 +14,13 @@ import {
   ChevronUp,
   Eye,
   EyeOff,
-  Settings
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { toast } from 'react-hot-toast';
-import { adminSchema } from '@/lib/schema/adminValidationSchema';
+import { adminSchema,adminTypes, statusOptions } from '@/lib/schema/adminValidationSchema';
+import { adminService } from '@/lib/services/AdminServices';
 
 const AdminForm = ({ 
   isDark, 
@@ -30,57 +32,44 @@ const AdminForm = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(initialData?.photo || '');
-  const [permissions, setPermissions] = useState(
-    initialData?.permissions || [
-      { page: 'Dashboard', actions: ['view'] },
-      { page: 'Users', actions: ['view'] },
-      { page: 'Reports', actions: ['view'] },
-      { page: 'Settings', actions: ['view'] }
-    ]
-  );
+  const [previewUrl, setPreviewUrl] = useState(initialData?.selfieUrl || '');
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const initialValues = initialData || {
     username: '',
     password: '',
-    confirmPassword: '',
     name: '',
     email: '',
     phone: '',
-    type: 'Admin',
-    roleId: '',
-    providerId: '',
-    isActive: 'yes',
-    photo: null,
-    permissions: permissions
+    type: 'user',
+    isActive: '1',
+    selfie: null
   };
 
-  const adminTypes = ['Super Admin', 'Admin'];
-  const statusOptions = [
-    { value: 'yes', label: 'Active' },
-    { value: 'no', label: 'Inactive' }
-  ];
-
-  const availablePages = [
-    { id: 'dashboard', name: 'Dashboard' },
-    { id: 'users', name: 'Users' },
-    { id: 'admins', name: 'Admins' },
-    { id: 'reports', name: 'Reports' },
-    { id: 'settings', name: 'Settings' },
-    { id: 'billing', name: 'Billing' },
-    { id: 'analytics', name: 'Analytics' }
-  ];
-
-  const availableActions = [
-    { id: 'view', name: 'View' },
-    { id: 'add', name: 'Add' },
-    { id: 'edit', name: 'Edit' },
-    { id: 'delete', name: 'Delete' },
-    { id: 'export', name: 'Export' },
-    { id: 'approve', name: 'Approve' }
-  ];
+  // Check username availability
+  const checkUsername = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    
+    if (isEditMode && username === initialData?.username) {
+      setUsernameAvailable(true);
+      return;
+    }
+    
+    setCheckingUsername(true);
+    try {
+      const response = await adminService.checkUsername(username);
+      setUsernameAvailable(response.success);
+    } catch (error) {
+      setUsernameAvailable(false);
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
 
   const handleFileChange = (event, setFieldValue) => {
     const file = event.currentTarget.files[0];
@@ -99,7 +88,7 @@ const AdminForm = ({
       }
       
       setSelectedFile(file);
-      setFieldValue('photo', file);
+      setFieldValue('selfie', file);
       
       // Create preview
       const reader = new FileReader();
@@ -113,19 +102,7 @@ const AdminForm = ({
   const removeFile = (setFieldValue) => {
     setSelectedFile(null);
     setPreviewUrl('');
-    setFieldValue('photo', null);
-  };
-
-  const handlePermissionChange = (pageIndex, action, checked) => {
-    const newPermissions = [...permissions];
-    if (checked) {
-      if (!newPermissions[pageIndex].actions.includes(action)) {
-        newPermissions[pageIndex].actions.push(action);
-      }
-    } else {
-      newPermissions[pageIndex].actions = newPermissions[pageIndex].actions.filter(a => a !== action);
-    }
-    setPermissions(newPermissions);
+    setFieldValue('selfie', null);
   };
 
   const handleSubmit = async (values, { resetForm }) => {
@@ -136,11 +113,9 @@ const AdminForm = ({
       
       // Add all form fields
       Object.keys(values).forEach(key => {
-        if (key === 'photo' && values[key] instanceof File) {
+        if (key === 'selfie' && values[key] instanceof File) {
           formData.append(key, values[key]);
-        } else if (key === 'permissions') {
-          formData.append(key, JSON.stringify(permissions));
-        } else if (key !== 'confirmPassword') {
+        } else if (values[key] !== null && values[key] !== undefined && values[key] !== '') {
           formData.append(key, values[key]);
         }
       });
@@ -151,18 +126,11 @@ const AdminForm = ({
         resetForm();
         setSelectedFile(null);
         setPreviewUrl('');
-        setPermissions([
-          { page: 'Dashboard', actions: ['view'] },
-          { page: 'Users', actions: ['view'] },
-          { page: 'Reports', actions: ['view'] },
-          { page: 'Settings', actions: ['view'] }
-        ]);
+        setUsernameAvailable(null);
       }
       
-      toast.success(isEditMode ? 'Admin updated!' : 'Admin added!');
-      
     } catch (error) {
-      toast.error(error.message || 'Failed to save admin');
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -193,7 +161,7 @@ const AdminForm = ({
               {isEditMode ? 'Edit Admin' : 'Add New Admin'}
             </h2>
             <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              {isEditMode ? 'Update admin details and permissions' : 'Fill in the admin details and set permissions'}
+              {isEditMode ? 'Update admin details' : 'Fill in the admin details'}
             </p>
           </div>
         </div>
@@ -213,10 +181,10 @@ const AdminForm = ({
             onSubmit={handleSubmit}
             enableReinitialize={isEditMode}
           >
-            {({ isSubmitting: formikSubmitting, setFieldValue, values }) => (
+            {({ isSubmitting: formikSubmitting, setFieldValue, values, setFieldTouched }) => (
               <Form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Username */}
+                  {/* Username with availability check */}
                   <div>
                     <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                       isDark ? 'text-gray-100' : 'text-gray-700'
@@ -226,22 +194,54 @@ const AdminForm = ({
                       </div>
                       <span>Username *</span>
                     </label>
-                    <Field
-                      type="text"
-                      name="username"
-                      placeholder="Enter username"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
-                          : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
-                      } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
-                    />
+                    <div className="relative">
+                      <Field
+                        type="text"
+                        name="username"
+                        placeholder="Enter username"
+                        onBlur={(e) => {
+                          setFieldTouched('username', true);
+                          checkUsername(e.target.value);
+                        }}
+                        onChange={(e) => {
+                          setFieldValue('username', e.target.value);
+                          if (usernameAvailable !== null) {
+                            setUsernameAvailable(null);
+                          }
+                        }}
+                        className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
+                          isDark
+                            ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
+                            : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
+                        } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
+                      />
+                      {checkingUsername && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
                     <ErrorMessage name="username">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
                     </ErrorMessage>
+                    {usernameAvailable !== null && (
+                      <div className="flex items-center mt-1 space-x-1">
+                        {usernameAvailable ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span className="text-xs text-green-500">Username is available</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-4 h-4 text-red-500" />
+                            <span className="text-xs text-red-500">Username is already taken</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Password */}
+                  {/* Password (only for add mode) */}
                   {!isEditMode && (
                     <div>
                       <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
@@ -279,44 +279,6 @@ const AdminForm = ({
                     </div>
                   )}
 
-                  {/* Confirm Password */}
-                  {!isEditMode && (
-                    <div>
-                      <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                        isDark ? 'text-gray-100' : 'text-gray-700'
-                      }`}>
-                        <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                          <Key className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                        </div>
-                        <span>Confirm Password *</span>
-                      </label>
-                      <div className="relative">
-                        <Field
-                          type={showConfirmPassword ? "text" : "password"}
-                          name="confirmPassword"
-                          placeholder="Confirm password"
-                          className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium pr-10 ${
-                            isDark
-                              ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
-                              : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
-                          } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                            isDark ? 'text-gray-400' : 'text-gray-500'
-                          }`}
-                        >
-                          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                      <ErrorMessage name="confirmPassword">
-                        {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                  )}
-
                   {/* Full Name */}
                   <div>
                     <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
@@ -342,7 +304,7 @@ const AdminForm = ({
                     </ErrorMessage>
                   </div>
 
-                  {/* Email */}
+                  {/* Email  */}
                   <div>
                     <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                       isDark ? 'text-gray-100' : 'text-gray-700'
@@ -350,7 +312,7 @@ const AdminForm = ({
                       <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
                         <Mail className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
                       </div>
-                      <span>Email *</span>
+                      <span>Email (Optional)</span>
                     </label>
                     <Field
                       type="email"
@@ -367,7 +329,7 @@ const AdminForm = ({
                     </ErrorMessage>
                   </div>
 
-                  {/* Phone */}
+                  {/* Phone  */}
                   <div>
                     <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                       isDark ? 'text-gray-100' : 'text-gray-700'
@@ -375,7 +337,7 @@ const AdminForm = ({
                       <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
                         <Phone className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
                       </div>
-                      <span>Phone Number *</span>
+                      <span>Phone Number (Optional)</span>
                     </label>
                     <Field
                       type="text"
@@ -413,60 +375,10 @@ const AdminForm = ({
                     >
                       <option value="">Select Type</option>
                       {adminTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                        <option key={type.value} value={type.value}>{type.label}</option>
                       ))}
                     </Field>
                     <ErrorMessage name="type">
-                      {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
-                    </ErrorMessage>
-                  </div>
-
-                  {/* Role ID */}
-                  <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                        <Shield className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                      </div>
-                      <span>Role ID *</span>
-                    </label>
-                    <Field
-                      type="text"
-                      name="roleId"
-                      placeholder="Enter role ID"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
-                          : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
-                      } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
-                    />
-                    <ErrorMessage name="roleId">
-                      {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
-                    </ErrorMessage>
-                  </div>
-
-                  {/* Provider ID */}
-                  <div>
-                    <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                      isDark ? 'text-gray-100' : 'text-gray-700'
-                    }`}>
-                      <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                        <User className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                      </div>
-                      <span>Provider ID *</span>
-                    </label>
-                    <Field
-                      type="text"
-                      name="providerId"
-                      placeholder="Enter provider ID"
-                      className={`w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium ${
-                        isDark
-                          ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
-                          : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
-                      } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
-                    />
-                    <ErrorMessage name="providerId">
                       {msg => <p className="mt-1 text-xs text-red-500">{msg}</p>}
                     </ErrorMessage>
                   </div>
@@ -499,15 +411,15 @@ const AdminForm = ({
                     </ErrorMessage>
                   </div>
 
-                  {/* Photo Upload */}
-                  <div className="md:col-span-2">
+                  {/* Selfie Upload */}
+                  <div>
                     <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                       isDark ? 'text-gray-100' : 'text-gray-700'
                     }`}>
                       <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
                         <Upload className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
                       </div>
-                      <span>Profile Photo (Optional)</span>
+                      <span>Profile Selfie (Optional)</span>
                     </label>
                     
                     <div className={`border-2 border-dashed rounded-lg p-4 transition-all duration-200 ${
@@ -517,15 +429,15 @@ const AdminForm = ({
                     }`}>
                       <input
                         type="file"
-                        id="photo"
-                        name="photo"
+                        id="selfie"
+                        name="selfie"
                         accept=".jpg,.jpeg,.png,.webp"
                         onChange={(e) => handleFileChange(e, setFieldValue)}
                         className="hidden"
                       />
                       
                       <label
-                        htmlFor="photo"
+                        htmlFor="selfie"
                         className={`cursor-pointer flex flex-col items-center justify-center p-4 ${
                           isDark ? 'text-gray-300' : 'text-gray-600'
                         }`}
@@ -534,7 +446,7 @@ const AdminForm = ({
                           <Upload className="w-8 h-8 mb-2 opacity-70" />
                           <div className='flex flex-col'>
                             <span className="text-sm font-medium">
-                              {selectedFile || previewUrl ? 'Change Photo' : 'Click to upload profile photo'}
+                              {selectedFile || previewUrl ? 'Change Selfie' : 'Click to upload profile selfie'}
                             </span>
                             <span className="text-xs mt-1 opacity-70">
                               JPG, PNG, WebP (Max 5MB)
@@ -543,13 +455,13 @@ const AdminForm = ({
                         </div>
                       </label>
                       
-                      {/* Photo Preview */}
+                      {/* Selfie Preview */}
                       {(selectedFile || previewUrl) && (
                         <div className="mt-4 flex flex-col items-center">
                           <div className="relative">
                             <img 
                               src={previewUrl} 
-                              alt="Profile Preview" 
+                              alt="Selfie Preview" 
                               className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                             />
                             <button
@@ -567,109 +479,22 @@ const AdminForm = ({
                         </div>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                {/* Permissions Section */}
-                <div className="mt-8 pt-6 border-t">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Settings className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                    <h3 className={`text-lg font-bold ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
-                      Page Permissions
-                    </h3>
-                  </div>
-                  
-                  <div className={`rounded-lg border ${
-                    isDark ? 'border-purple-600/30 bg-gray-800/50' : 'border-purple-300 bg-purple-50/50'
-                  } p-4`}>
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-max">
-                        <thead>
-                          <tr className={`border-b ${
-                            isDark ? 'border-purple-600/20' : 'border-purple-300/50'
-                          }`}>
-                            <th className={`py-3 px-4 text-left font-semibold ${
-                              isDark ? 'text-gray-200' : 'text-gray-700'
-                            }`}>Page</th>
-                            {availableActions.map(action => (
-                              <th key={action.id} className={`py-3 px-2 text-center font-semibold ${
-                                isDark ? 'text-gray-200' : 'text-gray-700'
-                              }`}>{action.name}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {availablePages.map((page, pageIndex) => {
-                            const currentPerm = permissions.find(p => p.page === page.name) || { actions: [] };
-                            return (
-                              <tr key={page.id} className={`border-b ${
-                                isDark ? 'border-purple-600/10' : 'border-purple-300/20'
-                              }`}>
-                                <td className={`py-3 px-4 ${
-                                  isDark ? 'text-gray-300' : 'text-gray-600'
-                                }`}>{page.name}</td>
-                                {availableActions.map(action => (
-                                  <td key={action.id} className="py-3 px-2 text-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={currentPerm.actions.includes(action.id)}
-                                      onChange={(e) => handlePermissionChange(
-                                        permissions.findIndex(p => p.page === page.name),
-                                        action.id,
-                                        e.target.checked
-                                      )}
-                                      className={`w-5 h-5 rounded cursor-pointer ${
-                                        isDark
-                                          ? 'bg-gray-700 border-purple-500 text-purple-500'
-                                          : 'bg-white border-purple-400 text-purple-600'
-                                      }`}
-                                    />
-                                  </td>
-                                ))}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
                     
-                    <div className="mt-4 flex justify-between items-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const allPermissions = availablePages.map(page => ({
-                            page: page.name,
-                            actions: availableActions.map(a => a.id)
-                          }));
-                          setPermissions(allPermissions);
-                        }}
-                        className={`px-3 py-1.5 text-sm rounded-lg ${
-                          isDark
-                            ? 'bg-purple-900/50 hover:bg-purple-800 text-purple-300'
-                            : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
-                        }`}
-                      >
-                        Select All
-                      </button>
-                      
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const resetPermissions = availablePages.map(page => ({
-                            page: page.name,
-                            actions: ['view']
-                          }));
-                          setPermissions(resetPermissions);
-                        }}
-                        className={`px-3 py-1.5 text-sm rounded-lg ${
-                          isDark
-                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                        }`}
-                      >
-                        Reset to View Only
-                      </button>
-                    </div>
+                    {/* Existing selfie in edit mode */}
+                    {isEditMode && initialData?.selfieUrl && !selectedFile && (
+                      <div className="mt-2">
+                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Existing selfie: <a 
+                            href={initialData.selfieUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:underline"
+                          >
+                            View current selfie
+                          </a>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -689,9 +514,9 @@ const AdminForm = ({
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting || formikSubmitting}
+                    disabled={isSubmitting || formikSubmitting || (usernameAvailable === false && !isEditMode)}
                     className={`px-6 py-2 rounded-lg text-white text-sm font-bold transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none flex items-center space-x-2 ${
-                      isSubmitting || formikSubmitting
+                      isSubmitting || formikSubmitting || (usernameAvailable === false && !isEditMode)
                         ? 'bg-gray-400 cursor-not-allowed'
                         : isDark
                         ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 focus:ring-purple-500/50 shadow-lg shadow-purple-500/25'
