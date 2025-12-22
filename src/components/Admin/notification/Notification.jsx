@@ -50,41 +50,38 @@ const NotificationPage = () => {
 
   // Fetch notifications
   const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await notificationAPI.getNotifications({
-        per_page: itemsPerPage,
-        page: currentPage,
-      });
+  try {
+    setLoading(true);
+    const response = await notificationAPI.getNotifications({
+      per_page: itemsPerPage,
+      page: currentPage,
+    });
+    
+    if (response?.success) {
+      const notificationsData = response.notifications || [];
       
-      if (response?.success) {
-        const notificationsData = response.notifications || [];
-        const formattedNotifications = notificationsData.map((notification, index) => 
-          formatNotificationForUI(notification, index, currentPage, itemsPerPage)
-        );
-        
-        setNotifications(formattedNotifications);
-        setTotalCount(response.pagination?.total || notificationsData.length);
-        setTotalPages(response.pagination?.total_pages || 1);
-      } else {
-        setNotifications([]);
-        setTotalCount(0);
-        setTotalPages(0);
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
+      setNotifications(notificationsData);
+      setTotalCount(response.pagination?.total || notificationsData.length);
+      setTotalPages(response.pagination?.total_pages || 1);
+    } else {
       setNotifications([]);
       setTotalCount(0);
       setTotalPages(0);
-      toast.error("Failed to load notifications", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } finally {
-      setLoading(false);
-      setInitialLoad(false);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    setNotifications([]);
+    setTotalCount(0);
+    setTotalPages(0);
+    toast.error("Failed to load notifications", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  } finally {
+    setLoading(false);
+    setInitialLoad(false);
+  }
+};
 
   // Initial load
   useEffect(() => {
@@ -101,16 +98,6 @@ const NotificationPage = () => {
     }
   }, [currentPage]);
 
-  // Add this useEffect
-useEffect(() => {
-  const testFirebase = async () => {
-    console.log('Testing Firebase connection...');
-    const result = await FirebaseNotificationService.testConnection();
-    console.log('Firebase test result:', result);
-  };
-  
-  testFirebase();
-}, []);
 
   // Strip HTML tags from message
   const stripHtmlTags = (html) => {

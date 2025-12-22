@@ -224,35 +224,7 @@ export const ticketService = {
     };
   },
   
-  // Get ticket statistics
-  getStatistics: async () => {
-    await delay(300);
-    
-    const stats = {
-      total: mockTickets.length,
-      open: mockTickets.filter(t => t.status === 'open').length,
-      in_progress: mockTickets.filter(t => t.status === 'in_progress').length,
-      resolved: mockTickets.filter(t => t.status === 'resolved').length,
-      closed: mockTickets.filter(t => t.status === 'closed').length,
-      byPriority: {
-        low: mockTickets.filter(t => t.priority === 'low').length,
-        medium: mockTickets.filter(t => t.priority === 'medium').length,
-        high: mockTickets.filter(t => t.priority === 'high').length,
-        critical: mockTickets.filter(t => t.priority === 'critical').length
-      },
-      byType: {
-        bug: mockTickets.filter(t => t.type === 'bug').length,
-        feature: mockTickets.filter(t => t.type === 'feature').length,
-        question: mockTickets.filter(t => t.type === 'question').length,
-        enhancement: mockTickets.filter(t => t.type === 'enhancement').length
-      }
-    };
-    
-    return {
-      success: true,
-      data: stats
-    };
-  }
+  
 };
 
 // Format ticket for UI

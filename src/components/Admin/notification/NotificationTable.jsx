@@ -31,16 +31,16 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
     await onDelete(notification.id);
   };
 
+  const isRead = notification.display_status === 'read';
+
   return (
     <tr className={`border-b transition-all duration-200 hover:shadow-lg ${isDark ? "border-emerald-700 hover:bg-gray-700/50" : "border-emerald-300 hover:bg-emerald-50/50"} ${index % 2 === 0 ? isDark ? "bg-gray-700/30" : "bg-gray-50" : ""}`}>
-      {/* S.No */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${isDark ? "bg-emerald-900/50 text-emerald-300" : "bg-emerald-100 text-emerald-700"}`}>
           {notification.sNo}
         </div>
       </td>
 
-      {/* User Name */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <User className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
@@ -57,7 +57,6 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         </div>
       </td>
 
-      {/* Subject */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <FileText className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
@@ -67,7 +66,6 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         </div>
       </td>
 
-      {/* Message */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
           {showFullComment ? notification.comment : truncatedComment}
@@ -82,7 +80,6 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         </div>
       </td>
 
-      {/* Date & Time */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
@@ -100,28 +97,29 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         </div>
       </td>
 
-      {/* Status */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-          notification.status
+          isRead
             ? isDark ? "bg-green-900/50 text-green-300 border border-green-700" : "bg-green-100 text-green-800 border border-green-300"
             : isDark ? "bg-yellow-900/50 text-yellow-300 border border-yellow-700" : "bg-yellow-100 text-yellow-800 border border-yellow-300"
         }`}>
-          {notification.status ? (
+          {isRead ? (
             <>
               <Eye className="w-3 h-3 mr-1" />
-              Read
+              Read (Firebase)
             </>
           ) : (
             <>
               <EyeOff className="w-3 h-3 mr-1" />
-              Unread
+              Unread (Firebase)
             </>
           )}
         </div>
+        <div className={`text-xs mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          SQL: {notification.sql_status ? 'Read' : 'Unread'}
+        </div>
       </td>
 
-      {/* Sender */}
       <td className={`px-4 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
         <div className="flex items-center space-x-2">
           <Send className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
@@ -131,7 +129,6 @@ const NotificationRow = ({ notification, index, isDark, onDelete }) => {
         </div>
       </td>
 
-      {/* Actions */}
       <td className="px-4 py-4">
         <div className="flex items-center space-x-2">
           <button
@@ -160,13 +157,12 @@ const NotificationTable = ({
 }) => {
   return (
     <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${isDark ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20" : "bg-white border-emerald-300 shadow-emerald-500/10"}`}>
-      {/* Table Header */}
       <div className={`px-6 py-5 border-b-2 ${isDark ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}>
         <h2 className={`text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
           Sent Notifications ({totalItems})
         </h2>
         <p className={`text-sm mt-1 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-          View and manage all sent notifications
+          Status shown from Firebase (real-time)
         </p>
       </div>
 
@@ -190,7 +186,7 @@ const NotificationTable = ({
                 Date & Time
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
-                Status
+                Status (Firebase)
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold border-r ${isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"}`}>
                 Sender
@@ -214,7 +210,6 @@ const NotificationTable = ({
         </table>
       </div>
 
-      {/* Empty State */}
       {paginatedNotifications.length === 0 && !loading && (
         <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <div className="flex flex-col items-center space-y-4">
@@ -225,7 +220,6 @@ const NotificationTable = ({
         </div>
       )}
 
-      {/* Loading State */}
       {loading && paginatedNotifications.length === 0 && (
         <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <div className="flex flex-col items-center space-y-4">
@@ -235,7 +229,6 @@ const NotificationTable = ({
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 0 && (
         <div className="px-4 py-4 border-t">
           <Pagination

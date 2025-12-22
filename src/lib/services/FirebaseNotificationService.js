@@ -1,23 +1,12 @@
 import { db } from '@/lib/firebase';
-import { ref, set, push } from 'firebase/database';
+import { ref, set, push, get, query, orderByChild, equalTo } from 'firebase/database';
 
 export class FirebaseNotificationService {
-  
-  /**
-   * Send notification to specific users via Firebase
-   */
-  
   static async sendNotification({ userIds, subject, message, sender, adminId }) {
     try {
       console.log(`🚀 Firebase: Sending to ${userIds.length} users`);
       
-      // For large batches, show progress
-      if (userIds.length > 10) {
-        console.log(`⏳ This might take a moment for ${userIds.length} users...`);
-      }
-      
-      // Process in chunks for better performance (if many users)
-      const chunkSize = 50; // Process 50 users at a time
+      const chunkSize = 50;
       let successCount = 0;
       let errorCount = 0;
       
@@ -45,7 +34,6 @@ export class FirebaseNotificationService {
             await set(newNotificationRef, notification);
             successCount++;
             return { success: true, userId, firebaseId };
-            
           } catch (error) {
             errorCount++;
             console.error(`Failed for user ${userId}:`, error);
@@ -54,11 +42,6 @@ export class FirebaseNotificationService {
         });
         
         await Promise.all(chunkPromises);
-        
-        // Show progress for large batches
-        if (userIds.length > 20) {
-          console.log(`📊 Progress: ${Math.min(i + chunkSize, userIds.length)}/${userIds.length} users`);
-        }
       }
       
       console.log(`✅ Firebase: Completed - ${successCount} success, ${errorCount} failed`);
@@ -69,7 +52,6 @@ export class FirebaseNotificationService {
         errors: errorCount,
         total: userIds.length
       };
-      
     } catch (error) {
       console.error('❌ Firebase Error:', error);
       return { 
@@ -80,4 +62,90 @@ export class FirebaseNotificationService {
     }
   }
 
+  static async getNotificationStatus(userId, sqlNotification) {
+    try {
+      if (!userId || !sqlNotification) return false;
+      
+      const userNotificationsRef = ref(db, `users/${userId}/notifications`);
+      const snapshot = await get(userNotificationsRef);
+      
+      if (!snapshot.exists()) return false;
+      
+      const firebaseNotifications = snapshot.val();
+      
+      const matchingNotification = Object.values(firebaseNotifications).find(fbNotif => {
+        const timeDiff = Math.abs(
+          new Date(fbNotif.created_at).getTime() - 
+          new Date(sqlNotification.created_at).getTime()
+        );
+        
+        return (
+          fbNotif.subject === sqlNotification.subject &&
+          timeDiff < 10000 &&
+          fbNotif.user_id == userId
+        );
+      });
+      
+      return matchingNotification ? matchingNotification.status === 1 : false;
+    } catch (error) {
+      console.error('Error getting Firebase status:', error);
+      return false;
+    }
+  }
+
+  static async getBatchFirebaseStatus(sqlNotifications) {
+    try {
+      if (!sqlNotifications || sqlNotifications.length === 0) return {};
+      
+      const statusMap = {};
+      const userGroups = {};
+      
+      sqlNotifications.forEach(notif => {
+        const userId = notif.user_id;
+        if (!userGroups[userId]) userGroups[userId] = [];
+        userGroups[userId].push(notif);
+      });
+      
+      const userIds = Object.keys(userGroups);
+      
+      for (const userId of userIds) {
+        try {
+          const userNotificationsRef = ref(db, `users/${userId}/notifications`);
+          const snapshot = await get(userNotificationsRef);
+          
+          if (snapshot.exists()) {
+            const firebaseNotifications = snapshot.val();
+            
+            userGroups[userId].forEach(sqlNotif => {
+              const matchingNotification = Object.values(firebaseNotifications).find(fbNotif => {
+                const timeDiff = Math.abs(
+                  new Date(fbNotif.created_at).getTime() - 
+                  new Date(sqlNotif.created_at).getTime()
+                );
+                
+                return (
+                  fbNotif.subject === sqlNotif.subject &&
+                  timeDiff < 10000 &&
+                  fbNotif.user_id == userId
+                );
+              });
+              
+              statusMap[sqlNotif.notification_id] = matchingNotification ? 
+                matchingNotification.status === 1 : false;
+            });
+          }
+        } catch (error) {
+          console.error(`Error for user ${userId}:`, error);
+          userGroups[userId].forEach(sqlNotif => {
+            statusMap[sqlNotif.notification_id] = false;
+          });
+        }
+      }
+      
+      return statusMap;
+    } catch (error) {
+      console.error('Error in batch Firebase status:', error);
+      return {};
+    }
+  }
 }
