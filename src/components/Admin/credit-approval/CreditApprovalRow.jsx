@@ -103,7 +103,7 @@ const getLoanStatusClassName = (application) => {
 };
 
   // Common cell styles
-  const cellBase = "px-2 py-4 text-center border-r";
+  const cellBase = "px-2 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
   const cellStyle = `${cellBase} ${cellBorder}`;
   
@@ -657,98 +657,89 @@ const getLoanStatusClassName = (application) => {
     const isSuccess = application.enachDetails?.status === "Success";
     
     return (
-      <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
-        isDark 
-          ? "bg-gray-800/50 border border-gray-700/50" 
-          : "bg-gray-50 border border-gray-200"
-      }`}>
-        
-        {/* Status with Badge */}
-        <div className="flex items-center space-x-1.5">
-          <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
-            application.enachDetails?.status === "Success" 
-              ? "bg-green-500 text-white" 
-              : application.enachDetails?.status === "Failed"
-              ? "bg-red-500 text-white"
-              : "bg-yellow-500 text-white"
+          <div className={`flex flex-col p-2.5 rounded-lg min-w-[200px] space-y-1.5 ${
+            isDark 
+              ? "bg-gray-800/50 border border-gray-700/50" 
+              : "bg-gray-50 border border-gray-200"
           }`}>
-            {application.enachDetails?.status === "Success" 
-              ? "✓"
-              : application.enachDetails?.status === "Failed"
-              ? "✕"
-              : "⋯"
-            }
-          </div>
-          <span className={`text-sm font-semibold ${
-            application.enachDetails?.status === "Success" 
-              ? isDark ? "text-green-400" : "text-green-700"
-              : application.enachDetails?.status === "Failed"
-              ? isDark ? "text-red-400" : "text-red-700"
-              : isDark ? "text-yellow-400" : "text-yellow-700"
-          }`}>
-            {application.enachDetails?.status || "Pending"}
-          </span>
-        </div>
-        
-        {/* Date and Time */}
-        {application.enachDetails?.date && (
-          <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-            <div className="font-medium">{application.enachDetails.date}</div>
-            {application.enachDetails?.time && (
-              <div className={isDark ? "text-gray-400" : "text-gray-500"}>
-                {application.enachDetails.time}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Account Numbers - Only show if not pending and status is Success */}
-        {!isPending && isSuccess && (
-          <div className="space-y-1.5 pt-1">
             
-            {/* E-Nach Account Number - NO TICK/CROSS */}
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
-              <span className={`text-xs font-mono font-semibold ${
-                isDark ? "text-blue-300" : "text-blue-600"
+            <div className="flex items-center space-x-1.5">
+              <div className={`flex items-center justify-center w-4 h-4 rounded-full ${
+                application.enachDetails?.status === "Success" 
+                  ? "bg-green-500 text-white" 
+                  : application.enachDetails?.status === "Failed"
+                  ? "bg-red-500 text-white"
+                  : "bg-yellow-500 text-white"
               }`}>
-                {enachAccount || "N/A"}
+                {application.enachDetails?.status === "Success" 
+                  ? "✓"
+                  : application.enachDetails?.status === "Failed"
+                  ? "✕"
+                  : "⋯"
+                }
+              </div>
+              <span className={`text-sm font-semibold ${
+                application.enachDetails?.status === "Success" 
+                  ? isDark ? "text-green-400" : "text-green-700"
+                  : application.enachDetails?.status === "Failed"
+                  ? isDark ? "text-red-400" : "text-red-700"
+                  : isDark ? "text-yellow-400" : "text-yellow-700"
+              }`}>
+                {application.enachDetails?.status || "Pending"}
               </span>
             </div>
             
-            {/* Customer Account Number - COMPARE WITH E-NACH ACCOUNT */}
-            <div className="flex items-center justify-between">
-              <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
-              <div className="flex items-center space-x-1.5">
-                <span className={`text-xs font-mono font-semibold ${
-                  isDark ? "text-amber-300" : "text-amber-600"
-                }`}>
-                  {customerAccount || "N/A"}
-                </span>
-                {/* Compare Customer Account with E-Nach Account */}
-                {enachAccount && customerAccount && (
-                  <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
-                    accountsMatch ? "bg-green-500" : "bg-red-500"
-                  }`}>
-                    <span className="text-white text-[10px] font-bold">
-                      {accountsMatch ? "✓" : "✕"}
-                    </span>
+            {application.enachDetails?.date && (
+              <div className={`text-xs ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                <div className="font-medium">{application.enachDetails.date}</div>
+                {application.enachDetails?.time && (
+                  <div className={isDark ? "text-gray-400" : "text-gray-500"}>
+                    {application.enachDetails.time}
                   </div>
                 )}
               </div>
-            </div>
+            )}
+            
+            {!isPending && isSuccess && (
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>E-Nach Ac.:</span>
+                  <span className={`text-xs font-mono font-semibold ${
+                    isDark ? "text-blue-300" : "text-blue-600"
+                  }`}>
+                    {enachAccount || "N/A"}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>Cust. Ac.:</span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`text-xs font-mono font-semibold ${
+                      isDark ? "text-amber-300" : "text-amber-600"
+                    }`}>
+                      {customerAccount || "N/A"}
+                    </span>
+                    {enachAccount && customerAccount && (
+                      <div className={`flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 ${
+                        accountsMatch ? "bg-green-500" : "bg-red-500"
+                      }`}>
+                        <span className="text-white text-[10px] font-bold">
+                          {accountsMatch ? "✓" : "✕"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {!isPending && (
+              <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                <span className="font-medium">{application.name || "N/A"}</span>
+              </div>
+            )}
           </div>
-        )}
-        
-        {/* Customer Name - Only show if not pending */}
-        {!isPending && (
-          <div className={`text-sm ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-            <span className="font-medium">{application.name || "N/A"}</span>
-          </div>
-        )}
-        
-      </div>
-    );
+        );
   })()}
 </td>
 

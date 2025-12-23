@@ -246,6 +246,8 @@ export default function StepCompleteProfile({
       <PaymentModal
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
+          applicationId={user?.application_id}
+          router={router}
         />
       </div>
 

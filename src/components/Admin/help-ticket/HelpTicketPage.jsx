@@ -15,7 +15,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
 import { toast } from 'react-hot-toast';
-import { ticketService, formatTicketForUI } from '@/lib/services/TicketService';
+import { ticketAPI, formatTicketForUI, ticketService } from '@/lib/services/TicketService';
 import { priorityOptions, statusOptions, typeOptions, categoryOptions } from '@/lib/schema/ticketSchema';
 import TicketForm from './TicketForm';
 import TicketTable from './HelpTicketTable';
@@ -26,7 +26,6 @@ const HelpTicketPage = () => {
   const isDark = theme === "dark";
   const router = useRouter();
   
-  // State Management
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +33,6 @@ const HelpTicketPage = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
-  // Filter states
   const [filters, setFilters] = useState({
     status: 'all',
     priority: 'all',
@@ -43,7 +41,6 @@ const HelpTicketPage = () => {
   });
   
   const [tickets, setTickets] = useState([]);
-  const [statistics, setStatistics] = useState(null);
   const [pagination, setPagination] = useState({
     total: 0,
     current_page: 1,
@@ -53,16 +50,21 @@ const HelpTicketPage = () => {
 
   const itemsPerPage = 10;
 
-  // Fetch tickets
   const fetchTickets = async (page = 1, search = "", filterParams = filters) => {
     try {
       setIsLoading(true);
-      const response = await ticketService.getTickets({
+      
+      const params = {
         page,
-        perPage: itemsPerPage,
-        search,
-        ...filterParams
-      });
+        per_page: itemsPerPage,
+        ...(search && { search }),
+        ...(filterParams.status !== 'all' && { status: filterParams.status }),
+        ...(filterParams.priority !== 'all' && { priority: filterParams.priority }),
+        ...(filterParams.type !== 'all' && { type: filterParams.type }),
+        ...(filterParams.category !== 'all' && { category: filterParams.category })
+      };
+
+      const response = await ticketAPI.getTickets(params);
 
       if (response.success) {
         const formattedTickets = response.data.map(formatTicketForUI);
@@ -80,35 +82,33 @@ const HelpTicketPage = () => {
     }
   };
 
-  // Initial fetch
   useEffect(() => {
     fetchTickets(currentPage, searchTerm, filters);
   }, [currentPage, searchTerm, filters]);
 
-  // Handle create/update ticket
-  const handleSubmitTicket = async (ticketData) => {
+  const handleSubmitTicket = async (formData) => {
     try {
-      const response = await ticketService.createTicket(ticketData);
+      const response = await ticketAPI.createTicket(formData);
       
       if (response.success) {
-        toast.success('Ticket created successfully!');
+        toast.success(response.message || 'Ticket created successfully!');
         setIsFormOpen(false);
         fetchTickets(currentPage, searchTerm, filters);
       } else {
-        throw new Error(response.message || 'Failed to create ticket');
+        toast.error(response.message || 'Failed to create ticket');
       }
     } catch (err) {
+      console.error('Create ticket error:', err);
       toast.error(err.message || 'Failed to create ticket');
-      throw err;
     }
   };
 
-  // Handle ticket selection
   const handleViewTicket = async (ticket) => {
     try {
-      const response = await ticketService.getTicketById(ticket.id);
+      const response = await ticketAPI.getTicketById(ticket.id); 
       if (response.success) {
-        setSelectedTicket(response.data);
+        const formattedTicket = formatTicketForUI(response.data);
+        setSelectedTicket(formattedTicket);
       }
     } catch (err) {
       console.error("Error fetching ticket details:", err);
@@ -116,45 +116,38 @@ const HelpTicketPage = () => {
     }
   };
 
-  // Handle status update
   const handleUpdateStatus = async (ticketId, status) => {
     try {
-      const userId = 1; // Current user ID
-      await ticketService.updateTicketStatus(ticketId, status, userId);
+      const userId = 1; // Current user ID from auth
+      await ticketService.updateStatus(ticketId, status, userId);
       
-      toast.success(`Ticket marked as ${status.replace('_', ' ')}`);
-      
-      // Refresh data
       fetchTickets(currentPage, searchTerm, filters);
       
-      // Update selected ticket if open
-      if (selectedTicket && (selectedTicket.id === ticketId || selectedTicket.ticketId === ticketId)) {
-        const updatedResponse = await ticketService.getTicketById(ticketId);
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        const updatedResponse = await ticketAPI.getTicketById(ticketId); 
         if (updatedResponse.success) {
-          setSelectedTicket(updatedResponse.data);
+          setSelectedTicket(formatTicketForUI(updatedResponse.data));
         }
       }
+
     } catch (err) {
       toast.error(err.message || 'Failed to update status');
     }
   };
 
-  // Handle ticket assignment
   const handleAssignTicket = async (ticketId, assigneeId) => {
     try {
-      const userId = 1;
+      const userId = 1; // Current user ID from auth
       await ticketService.assignTicket(ticketId, assigneeId, userId);
       
       toast.success(assigneeId ? 'Ticket assigned successfully!' : 'Ticket unassigned');
       
-      // Refresh data
       fetchTickets(currentPage, searchTerm, filters);
       
-      // Update selected ticket if open
-      if (selectedTicket && (selectedTicket.id === ticketId || selectedTicket.ticketId === ticketId)) {
-        const updatedResponse = await ticketService.getTicketById(ticketId);
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        const updatedResponse = await ticketAPI.getTicketById(ticketId); 
         if (updatedResponse.success) {
-          setSelectedTicket(updatedResponse.data);
+          setSelectedTicket(formatTicketForUI(updatedResponse.data));
         }
       }
     } catch (err) {
@@ -162,21 +155,15 @@ const HelpTicketPage = () => {
     }
   };
 
-  // Handle adding message
   const handleAddMessage = async (ticketId, messageData) => {
     try {
-      await ticketService.addMessage(ticketId, messageData);
-      
-      toast.success('Message sent successfully!');
-      
-      // Refresh data
+      await ticketService.addMessage(ticketId, messageData);      
       fetchTickets(currentPage, searchTerm, filters);
       
-      // Update selected ticket if open
-      if (selectedTicket && (selectedTicket.id === ticketId || selectedTicket.ticketId === ticketId)) {
-        const updatedResponse = await ticketService.getTicketById(ticketId);
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        const updatedResponse = await ticketAPI.getTicketById(ticketId); 
         if (updatedResponse.success) {
-          setSelectedTicket(updatedResponse.data);
+          setSelectedTicket(formatTicketForUI(updatedResponse.data));
         }
       }
     } catch (err) {
@@ -185,7 +172,6 @@ const HelpTicketPage = () => {
     }
   };
 
-  // Handle filter change
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({
       ...prev,
@@ -194,7 +180,6 @@ const HelpTicketPage = () => {
     setCurrentPage(1);
   };
 
-  // Clear all filters
   const clearFilters = () => {
     setFilters({
       status: 'all',
@@ -206,23 +191,11 @@ const HelpTicketPage = () => {
     setCurrentPage(1);
   };
 
-  // Get priority icon
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case 'critical': return <AlertTriangle className="w-4 h-4" />;
-      case 'high': return <AlertCircle className="w-4 h-4" />;
-      case 'medium': return <AlertCircle className="w-4 h-4" />;
-      case 'low': return <Clock className="w-4 h-4" />;
-      default: return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
       <div className="p-4 md:p-6">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center space-x-4">
@@ -261,7 +234,6 @@ const HelpTicketPage = () => {
               </div>
             </div>
             
-            {/* Action Buttons - Only Add and Refresh */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setIsFormOpen(true)}
@@ -290,7 +262,6 @@ const HelpTicketPage = () => {
             </div>
           </div>
 
-          {/* Stats Summary - Simplified */}
           {pagination.total > 0 && (
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 mb-6`}>
               <div className={`p-4 rounded-xl ${
@@ -312,9 +283,9 @@ const HelpTicketPage = () => {
               } border ${isDark ? 'border-emerald-600/30' : 'border-emerald-200'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Open</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
                     <p className={`text-2xl font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                      {tickets.filter(t => t.status === 'open').length}
+                      {tickets.filter(t => t.status === 'Pending').length}
                     </p>
                   </div>
                   <AlertCircle className={`w-8 h-8 ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`} />
@@ -326,9 +297,9 @@ const HelpTicketPage = () => {
               } border ${isDark ? 'border-emerald-600/30' : 'border-emerald-200'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>In Progress</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>In Process</p>
                     <p className={`text-2xl font-bold ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                      {tickets.filter(t => t.status === 'in_progress').length}
+                      {tickets.filter(t => t.status === 'Process').length}
                     </p>
                   </div>
                   <Clock className={`w-8 h-8 ${isDark ? 'text-yellow-400' : 'text-yellow-500'}`} />
@@ -340,9 +311,9 @@ const HelpTicketPage = () => {
               } border ${isDark ? 'border-emerald-600/30' : 'border-emerald-200'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Resolved</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Closed</p>
                     <p className={`text-2xl font-bold ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                      {tickets.filter(t => t.status === 'resolved').length + tickets.filter(t => t.status === 'closed').length}
+                      {tickets.filter(t => t.status === 'Closed').length}
                     </p>
                   </div>
                   <CheckCircle className={`w-8 h-8 ${isDark ? 'text-green-400' : 'text-green-500'}`} />
@@ -351,7 +322,6 @@ const HelpTicketPage = () => {
             </div>
           )}
 
-          {/* Search and Filters */}
           <div className="mb-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex-1">
@@ -409,7 +379,6 @@ const HelpTicketPage = () => {
               </div>
             </div>
             
-            {/* Advanced Filters */}
             {showAdvancedFilters && (
               <div className={`mt-4 p-4 rounded-xl border ${
                 isDark
@@ -518,7 +487,6 @@ const HelpTicketPage = () => {
           </div>
         </div>
 
-        {/* Tickets Table */}
         <TicketTable
           tickets={tickets}
           filteredTickets={tickets}
@@ -533,7 +501,6 @@ const HelpTicketPage = () => {
         />
       </div>
 
-      {/* Ticket Form Modal */}
       {isFormOpen && (
         <TicketForm
           isDark={isDark}
@@ -542,7 +509,6 @@ const HelpTicketPage = () => {
         />
       )}
 
-      {/* Ticket Details Modal */}
       {selectedTicket && (
         <TicketDetailsModal
           ticket={selectedTicket}

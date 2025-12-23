@@ -18,7 +18,7 @@ export const useCashfree = () => {
 
         // Load Cashfree SDK
         const cashfreeInstance = await load({
-          mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'sandbox',
+          mode: "production",
         });
         
         setCashfree(cashfreeInstance);

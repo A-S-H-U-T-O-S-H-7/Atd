@@ -35,7 +35,7 @@ const TicketTable = ({
   return (
     <div className={styles.tableClass}>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-max" style={{ minWidth: "1200px" }}>
+        <table className="w-full min-w-max" style={{ minWidth: "1300px" }}>
           <thead className={styles.gradientClass}>
             <tr>
               <th className={styles.headerClass} style={{ minWidth: "120px" }}>
@@ -53,13 +53,16 @@ const TicketTable = ({
               <th className={styles.headerClass} style={{ minWidth: "120px" }}>
                 Type
               </th>
+              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
+                Category
+              </th>
               <th className={styles.headerClass} style={{ minWidth: "150px" }}>
                 Created By
               </th>
               <th className={styles.headerClass} style={{ minWidth: "150px" }}>
                 Created Date
               </th>
-              <th className={styles.headerClass} style={{ minWidth: "150px" }}>
+              <th className={styles.headerClass} style={{ minWidth: "120px" }}>
                 Messages
               </th>
               <th className={`px-4 py-5 text-left text-sm font-bold ${
@@ -72,7 +75,7 @@ const TicketTable = ({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="9" className="px-4 py-8 text-center">
+                <td colSpan="10" className="px-4 py-8 text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <Loader className="w-5 h-5 animate-spin" />
                     <span className={isDark ? "text-gray-300" : "text-gray-600"}>
@@ -96,13 +99,11 @@ const TicketTable = ({
         </table>
       </div>
       
-      {/* Empty State */}
       {!isLoading && tickets.length === 0 && (
         <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <div className="flex flex-col items-center space-y-4">
             <MessageSquare className="w-16 h-16 opacity-50" />
             <p className="text-lg font-medium">No tickets found</p>
-            <p className="text-sm">Try adjusting your search criteria or create a new ticket</p>
           </div>
         </div>
       )}

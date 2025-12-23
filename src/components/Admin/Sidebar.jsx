@@ -100,7 +100,6 @@ const menuList = [
 
     ]
   },
-  { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack /> },
 
   {
     name: 'Cash/Cheque Deposit',
@@ -135,6 +134,7 @@ const menuList = [
 
   { name: 'Send SMS', link: '/crm/send-sms', icon: <FaSms /> },
   { name: 'Create MSB Account', link: '/crm/create-msb', icon: <RiAccountPinBoxFill /> },
+  { name: 'Statement Of Account', link: '/crm/statement-of-account', icon: <GiMoneyStack /> },
   {
     name: 'Business Loan Enquiry',
     icon: <FaMoneyCheckAlt />,

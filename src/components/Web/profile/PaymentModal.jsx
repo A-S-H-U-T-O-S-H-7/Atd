@@ -4,8 +4,8 @@ import { useCashfree } from '@/hooks/useCashfree';
 import { TokenManager } from '@/utils/tokenManager';
 import toast from 'react-hot-toast';
 
-const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
-  const [paymentMethod, setPaymentMethod] = useState('cashfree');
+const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
+  const [paymentMethod, setPaymentMethod] = useState('cashfree'); 
   const [selectedBank, setSelectedBank] = useState('');
   const [loading, setLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
@@ -91,11 +91,13 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
       const payableAmount = calculatePayableAmount();
 
       const orderData = {
-        id: applicationId,
+        id: applicationId, 
         outstanding_amount: outstandingAmount,
         payable_amount: payableAmount,
         platform: 'Desktop'
       };
+
+      console.log('Sending order data:', orderData);
 
       const orderResponse = await fetch(
         'https://api.atdmoney.in/api/user/cashfree/create-order',
@@ -106,15 +108,22 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
         }
       );
 
-      if (orderResponse.status === 401) {
-        throw new Error('Session expired. Please login again.');
-      }
-
+      console.log('Order response status:', orderResponse.status);
+      
       const orderResult = await orderResponse.json();
+      console.log('Order result:', orderResult);
+
       if (!orderResult.success) {
+        console.error('Order creation failed:', {
+          success: orderResult.success,
+          message: orderResult.message,
+          errors: orderResult.errors,
+          data: orderResult.data
+        });
         throw new Error(orderResult.message || 'Failed to create order');
       }
 
+      // COMPLETE THE PAYMENT FLOW - This was missing
       const paymentResult = await initiatePayment(
         orderResult.payment_session_id,
         orderResult.order_id
@@ -126,12 +135,13 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
           setPaymentStatus('success');
           setTimeout(() => {
             onClose();
-            router.push('/profile');
+            if (router) router.push('/profile');
           }, 2000);
         }, 2000);
       } else {
         throw new Error(paymentResult.error?.message || 'Payment failed');
       }
+
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentStatus('failed');
@@ -271,7 +281,15 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
             <div className="space-y-4">
               <div className={`border-2 rounded-xl p-4 transition-all ${paymentMethod === 'cashfree' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
                 <label className="flex items-start space-x-4 cursor-pointer">
-                  <input type="radio" name="paymentMethod" value="cashfree" checked={paymentMethod === 'cashfree'} onChange={(e) => setPaymentMethod(e.target.value)} className="mt-1 w-5 h-5 text-blue-600 focus:ring-blue-500" disabled={loading} />
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
+                    value="cashfree" 
+                    checked={paymentMethod === 'cashfree'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="mt-1 w-5 h-5 text-blue-600 focus:ring-blue-500" 
+                    disabled={loading} 
+                  />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-gray-800">Debit Card / Net Banking / UPI</span>
@@ -287,7 +305,15 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
 
               <div className={`border-2 rounded-xl p-4 transition-all ${paymentMethod === 'neft' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
                 <label className="flex items-start space-x-4 cursor-pointer">
-                  <input type="radio" name="paymentMethod" value="neft" checked={paymentMethod === 'neft'} onChange={(e) => setPaymentMethod(e.target.value)} className="mt-1 w-5 h-5 text-green-600 focus:ring-green-500" disabled={loading} />
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
+                    value="neft" 
+                    checked={paymentMethod === 'neft'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="mt-1 w-5 h-5 text-green-600 focus:ring-green-500" 
+                    disabled={loading} 
+                  />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-gray-800">NEFT Transfer</span>
@@ -305,7 +331,12 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Bank:</label>
-                      <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" disabled={loading}>
+                      <select 
+                        value={selectedBank} 
+                        onChange={(e) => setSelectedBank(e.target.value)} 
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                        disabled={loading}
+                      >
                         <option value="">-- Select Your Bank --</option>
                         <option value="sbi">State Bank of India</option>
                         <option value="hdfc">HDFC Bank</option>
@@ -324,7 +355,11 @@ const PaymentModal = ({ isOpen, onClose, applicationId = 1, router }) => {
           </div>
 
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4">
-            <button onClick={handlePayment} disabled={loading || (paymentMethod === 'neft' && !selectedBank)} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <button 
+              onClick={handlePayment} 
+              disabled={loading || (paymentMethod === 'neft' && !selectedBank)} 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {loading ? 'Processing...' : `Pay ₹${payableAmount.toFixed(2)}`}
             </button>
             {paymentMethod === 'neft' && (

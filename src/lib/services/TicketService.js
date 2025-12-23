@@ -1,249 +1,156 @@
-import { mockTickets, formatDate, formatDateOnly } from '@/lib/schema/ticketSchema';
+import api from "@/utils/axiosInstance";
 
-// Generate next ticket ID
-const generateTicketId = () => {
-  const currentYear = new Date().getFullYear();
-  const lastTicket = mockTickets[0]; // Assuming sorted by latest
-  if (!lastTicket) return `ATD-${currentYear}-001`;
-  
-  const match = lastTicket.ticketId.match(/ATD-(\d+)-(\d+)/);
-  if (match) {
-    const year = parseInt(match[1]);
-    const number = parseInt(match[2]);
-    if (year === currentYear) {
-      return `ATD-${currentYear}-${(number + 1).toString().padStart(3, '0')}`;
+export const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateString || 'N/A';
+  }
+};
+
+export const ticketAPI = {
+  getTickets: async (params = {}) => {
+    try {
+      const response = await api.get("/crm/help/manage", { params });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getTicketById: async (ticketId) => {
+    try {
+      const response = await api.get(`/crm/help/edit/${ticketId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  createTicket: async (formData) => {
+    try {
+      const response = await api.post("/crm/help/create-help", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateTicketStatus: async (ticketId, statusData) => {
+    try {
+      const response = await api.put(`/crm/help/status/${ticketId}`, statusData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  assignTicket: async (ticketId, assignData) => {
+    try {
+      const response = await api.put(`/crm/help/assign/${ticketId}`, assignData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  addMessage: async (ticketId, messageData) => {
+    try {
+      const response = await api.post(`/crm/help/update/${ticketId}`, messageData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getUsers: async () => {
+    try {
+      const response = await api.get("/crm/help/users");
+      return response;
+    } catch (error) {
+      throw error;
     }
   }
-  return `ATD-${currentYear}-001`;
 };
 
-// Simulate API delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-export const ticketService = {
-  // Get all tickets with filters
-  getTickets: async (params = {}) => {
-    await delay(500); // Simulate network delay
-    
-    let filteredTickets = [...mockTickets];
-    
-    // Apply search
-    if (params.search) {
-      const searchTerm = params.search.toLowerCase();
-      filteredTickets = filteredTickets.filter(ticket => 
-        ticket.subject.toLowerCase().includes(searchTerm) ||
-        ticket.ticketId.toLowerCase().includes(searchTerm) ||
-        ticket.description.toLowerCase().includes(searchTerm) ||
-        ticket.createdBy.name.toLowerCase().includes(searchTerm)
-      );
-    }
-    
-    // Apply status filter
-    if (params.status && params.status !== 'all') {
-      filteredTickets = filteredTickets.filter(ticket => ticket.status === params.status);
-    }
-    
-    // Apply priority filter
-    if (params.priority && params.priority !== 'all') {
-      filteredTickets = filteredTickets.filter(ticket => ticket.priority === params.priority);
-    }
-    
-    // Apply type filter
-    if (params.type && params.type !== 'all') {
-      filteredTickets = filteredTickets.filter(ticket => ticket.type === params.type);
-    }
-    
-    // Apply category filter
-    if (params.category && params.category !== 'all') {
-      filteredTickets = filteredTickets.filter(ticket => ticket.category === params.category);
-    }
-    
-    // Sort by latest first
-    filteredTickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    // Pagination
-    const page = params.page || 1;
-    const perPage = params.perPage || 10;
-    const startIndex = (page - 1) * perPage;
-    const paginatedTickets = filteredTickets.slice(startIndex, startIndex + perPage);
-    
-    return {
-      success: true,
-      data: paginatedTickets,
-      pagination: {
-        total: filteredTickets.length,
-        current_page: page,
-        per_page: perPage,
-        total_pages: Math.ceil(filteredTickets.length / perPage)
-      }
-    };
-  },
-  
-  // Get single ticket by ID
-  getTicketById: async (id) => {
-    await delay(300);
-    
-    const ticket = mockTickets.find(t => t.id === parseInt(id) || t.ticketId === id);
-    
-    if (ticket) {
-      return {
-        success: true,
-        data: ticket
-      };
-    }
-    
-    return {
-      success: false,
-      message: 'Ticket not found'
-    };
-  },
-  
-  // Create new ticket
-  createTicket: async (ticketData) => {
-    await delay(800);
-    
-    const newTicket = {
-      id: mockTickets.length + 1,
-      ticketId: generateTicketId(),
-      ...ticketData,
-      status: 'open',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      messages: [],
-      attachments: []
-    };
-    
-    // In real implementation, this would be saved to backend
-    // For mock, we'll just return success
-    return {
-      success: true,
-      data: newTicket,
-      message: 'Ticket created successfully'
-    };
-  },
-  
-  // Update ticket status
-  updateTicketStatus: async (id, status, userId) => {
-    await delay(400);
-    
-    const ticket = mockTickets.find(t => t.id === parseInt(id) || t.ticketId === id);
-    
-    if (ticket) {
-      const oldStatus = ticket.status;
-      ticket.status = status;
-      ticket.updatedAt = new Date().toISOString();
-      
-      // Add status change message
-      ticket.messages.push({
-        id: ticket.messages.length + 1,
-        user: { id: userId, name: 'System' },
-        message: `Status changed from ${oldStatus} to ${status}`,
-        createdAt: new Date().toISOString(),
-        type: 'status_change',
-        metadata: { from: oldStatus, to: status }
-      });
-      
-      return {
-        success: true,
-        data: ticket,
-        message: 'Ticket status updated'
-      };
-    }
-    
-    return {
-      success: false,
-      message: 'Ticket not found'
-    };
-  },
-  
-  // Assign ticket
-  assignTicket: async (id, assigneeId, userId) => {
-    await delay(400);
-    
-    const ticket = mockTickets.find(t => t.id === parseInt(id) || t.ticketId === id);
-    
-    if (ticket) {
-      const oldAssignee = ticket.assignedTo;
-      ticket.assignedTo = assigneeId ? { id: assigneeId, name: 'Developer Name' } : null;
-      ticket.updatedAt = new Date().toISOString();
-      
-      // Add assignment message
-      ticket.messages.push({
-        id: ticket.messages.length + 1,
-        user: { id: userId, name: 'System' },
-        message: assigneeId 
-          ? `Ticket assigned to Developer Name` 
-          : 'Ticket unassigned',
-        createdAt: new Date().toISOString(),
-        type: 'assignment',
-        metadata: { from: oldAssignee?.name || 'Unassigned', to: assigneeId ? 'Developer Name' : 'Unassigned' }
-      });
-      
-      return {
-        success: true,
-        data: ticket,
-        message: 'Ticket assignment updated'
-      };
-    }
-    
-    return {
-      success: false,
-      message: 'Ticket not found'
-    };
-  },
-  
-  // Add message to ticket
-  addMessage: async (id, messageData) => {
-    await delay(400);
-    
-    const ticket = mockTickets.find(t => t.id === parseInt(id) || t.ticketId === id);
-    
-    if (ticket) {
-      const newMessage = {
-        id: ticket.messages.length + 1,
-        user: messageData.user,
-        message: messageData.message,
-        createdAt: new Date().toISOString(),
-        type: 'message',
-        attachments: messageData.attachments || []
-      };
-      
-      ticket.messages.push(newMessage);
-      ticket.updatedAt = new Date().toISOString();
-      
-      return {
-        success: true,
-        data: newMessage,
-        message: 'Message added successfully'
-      };
-    }
-    
-    return {
-      success: false,
-      message: 'Ticket not found'
-    };
-  },
-  
-  
-};
-
-// Format ticket for UI
 export const formatTicketForUI = (ticket) => {
+  if (!ticket) return null;
+
+  const getFileName = (url) => {
+    if (!url) return '';
+    return url.split('/').pop() || 'file';
+  };
+
   return {
     id: ticket.id,
-    ticketId: ticket.ticketId,
-    subject: ticket.subject,
-    description: ticket.description,
-    priority: ticket.priority,
-    type: ticket.type,
-    category: ticket.category,
-    status: ticket.status,
-    createdBy: ticket.createdBy,
-    assignedTo: ticket.assignedTo,
-    createdAt: formatDate(ticket.createdAt),
-    updatedAt: formatDate(ticket.updatedAt),
-    createdDate: formatDateOnly(ticket.createdAt),
-    messageCount: ticket.messages?.length || 0,
-    hasUnread: false
+    ticketId: ticket.token || `TKT-${ticket.id}`,
+    subject: ticket.subject || '',
+    description: ticket.description || '',
+    priority: ticket.priority || 'medium',
+    type: ticket.type || 'issue',
+    category: ticket.category || 'other',
+    status: ticket.status || 'Pending',
+    createdBy: {
+      id: ticket.admin?.id,
+      name: ticket.admin?.username || ticket.created_by || 'Unknown',
+      email: null
+    },
+    assignedTo: ticket.assigned_to ? {
+      id: ticket.assigned_to.id,
+      name: ticket.assigned_to.username || 'Unassigned',
+      email: ticket.assigned_to.email || null
+    } : null,
+    createdAt: ticket.created_at,
+    updatedAt: ticket.updated_at,
+    messages: ticket.replies || [],
+    messageCount: ticket.replies?.length || 0,
+    createdDate: formatDate(ticket.created_at),
+    attachments: ticket.documents || [],
+    admin: ticket.admin
   };
+};
+
+export const ticketService = {
+  updateStatus: async (ticketId, status, userId) => {
+    const statusData = {
+      status: status,
+      updated_by: userId
+    };
+    return await ticketAPI.updateTicketStatus(ticketId, statusData);
+  },
+
+  assignTicket: async (ticketId, assigneeId, userId) => {
+    const assignData = {
+      assign_to: assigneeId,
+      assigned_by: userId
+    };
+    return await ticketAPI.assignTicket(ticketId, assignData);
+  },
+
+  addMessage: async (ticketId, messageData) => {
+    return await ticketAPI.addMessage(ticketId, messageData);
+  }
+};
+
+export default {
+  ticketAPI,
+  formatTicketForUI,
+  ticketService,
+  formatDate
 };

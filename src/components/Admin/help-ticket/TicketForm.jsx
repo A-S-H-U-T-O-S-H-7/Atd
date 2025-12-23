@@ -5,13 +5,12 @@ import {
   Send,
   Paperclip,
   FileText,
-  Image as ImageIcon,
+  ImageIcon,
   XCircle,
   AlertCircle
 } from 'lucide-react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { ticketSchema, priorityOptions, typeOptions, categoryOptions } from '@/lib/schema/ticketSchema';
-import { toast } from 'react-hot-toast';
 
 const TicketForm = ({ isDark, onSubmit, onClose }) => {
   const [attachments, setAttachments] = useState([]);
@@ -22,54 +21,46 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
     subject: '',
     description: '',
     priority: 'medium',
-    type: 'bug',
-    category: 'other',
-    attachments: []
+    type: 'issue',
+    category: ''
   };
 
-  // Handle file selection
-  const handleFileSelect = (e, setFieldValue) => {
+  const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     
-    // Validate file size (5MB max)
     const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024);
     
     if (validFiles.length !== files.length) {
-      toast.error('Some files exceed 5MB limit');
+      alert('Some files exceed 5MB limit');
     }
     
-    // Validate file types
     const allowedTypes = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
       'application/pdf', 'application/msword', 
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain', 'application/zip'
+      'text/plain', 'application/zip',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
     
     const typeValidFiles = validFiles.filter(file => allowedTypes.includes(file.type));
     
     if (typeValidFiles.length !== validFiles.length) {
-      toast.error('Some files have unsupported formats');
+      alert('Some files have unsupported formats');
     }
     
     if (typeValidFiles.length + attachments.length > 5) {
-      toast.error('Maximum 5 files allowed');
+      alert('Maximum 5 files allowed');
       return;
     }
     
-    const newAttachments = [...attachments, ...typeValidFiles];
-    setAttachments(newAttachments);
-    setFieldValue('attachments', newAttachments);
+    setAttachments(prev => [...prev, ...typeValidFiles]);
   };
 
-  // Remove attachment
-  const removeAttachment = (index, setFieldValue) => {
-    const newAttachments = attachments.filter((_, i) => i !== index);
-    setAttachments(newAttachments);
-    setFieldValue('attachments', newAttachments);
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Get file icon
   const getFileIcon = (file) => {
     if (file.type.startsWith('image/')) {
       return <ImageIcon className="w-4 h-4" />;
@@ -80,7 +71,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
     }
   };
 
-  // Format file size
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -89,33 +79,34 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values, { resetForm, setSubmitting }) => {
     setIsSubmitting(true);
+    setSubmitting(true);
     
     try {
-      // Prepare form data with files
       const formData = new FormData();
       
-      // Add text fields
-      Object.keys(values).forEach(key => {
-        if (key !== 'attachments') {
-          formData.append(key, values[key]);
-        }
-      });
+      formData.append('subject', values.subject.trim());
+      formData.append('description', values.description.trim());
+      formData.append('priority', values.priority);
+      formData.append('type', values.type);
+      formData.append('category', values.category.trim());
       
-      // Add files
-      attachments.forEach(file => {
-        formData.append('attachments', file);
-      });
+      if (attachments.length > 0) {
+        attachments.forEach(file => {
+          formData.append('documents[]', file);
+        });
+      }
       
       await onSubmit(formData);
       resetForm();
       setAttachments([]);
       
     } catch (error) {
-      // Error handled by parent
+      console.error('Form submission error:', error);
     } finally {
       setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -124,7 +115,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
       <div className={`rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden ${
         isDark ? 'bg-gray-800' : 'bg-white'
       }`}>
-        {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${
           isDark ? 'border-gray-700' : 'border-gray-200'
         }`}>
@@ -151,16 +141,17 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
           </button>
         </div>
 
-        {/* Form */}
         <div className="p-6 overflow-y-auto max-h-[70vh]">
           <Formik
             initialValues={initialValues}
             validationSchema={ticketSchema}
             onSubmit={handleSubmit}
+            validateOnMount={false}
+            validateOnChange={true}
+            validateOnBlur={true}
           >
-            {({ setFieldValue }) => (
+            {({ isSubmitting: formikSubmitting }) => (
               <Form className="space-y-6">
-                {/* Subject */}
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
@@ -187,7 +178,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                   </ErrorMessage>
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
@@ -215,7 +205,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                   </ErrorMessage>
                 </div>
 
-                {/* Priority & Type */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={`block text-sm font-medium mb-2 ${
@@ -238,14 +227,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                         </option>
                       ))}
                     </Field>
-                    <ErrorMessage name="priority">
-                      {msg => (
-                        <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </p>
-                      )}
-                    </ErrorMessage>
                   </div>
 
                   <div>
@@ -269,18 +250,9 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                         </option>
                       ))}
                     </Field>
-                    <ErrorMessage name="type">
-                      {msg => (
-                        <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {msg}
-                        </p>
-                      )}
-                    </ErrorMessage>
                   </div>
                 </div>
 
-                {/* Category */}
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
@@ -312,7 +284,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                   </ErrorMessage>
                 </div>
 
-                {/* Attachments */}
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? 'text-gray-300' : 'text-gray-700'
@@ -328,10 +299,10 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={(e) => handleFileSelect(e, setFieldValue)}
+                      onChange={handleFileSelect}
                       multiple
                       className="hidden"
-                      accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.txt,.zip"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.txt,.zip,.xls,.xlsx"
                     />
                     
                     <button
@@ -353,7 +324,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                     </button>
                   </div>
 
-                  {/* Attachments List */}
                   {attachments.length > 0 && (
                     <div className="mt-4 space-y-2">
                       {attachments.map((file, index) => (
@@ -376,7 +346,7 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                           </div>
                           <button
                             type="button"
-                            onClick={() => removeAttachment(index, setFieldValue)}
+                            onClick={() => removeAttachment(index)}
                             className={`p-1 rounded-full ${
                               isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
                             }`}
@@ -389,7 +359,6 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                   )}
                 </div>
 
-                {/* Form Actions */}
                 <div className="flex justify-end space-x-3 pt-6 border-t border-gray-700/50">
                   <button
                     type="button"
@@ -404,16 +373,16 @@ const TicketForm = ({ isDark, onSubmit, onClose }) => {
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={formikSubmitting || isSubmitting}
                     className={`px-6 py-2 rounded-lg text-white text-sm font-bold transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none flex items-center space-x-2 ${
-                      isSubmitting
+                      formikSubmitting || isSubmitting
                         ? 'bg-gray-400 cursor-not-allowed'
                         : isDark
                         ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 focus:ring-blue-500/50 shadow-lg shadow-blue-500/25'
                         : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 focus:ring-blue-500/50 shadow-lg shadow-blue-500/25'
                     }`}
                   >
-                    {isSubmitting ? (
+                    {(formikSubmitting || isSubmitting) ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>Creating...</span>
