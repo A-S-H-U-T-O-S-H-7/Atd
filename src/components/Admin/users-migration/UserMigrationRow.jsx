@@ -98,37 +98,7 @@ const UsersMigrationRow = ({
         </span>
       </td>
 
-      {/* Account Activation */}
-      <td className={cellStyle}>
-        <div className="flex justify-center">
-          {user.accountActivation === 1 ? (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"
-            }`}>
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-xs font-medium">Active</span>
-            </div>
-          ) : (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-red-900/30 text-red-300" : "bg-red-100 text-red-700"
-            }`}>
-              <XCircle className="w-4 h-4" />
-              <span className="text-xs font-medium">Inactive</span>
-            </div>
-          )}
-        </div>
-      </td>
-
-      {/* Activate Date */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center space-x-1">
-          <Calendar className={`w-3 h-3 ${textAccent}`} />
-          <span className={`text-xs font-medium ${textSecondary}`}>
-            {formatDate(user.activateDate)}
-          </span>
-        </div>
-      </td>
-
+      
       {/* Full Name */}
       <td className={cellStyle}>
         <div className="flex flex-col">
@@ -148,26 +118,7 @@ const UsersMigrationRow = ({
         </span>
       </td>
 
-      {/* Photo */}
-      <td className={cellStyle}>
-        {user.selfie ? (
-          <button
-            onClick={handlePhotoView}
-            className={`px-2 py-1 rounded text-xs font-medium transition-colors duration-200 flex items-center space-x-1 mx-auto ${
-              isDark
-                ? "bg-blue-900/30 hover:bg-blue-800 text-blue-300"
-                : "bg-blue-100 hover:bg-blue-200 text-blue-700"
-            }`}
-          >
-            <Eye className="w-3 h-3" />
-            <span>View</span>
-          </button>
-        ) : (
-          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-            N/A
-          </span>
-        )}
-      </td>
+     
 
       {/* Gender */}
       <td className={cellStyle}>
@@ -233,69 +184,7 @@ const UsersMigrationRow = ({
         </span>
       </td>
 
-      {/* Step */}
-      <td className={cellStyle}>
-        <div className={`inline-flex items-center justify-center w-6 h-6 rounded-full mx-auto ${
-          isDark ? "bg-emerald-900/30 text-emerald-300" : "bg-emerald-100 text-emerald-700"
-        }`}>
-          <span className="text-xs font-bold">{user.step}</span>
-        </div>
-      </td>
-
-      {/* Verified */}
-      <td className={cellStyle}>
-        <div className="flex justify-center">
-          {user.isVerified === 1 ? (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"
-            }`}>
-              <Check className="w-3 h-3" />
-              <span className="text-xs font-medium">Yes</span>
-            </div>
-          ) : (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-yellow-900/30 text-yellow-300" : "bg-yellow-100 text-yellow-700"
-            }`}>
-              <AlertCircle className="w-3 h-3" />
-              <span className="text-xs font-medium">No</span>
-            </div>
-          )}
-        </div>
-      </td>
-
-      {/* Blacklist */}
-      <td className={cellStyle}>
-        <div className="flex justify-center">
-          {user.blacklist === 1 ? (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-red-900/30 text-red-300" : "bg-red-100 text-red-700"
-            }`}>
-              <AlertCircle className="w-3 h-3" />
-              <span className="text-xs font-medium">Yes</span>
-            </div>
-          ) : (
-            <div className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
-              isDark ? "bg-gray-900/30 text-gray-300" : "bg-gray-100 text-gray-700"
-            }`}>
-              <Check className="w-3 h-3" />
-              <span className="text-xs font-medium">No</span>
-            </div>
-          )}
-        </div>
-      </td>
-
-      {/* Blacklist Date */}
-      <td className={cellStyle}>
-        {user.blacklistdate ? (
-          <span className={`text-xs ${isDark ? "text-red-300" : "text-red-600"}`}>
-            {formatDate(user.blacklistdate)}
-          </span>
-        ) : (
-          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-            N/A
-          </span>
-        )}
-      </td>
+      
 
       {/* Organization */}
       <td className={cellStyle}>
@@ -307,27 +196,9 @@ const UsersMigrationRow = ({
         </div>
       </td>
 
-      {/* Net Salary */}
-      <td className={cellStyle}>
-        <div className={`px-2 py-1 rounded ${
-          isDark ? "bg-emerald-900/20" : "bg-emerald-50"
-        }`}>
-          <span className={`text-sm font-semibold ${
-            isDark ? "text-emerald-300" : "text-emerald-700"
-          }`}>
-            {formatCurrency(user.net_monthly_salary)}
-          </span>
-        </div>
-      </td>
+      
 
-      {/* Admin ID */}
-      <td className={cellStyle}>
-        <div className={`inline-flex items-center justify-center w-6 h-6 rounded-full mx-auto ${
-          isDark ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-700"
-        }`}>
-          <span className="text-xs font-bold">{user.admin_id}</span>
-        </div>
-      </td>
+      
 
       {/* Migration Status */}
       <td className={cellStyle}>

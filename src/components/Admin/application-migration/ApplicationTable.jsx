@@ -28,21 +28,9 @@ const ApplicationMigrationTable = ({
     { label: "Name", width: "150px" },
     { label: "Applied Amount", width: "130px" },
     { label: "Approved Amount", width: "130px" },
-    { label: "ROI %", width: "80px" },
-    { label: "Tenure", width: "80px" },
-    { label: "Loan Term", width: "120px" },
     { label: "Loan Status", width: "120px" },
-    { label: "Approval Note", width: "180px" },
-    { label: "Enquiry Type", width: "110px" },
-    { label: "Verified", width: "90px" },
-    { label: "Report Check", width: "100px" },
-    { label: "Profile %", width: "80px" },
     { label: "Approved Date", width: "120px" },
     { label: "Created Date", width: "120px" },
-    { label: "Status Date", width: "120px" },
-    { label: "EMI Amount", width: "110px" },
-    { label: "EMI No", width: "80px" },
-    { label: "Final Report", width: "120px" },
     { label: "Migration Status", width: "130px" },
     { label: "Action", width: "100px" },
   ];
@@ -55,7 +43,7 @@ const ApplicationMigrationTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "2200px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "1200px" }}>
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"

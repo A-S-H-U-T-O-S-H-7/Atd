@@ -25,11 +25,8 @@ const UsersMigrationTable = ({
     { label: "ID", width: "70px" },
     { label: "CRN No", width: "100px" },
     { label: "Account ID", width: "120px" },
-    { label: "Activation", width: "90px" },
-    { label: "Activate Date", width: "110px" },
     { label: "Full Name", width: "150px" },
     { label: "DOB", width: "100px" },
-    { label: "Photo", width: "80px" },
     { label: "Gender", width: "90px" },
     { label: "Father's Name", width: "150px" },
     { label: "Phone", width: "120px" },
@@ -37,13 +34,7 @@ const UsersMigrationTable = ({
     { label: "Alt Email", width: "180px" },
     { label: "PAN No", width: "120px" },
     { label: "Aadhar No", width: "140px" },
-    { label: "Step", width: "70px" },
-    { label: "Verified", width: "90px" },
-    { label: "Blacklist", width: "100px" },
-    { label: "Blacklist Date", width: "120px" },
     { label: "Organization", width: "140px" },
-    { label: "Net Salary", width: "110px" },
-    { label: "Admin ID", width: "100px" },
     { label: "Migration Status", width: "120px" },
     { label: "Action", width: "100px" },
   ];
@@ -56,7 +47,7 @@ const UsersMigrationTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "2000px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "1200px" }}>
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
