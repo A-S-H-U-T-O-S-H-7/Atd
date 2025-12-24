@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Calendar, Mail, Edit, CheckCircle,RefreshCw, X, FileText, Eye } from "lucide-react";
 import { manageApplicationService } from "@/lib/services/ManageApplicationServices";
+import { useAdminAuthStore } from '@/lib/store/authAdminStore';
 
 
 // Import reusable document components
@@ -55,7 +56,8 @@ const ApplicationRow = ({
   onNOCModalOpen,
 }) => {
 
-    const [nocLoading, setNocLoading] = useState(false);
+  const { hasPermission } = useAdminAuthStore();
+  const [nocLoading, setNocLoading] = useState(false);
 
   
   const handleChequeClick = () => {
@@ -127,54 +129,66 @@ const ApplicationRow = ({
           className="px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105"
         />
       ),
-      "Collection": () => (
-        <div className="flex items-center justify-center">
-          {application.loanStatusId === 11 && (
-            <button
-              onClick={() => onCollectionClick && onCollectionClick(application, 'normal')}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-              title="Collection"
-            >
-              Collection
-            </button>
-          )}
-          {application.loanStatusId === 12 && (
-            <button
-              onClick={() => onCollectionClick && onCollectionClick(application, 'recollection')}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-              title="Re-collection"
-            >
-              Re-collection
-            </button>
-          )}
-          {application.loanStatusId === 18 && (
-            <button
-              onClick={() => onCollectionClick && onCollectionClick(application, 'renewal')}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-              title="Renewal"
-            >
-              Renewal
-            </button>
-          )}
-          {application.loanStatusId === 19 && (
-            <button
-              onClick={() => onCollectionClick && onCollectionClick(application, 'emi')}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-              title="EMI Collection"
-            >
-              Emi-collection
-            </button>
-          )}
-          {application.loanStatusId === 13 && (
-            <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-orange-400 bg-orange-900/30' : 'border-orange-500 bg-orange-100'}`}>
-              <CheckCircle className={`w-5 h-5 ${isDark ? 'text-orange-300' : 'text-orange-600'}`} />
-            </div>
-          )}
-          {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
-            <span className="text-sm text-gray-500">-</span>
-          )}
+      "Collection": () => {
+  if (!hasPermission('collection')) {
+    return (
+      <div className="flex items-center justify-center">
+        <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          --
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center">
+      {application.loanStatusId === 11 && (
+        <button
+          onClick={() => onCollectionClick && onCollectionClick(application, 'normal')}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+          title="Collection"
+        >
+          Collection
+        </button>
+      )}
+      {application.loanStatusId === 12 && (
+        <button
+          onClick={() => onCollectionClick && onCollectionClick(application, 'recollection')}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+          title="Re-collection"
+        >
+          Re-collection
+        </button>
+      )}
+      {application.loanStatusId === 18 && (
+        <button
+          onClick={() => onCollectionClick && onCollectionClick(application, 'renewal')}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+          title="Renewal"
+        >
+          Renewal
+        </button>
+      )}
+      {application.loanStatusId === 19 && (
+        <button
+          onClick={() => onCollectionClick && onCollectionClick(application, 'emi')}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+          title="EMI Collection"
+        >
+          Emi-collection
+        </button>
+      )}
+      {application.loanStatusId === 13 && (
+        <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-orange-400 bg-orange-900/30' : 'border-orange-500 bg-orange-100'}`}>
+          <CheckCircle className={`w-5 h-5 ${isDark ? 'text-orange-300' : 'text-orange-600'}`} />
         </div>
-      ),
+      )}
+      {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
+        <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>-</span>
+      )}
+    </div>
+  );
+},
       "Loan No.": () => (
         <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
           {application.loanNo}
@@ -788,14 +802,25 @@ const ApplicationRow = ({
             : 'text-white'}`} />
         </div>
       ),
-      "Action": () => (
-        <ActionButton
-          enquiry={application}
-          isDark={isDark}
-          onVerifyClick={onActionClick} 
-          className="w-full flex justify-center"
-        />
-      ),
+      "Action": () => {
+  // Permission check for application
+  if (!hasPermission('application')) {
+    return (
+      <div className="w-full flex justify-center">
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+      </div>
+    );
+  }
+  
+  return (
+    <ActionButton
+      enquiry={application}
+      isDark={isDark}
+      onVerifyClick={onActionClick} 
+      className="w-full flex justify-center"
+    />
+  );
+},
       "Remarks": () => (
         <button
           onClick={() => onRemarksClick(application)}
@@ -807,9 +832,16 @@ const ApplicationRow = ({
         >
           View Remarks
         </button>
-      ),
-      
+      ),    
       "NOC": () => {
+  if (!hasPermission('noc')) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-1">
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+      </div>
+    );
+  }
+
   const hasNOC = application.nocIssued === "issued";
   
   const handleNOCPDFView = async () => {
@@ -865,23 +897,25 @@ const ApplicationRow = ({
               <span>Issued</span>
             </div>
             
-            {/* PDF icon */}
-            <button
-              onClick={handleNOCPDFView}
-              disabled={nocLoading}
-              className={`p-1 rounded transition-colors ${
-                nocLoading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "cursor-pointer"
-              } ${isDark ? "text-red-400 bg-red-50" : "text-red-500 bg-red-200"}`}
-              title="View NOC PDF"
-            >
-              {nocLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <FaFilePdf className="w-4 h-4" />
-              )}
-            </button>
+            {/* PDF icon - Check permission for viewing too */}
+            {hasPermission('noc') && (
+              <button
+                onClick={handleNOCPDFView}
+                disabled={nocLoading}
+                className={`p-1 rounded transition-colors ${
+                  nocLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                } ${isDark ? "text-red-400 bg-red-50" : "text-red-500 bg-red-200"}`}
+                title="View NOC PDF"
+              >
+                {nocLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FaFilePdf className="w-4 h-4" />
+                )}
+              </button>
+            )}
           </div>
           
           {/* NOC Date */}
@@ -916,6 +950,14 @@ const ApplicationRow = ({
   );
 },
       "Refund PDC": () => {
+  if (!hasPermission('refund_pdc')) {
+    return (
+      <div className="flex flex-col items-center justify-center space-y-1">
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+      </div>
+    );
+  }
+
   const isRefunded = application.refundPdc === "Yes";
   const isCancelled = application.refundPdc === "Cancel";
   
@@ -923,7 +965,7 @@ const ApplicationRow = ({
     <div className="flex flex-col items-center justify-center space-y-1">
       {isRefunded || isCancelled ? (
         <div className="flex flex-col items-center space-y-1">
-          {/* Status button */}
+          {/* Status button - User can see status even if they can't update */}
           <div className={`px-4 py-1 rounded-md text-sm font-medium ${
             isRefunded
               ? isDark
@@ -969,35 +1011,68 @@ const ApplicationRow = ({
   );
 },
 
-      "Appraisal Report": () => (
-        <AppraisalReportButton
-          enquiry={application}
-          isDark={isDark}
-          onFileView={onFileView}
-          onCheckClick={onCheckClick}
-          className="w-full flex justify-center"
-        />
-      ),
-      "Eligibility": () => (
-        <EligibilityButton
-          enquiry={application}
-          isDark={isDark}
-          onLoanEligibilityClick={onLoanEligibilityClick}
-          className="w-full flex justify-center"
-        />
-      ),
-      "Replace KYC": () => (
-        <button
-          onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-          }`}
-        >
-          Replace KYC
-        </button>
-      ),
+      "Appraisal Report": () => {
+  // Permission check for appraisal
+  if (!hasPermission('appraisal')) {
+    return (
+      <div className="w-full flex justify-center">
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+      </div>
+    );
+  }
+  
+  return (
+    <AppraisalReportButton
+      enquiry={application}
+      isDark={isDark}
+      onFileView={onFileView}
+      onCheckClick={onCheckClick}
+      className="w-full flex justify-center"
+    />
+  );
+},
+
+"Eligibility": () => {
+  // Permission check for eligibility
+  if (!hasPermission('eligibility')) {
+    return (
+      <div className="w-full flex justify-center">
+        <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+      </div>
+    );
+  }
+  
+  return (
+    <EligibilityButton
+      enquiry={application}
+      isDark={isDark}
+      onLoanEligibilityClick={onLoanEligibilityClick}
+      className="w-full flex justify-center"
+    />
+  );
+},
+
+"Replace KYC": () => {
+  // Permission check for replace_kyc
+  if (!hasPermission('replace_kyc')) {
+    return (
+      <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
+    );
+  }
+  
+  return (
+    <button
+      onClick={() => onReplaceKYCClick(application)}
+      className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
+        isDark
+          ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
+          : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
+      }`}
+    >
+      Replace KYC
+    </button>
+  );
+},
       "Settled": () => {
   if (application.settled === 1) {
     return (

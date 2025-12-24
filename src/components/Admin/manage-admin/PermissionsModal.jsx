@@ -1,0 +1,539 @@
+// components/admin/PermissionsModal.jsx
+'use client';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Shield, Save, CheckSquare, Square, Lock } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import { adminService } from '@/lib/services/AdminServices';
+
+const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSavePermissions }) => {
+  const [permissions, setPermissions] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectAllState, setSelectAllState] = useState({});
+  const modalRef = useRef(null);
+  const backdropRef = useRef(null);
+  
+  const permissionGroups = {
+    "Dashboard & Applications": [
+      { key: 'dashboard', label: 'Dashboard' },
+      { key: 'manage_application', label: 'Manage Applications' },
+      { key: 'disburse_application', label: 'Disburse Applications' },
+      { key: 'credit_approval', label: 'Credit Approval' },
+      { key: 'sanction_application', label: 'Sanction Application' },
+      { key: 'inprocess_application', label: 'In-process Application' },
+      { key: 'followup_application', label: 'Follow-up Application' },
+      { key: 'complete_application', label: 'Complete Application' },
+      { key: 'pending_application', label: 'Pending Application' },
+      { key: 'rejected_application', label: 'Rejected Application' },
+      { key: 'all_enquiries', label: 'All Enquiries' },
+    ],
+    "Reporting & Collection": [
+      { key: 'disburse_reporting', label: 'Disburse Reporting' },
+      { key: 'collection_reporting', label: 'Collection Reporting' },
+      { key: 'auto_collection', label: 'Auto Collection' },
+      { key: 'ledger', label: 'Ledger' },
+      { key: 'bank_ledger', label: 'Bank Ledger' },
+      { key: 'cibil_report', label: 'CIBIL Report' },
+      { key: 'tally_ledger', label: 'Tally Ledger' },
+      { key: 'tally_export', label: 'Tally Export' },
+      { key: 'overdue_applicants', label: 'Overdue Applicants' },
+      { key: 'payment_receipt', label: 'Payment Receipt' },
+      { key: 'profit_and_loss', label: 'Profit & Loss' },
+    ],
+    "Master Settings": [
+      { key: 'master_setting', label: 'Master Setting' },
+      { key: 'manage_advocate', label: 'Manage Advocate' },
+      { key: 'manage_bank', label: 'Manage Bank' },
+      { key: 'manage_admin', label: 'Manage Admin' },
+      { key: 'statement_of_account', label: 'Statement of Account' },
+    ],
+    "Deposit & Legal": [
+      { key: 'cash_deposit', label: 'Cash Deposit' },
+      { key: 'cheque_deposit', label: 'Cheque Deposit' },
+      { key: 'emandate_deposit', label: 'E-mandate Deposit' },
+      { key: 'legal', label: 'Legal' },
+      { key: 'complaints', label: 'Complaints' },
+      { key: 'rbi_guidelines', label: 'RBI Guidelines' },
+    ],
+    "Client & Marketing": [
+      { key: 'clients_history', label: 'Clients History' },
+      { key: 'register_from_app', label: 'Register from App' },
+      { key: 'download_app', label: 'Download App' },
+      { key: 'notification', label: 'Notification' },
+      { key: 'references', label: 'References' },
+      { key: 'help_ticket', label: 'Help Ticket' },
+      { key: 'blogs', label: 'Blogs' },
+      { key: 'reviews', label: 'Reviews' },
+      { key: 'send_sms', label: 'Send SMS' },
+      { key: 'create_myastro_account', label: 'Create MyAstro Account' },
+      { key: 'business_loan_enquiry', label: 'Business Loan Enquiry' },
+    ],
+    "Collection & Application": [
+      { key: 'collection', label: 'Collection' },
+      { key: 'application', label: 'Application' },
+      { key: 'noc', label: 'NOC' },
+      { key: 'refund_pdc', label: 'Refund PDC' },
+      { key: 'appraisal', label: 'Appraisal' },
+      { key: 'eligibility', label: 'Eligibility' },
+      { key: 'replace_kyc', label: 'Replace KYC' },
+      { key: 'disburse_status', label: 'Disburse Status' },
+      { key: 'bank_verify', label: 'Bank Verify' },
+      { key: 'disburse_approval_by', label: 'Disburse Approval By' },
+      { key: 'ready_to_disburse', label: 'Ready to Disburse' },
+    ],
+    "Disbursement & Documents": [
+      { key: 'ready_to_verify', label: 'Ready to Verify' },
+      { key: 'check_no', label: 'Check No' },
+      { key: 'send_to_courier', label: 'Send to Courier' },
+      { key: 'courier_picked', label: 'Courier Picked' },
+      { key: 'original_document_received', label: 'Original Document Received' },
+      { key: 'disburse_behalf_of_emandate', label: 'Disburse Behalf of E-mandate' },
+      { key: 'sanction_mail', label: 'Sanction Mail' },
+      { key: 'original_document_status_change', label: 'Original Document Status Change' },
+      { key: 'loan_approved', label: 'Loan Approved' },
+      { key: 'transaction', label: 'Transaction' },
+      { key: 'adjustment', label: 'Adjustment' },
+      { key: 'settle', label: 'Settle' },
+    ],
+  };
+
+  // All permission keys
+  const allPermissionKeys = Object.values(permissionGroups).flat().map(item => item.key);
+
+  // Handle click outside to close
+  const handleClickOutside = useCallback((event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target) && backdropRef.current && backdropRef.current.contains(event.target)) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Handle escape key to close
+  const handleEscapeKey = useCallback((event) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Add event listeners
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'auto'; // Restore scrolling
+    };
+  }, [isOpen, handleClickOutside, handleEscapeKey]);
+
+  // Load permissions when modal opens
+  useEffect(() => {
+    if (isOpen && adminId) {
+      loadPermissions();
+    }
+  }, [isOpen, adminId]);
+
+const loadPermissions = async () => {
+  try {
+    setIsLoading(true);
+    
+    const response = await adminService.getPermissions(adminId);
+    
+    if (response.success) {
+      const normalizedPermissions = {};
+      Object.keys(response.data).forEach(key => {
+        if (typeof response.data[key] === 'boolean') {
+          normalizedPermissions[key] = response.data[key] ? 1 : 0;
+        } else {
+          normalizedPermissions[key] = response.data[key];
+        }
+      });
+      
+      setPermissions(normalizedPermissions);
+      updateSelectAllStates(normalizedPermissions);
+    } else {
+      throw new Error(response.message || 'Failed to load permissions');
+    }
+  } catch (error) {
+    console.error('Error loading permissions:', error);
+    toast.error(error.message || 'Failed to load permissions');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  
+
+  const updateSelectAllStates = (perms) => {
+    const newSelectAllState = {};
+    Object.keys(permissionGroups).forEach(groupKey => {
+      const groupPermissions = permissionGroups[groupKey];
+      const allChecked = groupPermissions.every(item => 
+        perms[item.key] === 1 || perms[item.key] === true || perms[item.key] === '1'
+      );
+      const someChecked = groupPermissions.some(item => 
+        perms[item.key] === 1 || perms[item.key] === true || perms[item.key] === '1'
+      );
+      
+      newSelectAllState[groupKey] = allChecked ? 'all' : someChecked ? 'some' : 'none';
+    });
+    setSelectAllState(newSelectAllState);
+  };
+
+  const handlePermissionChange = (key) => {
+    const newValue = permissions[key] === 1 || permissions[key] === true || permissions[key] === '1' ? 0 : 1;
+    
+    setPermissions(prev => ({
+      ...prev,
+      [key]: newValue
+    }));
+    
+    // Update select all state for the group
+    updateSelectAllForGroup(key);
+  };
+
+  const updateSelectAllForGroup = (changedKey) => {
+    // Find which group this key belongs to
+    let groupKey = '';
+    Object.keys(permissionGroups).forEach(gKey => {
+      if (permissionGroups[gKey].some(item => item.key === changedKey)) {
+        groupKey = gKey;
+      }
+    });
+    
+    if (groupKey) {
+      const groupPermissions = permissionGroups[groupKey];
+      const allChecked = groupPermissions.every(item => 
+        permissions[item.key] === 1 || permissions[item.key] === true || permissions[item.key] === '1'
+      );
+      const someChecked = groupPermissions.some(item => 
+        permissions[item.key] === 1 || permissions[item.key] === true || permissions[item.key] === '1'
+      );
+      
+      setSelectAllState(prev => ({
+        ...prev,
+        [groupKey]: allChecked ? 'all' : someChecked ? 'some' : 'none'
+      }));
+    }
+  };
+
+  const handleSelectAll = (groupKey, select = true) => {
+    const groupPermissions = permissionGroups[groupKey];
+    const updatedPermissions = { ...permissions };
+    
+    groupPermissions.forEach(item => {
+      updatedPermissions[item.key] = select ? 1 : 0;
+    });
+    
+    setPermissions(updatedPermissions);
+    setSelectAllState(prev => ({
+      ...prev,
+      [groupKey]: select ? 'all' : 'none'
+    }));
+  };
+
+  const handleSelectAllGlobal = (select = true) => {
+    const updatedPermissions = { ...permissions };
+    const newSelectAllState = {};
+    
+    Object.keys(permissionGroups).forEach(groupKey => {
+      permissionGroups[groupKey].forEach(item => {
+        updatedPermissions[item.key] = select ? 1 : 0;
+      });
+      newSelectAllState[groupKey] = select ? 'all' : 'none';
+    });
+    
+    setPermissions(updatedPermissions);
+    setSelectAllState(newSelectAllState);
+  };
+
+  const handleSave = async () => {
+    if (!adminId) {
+      toast.error('No admin selected');
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      
+      const result = await Swal.fire({
+        title: 'Save Permissions',
+        html: `Are you sure you want to update permissions for <strong>${adminName}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Save!',
+        cancelButtonText: 'Cancel',
+        background: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f9fafb' : '#111827',
+        customClass: {
+          popup: isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900',
+        }
+      });
+      
+      if (result.isConfirmed) {
+        await onSavePermissions(adminId, permissions);
+        toast.success('Permissions updated successfully!');
+        onClose();
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to save permissions');
+      console.error('Error saving permissions:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        ref={backdropRef}
+        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onClose}
+      />
+      
+      {/* Modal Container */}
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          {/* Modal Content */}
+          <div
+            ref={modalRef}
+            className={`relative w-full max-w-6xl rounded-xl shadow-2xl transform transition-all duration-300 ${
+              isDark ? 'bg-gray-800' : 'bg-white'
+            }`}
+            onClick={(e) => e.stopPropagation()} // Prevent click from bubbling to backdrop
+          >
+            {/* Header */}
+            <div className={`sticky top-0 z-10 px-6 py-4 border-b rounded-t-xl ${
+              isDark ? 'border-purple-600/50 bg-gray-900' : 'border-purple-300 bg-purple-50'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
+                    <Shield className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  </div>
+                  <div>
+                    <h2 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
+                      Manage Permissions
+                    </h2>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {adminName} - Set access permissions
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isDark 
+                      ? 'hover:bg-gray-700 text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-500'
+                  }`}
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Global Select All */}
+            <div className={`sticky top-16 z-10 p-4 border-b ${
+              isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center space-x-2">
+                  <div className={`p-1.5 rounded ${isDark ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                    <CheckSquare className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
+                  </div>
+                  <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
+                    Global Permissions
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleSelectAllGlobal(true)}
+                    className={`px-3 py-1.5 text-sm rounded-lg flex items-center space-x-1 transition-colors ${
+                      isDark
+                        ? 'bg-green-900/30 hover:bg-green-800/50 text-green-300 border border-green-700'
+                        : 'bg-green-100 hover:bg-green-200 text-green-700 border border-green-300'
+                    }`}
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    <span>Select All</span>
+                  </button>
+                  <button
+                    onClick={() => handleSelectAllGlobal(false)}
+                    className={`px-3 py-1.5 text-sm rounded-lg flex items-center space-x-1 transition-colors ${
+                      isDark
+                        ? 'bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-700'
+                        : 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300'
+                    }`}
+                  >
+                    <Square className="w-4 h-4" />
+                    <span>Deselect All</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className={`max-h-[60vh] overflow-y-auto p-6 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <div className={`w-10 h-10 border-2 border-t-transparent rounded-full animate-spin ${
+                    isDark ? 'border-purple-400' : 'border-purple-600'
+                  }`}></div>
+                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    Loading permissions...
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.entries(permissionGroups).map(([groupKey, groupItems]) => (
+                    <div key={groupKey} className={`rounded-lg border ${
+                      isDark ? 'border-purple-600/30 bg-gray-900/30' : 'border-purple-300 bg-purple-50/30'
+                    }`}>
+                      {/* Group Header with Select All */}
+                      <div className={`p-4 border-b flex justify-between items-center ${
+                        isDark ? 'border-purple-600/20' : 'border-purple-300'
+                      }`}>
+                        <h3 className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
+                          {groupKey}
+                        </h3>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleSelectAll(groupKey, true)}
+                            className={`p-1.5 rounded transition-colors ${
+                              selectAllState[groupKey] === 'all'
+                                ? isDark 
+                                  ? 'bg-green-900/50 text-green-300' 
+                                  : 'bg-green-100 text-green-700'
+                                : isDark
+                                  ? 'hover:bg-gray-700 text-gray-400'
+                                  : 'hover:bg-gray-100 text-gray-500'
+                            }`}
+                            title="Select All"
+                            aria-label={`Select all ${groupKey} permissions`}
+                          >
+                            <CheckSquare className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleSelectAll(groupKey, false)}
+                            className={`p-1.5 rounded transition-colors ${
+                              isDark
+                                ? 'hover:bg-gray-700 text-gray-400'
+                                : 'hover:bg-gray-100 text-gray-500'
+                            }`}
+                            title="Deselect All"
+                            aria-label={`Deselect all ${groupKey} permissions`}
+                          >
+                            <Square className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Permissions List */}
+                      <div className="p-4">
+                        <div className="space-y-2">
+                          {groupItems.map((item) => {
+                            const isChecked = permissions[item.key] === 1 || permissions[item.key] === true || permissions[item.key] === '1';
+                            return (
+                              <div key={item.key} className="flex items-center justify-between hover:bg-gray-100/10 dark:hover:bg-gray-700/10 p-2 rounded transition-colors">
+                                <label className={`flex items-center space-x-3 cursor-pointer w-full ${
+                                  isDark ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => handlePermissionChange(item.key)}
+                                    className={`w-4 h-4 rounded transition-colors cursor-pointer ${
+                                      isDark
+                                        ? 'bg-gray-700 border-purple-600 text-purple-500 focus:ring-purple-600'
+                                        : 'border-purple-300 text-purple-600 focus:ring-purple-500'
+                                    }`}
+                                    aria-label={item.label}
+                                  />
+                                  <span className="text-sm select-none">{item.label}</span>
+                                </label>
+                                <div className={`px-2 py-1 text-xs rounded whitespace-nowrap ${
+                                  isChecked
+                                    ? isDark
+                                      ? 'bg-green-900/30 text-green-300'
+                                      : 'bg-green-100 text-green-700'
+                                    : isDark
+                                      ? 'bg-red-900/30 text-red-300'
+                                      : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {isChecked ? 'Allowed' : 'Denied'}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className={`sticky bottom-0 px-6 py-4 border-t rounded-b-xl ${
+              isDark ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-white'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {allPermissionKeys.filter(key => 
+                    permissions[key] === 1 || permissions[key] === true || permissions[key] === '1'
+                  ).length} of {allPermissionKeys.length} permissions allowed
+                </p>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={onClose}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      isDark
+                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`px-6 py-2 rounded-lg font-medium text-white transition-all duration-200 flex items-center space-x-2 ${
+                      isSaving
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/25'
+                    }`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Save Permissions</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PermissionsModal;

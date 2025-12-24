@@ -4,7 +4,9 @@ import React from 'react'
 function page() {
   return (
     <div>
+      <ProtectedRoute requiredPermission="cash_deposit">
       <CashManagementPage/>
+      </ProtectedRoute>
     </div>
   )
 }

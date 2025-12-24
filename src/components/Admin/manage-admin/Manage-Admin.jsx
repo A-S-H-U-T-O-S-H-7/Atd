@@ -14,6 +14,7 @@ import { useThemeStore } from '@/lib/store/useThemeStore';
 import { toast } from 'react-hot-toast';
 import AdminForm from './AdminForm';
 import AdminTable from './AdminTable';
+import PermissionsModal from './PermissionsModal';
 import { adminService, formatAdminForUI } from '@/lib/services/AdminServices';
 
 const ManageAdminPage = () => {
@@ -31,6 +32,11 @@ const ManageAdminPage = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  
+  // Permissions Modal State
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [selectedAdminForPermissions, setSelectedAdminForPermissions] = useState(null);
+  const [selectedAdminName, setSelectedAdminName] = useState('');
   
   const [admins, setAdmins] = useState([]);
   const [pagination, setPagination] = useState({
@@ -133,6 +139,45 @@ const ManageAdminPage = () => {
       toast.success('Password reset link sent successfully!');
     } catch (err) {
       toast.error('Failed to send reset link');
+    }
+  };
+
+  // Handle toggle status
+  const handleToggleStatus = async (id) => {
+    try {
+      const response = await adminService.toggleStatus(id);
+      if (response.success) {
+        // Refresh the list to show updated status
+        fetchAdmins(currentPage, searchTerm, filterType, filterStatus);
+      } else {
+        throw new Error(response.message || "Failed to update status");
+      }
+    } catch (err) {
+      console.error("Error toggling status:", err);
+      toast.error(err.message || "Failed to update admin status");
+    }
+  };
+
+  // Handle open permissions modal
+  const handleOpenPermissions = (adminId, adminName) => {
+    setSelectedAdminForPermissions(adminId);
+    setSelectedAdminName(adminName);
+    setShowPermissionsModal(true);
+  };
+
+  // Handle save permissions
+  const handleSavePermissions = async (adminId, permissions) => {
+    try {
+      const response = await adminService.updatePermissions(adminId, permissions);
+      if (response.success) {
+        toast.success('Permissions updated successfully!');
+      } else {
+        throw new Error(response.message || "Failed to update permissions");
+      }
+    } catch (err) {
+      console.error("Error saving permissions:", err);
+      toast.error(err.message || "Failed to save permissions");
+      throw err;
     }
   };
 
@@ -393,7 +438,23 @@ const ManageAdminPage = () => {
           onPageChange={handlePageChange}
           onEdit={handleEdit}
           onResetPassword={handleResetPassword}
+          onToggleStatus={handleToggleStatus}
+          onOpenPermissions={handleOpenPermissions}
           isLoading={isLoading}
+        />
+
+        {/* Permissions Modal */}
+        <PermissionsModal
+          isOpen={showPermissionsModal}
+          onClose={() => {
+            setShowPermissionsModal(false);
+            setSelectedAdminForPermissions(null);
+            setSelectedAdminName('');
+          }}
+          adminId={selectedAdminForPermissions}
+          adminName={selectedAdminName}
+          isDark={isDark}
+          onSavePermissions={handleSavePermissions}
         />
       </div>
     </div>

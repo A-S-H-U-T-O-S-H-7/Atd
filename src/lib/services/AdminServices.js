@@ -86,22 +86,34 @@ export const adminService = {
   },
 
   // Toggle admin status (active/inactive)
-  toggleStatus: async (id, status) => {
-  try {
-    const formData = new FormData();
-    formData.append('isActive', status ? '1' : '0');
-    
-    const response = await api.post(`/crm/admin/update/${id}`, formData);
-    
-    if (response.success === false) {
-      throw new Error(response.message || 'Failed to update status');
+  toggleStatus: async (id) => {
+    try {
+      const response = await api.get(`/crm/admin/status/${id}`);
+      return response;
+    } catch (error) {
+      throw error;
     }
-    
-    return response;
-  } catch (error) {
-    throw error;
-  }
-},
+  },
+
+  // Get admin permissions
+  getPermissions: async (adminId) => {
+    try {
+      const response = await api.put(`/crm/admin/permission/${adminId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update admin permissions
+  updatePermissions: async (adminId, permissions) => {
+    try {
+      const response = await api.put(`/crm/admin/permission/${adminId}`, permissions);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 
   // Delete admin (if needed)
   deleteAdmin: async (id) => {

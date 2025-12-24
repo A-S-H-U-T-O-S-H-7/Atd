@@ -1,9 +1,16 @@
 import BlogPage from '@/components/Admin/blog/Blogs'
+import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
 function page() {
   return (
-    <BlogPage />
+    <>
+    <ProtectedRoute requiredPermission="blogs">
+      <BlogPage />
+    </ProtectedRoute>
+    
+    </>
+    
   )
 }
 

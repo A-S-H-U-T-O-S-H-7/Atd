@@ -5,18 +5,13 @@ import {
   RefreshCw, 
   Plus,
   MessageSquare,
-  Filter,
-  Search,
-  AlertTriangle,
-  CheckCircle,
-  AlertCircle,
-  Clock
+  Search,AlertCircle, Clock, CheckCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
+import { useAdminAuthStore } from '@/lib/store/authAdminStore'; 
 import { toast } from 'react-hot-toast';
 import { ticketAPI, formatTicketForUI, ticketService } from '@/lib/services/TicketService';
-import { priorityOptions, statusOptions, typeOptions, categoryOptions } from '@/lib/schema/ticketSchema';
 import TicketForm from './TicketForm';
 import TicketTable from './HelpTicketTable';
 import TicketDetailsModal from './TicketDetailsModal';
@@ -26,19 +21,14 @@ const HelpTicketPage = () => {
   const isDark = theme === "dark";
   const router = useRouter();
   
+  // Get current user from auth store
+  const { user } = useAdminAuthStore(); 
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
-  const [filters, setFilters] = useState({
-    status: 'all',
-    priority: 'all',
-    type: 'all',
-    category: 'all'
-  });
   
   const [tickets, setTickets] = useState([]);
   const [pagination, setPagination] = useState({
@@ -50,18 +40,14 @@ const HelpTicketPage = () => {
 
   const itemsPerPage = 10;
 
-  const fetchTickets = async (page = 1, search = "", filterParams = filters) => {
+  const fetchTickets = async (page = 1, search = "") => {
     try {
       setIsLoading(true);
       
       const params = {
         page,
         per_page: itemsPerPage,
-        ...(search && { search }),
-        ...(filterParams.status !== 'all' && { status: filterParams.status }),
-        ...(filterParams.priority !== 'all' && { priority: filterParams.priority }),
-        ...(filterParams.type !== 'all' && { type: filterParams.type }),
-        ...(filterParams.category !== 'all' && { category: filterParams.category })
+        ...(search && { search })
       };
 
       const response = await ticketAPI.getTickets(params);
@@ -83,8 +69,8 @@ const HelpTicketPage = () => {
   };
 
   useEffect(() => {
-    fetchTickets(currentPage, searchTerm, filters);
-  }, [currentPage, searchTerm, filters]);
+    fetchTickets(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
 
   const handleSubmitTicket = async (formData) => {
     try {
@@ -93,7 +79,7 @@ const HelpTicketPage = () => {
       if (response.success) {
         toast.success(response.message || 'Ticket created successfully!');
         setIsFormOpen(false);
-        fetchTickets(currentPage, searchTerm, filters);
+        fetchTickets(currentPage, searchTerm);
       } else {
         toast.error(response.message || 'Failed to create ticket');
       }
@@ -118,10 +104,11 @@ const HelpTicketPage = () => {
 
   const handleUpdateStatus = async (ticketId, status) => {
     try {
-      const userId = 1; // Current user ID from auth
+      
+      const userId = user?.id; 
       await ticketService.updateStatus(ticketId, status, userId);
       
-      fetchTickets(currentPage, searchTerm, filters);
+      fetchTickets(currentPage, searchTerm);
       
       if (selectedTicket && selectedTicket.id === ticketId) {
         const updatedResponse = await ticketAPI.getTicketById(ticketId); 
@@ -137,12 +124,12 @@ const HelpTicketPage = () => {
 
   const handleAssignTicket = async (ticketId, assigneeId) => {
     try {
-      const userId = 1; // Current user ID from auth
+      const userId = user?.id; 
       await ticketService.assignTicket(ticketId, assigneeId, userId);
       
       toast.success(assigneeId ? 'Ticket assigned successfully!' : 'Ticket unassigned');
       
-      fetchTickets(currentPage, searchTerm, filters);
+      fetchTickets(currentPage, searchTerm);
       
       if (selectedTicket && selectedTicket.id === ticketId) {
         const updatedResponse = await ticketAPI.getTicketById(ticketId); 
@@ -158,7 +145,7 @@ const HelpTicketPage = () => {
   const handleAddMessage = async (ticketId, messageData) => {
     try {
       await ticketService.addMessage(ticketId, messageData);      
-      fetchTickets(currentPage, searchTerm, filters);
+      fetchTickets(currentPage, searchTerm);
       
       if (selectedTicket && selectedTicket.id === ticketId) {
         const updatedResponse = await ticketAPI.getTicketById(ticketId); 
@@ -170,25 +157,6 @@ const HelpTicketPage = () => {
       toast.error(err.message || 'Failed to send message');
       throw err;
     }
-  };
-
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      status: 'all',
-      priority: 'all',
-      type: 'all',
-      category: 'all'
-    });
-    setSearchTerm('');
-    setCurrentPage(1);
   };
 
   return (
@@ -248,7 +216,7 @@ const HelpTicketPage = () => {
               </button>
               
               <button
-                onClick={() => fetchTickets(currentPage, searchTerm, filters)}
+                onClick={() => fetchTickets(currentPage, searchTerm)}
                 disabled={isLoading}
                 className={`px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                   isDark
@@ -322,168 +290,27 @@ const HelpTicketPage = () => {
             </div>
           )}
 
+          {/* SIMPLIFIED: Only Search Bar */}
           <div className="mb-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                    isDark ? 'text-gray-400' : 'text-gray-500'
-                  }`} />
-                  <input
-                    type="text"
-                    placeholder="Search tickets by ID, subject, description or creator..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 ${
-                      isDark
-                        ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 focus:border-emerald-500'
-                        : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
-                    } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`px-4 py-3 rounded-xl flex items-center space-x-2 ${
-                    isDark
-                      ? 'bg-gray-800 hover:bg-gray-700 border border-emerald-600/50 text-gray-300'
-                      : 'bg-white hover:bg-gray-50 border border-emerald-300 text-gray-700'
-                  }`}
-                >
-                  <Filter size={16} />
-                  <span>Filters</span>
-                  {Object.values(filters).some(f => f !== 'all') && (
-                    <span className={`w-2 h-2 rounded-full ${
-                      isDark ? 'bg-emerald-500' : 'bg-emerald-600'
-                    }`}></span>
-                  )}
-                </button>
-                
-                {Object.values(filters).some(f => f !== 'all') || searchTerm && (
-                  <button
-                    onClick={clearFilters}
-                    className={`px-4 py-3 rounded-xl text-sm ${
-                      isDark
-                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                    }`}
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div>
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`} />
+              <input
+                type="text"
+                placeholder="Search tickets by ID, subject, description..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 ${
+                  isDark
+                    ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 focus:border-emerald-500'
+                    : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
+                } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
+              />
             </div>
-            
-            {showAdvancedFilters && (
-              <div className={`mt-4 p-4 rounded-xl border ${
-                isDark
-                  ? 'bg-gray-800 border-emerald-600/50'
-                  : 'bg-white border-emerald-300'
-              }`}>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Status
-                    </label>
-                    <select
-                      value={filters.status}
-                      onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        isDark
-                          ? 'bg-gray-700 border-emerald-600/50 text-white'
-                          : 'bg-white border-emerald-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All Status</option>
-                      {statusOptions.map(status => (
-                        <option key={status.value} value={status.value}>
-                          {status.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Priority
-                    </label>
-                    <select
-                      value={filters.priority}
-                      onChange={(e) => handleFilterChange('priority', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        isDark
-                          ? 'bg-gray-700 border-emerald-600/50 text-white'
-                          : 'bg-white border-emerald-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All Priorities</option>
-                      {priorityOptions.map(priority => (
-                        <option key={priority.value} value={priority.value}>
-                          {priority.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Type
-                    </label>
-                    <select
-                      value={filters.type}
-                      onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        isDark
-                          ? 'bg-gray-700 border-emerald-600/50 text-white'
-                          : 'bg-white border-emerald-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All Types</option>
-                      {typeOptions.map(type => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      isDark ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Category
-                    </label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className={`w-full px-4 py-2 rounded-lg border ${
-                        isDark
-                          ? 'bg-gray-700 border-emerald-600/50 text-white'
-                          : 'bg-white border-emerald-300 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All Categories</option>
-                      {categoryOptions.map(category => (
-                        <option key={category.value} value={category.value}>
-                          {category.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

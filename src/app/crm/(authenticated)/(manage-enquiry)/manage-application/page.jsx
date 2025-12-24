@@ -1,10 +1,13 @@
+import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import ManageApplication from '@/components/Admin/manage-application/ManageApplication'
 import React from 'react'
 
 function page() {
   return (
     <div>
+    <ProtectedRoute requiredPermission="manage_application">
       <ManageApplication/>
+      </ProtectedRoute>
     </div>
   )
 }

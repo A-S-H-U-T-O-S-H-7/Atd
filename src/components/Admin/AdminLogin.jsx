@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useThemeStore } from '@/lib/store/useThemeStore'
 import { useAdminAuthStore } from '@/lib/store/authAdminStore'
 
-
 const AdminLogin = () => {
-
   const { theme, toggleTheme } = useThemeStore();
-  const { isAuthenticated, loading, error, login } = useAdminAuthStore();
+  const { isAuthenticated, loading, error, login, permissions } = useAdminAuthStore();
   const router = useRouter()
   const [formData, setFormData] = useState({
     username: '',
@@ -17,10 +15,10 @@ const AdminLogin = () => {
   })
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && permissions) {
       router.replace("/crm/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, permissions, router]);
 
   const handleInputChange = (e) => {
     setFormData(prev => ({
@@ -39,25 +37,17 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 py-12 transition-colors duration-300 ${theme === "dark" ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
-      }`}>
+    <div className={`min-h-screen flex items-center justify-center px-4 py-12 transition-colors duration-300 ${theme === "dark" ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}>
       <button
         onClick={toggleTheme}
-        className={`fixed top-6 right-6 p-3 rounded-full transition-colors duration-200 ${theme === "dark"
-          ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700'
-          : 'bg-white hover:bg-gray-100 text-gray-600 shadow-lg border border-white/20'
-          }`}
+        className={`fixed top-6 right-6 p-3 rounded-full transition-colors duration-200 ${theme === "dark" ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700' : 'bg-white hover:bg-gray-100 text-gray-600 shadow-lg border border-white/20'}`}
       >
         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
       </button>
 
-      <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl backdrop-blur-sm transition-colors duration-300 ${theme === "dark"
-        ? 'bg-gray-800/90 border border-gray-700'
-        : 'bg-white/90 border border-white/20'
-        }`}>
+      <div className={`w-full max-w-md p-8 rounded-2xl shadow-2xl backdrop-blur-sm transition-colors duration-300 ${theme === "dark" ? 'bg-gray-800/90 border border-gray-700' : 'bg-white/90 border border-white/20'}`}>
         <div className="text-center mb-8">
-          <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${theme === "dark" ? 'bg-blue-600' : 'bg-gradient-to-r from-blue-600 to-purple-600'
-            }`}>
+          <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${theme === "dark" ? 'bg-blue-600' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}>
             <User className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -76,13 +66,11 @@ const AdminLogin = () => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? 'text-gray-300' : 'text-gray-700'
-              }`}>
+            <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? 'text-gray-300' : 'text-gray-700'}`}>
               Username
             </label>
             <div className="relative">
-              <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme === "dark" ? 'text-gray-400' : 'text-gray-400'
-                }`} />
+              <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme === "dark" ? 'text-gray-400' : 'text-gray-400'}`} />
               <input
                 type="text"
                 name="username"
@@ -90,22 +78,17 @@ const AdminLogin = () => {
                 value={formData.username}
                 onChange={handleInputChange}
                 placeholder="Enter your username"
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${theme === "dark"
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
+                className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${theme === "dark" ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
               />
             </div>
           </div>
 
           <div>
-            <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? 'text-gray-300' : 'text-gray-700'
-              }`}>
+            <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? 'text-gray-300' : 'text-gray-700'}`}>
               Password
             </label>
             <div className="relative">
-              <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme === "dark" ? 'text-gray-400' : 'text-gray-400'
-                }`} />
+              <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme === "dark" ? 'text-gray-400' : 'text-gray-400'}`} />
               <input
                 type="password"
                 name="password"
@@ -113,10 +96,7 @@ const AdminLogin = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Enter your password"
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${theme === "dark"
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
+                className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${theme === "dark" ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
               />
             </div>
           </div>

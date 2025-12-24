@@ -14,7 +14,9 @@ const AdminTable = ({
   onPageChange,
   onEdit,
   onResetPassword,
-  isLoading = false
+  isLoading,
+  onToggleStatus, 
+  onOpenPermissions, 
 }) => {
   const styles = {
     headerClass: `px-4 py-5 text-left text-sm font-bold border-r ${
@@ -79,6 +81,8 @@ const AdminTable = ({
                   isDark={isDark}
                   onEdit={onEdit}
                   onResetPassword={onResetPassword}
+                  onToggleStatus={onToggleStatus} 
+                  onOpenPermissions={onOpenPermissions} 
                 />
               ))
             )}

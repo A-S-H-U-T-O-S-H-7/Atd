@@ -221,11 +221,7 @@ function Footer() {
                   Apply Now
                 </div>
                 </Link>
-                <Link href="/admin_login">
-                <div className="px-4 text-black border-red-500 text-center mt-4 w-30 font-semibold rounded-md py-2 border-2 bg-purple-500">
-                  Admin
-                </div>
-                </Link>
+                
               </div>
             </div>
           </div>

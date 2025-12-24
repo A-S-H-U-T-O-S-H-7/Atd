@@ -6,6 +6,7 @@ import SendSMSCard from '@/components/Admin/sms/SmsCard';
 import ExportMobileCard from '@/components/Admin/sms/MobileCard';
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
+import ProtectedRoute from '@/components/Admin/ProtectedRoute';
 
 const SMSSendPage = () => {
 const { theme } = useThemeStore();
@@ -13,6 +14,7 @@ const { theme } = useThemeStore();
    const router = useRouter();
 
   return (
+    <ProtectedRoute requiredPermission="send_sms">
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-emerald-50/30'}`}>
       <div className="p-4 md:p-6">
         {/* Header */}
@@ -49,6 +51,7 @@ const { theme } = useThemeStore();
         </div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 };
 

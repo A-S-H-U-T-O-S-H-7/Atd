@@ -1,10 +1,13 @@
+import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import RbiGuidelinesPage from '@/components/Admin/rbi-guidelines/RbiGuidelinesManagement'
 import React from 'react'
 
 function page() {
   return (
     <div>
+      <ProtectedRoute requiredPermission="rbi_guidelines">
       <RbiGuidelinesPage/>
+      </ProtectedRoute>
     </div>
   )
 }

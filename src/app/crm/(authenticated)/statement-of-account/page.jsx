@@ -1,10 +1,13 @@
+import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import SoaPage from '@/components/Admin/soa/SoaPage'
 import React from 'react'
 
 function page() {
   return (
     <div>
+      <ProtectedRoute requiredPermission="statement_of_account">
       <SoaPage/>
+      </ProtectedRoute>
     </div>
   )
 }

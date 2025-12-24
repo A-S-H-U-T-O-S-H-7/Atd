@@ -1,5 +1,6 @@
+// components/admin/AdminRow.jsx
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -10,13 +11,16 @@ import {
   Edit2,
   Key,
   CheckCircle,
-  XCircle
+  XCircle,
+  Power,
+  Lock
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
-const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword }) => {
+const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatus, onOpenPermissions }) => {
   const isActive = admin.isActive === true || admin.isActive === 1;
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
   const cellBase = "px-4 py-4 border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -91,6 +95,54 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword }) => {
         onResetPassword(admin.id);
       }
     });
+  };
+
+  const handleToggleStatus = async () => {
+    if (!onToggleStatus || !admin.id) return;
+    
+    const action = isActive ? 'deactivate' : 'activate';
+    const actionText = isActive ? 'Deactivate' : 'Activate';
+    const adminName = admin.name || 'this admin';
+    
+    const result = await Swal.fire({
+      title: `${actionText} Admin`,
+      html: `Are you sure you want to ${action} <strong>${adminName}</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: isActive ? '#dc2626' : '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: `Yes, ${actionText}!`,
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#f9fafb' : '#111827',
+      customClass: {
+        popup: isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900',
+        title: 'text-lg font-semibold',
+        htmlContainer: isDark ? 'text-gray-300' : 'text-gray-700',
+        confirmButton: 'px-4 py-2 rounded-lg font-medium',
+        cancelButton: 'px-4 py-2 rounded-lg font-medium'
+      }
+    });
+    
+    if (result.isConfirmed) {
+      try {
+        setIsTogglingStatus(true);
+        await onToggleStatus(admin.id);
+        toast.success(`Admin ${actionText}d successfully!`);
+      } catch (error) {
+        toast.error(`Failed to ${actionText} admin. Please try again.`);
+        console.error('Error toggling admin status:', error);
+      } finally {
+        setIsTogglingStatus(false);
+      }
+    }
+  };
+
+  const handleOpenPermissions = () => {
+    if (onOpenPermissions) {
+      onOpenPermissions(admin.id, admin.name);
+    }
   };
 
   return (
@@ -204,6 +256,7 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword }) => {
       {/* Actions */}
       <td className={`${cellStyle} text-center`}>
         <div className="flex items-center justify-center space-x-2">
+          {/* Edit Button */}
           <button
             onClick={handleEdit}
             className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
@@ -216,6 +269,7 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword }) => {
             <Edit2 className="w-4 h-4" />
           </button>
           
+          {/* Reset Password Button */}
           <button
             onClick={handleResetPassword}
             className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
@@ -227,6 +281,42 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword }) => {
           >
             <Key className="w-4 h-4" />
           </button>
+          
+          {/* Status Toggle Button */}
+          <button
+            onClick={handleToggleStatus}
+            disabled={isTogglingStatus}
+            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+              isTogglingStatus
+                ? 'opacity-50 cursor-not-allowed'
+                : ''
+            } ${
+              isActive
+                ? isDark
+                  ? "bg-red-900/50 hover:bg-red-800 text-red-300"
+                  : "bg-red-100 hover:bg-red-200 text-red-700"
+                : isDark
+                  ? "bg-green-900/50 hover:bg-green-800 text-green-300"
+                  : "bg-green-100 hover:bg-green-200 text-green-700"
+            }`}
+            title={isActive ? "Deactivate Admin" : "Activate Admin"}
+          >
+            {isTogglingStatus ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Power className="w-4 h-4" />
+            )}
+          </button>
+          
+          {/* Permissions Button with Gradient  */}
+      <button
+        onClick={handleOpenPermissions}
+        className="px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25"
+        title="Manage Permissions"
+      >
+        <Lock className="w-4 h-4" />
+        <span className="text-xs font-medium">Permissions</span>
+      </button>
         </div>
       </td>
     </tr>
