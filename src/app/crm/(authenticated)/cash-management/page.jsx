@@ -1,4 +1,5 @@
 import CashManagementPage from '@/components/Admin/cash-cheque-management/cash-management/CashManagementpage'
+import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
 function page() {
