@@ -1,6 +1,7 @@
 "use client";
 import api from "@/utils/axiosInstance";
 
+// collectionService.js - Complete updated service
 export const collectionService = {
   // Get bank list
   getBankList: async () => {
@@ -22,60 +23,51 @@ export const collectionService = {
     }
   },
 
-  // Get collection details
-  getCollectionDetails: async (applicationId) => {
+  
+
+  // Calculate collection (PATCH) - NEW METHOD
+  calculateCollection: async (applicationId, collectionDate) => {
     try {
-      const response = await api.get(`/crm/collection/get/${applicationId}`);
+      const response = await api.patch(`/crm/collection/get/${applicationId}`, {
+        collection_date: collectionDate
+      });
       return response;
     } catch (error) {
       throw error;
     }
   },
 
-  // In your collectionService
-submitNormalCollection: async (applicationId, formData, collectionData) => {
-  try {
-    const penaltyAmount = parseFloat(formData.penaltyInput || 0);
-    const penalInterest = parseFloat(formData.penalInterest || 0);
-    const bounceCharge = parseFloat(formData.bounceCharge || 0);
-    
-    const penalInterestBase = penalInterest > 0 ? penalInterest / 1.18 : 0;
-    const penalInterestGST = penalInterest > 0 ? penalInterest - penalInterestBase : 0;
-    
-    const baseDueAmount = parseFloat(collectionData?.dw_collection || 0);
-    const normalInterest = parseFloat(formData.normalInterest || 0); 
-    const totalDueAmount = baseDueAmount + normalInterest + penaltyAmount + penalInterest + bounceCharge;
+  // Submit normal collection (PUT) - UPDATED
+  submitNormalCollection: async (applicationId, formData, collectionData) => {
+    try {
+      const payload = {
+        collection_date: formData.collectionDate,
+        principal_amount: parseFloat(collectionData?.principal_amount || 0),
+        normal_interest_before: parseFloat(formData.normalInterestBefore || 0),
+        normal_interest_after: parseFloat(formData.normalInterestAfter || 0),
+        penal_interest_before: parseFloat(formData.penalInterestBefore || 0),
+        penal_interest_after: parseFloat(formData.penalInterestAfter || 0),
+        penalty_before: parseFloat(formData.penaltyBefore || 0),
+        penalty_after: parseFloat(formData.penaltyAfter || 0),
+        bounce_charge: parseFloat(formData.bounceCharge || 0),
+        total_due_amount: parseFloat(formData.totalDueAmount || 0),
+        collection_bank_name: formData.bankId ? parseInt(formData.bankId) : null,
+        disbursed_bank: collectionData?.disburse_bank || "",
+        collection_amount: parseFloat(formData.collectionAmount),
+        collection_transaction_id: formData.transactionId || "",
+        collection_by: formData.collectionBy,
+      };
 
-    const payload = { 
-      sanction_amount: parseFloat(collectionData?.approved_amount || 0),
-      disburse_date: collectionData?.disburse_date || "",
-      transaction_date: collectionData?.transaction_date || "",
-      due_date: collectionData?.duedate || "",
-      principal_amount: parseFloat(collectionData?.approved_amount || 0),
-      process_fee: parseFloat(collectionData?.process_fee || 0),
-      interest: parseFloat(formData.normalInterest || 0),
-      due_amount: baseDueAmount,
-      collection_date: formData.collectionDate,
-      panality: penaltyAmount,
-      panality_interest: penalInterestBase,
-      penal_interest_gst: penalInterestGST,
-      bounce_charge: bounceCharge,
-      total_due_amount: totalDueAmount,
-      collection_bank_name: formData.bankId ? parseInt(formData.bankId) : null,
-      collection_bank_id: formData.bankId || null, 
-      disbursed_bank: collectionData?.bank_name || "",
-      collected_amount: parseFloat(formData.collectionAmount),
-      collected_transaction_id: formData.transactionId || "",
-      collection_by: formData.collectionBy,
-    };
+      console.log("Submitting collection payload:", payload);
+      
+      const response = await api.put(`/crm/collection/add-collection/${applicationId}`, payload);
+      return response;
+    } catch (error) {
+      console.error("Collection service error:", error);
+      throw error;
+    }
+  },
 
-    const response = await api.put(`/crm/collection/add-collection/${applicationId}`, payload);
-    return response;
-  } catch (error) {
-    console.error("Collection service error:", error);
-    throw error;
-  }
-},
 
   // Submit recollection
   submitRecollection: async (applicationId, formData) => {

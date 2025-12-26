@@ -457,7 +457,7 @@ const ApplicationRow = ({
           isDark={isDark}
         />
       ),
-      "Agreement": () => (
+      "Agreement": () => ( 
         <AgreementDocument
           fileName={application.agreementFileName}
           hasDoc={application.hasAgreement}

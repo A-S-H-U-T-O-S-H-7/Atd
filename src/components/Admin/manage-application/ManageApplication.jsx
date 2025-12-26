@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import AdvancedSearchBar from "../AdvanceSearchBar";
+import AdvancedSearchBar from "../AdvanceSearchBar"; 
 import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import ManageApplicationTable from "./ManageApplicationTable";

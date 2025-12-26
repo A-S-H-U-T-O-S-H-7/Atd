@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
-const ReCollectionForm = ({
+const ReCollectionForm = ({ 
   isOpen,
   onClose,
   application,
