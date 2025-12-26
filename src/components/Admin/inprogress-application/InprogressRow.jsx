@@ -17,6 +17,8 @@ import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
+import { useAdminAuthStore } from "@/lib/store/authAdminStore";
 
 const InProgressRow = ({
   application,
@@ -32,6 +34,8 @@ const InProgressRow = ({
   loadingFileName,
   onOpenStatusModal 
 }) => {
+  const { hasPermission } = useAdminAuthStore();
+  
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -359,19 +363,44 @@ const InProgressRow = ({
         </span>
       </td>
 
-      {/* Loan Status - UPDATED TO BE CLICKABLE */}
+      {/* Loan Status  */}
       <td className={cellStyle}>
+  <div className="relative group">
+    {!hasPermission('loan_approved') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
         <button
-          onClick={handleOpenStatusModal}
-          className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 cursor-pointer ${
+          className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 ${
             isDark
-              ? "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-800 text-cyan-900"
-              : "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-200 text-cyan-700"
+              ? "bg-gray-900/50 text-gray-300 border border-gray-700"
+              : "bg-gray-100 text-gray-600 border border-gray-200"
           }`}
         >
           {application.loanStatus}
         </button>
-      </td>
+      </div>
+    ) : (
+      <button
+        onClick={handleOpenStatusModal}
+        className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 cursor-pointer ${
+          isDark
+            ? "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-800 text-cyan-900"
+            : "bg-gradient-to-r from-cyan-100 via-cyan-200 to-cyan-300 border border-cyan-700 hover:bg-cyan-200 text-cyan-700"
+        }`}
+      >
+        {application.loanStatus}
+      </button>
+    )}
+    
+    {!hasPermission('loan_approved') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to approve loans
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Action */}
       <td className={cellStyle}>
@@ -406,17 +435,12 @@ const InProgressRow = ({
 
       {/* Replace KYC */}
       <td className={cellStyle}>
-        <button
-          onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-          }`}
-        >
-          Replace KYC
-        </button>
-      </td>
+  <ReplaceKYCButton
+    application={application}
+    isDark={isDark}
+    onReplaceKYCClick={onReplaceKYCClick}
+  />
+</td>
     </tr>
   );
 };

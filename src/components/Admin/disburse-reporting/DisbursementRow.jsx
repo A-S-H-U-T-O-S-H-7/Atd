@@ -1,5 +1,6 @@
 import React from "react";
 import { Calendar, Building, CheckCircle } from "lucide-react";
+import { useAdminAuthStore } from "@/lib/store/authAdminStore";
 
 const DisbursementRow = ({ 
   item, 
@@ -10,7 +11,9 @@ const DisbursementRow = ({
   onTransactionClick,  
   onTransactionStatusClick,
   onTransferClick
-}) => {  
+}) => {
+  
+  const { hasPermission } = useAdminAuthStore();
 
   const handleTransaction = (item) => {
     onTransactionClick(item);
@@ -39,7 +42,6 @@ const DisbursementRow = ({
     })}`;
   };
 
-  // Date formatting function: Converts YYYY-MM-DD to DD-MM-YYYY
   const formatDate = (dateString) => {
     if (!dateString || dateString === 'N/A') return 'N/A';
     
@@ -48,12 +50,10 @@ const DisbursementRow = ({
       let date;
       
       if (dateString.includes('-')) {
-        // If it's already in YYYY-MM-DD format
         if (dateString.split('-')[0].length === 4) {
           const [year, month, day] = dateString.split('-');
           date = new Date(`${year}-${month}-${day}`);
         } else {
-          // If it's in DD-MM-YYYY format, convert to YYYY-MM-DD first
           const [day, month, year] = dateString.split('-');
           date = new Date(`${year}-${month}-${day}`);
         }
@@ -64,8 +64,7 @@ const DisbursementRow = ({
           // YYYY/MM/DD
           date = new Date(dateString.replace(/\//g, '-'));
         } else if (parts[2].length === 4) {
-          // DD/MM/YYYY or MM/DD/YYYY
-          // Assuming it's DD/MM/YYYY for Indian format
+          
           const [day, month, year] = parts;
           date = new Date(`${year}-${month}-${day}`);
         }
@@ -76,7 +75,7 @@ const DisbursementRow = ({
       
       // Check if date is valid
       if (isNaN(date.getTime())) {
-        return dateString; // Return original if invalid
+        return dateString; 
       }
       
       // Format to DD-MM-YYYY
@@ -87,7 +86,7 @@ const DisbursementRow = ({
       return `${day}-${month}-${year}`;
     } catch (error) {
       console.error('Error formatting date:', error);
-      return dateString; // Return original if error
+      return dateString;
     }
   };
 
@@ -209,44 +208,89 @@ const DisbursementRow = ({
       </td>
 
       {/* Transaction */}
-      <td className={cellStyle}>
-        {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
-          <div className="flex items-center justify-center">
-            <CheckCircle className="w-6 h-6 text-green-500" />
-          </div>
-        ) : (
-          <button
-            onClick={() => handleTransaction(item)}
-            className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-              isDark
-                ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
-                : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
-            }`}
-          >
-            Transaction
-          </button>
-        )}
-      </td>
-
+<td className={cellStyle}>
+  <div className="relative group">
+    {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
+      <div className="flex items-center justify-center">
+        <CheckCircle className="w-6 h-6 text-green-500" />
+      </div>
+    ) : !hasPermission('transaction') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
+        <button
+          className={`px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 ${
+            isDark
+              ? "bg-gray-900/50 text-gray-300 border-gray-700"
+              : "bg-gray-100 text-gray-600 border-gray-200"
+          }`}
+        >
+          Transaction
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => handleTransaction(item)}
+        className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+          isDark
+            ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800"
+            : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200"
+        }`}
+      >
+        Transaction
+      </button>
+    )}
+    
+    {!hasPermission('transaction') && (!item.tranRefNo || item.tranRefNo === 'N/A') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission for transaction
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
       {/* ICICI Transaction */}
       <td className={cellStyle}>
-        {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
-          <div className="flex items-center justify-center">
-            <CheckCircle className="w-6 h-6 text-green-500" />
-          </div>
-        ) : (
-          <button
-            onClick={() => handleTransfer(item)}
-            className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
-              isDark
-                ? "bg-indigo-900/50 text-indigo-300 border-indigo-700 hover:bg-indigo-800"
-                : "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200"
-            }`}
-          >
-            Transfer
-          </button>
-        )}
-      </td>
+  <div className="relative group">
+    {item.tranRefNo && item.tranRefNo !== 'N/A' ? (
+      <div className="flex items-center justify-center">
+        <CheckCircle className="w-6 h-6 text-green-500" />
+      </div>
+    ) : !hasPermission('transaction') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
+        <button
+          className={`px-6 py-2 rounded-md text-sm font-semibold border transition-all duration-200 ${
+            isDark
+              ? "bg-gray-900/50 text-gray-300 border-gray-700"
+              : "bg-gray-100 text-gray-600 border-gray-200"
+          }`}
+        >
+          Transfer
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => handleTransfer(item)}
+        className={`px-6 cursor-pointer py-2 rounded-md text-sm font-semibold border transition-all duration-200 hover:scale-105 ${
+          isDark
+            ? "bg-indigo-900/50 text-indigo-300 border-indigo-700 hover:bg-indigo-800"
+            : "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200"
+        }`}
+      >
+        Transfer
+      </button>
+    )}
+    
+    {!hasPermission('transaction') && (!item.tranRefNo || item.tranRefNo === 'N/A') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission for transfer
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* ICICI Transaction Status */}
       <td className={cellStyle}>

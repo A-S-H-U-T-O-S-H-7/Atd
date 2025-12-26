@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Calendar, Mail, Edit, CheckCircle, X, Edit2, Loader2 } from "lucide-react";
 import Swal from 'sweetalert2';
 import { sanctionApplicationAPI } from "@/lib/services/SanctionApplicationServices";
+import { useAdminAuthStore } from '@/lib/store/authAdminStore';
 
 // Import reusable document components 
 import PhotoDocument from "../documents/PhotoDocument";
@@ -25,6 +26,7 @@ import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 
 const SanctionRow = ({
   application,
@@ -45,7 +47,7 @@ const SanctionRow = ({
   fileLoading,
   loadingFileName
 }) => {
-
+    const { hasPermission } = useAdminAuthStore();
     const [isSendingMail, setIsSendingMail] = useState(false);
 
 
@@ -512,134 +514,240 @@ const SanctionRow = ({
       </td>
 
       {/* Cheque */}
-      <td className={cellStyle}>
+<td className={cellStyle}>
+  <div className="relative group">
+    {!hasPermission('check_no') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
         <div className="flex items-center space-x-2">
           {application.chequeNo ? (
             <div className="flex items-center space-x-2">
-              <span
-                className={`px-3 py-1 rounded-md text-xs font-medium ${
-                  isDark
-                    ? "bg-green-900/50 text-green-300 border border-green-700"
-                    : "bg-green-100 text-green-800 border border-green-200"
-                }`}
-              >
+              <span className={`px-3 py-1 rounded-md text-xs font-medium ${
+                isDark ? "bg-gray-900/50 text-gray-300 border border-gray-700" : "bg-gray-100 text-gray-600 border border-gray-200"
+              }`}>
                 {application.chequeNo}
               </span>
-              <button
-                onClick={handleChequeClick}
-                className={`p-1 cursor-pointer rounded-md transition-colors duration-200 ${
-                  isDark
-                    ? "hover:bg-gray-700 text-gray-400 hover:text-emerald-400"
-                    : "hover:bg-gray-100 text-gray-500 hover:text-emerald-600"
-                }`}
-                title="Edit cheque number"
-              >
-                <Edit className="w-4 h-4" />
-              </button>
+              <div className="p-1 rounded-md">
+                <Edit className={`w-4 h-4 ${isDark ? "text-gray-600" : "text-gray-400"}`} />
+              </div>
             </div>
           ) : (
-            <button
-              onClick={handleChequeClick}
-              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
-                isDark
-                  ? "from-red-500 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
-                  : "from-red-400 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl"
-              } transform hover:scale-105`}
-            >
+            <div className={`px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r ${
+              isDark ? "from-gray-700 to-gray-800 text-gray-400" : "from-gray-300 to-gray-400 text-gray-500"
+            }`}>
               Cheque
-            </button>
+            </div>
           )}
         </div>
-      </td>
+      </div>
+    ) : (
+      <div className="flex items-center space-x-2">
+        {application.chequeNo ? (
+          <div className="flex items-center space-x-2">
+            <span className={`px-3 py-1 rounded-md text-xs font-medium ${
+              isDark
+                ? "bg-green-900/50 text-green-300 border border-green-700"
+                : "bg-green-100 text-green-800 border border-green-200"
+            }`}>
+              {application.chequeNo}
+            </span>
+            <button
+              onClick={handleChequeClick}
+              className={`p-1 cursor-pointer rounded-md transition-colors duration-200 ${
+                isDark
+                  ? "hover:bg-gray-700 text-gray-400 hover:text-emerald-400"
+                  : "hover:bg-gray-100 text-gray-500 hover:text-emerald-600"
+              }`}
+              title="Edit cheque number"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleChequeClick}
+            className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
+              isDark
+                ? "from-red-500 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
+                : "from-red-400 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl"
+            } transform hover:scale-105`}
+          >
+            Cheque
+          </button>
+        )}
+      </div>
+    )}
+    
+    {!hasPermission('check_no') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to manage cheque
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Send To Courier */}
       <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.sendToCourier === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onCourierModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.sendToCourier === "Yes" ? (
+        <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </span>
+      ) : !hasPermission('send_to_courier') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 flex items-center space-x-1">
+            <span>No</span>
+          </div>
         </div>
-      </td>
+      ) : (
+        <button
+          onClick={() => onCourierModalOpen(application)}
+          className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+        >
+          <span>No</span>
+        </button>
+      )}
+    </div>
+    
+    {!hasPermission('send_to_courier') && application.sendToCourier !== "Yes" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to send to courier
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Courier Picked */}
       <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.courierPicked === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onCourierPickedModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.courierPicked === "Yes" ? (
+        <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </span>
+      ) : !hasPermission('courier_picked') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 flex items-center space-x-1">
+            <span>No</span>
+          </div>
         </div>
-      </td>
+      ) : (
+        <button
+          onClick={() => onCourierPickedModalOpen(application)}
+          className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+        >
+          <span>No</span>
+        </button>
+      )}
+    </div>
+    
+    {!hasPermission('courier_picked') && application.courierPicked !== "Yes" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to update courier pickup
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Original Documents */}
       <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.originalDocuments === "Yes" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Yes</span>
-            </span>
-          ) : (
-            <button
-              onClick={() => onOriginalDocumentsModalOpen(application)}
-              className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            >
-              <span>No</span>
-            </button>
-          )}
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.originalDocuments === "Yes" ? (
+        <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </span>
+      ) : !hasPermission('original_document_received') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 flex items-center space-x-1">
+            <span>No</span>
+          </div>
         </div>
-      </td>
+      ) : (
+        <button
+          onClick={() => onOriginalDocumentsModalOpen(application)}
+          className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+        >
+          <span>No</span>
+        </button>
+      )}
+    </div>
+    
+    {!hasPermission('original_document_received') && application.originalDocuments !== "Yes" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to update document status
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
      {/* Disburse Behalf of E-mandate */}
 <td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    {application.receivedDisburse === "Yes" ? (
-      <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-        <CheckCircle className="w-3 h-3" />
-        <span>Yes</span>
-      </span>
-    ) : application.enachDetails?.status === "Success" ? (
-      <button
-        onClick={() => onDisburseEmandateModalOpen(application)}
-        className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-        title="Click to verify disbursement"
-      >
-        <span>Verify</span>
-      </button>
-    ) : (
-      <div className="relative group">
-        <button
-          disabled
-          className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-400 to-gray-600 text-gray-300 cursor-not-allowed flex items-center space-x-1 opacity-60"
-        >
-          <span>Pending</span>
-        </button>
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block">
-          <div className={`px-2 py-1 text-xs rounded ${
-            isDark ? "bg-gray-800 text-gray-300" : "bg-gray-900 text-white"
-          } whitespace-nowrap`}>
-            Waiting for ICICI Emandate Success
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.receivedDisburse === "Yes" ? (
+        <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+          <CheckCircle className="w-3 h-3" />
+          <span>Yes</span>
+        </span>
+      ) : application.enachDetails?.status === "Success" ? (
+        !hasPermission('disburse_behalf_of_emandate') ? (
+          <div className="opacity-50 cursor-not-allowed">
+            <div className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 flex items-center space-x-1">
+              <span>Verify</span>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => onDisburseEmandateModalOpen(application)}
+            className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+            title="Click to verify disbursement"
+          >
+            <span>Verify</span>
+          </button>
+        )
+      ) : (
+        <div className="relative group">
+          <button
+            disabled
+            className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-400 to-gray-600 text-gray-300 cursor-not-allowed flex items-center space-x-1 opacity-60"
+          >
+            <span>Pending</span>
+          </button>
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block">
+            <div className={`px-2 py-1 text-xs rounded ${
+              isDark ? "bg-gray-800 text-gray-300" : "bg-gray-900 text-white"
+            } whitespace-nowrap`}>
+              Waiting for ICICI Emandate Success
+            </div>
           </div>
         </div>
+      )}
+    </div>
+    
+    {!hasPermission('disburse_behalf_of_emandate') && 
+     application.receivedDisburse !== "Yes" && 
+     application.enachDetails?.status === "Success" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to verify disbursement
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
       </div>
     )}
   </div>
@@ -681,31 +789,53 @@ const SanctionRow = ({
         />
       </td>
 
-      {/* Sanction Mail */}
+{/* Sanction Mail */}
 <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          {application.sanctionMail === "Sent" ? (
-            <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>Sent</span>
-            </span>
+  <div className="flex items-center justify-center">
+    {application.sanctionMail === "Sent" ? (
+      <span className="px-3 py-1 rounded-2xl text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white flex items-center space-x-1">
+        <CheckCircle className="w-3 h-3" />
+        <span>Sent</span>
+      </span>
+    ) : (
+      <div className="relative group">
+        <button
+          onClick={handleSendSanctionMail}
+          disabled={isSendingMail || !hasPermission('sanction_mail')}
+          className={`px-4 py-1 rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-teal-600 flex items-center space-x-1 ${
+            isSendingMail || !hasPermission('sanction_mail')
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-pointer hover:from-cyan-600 hover:to-teal-700 hover:shadow-xl transform hover:scale-105'
+          } text-white shadow-lg`}
+          title={
+            !hasPermission('sanction_mail') 
+              ? "You don't have permission to send sanction mail" 
+              : "Send sanction letter via email"
+          }
+        >
+          {isSendingMail ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <button
-              onClick={handleSendSanctionMail}
-              disabled={isSendingMail}
-              className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed`}
-              title="Send sanction letter via email"
-            >
-              {isSendingMail ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Mail className="w-4 h-4" />
-              )}
-              <span>{isSendingMail ? 'Sending...' : 'Send Mail'}</span>
-            </button>
+            <Mail className="w-4 h-4" />
           )}
-        </div>
-      </td>
+          <span>{isSendingMail ? 'Sending...' : 'Send Mail'}</span>
+        </button>
+        
+        {/* Tooltip for no permission */}
+        {!hasPermission('sanction_mail') && (
+          <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+            <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+              <div className="flex items-center gap-1">
+                <span>No permission to send sanction mail</span>
+              </div>
+            </div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</td>
 
 
       {/* ICICI Emandate Status */}
@@ -831,36 +961,86 @@ const SanctionRow = ({
    
       {/* Loan Status */}
       <td className={cellStyle}>
+  <div className="relative group">
+    {!hasPermission('ready_to_verify') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
         <button
-          onClick={handleLoanStatusClick}
           className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
-            canOpenLoanStatusModal()
-              ? "hover:scale-105 cursor-pointer"
-              : "opacity-60 cursor-not-allowed"
-          } ${
             isDark 
-              ? "bg-orange-900/50 text-orange-300 border border-orange-700 hover:bg-orange-800" 
-              : "bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200"
+              ? "bg-gray-900/50 text-gray-300 border border-gray-700" 
+              : "bg-gray-100 text-gray-600 border border-gray-200"
           }`}
-          title={canOpenLoanStatusModal() ? "Click to update loan status" : "Complete required fields to update status"}
         >
           {application.loanStatus}
         </button>
-      </td>
+      </div>
+    ) : (
+      <button
+        onClick={handleLoanStatusClick}
+        disabled={!canOpenLoanStatusModal()}
+        className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
+          canOpenLoanStatusModal()
+            ? "hover:scale-105 cursor-pointer"
+            : "opacity-60 cursor-not-allowed"
+        } ${
+          isDark 
+            ? "bg-orange-900/50 text-orange-300 border border-orange-700 hover:bg-orange-800" 
+            : "bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200"
+        }`}
+        title={
+          !canOpenLoanStatusModal() 
+            ? "Complete required fields to update status"
+            : "Click to update loan status"
+        }
+      >
+        {application.loanStatus}
+      </button>
+    )}
+    
+    {!hasPermission('ready_to_verify') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to update loan status
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Change Status */}
-      <td className={cellStyle}>
-        <div className="flex items-center justify-center">
-          <button
-            onClick={() => onChangeStatusClick(application)}
-            className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
-            title="Change Status"
-          >
+<td className={cellStyle}>
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {!hasPermission('original_document_status_change') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 flex items-center space-x-1">
             <Edit2 className="w-4 h-4" />
             <span>Change Status</span>
-          </button>
+          </div>
         </div>
-      </td>
+      ) : (
+        <button
+          onClick={() => onChangeStatusClick(application)}
+          className="px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1"
+          title="Change Status"
+        >
+          <Edit2 className="w-4 h-4" />
+          <span>Change Status</span>
+        </button>
+      )}
+    </div>
+    
+    {!hasPermission('original_document_status_change') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to change document status
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Action */} 
       <td className={cellStyle}>
@@ -895,17 +1075,12 @@ const SanctionRow = ({
 
       {/* Replace KYC */}
       <td className={cellStyle}>
-        <button
-          onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-          }`}
-        >
-          Replace KYC
-        </button>
-      </td>
+  <ReplaceKYCButton
+    application={application}
+    isDark={isDark}
+    onReplaceKYCClick={onReplaceKYCClick}
+  />
+</td>
     </tr>
   );
 };

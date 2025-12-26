@@ -1,4 +1,6 @@
+'use client';
 import React from "react";
+import PermissionWrapper from "../PermissionWrapper";
 
 const EligibilityButton = ({ 
   enquiry, 
@@ -22,7 +24,7 @@ const EligibilityButton = ({
     );
   }
 
-  return (
+  const buttonContent = (
     <button
       onClick={handleClick}
       disabled={disabled || loading}
@@ -38,6 +40,12 @@ const EligibilityButton = ({
     >
       {loading ? "Processing..." : "Eligibility"}
     </button>
+  );
+
+  return (
+    <PermissionWrapper permissionKey="eligibility" tooltipText="No permission for eligibility check">
+      {buttonContent}
+    </PermissionWrapper>
   );
 };
 

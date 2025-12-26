@@ -1,5 +1,7 @@
+'use client';
 import React, { useState } from "react";
 import { AppraisalPDF } from "@/lib/services/AllEnquiriesServices";
+import PermissionWrapper from "../PermissionWrapper";
 
 const AppraisalReportButton = ({ 
   enquiry, 
@@ -12,7 +14,6 @@ const AppraisalReportButton = ({
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   
-  // Safe property access with fallbacks
   const finalReportStatus = enquiry?.finalReportStatus || "";
   const isFinalStage = enquiry?.isFinalStage || false;
   const finalReportFile = enquiry?.finalReportFile || "";
@@ -28,9 +29,7 @@ const AppraisalReportButton = ({
     try {
       const response = await AppraisalPDF.getAppraisalPDF(applicationId);
       
-      // Handle different response formats
       let pdfBlob;
-      
       if (response instanceof Blob) {
         pdfBlob = response;
       } else if (response?.data instanceof Blob) {
@@ -40,22 +39,15 @@ const AppraisalReportButton = ({
       } else if (response) {
         pdfBlob = new Blob([response], { type: 'application/pdf' });
       } else {
-        throw new Error("No PDF data received from server");
+        throw new Error("No PDF data received");
       }
       
-      if (pdfBlob.size === 0) {
-        throw new Error("Received empty PDF file");
-      }
+      if (pdfBlob.size === 0) throw new Error("Empty PDF file");
       
-      // Create URL for the PDF blob
       const pdfUrl = window.URL.createObjectURL(pdfBlob);
-      
-      // Open PDF in new tab
       const newTab = window.open(pdfUrl, '_blank');
       
-      // Fallback if popup blocked
       if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        // If popup blocked, create download link as fallback
         const link = document.createElement('a');
         link.href = pdfUrl;
         link.download = `Appraisal_Report_${enquiry.crnNo || applicationId}.pdf`;
@@ -64,11 +56,7 @@ const AppraisalReportButton = ({
         document.body.removeChild(link);
       }
       
-      // Cleanup URL after some time (optional)
-      setTimeout(() => {
-        window.URL.revokeObjectURL(pdfUrl);
-      }, 1000);
-      
+      setTimeout(() => window.URL.revokeObjectURL(pdfUrl), 1000);
     } catch (error) {
       alert(`Failed to generate appraisal report: ${error.message}`);
     } finally {
@@ -79,7 +67,6 @@ const AppraisalReportButton = ({
   const handleClick = () => {
     if (!disabled && !loading && !isDownloading && enquiry) {
       if (finalReportStatus === "Recommended") {
-        // Always generate and open PDF in new tab using API
         handlePdfView();
       } else if (!isFinalStage) {
         onCheckClick?.(enquiry);
@@ -87,7 +74,6 @@ const AppraisalReportButton = ({
     }
   };
 
-  // If no enquiry data, show disabled state
   if (!enquiry) {
     return (
       <span className={`px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs ${className}`}>
@@ -96,7 +82,6 @@ const AppraisalReportButton = ({
     );
   }
 
-  // If final stage and not recommended, show locked state
   if (isFinalStage && finalReportStatus !== "Recommended") {
     return (
       <span className={`px-3 py-1 bg-gray-100 text-gray-600 rounded text-xs ${className}`}>
@@ -105,9 +90,8 @@ const AppraisalReportButton = ({
     );
   }
 
-  // If recommended, show download PDF button
   if (finalReportStatus === "Recommended") {
-    return (
+    const buttonContent = (
       <button
         onClick={handleClick}
         disabled={disabled || loading || isDownloading}
@@ -115,15 +99,20 @@ const AppraisalReportButton = ({
           disabled || loading || isDownloading
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:bg-green-200"
-        } bg-gradient-to-r from-orange-100  to-orange-300 text-orange-800 border border-orange-400 ${className}`}
+        } bg-gradient-to-r from-orange-100 to-orange-300 text-orange-800 border border-orange-400 ${className}`}
       >
         {isDownloading ? "Opening..." : loading ? "Loading..." : "Recommended"}
       </button>
     );
+
+    return (
+      <PermissionWrapper permissionKey="appraisal" tooltipText="No permission for appraisal">
+        {buttonContent}
+      </PermissionWrapper>
+    );
   }
 
-  // Default check button
-  return (
+  const buttonContent = (
     <button
       onClick={handleClick}
       disabled={disabled || loading}
@@ -139,6 +128,12 @@ const AppraisalReportButton = ({
     >
       {loading ? "Processing..." : "Check"}
     </button>
+  );
+
+  return (
+    <PermissionWrapper permissionKey="appraisal" tooltipText="No permission for appraisal">
+      {buttonContent}
+    </PermissionWrapper>
   );
 };
 

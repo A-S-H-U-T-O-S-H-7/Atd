@@ -73,30 +73,7 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
     }
   };
 
-  const handleResetPassword = () => {
-    if (!onResetPassword || !admin.id) return;
-    
-    Swal.fire({
-      title: 'Reset Password',
-      html: `Send password reset link to <strong>${admin.email || admin.username}</strong>?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Send Reset Link',
-      cancelButtonText: 'Cancel',
-      background: isDark ? '#1f2937' : '#ffffff',
-      color: isDark ? '#f9fafb' : '#111827',
-      customClass: {
-        popup: isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900',
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        onResetPassword(admin.id);
-      }
-    });
-  };
-
+  
   const handleToggleStatus = async () => {
     if (!onToggleStatus || !admin.id) return;
     
@@ -269,19 +246,6 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
             <Edit2 className="w-4 h-4" />
           </button>
           
-          {/* Reset Password Button */}
-          <button
-            onClick={handleResetPassword}
-            className={`p-2 rounded-lg transition-all duration-200 hover:scale-105 ${
-              isDark
-                ? "bg-yellow-900/50 hover:bg-yellow-800 text-yellow-300"
-                : "bg-yellow-100 hover:bg-yellow-200 text-yellow-700"
-            }`}
-            title="Reset Password"
-          >
-            <Key className="w-4 h-4" />
-          </button>
-          
           {/* Status Toggle Button */}
           <button
             onClick={handleToggleStatus}
@@ -308,15 +272,15 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
             )}
           </button>
           
-          {/* Permissions Button with Gradient  */}
-      <button
-        onClick={handleOpenPermissions}
-        className="px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25"
-        title="Manage Permissions"
-      >
-        <Lock className="w-4 h-4" />
-        <span className="text-xs font-medium">Permissions</span>
-      </button>
+          {/* Permissions Button */}
+          <button
+            onClick={handleOpenPermissions}
+            className="px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25"
+            title="Manage Permissions"
+          >
+            <Lock className="w-4 h-4" />
+            <span className="text-xs font-medium">Permissions</span>
+          </button>
         </div>
       </td>
     </tr>

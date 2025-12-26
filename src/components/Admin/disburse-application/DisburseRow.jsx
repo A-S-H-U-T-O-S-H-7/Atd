@@ -1,5 +1,6 @@
 import React from "react";
 import { Calendar, Mail, Edit, CheckCircle, X, Edit2, FileText } from "lucide-react";
+import { useAdminAuthStore } from '@/lib/store/authAdminStore';
 
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
@@ -14,6 +15,7 @@ const DisburseRow = ({
   onStatusClick
 }) => {
   
+  const { hasPermission } = useAdminAuthStore();
 
   const formatCurrency = amount => {
   if (!amount && amount !== 0) return "0";
@@ -252,17 +254,42 @@ const DisburseRow = ({
 
       {/* Loan Status */}
 <td className={cellStyle}>
-  <button
-    onClick={() => onStatusClick(application)}
-    className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 hover:scale-105 cursor-pointer ${
-      isDark 
-        ? "bg-gradient-to-r from-cyan-100 to-cyan-300 text-cyan-800 border border-cyan-700 hover:bg-cyan-800" 
-        : "bg-gradient-to-r from-cyan-200 to-cyan-300 text-cyan-800 border border-cyan-400 hover:bg-cyan-200"
-    }`}
-    title="Click to update loan status"
-  >
-    Disburse
-  </button>
+  <div className="relative group">
+    {!hasPermission('disburse_status') ? (
+      <div className="opacity-50 cursor-not-allowed pointer-events-none">
+        <button
+          className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 ${
+            isDark 
+              ? "bg-gray-900/50 text-gray-300 border border-gray-700" 
+              : "bg-gray-100 text-gray-600 border border-gray-200"
+          }`}
+        >
+          Disburse
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={() => onStatusClick(application)}
+        className={`px-3 py-1 rounded-md text-sm font-semibold transition-all duration-200 hover:scale-105 cursor-pointer ${
+          isDark 
+            ? "bg-gradient-to-r from-cyan-100 to-cyan-300 text-cyan-800 border border-cyan-700 hover:bg-cyan-800" 
+            : "bg-gradient-to-r from-cyan-200 to-cyan-300 text-cyan-800 border border-cyan-400 hover:bg-cyan-200"
+        }`}
+        title="Click to update loan status"
+      >
+        Disburse
+      </button>
+    )}
+    
+    {!hasPermission('disburse_status') && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to disburse
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
+  </div>
 </td>
 
       

@@ -15,6 +15,7 @@ import UserFooter from './UserFooter';
 import VerificationComponent from './verificationComponents/VerificationComponent';
 import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
+
 import CreditScoreSection from './CreditScore';
 import LoanButtons from './LoanButtons';
 import ReferBlock from './ReferBlock';
@@ -203,9 +204,10 @@ export default function StepCompleteProfile({
                   <div className='border rounded-full overflow-hidden mt-2 border-rose-300'>
                     <CreditScoreSection 
                       className="rounded-full" 
-                      creditScore={user?.creditScore || 750} 
+                      creditScore={user?.cibil_score || 750} 
                       imageWidth={150} 
                       imageHeight={250} 
+                      cibilScoreReport={user?.cibil_score_report}
                     />
                   </div>
                 </div>

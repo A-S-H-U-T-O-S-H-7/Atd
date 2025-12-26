@@ -1,146 +1,84 @@
 import api from '@/utils/axiosInstance';
 
 export const adminService = {
-  // Get admins with pagination and search
+
+  //get admin
   getAdmins: async (params = {}) => {
-    try {
-      const response = await api.get('/crm/admin/manage', {
-        params: {
-          page: params.page || 1,
-          per_page: params.per_page || 10,
-          search: params.search || ''
-        }
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get('/crm/admin/manage', {
+      params: {
+        page: params.page || 1,
+        per_page: params.per_page || 10,
+        search: params.search || ''
+      }
+    });
+    return response;
   },
 
-  // Check username availability
+  //check user
   checkUsername: async (username) => {
-    try {
-      const response = await api.post('/crm/admin/check', { username });
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return await api.post('/crm/admin/check', { username });
   },
 
-  // Get single admin by ID for edit
+  //get admin by id
   getAdminById: async (id) => {
-    try {
-      const response = await api.get(`/crm/admin/edit/${id}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return await api.get(`/crm/admin/edit/${id}`);
   },
 
-  // Add new admin
+  //Add Admin
   addAdmin: async (adminData) => {
-    try {
-      const response = await api.post('/crm/admin/add', adminData);
-      
-      if (response.success === false) {
-        throw new Error(response.message || 'Failed to add admin');
-      }
-      
-      return response;
-    } catch (error) {
-      if (error.response) {
-        const errorData = error.response.data || {};
-        
-        const serverError = new Error(
-          errorData.message || errorData.errors || 'Failed to add admin'
-        );
-        
-        serverError.response = error.response;
-        throw serverError;
-      }
-      throw error;
-    }
+    const response = await api.post('/crm/admin/add', adminData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    if (!response.success) throw new Error(response.message || 'Failed to add admin');
+    return response;
   },
 
-  // Update admin
+  //update Admin
   updateAdmin: async (id, adminData) => {
-    try {
-      const response = await api.post(`/crm/admin/update/${id}`, adminData);
-      
-      if (response.success === false) {
-        throw new Error(response.message || 'Failed to update admin');
-      }
-      
-      return response;
-    } catch (error) {
-      if (error.response) {
-        const errorData = error.response.data || {};
-        const serverError = new Error(
-          errorData.message || errorData.errors || 'Failed to update admin'
-        );
-        serverError.response = error.response;
-        throw serverError;
-      }
-      throw error;
-    }
+    const response = await api.post(`/crm/admin/update/${id}`, adminData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    if (!response.success) throw new Error(response.message || 'Failed to update admin');
+    return response;
   },
 
-  // Toggle admin status (active/inactive)
+  //toggle status for Active and inactive admin
   toggleStatus: async (id) => {
-    try {
-      const response = await api.get(`/crm/admin/status/${id}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return await api.get(`/crm/admin/status/${id}`);
   },
 
-  // Get admin permissions
+  //get persmission of specific admin
   getPermissions: async (adminId) => {
-    try {
-      const response = await api.put(`/crm/admin/permission/${adminId}`);
-      return response;
-    } catch (error) {
-      throw error;
+    const response = await api.get(`/crm/admin/edit/${adminId}`);
+    
+    if (response.success && response.data.permissions) {
+      return { success: true, data: response.data.permissions };
     }
+    throw new Error('No permissions data found');
   },
 
-  // Update admin permissions
+  //update admin permission
   updatePermissions: async (adminId, permissions) => {
-    try {
-      const response = await api.put(`/crm/admin/permission/${adminId}`, permissions);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+    const formattedPermissions = {};
+    Object.keys(permissions).forEach(key => {
+      formattedPermissions[key] = permissions[key] === 1 ? 1 : 0;
+    });
 
-  // Delete admin (if needed)
-  deleteAdmin: async (id) => {
-    try {
-      const response = await api.delete(`/crm/admin/delete/${id}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    return await api.put(`/crm/admin/permission/${adminId}`, formattedPermissions);
   }
 };
 
-// Format admin data for UI
-export const formatAdminForUI = (admin) => {
-  return {
-    id: admin.id,
-    username: admin.username || 'N/A',
-    name: admin.name || 'N/A',
-    email: admin.email || 'N/A',
-    phone: admin.phone || 'N/A',
-    type: admin.type || 'user',
-    isActive: admin.isActive === 1,
-    selfie: admin.selfie || null,
-    selfieUrl: admin.selfie_url || null,
-    createdBy: admin.created_by || 'N/A',
-    createdAt: admin.created_at || 'N/A',
-    roleId: admin.role_id || null,
-    providerId: admin.provider_id || null
-  };
-};
+export const formatAdminForUI = (admin) => ({
+  id: admin.id,
+  username: admin.username || '',
+  name: admin.name || '',
+  email: admin.email || '',
+  phone: admin.phone || '',
+  type: admin.type || 'user',
+  isActive: admin.isActive === true || admin.isActive === 1 || admin.isActive === '1',
+  selfieUrl: admin.selfie_url || null,
+  createdBy: admin.created_by || 'System',
+  createdAt: admin.created_at || ''
+});

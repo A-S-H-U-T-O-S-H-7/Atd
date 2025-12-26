@@ -16,6 +16,7 @@ import CRNLink from "../CRNLink";
 import CallButton from "../call/CallButton";
 import toast from "react-hot-toast";
 import BlacklistButton from "../action-buttons/BlacklistButton";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 
 const FollowUpRow = ({
   application,
@@ -479,17 +480,12 @@ const FollowUpRow = ({
 
       {/* Replace KYC */}
       <td className={cellStyle}>
-        <button
-          onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-          }`}
-        >
-          Replace KYC
-        </button>
-      </td>
+  <ReplaceKYCButton
+    application={application}
+    isDark={isDark}
+    onReplaceKYCClick={onReplaceKYCClick}
+  />
+</td>
 
       {/* BlackList */}
       <td className={cellStyle}>

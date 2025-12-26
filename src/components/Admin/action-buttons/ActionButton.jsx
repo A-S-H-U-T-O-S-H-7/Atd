@@ -1,5 +1,7 @@
+'use client';
 import React from "react";
 import { CheckCircle } from "lucide-react";
+import PermissionWrapper from "../PermissionWrapper";
 
 const ActionButton = ({ 
   enquiry, 
@@ -23,11 +25,9 @@ const ActionButton = ({
     );
   }
 
-  // Check if enquiry is verified
   const isVerified = enquiry.verify === 1;
   
-
-  return (
+  const buttonContent = (
     <button
       onClick={handleClick}
       disabled={disabled || loading}
@@ -54,6 +54,12 @@ const ActionButton = ({
         "Verify"
       )}
     </button>
+  );
+
+  return (
+    <PermissionWrapper permissionKey="application" tooltipText="No permission to verify">
+      {buttonContent}
+    </PermissionWrapper>
   );
 };
 

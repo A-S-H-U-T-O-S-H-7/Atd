@@ -1,5 +1,6 @@
 import React from "react";
 import { Calendar, Mail, Edit, CheckCircle, X, Edit2 } from "lucide-react";
+import { useAdminAuthStore } from '@/lib/store/authAdminStore';
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -22,6 +23,7 @@ import ActionButton from "../action-buttons/ActionButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 
 const CreditApprovalRow = ({
   application,
@@ -44,6 +46,9 @@ const CreditApprovalRow = ({
   onDisburseApproval,
   onStatusClick
 }) => {
+
+  const { hasPermission } = useAdminAuthStore();
+  
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
   };
@@ -462,41 +467,75 @@ const getLoanStatusClassName = (application) => {
 
       {/* Cheque */}
       <td className={cellStyle}>
-        <div className="flex items-center space-x-2">
-          {application.chequeNo ? (
-            <div className="flex items-center space-x-2">
-              <span
-                className={`px-3 py-1 rounded-md text-xs font-medium ${
-                  isDark
-                    ? "bg-green-900/50 text-green-300 border border-green-700"
-                    : "bg-green-100 text-green-800 border border-green-200"
-                }`}
-              >
-                {application.chequeNo}
-              </span>
-              <button
-                onClick={handleChequeClick}
-                className={`p-1 cursor-pointer rounded-md transition-colors duration-200 ${
-                  isDark
-                    ? "hover:bg-gray-700 text-gray-400 hover:text-emerald-400"
-                    : "hover:bg-gray-100 text-gray-500 hover:text-emerald-600"
-                }`}
-                title="Edit cheque number"
-              >
-                <Edit className="w-4 h-4" />
-              </button>
+        <div className="relative group">
+          {!hasPermission('check_no') ? (
+            <div className="opacity-50 cursor-not-allowed pointer-events-none">
+              <div className="flex items-center space-x-2">
+                {application.chequeNo ? (
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-3 py-1 rounded-md text-xs font-medium ${
+                      isDark ? "bg-gray-900/50 text-gray-300 border border-gray-700" : "bg-gray-100 text-gray-600 border border-gray-200"
+                    }`}>
+                      {application.chequeNo}
+                    </span>
+                    <div className="p-1 rounded-md">
+                      <Edit className={`w-4 h-4 ${isDark ? "text-gray-600" : "text-gray-400"}`} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r ${
+                    isDark ? "from-gray-700 to-gray-800 text-gray-400" : "from-gray-300 to-gray-400 text-gray-500"
+                  }`}>
+                    Cheque
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
-            <button
-              onClick={handleChequeClick}
-              className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
-                isDark
-                  ? "from-red-500 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
-                  : "from-red-400 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl"
-              } transform hover:scale-105`}
-            >
-              Cheque
-            </button>
+            <div className="flex items-center space-x-2">
+              {application.chequeNo ? (
+                <div className="flex items-center space-x-2">
+                  <span className={`px-3 py-1 rounded-md text-xs font-medium ${
+                    isDark
+                      ? "bg-green-900/50 text-green-300 border border-green-700"
+                      : "bg-green-100 text-green-800 border border-green-200"
+                  }`}>
+                    {application.chequeNo}
+                  </span>
+                  <button
+                    onClick={handleChequeClick}
+                    className={`p-1 cursor-pointer rounded-md transition-colors duration-200 ${
+                      isDark
+                        ? "hover:bg-gray-700 text-gray-400 hover:text-emerald-400"
+                        : "hover:bg-gray-100 text-gray-500 hover:text-emerald-600"
+                    }`}
+                    title="Edit cheque number"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleChequeClick}
+                  className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
+                    isDark
+                      ? "from-red-500 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg hover:shadow-xl"
+                      : "from-red-400 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl"
+                  } transform hover:scale-105`}
+                >
+                  Cheque
+                </button>
+              )}
+            </div>
+          )}
+          
+          {!hasPermission('check_no') && (
+            <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+              <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                No permission to manage cheque
+              </div>
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            </div>
           )}
         </div>
       </td>
@@ -745,66 +784,96 @@ const getLoanStatusClassName = (application) => {
 
       {/* NEW: Bank A/c Verification */}
 <td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <button
-      onClick={handleBankVerificationClick}
-      className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-        application.bankVerification === "not_verified"
-          ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-          : "bg-green-100 text-green-600 cursor-default"
-      }`}
-      disabled={application.bankVerification === "verified"}
-    >
-      {application.bankVerification === "not_verified" ? (
-        <span>Not Verified</span>
-      ) : (
-        <>
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.bankVerification === "verified" ? (
+        <div className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 bg-green-100 text-green-600`}>
           <CheckCircle size={14} />
           <span>Verified</span>
-        </>
+        </div>
+      ) : !hasPermission('bank_verify') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 bg-gray-100 text-gray-600">
+            <span>Not Verified</span>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={handleBankVerificationClick}
+          className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer`}
+        >
+          <span>Not Verified</span>
+        </button>
       )}
-    </button>
+    </div>
+    
+    {!hasPermission('bank_verify') && application.bankVerification === "not_verified" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to verify bank account
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
   </div>
 </td>
 
-      {/* NEW: Disburse Approval */}
+{/* Disburse Approval */}
 <td className={cellStyle}>
-  <div className="flex items-center justify-center">
-    <button
-      onClick={handleDisburseApprovalClick}
-      className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 ${
-        application.disburseApproval === "not_approved"
-          ? "bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer"
-          : "bg-green-100 text-green-600 cursor-default"
-      }`}
-      disabled={application.disburseApproval === "approved"}
-    >
-      {application.disburseApproval === "not_approved" ? (
-        <span>Not Approved</span>
-      ) : (
-        <>
+  <div className="relative group">
+    <div className="flex items-center justify-center">
+      {application.disburseApproval === "approved" ? (
+        <div className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 bg-green-100 text-green-600`}>
           <CheckCircle size={14} />
           <span>Approved</span>
-        </>
+        </div>
+      ) : !hasPermission('disburse_approval_by') ? (
+        <div className="opacity-50 cursor-not-allowed">
+          <div className="px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 bg-gray-100 text-gray-600">
+            <span>Not Approved</span>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={handleDisburseApprovalClick}
+          className={`px-3 py-1 border rounded-md text-xs font-medium flex items-center justify-center space-x-1 transition-colors duration-200 bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer`}
+        >
+          <span>Not Approved</span>
+        </button>
       )}
-    </button>
+    </div>
+    
+    {!hasPermission('disburse_approval_by') && application.disburseApproval === "not_approved" && (
+      <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+        <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+          No permission to approve disbursement
+        </div>
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    )}
   </div>
 </td>
 
       {/* Loan Status */}
 <td className={cellStyle}>
   <button
-    onClick={() => {
-      // Only open modal if both bank_veried and credit_approval are 1
-      if (application.bankVerifiedRaw === 1 && application.creditApprovalRaw === 1) {
-        onStatusClick(application);
-      }
-    }}
-    className={getLoanStatusClassName(application)}
-    title={getLoanStatusTooltip(application)}
-  >
-    {application.loanStatus}
-  </button>
+  onClick={() => {
+    if (hasPermission('ready_to_disburse') && 
+        application.bankVerifiedRaw === 1 && 
+        application.creditApprovalRaw === 1) {
+      onStatusClick(application);
+    }
+  }}
+  className={getLoanStatusClassName(application)}
+  title={
+    !hasPermission('ready_to_disburse') 
+      ? "No permission to verify loan status"
+      : getLoanStatusTooltip(application)
+  }
+  disabled={!hasPermission('ready_to_disburse')}
+>
+  {application.loanStatus}
+</button>
 </td>
 
       {/* Change Status */}
@@ -854,17 +923,12 @@ const getLoanStatusClassName = (application) => {
 
       {/* Replace KYC */}
       <td className={cellStyle}>
-        <button
-          onClick={() => onReplaceKYCClick(application)}
-          className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-            isDark
-              ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-              : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-          }`}
-        >
-          Replace KYC
-        </button>
-      </td>
+  <ReplaceKYCButton
+    application={application}
+    isDark={isDark}
+    onReplaceKYCClick={onReplaceKYCClick}
+  />
+</td>
     </tr>
   );
 };

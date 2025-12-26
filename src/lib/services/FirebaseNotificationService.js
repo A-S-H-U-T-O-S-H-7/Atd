@@ -1,10 +1,10 @@
 import { db } from '@/lib/firebase';
-import { ref, set, push, get, query, orderByChild, equalTo } from 'firebase/database';
+import { ref, set, push, get, remove, onValue, off } from 'firebase/database';
 
 export class FirebaseNotificationService {
+  // Existing method - Send notification
   static async sendNotification({ userIds, subject, message, sender, adminId }) {
     try {
-      console.log(`🚀 Firebase: Sending to ${userIds.length} users`);
       
       const chunkSize = 50;
       let successCount = 0;
@@ -44,7 +44,6 @@ export class FirebaseNotificationService {
         await Promise.all(chunkPromises);
       }
       
-      console.log(`✅ Firebase: Completed - ${successCount} success, ${errorCount} failed`);
       
       return { 
         success: errorCount === 0,
@@ -62,6 +61,137 @@ export class FirebaseNotificationService {
     }
   }
 
+  // NEW: Get all notifications from all users
+  static async getAllNotifications() {
+    try {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
+      
+      if (!snapshot.exists()) {
+        return { success: true, notifications: [], total: 0 };
+      }
+      
+      const usersData = snapshot.val();
+      const allNotifications = [];
+      
+      // Loop through all users
+      Object.keys(usersData).forEach(userId => {
+        const userNotifications = usersData[userId]?.notifications;
+        
+        if (userNotifications) {
+          // Loop through user's notifications
+          Object.keys(userNotifications).forEach(notifId => {
+            const notif = userNotifications[notifId];
+            allNotifications.push({
+              ...notif,
+              user_id: userId,
+              notification_id: notifId,
+              firebase_id: notifId
+            });
+          });
+        }
+      });
+      
+      // Sort by created_at (newest first)
+      allNotifications.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      );
+      
+      
+      return {
+        success: true,
+        notifications: allNotifications,
+        total: allNotifications.length
+      };
+    } catch (error) {
+      console.error('❌ Firebase Error fetching notifications:', error);
+      return {
+        success: false,
+        notifications: [],
+        total: 0,
+        error: error.message
+      };
+    }
+  }
+
+  // NEW: Delete specific notification for a specific user
+  static async deleteNotification(userId, notificationId) {
+    try {
+      const notificationRef = ref(db, `users/${userId}/notifications/${notificationId}`);
+      await remove(notificationRef);
+      
+      
+      return {
+        success: true,
+        message: 'Notification deleted successfully'
+      };
+    } catch (error) {
+      console.error('❌ Firebase Error deleting notification:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // NEW: Real-time listener for all notifications
+  static subscribeToNotifications(callback) {
+    try {
+      const usersRef = ref(db, 'users');
+      
+      const listener = onValue(usersRef, (snapshot) => {
+        if (!snapshot.exists()) {
+          callback({ success: true, notifications: [], total: 0 });
+          return;
+        }
+        
+        const usersData = snapshot.val();
+        const allNotifications = [];
+        
+        Object.keys(usersData).forEach(userId => {
+          const userNotifications = usersData[userId]?.notifications;
+          
+          if (userNotifications) {
+            Object.keys(userNotifications).forEach(notifId => {
+              const notif = userNotifications[notifId];
+              allNotifications.push({
+                ...notif,
+                user_id: userId,
+                notification_id: notifId,
+                firebase_id: notifId
+              });
+            });
+          }
+        });
+        
+        // Sort by created_at (newest first)
+        allNotifications.sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        
+        callback({
+          success: true,
+          notifications: allNotifications,
+          total: allNotifications.length
+        });
+      });
+      
+      return listener;
+    } catch (error) {
+      console.error('❌ Firebase Error subscribing:', error);
+      return null;
+    }
+  }
+
+  // NEW: Unsubscribe from real-time updates
+  static unsubscribeFromNotifications(listener) {
+    if (listener) {
+      const usersRef = ref(db, 'users');
+      off(usersRef, 'value', listener);
+    }
+  }
+
+  // Existing methods below...
   static async getNotificationStatus(userId, sqlNotification) {
     try {
       if (!userId || !sqlNotification) return false;
