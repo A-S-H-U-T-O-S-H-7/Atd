@@ -7,90 +7,90 @@ const SoaTable = ({ details, isDark }) => {
     <div className={`rounded-2xl shadow-lg border-2 overflow-hidden ${
       isDark
         ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-        : "bg-white border-emerald-300 shadow-emerald-500/10"
+        : "bg-white border-emerald-400 shadow-emerald-500/10"
     }`}>
       
       <div className="overflow-x-auto">
-        <table className="w-full min-w-max" style={{ minWidth: "1600px" }}>
+        <table className="w-full min-w-max" style={{ minWidth: "1000px" }}>
           <thead className={`border-b-2 ${
             isDark
               ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-              : "bg-gradient-to-r from-emerald-50 to-indigo-50 border-emerald-300"
+              : "bg-gradient-to-r from-emerald-50 to-indigo-50 border-emerald-400"
           }`}>
             <tr>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
               }`} style={{ minWidth: "60px" }}>
                 SN
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "120px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "140px" }}>
                 Date
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "140px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Normal Interest Charged
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "140px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "90px" }}>
                 Penal Interest Charged
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "120px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Penality Charged
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "140px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Collection Received
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "140px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "90px" }}>
                 Principle Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "160px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Normal Interest Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "150px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Penal Interest Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "130px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Penalty Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "160px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Principle After Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "180px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "90px" }}>
                 Normal Interest After Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "170px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Penal Interest After Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "150px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Penalty After Adjusted
               </th>
-              <th className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
-                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-              }`} style={{ minWidth: "180px" }}>
+              <th className={`px-2 py-4 text-left text-xs font-bold uppercase tracking-wider border-r ${
+                isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-400/40"
+              }`} style={{ minWidth: "80px" }}>
                 Total Outstanding Amount
               </th>
             </tr>
