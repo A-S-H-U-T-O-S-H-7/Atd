@@ -283,7 +283,7 @@ const ApplicationRow = ({
       ),
       "Applied Amount": () => (
         <div className={`px-2 rounded-md ${isLoanClosed ? 
-          (isDark ? "bg-orange-900/40 text-orange-200 border border-orange-700/50" : "bg-orange-100 text-orange-800 border border-orange-300") 
+          (isDark ? "bg-blue-900/40 text-blue-200 border border-blue-700/50" : "bg-blue-100 text-blue-800 border border-blue-300") 
           : isRenewalLoan ?
           (isDark ? "bg-blue-900/30 text-blue-200 border border-blue-700/40" : "bg-blue-100 text-blue-800 border border-blue-300")
           : "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"}`}>
@@ -950,15 +950,15 @@ const ApplicationRow = ({
         application.loanStatusId === 13 ? (
           <button
             onClick={() => onNOCModalOpen && onNOCModalOpen(application)}
-            className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
+            className={`px-6 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r ${
               isDark
-                ? "from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
-                : "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                ? "from-cyan-500 to-cyan-600 hover:from-cyan-700 hover:to-cyan-800 text-white"
+                : "from-cyan-400 to-cyan-500 hover:from-cyan-600 hover:to-cyan-700 text-white"
             } shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-1`}
             title="Generate NOC"
           >
             <FileText className="w-4 h-4" />
-            <span>Generate NOC</span>
+            <span>NOC</span>
           </button>
         ) : (
           <span className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>--</span>
