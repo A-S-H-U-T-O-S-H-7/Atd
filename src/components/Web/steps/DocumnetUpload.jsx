@@ -486,9 +486,9 @@ function DocumentUpload() {
                                 if (selectedFile) {
                                     handleFileChange(selectedFile, fieldName, setFieldValue);
                                 }
+                                e.target.value = null;
                             }}
                             className="hidden"
-                            disabled={isUploading || uploadQueue.length > 0}
                         />
                         <label
                             htmlFor={fieldName}

@@ -8,7 +8,7 @@ import { FaCheckCircle, FaClock, FaDownload, FaSpinner } from 'react-icons/fa';
 import { TbReport } from 'react-icons/tb';
 
 export default function CreditScoreSection({ 
-  creditScore = 750,
+  creditScore = null, // Changed default to null
   imageWidth = 280, 
   imageHeight = 380,
   cibilScoreReport = null 
@@ -17,6 +17,9 @@ export default function CreditScoreSection({
   const [isDownloading, setIsDownloading] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
+  // Check if credit score is available
+  const hasCreditScore = creditScore !== null && creditScore !== undefined;
+  
   const handleGetReport = async () => {
     if (cibilScoreReport) {
       setIsDownloading(true);
@@ -64,31 +67,40 @@ export default function CreditScoreSection({
 
       <div className="relative z-10 flex flex-col justify-between items-center w-full gap-2">
         <div className="text-center">
-          <h3 className="text-lg md:text-xl font-bold text-pink-700 mb-2 drop-shadow-sm">
-            Your CIBIL Score
-          </h3>
+          {/* Conditionally render title based on credit score availability */}
+          {hasCreditScore ? (
+            <>
+              <h3 className="text-lg md:text-xl font-bold text-pink-700 mb-2 drop-shadow-sm">
+                Your CIBIL Score
+              </h3>
+              
+              <div className="mb-2">
+                <div className="flex items-center justify-center gap-1 mb-2">
+                  <span className="text-lg md:text-xl font-bold text-pink-600">
+                    {creditScore}
+                  </span>
+                  <span className="text-sm text-pink-500 font-medium">
+                    / 900
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <h3 className="text-lg md:text-xl font-bold text-pink-700 mb-4 drop-shadow-sm">
+              Get Your CIBIL Score
+            </h3>
+          )}
           
-          <div className="mb-2">
-            <div className="flex items-center justify-center gap-1 mb-2">
-              <span className="text-lg md:text-xl font-bold text-pink-600">
-                {creditScore}
-              </span>
-              <span className="text-sm text-pink-500 font-medium">
-                / 900
-              </span>
-            </div>
-            
-            {/* Status message with React Icons */}
-            <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-semibold  ${
-              cibilScoreReport 
-                ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 shadow-sm' 
-                : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200 text-amber-700 shadow-sm'
-            }`}>
-              {cibilScoreReport 
-                ? <><FaCheckCircle className="text-green-600" /> Your CIBIL report is ready to download</> 
-                : <><FaClock className="text-amber-600" /> Report will be available after sanction</>
-              }
-            </div>
+          {/* Status message with React Icons */}
+          <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-semibold  ${
+            cibilScoreReport 
+              ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 shadow-sm' 
+              : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200 text-amber-700 shadow-sm'
+          }`}>
+            {cibilScoreReport 
+              ? <><FaCheckCircle className="text-green-600" /> Your CIBIL report is ready to download</> 
+              : <><FaClock className="text-amber-600" /> Report will be available after sanction</>
+            }
           </div>
         </div>
 

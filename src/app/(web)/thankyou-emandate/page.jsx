@@ -25,7 +25,7 @@ export default function EMandateThankYou() {
       
       console.log('Thank You Page Params:', params);
 
-      if (params.status_code === '0300' || params.success === '1') {
+      if (params.status_code === '0300' ) {
         setStatus('success');
       } else {
         setStatus('failed');
