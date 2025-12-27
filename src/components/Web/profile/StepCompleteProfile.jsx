@@ -204,7 +204,7 @@ export default function StepCompleteProfile({
                   <div className='border rounded-full overflow-hidden mt-2 border-rose-300'>
                     <CreditScoreSection 
                       className="rounded-full" 
-                      creditScore={user?.cibil_score || 750} 
+                      creditScore={user?.cibil_score} 
                       imageWidth={150} 
                       imageHeight={250} 
                       cibilScoreReport={user?.cibil_score_report}
