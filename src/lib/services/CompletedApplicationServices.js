@@ -25,7 +25,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Update application status - FIXED ENDPOINT
+  // Update application status 
   updateApplicationStatus: async (applicationId, statusData) => {
     try {
       const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
@@ -35,7 +35,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Blacklist application - FIXED ENDPOINT
+  // Blacklist application
   blacklistApplication: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/black-list/${applicationId}`);
@@ -45,7 +45,7 @@ export const completedApplicationAPI = {
     }
   },
 
-  // Activate account - FIXED ENDPOINT
+  // Activate account 
   activateAccount: async (applicationId) => {
     try {
       const response = await api.put(`/crm/application/activate/${applicationId}`);
