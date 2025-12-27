@@ -69,8 +69,7 @@ const CallDetailsModal = ({
     }
   }, [isOpen]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setSubmitError("");
     
     if (!remarks.trim()) {
@@ -260,6 +259,7 @@ const CallDetailsModal = ({
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Customer Information */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -270,71 +270,62 @@ const CallDetailsModal = ({
                 }`}>Customer Information</h3>
               </div>
               
-              <div className="space-y-1 text-sm">
-                {[
-                  { label: "Name", value: getCustomerData('name') },
-                  { label: "Mobile", value: getCustomerData('mobile'), important: true },
-                  { label: "Alternate Mobile", value: getCustomerData('alternate_no'), important: true },
-                  { label: "CRN No", value: getCustomerData('crnno'), important: true },
-                  { label: "Loan No", value: getCustomerData('loan_no'), important: true },
-                  { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
-                  { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
-                  { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
-                  { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
-                  { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
-                  { label: "Customer A/c No", value: getCustomerData('customer_ac_no'), important: true },
-                ].map((item, index) => {
-                  const displayValue = item.value === "--" ? "" : item.value;
-                  const isImportant = item.important;
-                  const isAmount = item.amount;
-                  let formattedValue = displayValue;
-                  
-                  if (isAmount && displayValue && displayValue !== "--") {
-                    formattedValue = formatCurrency(displayValue);
-                  }
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      className="py-1 border-b border-gray-400"
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <div className="flex-shrink-0">
-                        <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                          {item.label}: 
-                        </span>
-                      </div>
-                      
-                      <div className="flex-grow text-right min-w-0">
-                        <span className={`inline-block ${
-                          isImportant 
-                            ? isDark 
-                              ? "text-white bg-blue-900/30 px-1 rounded font-bold" 
-                              : "text-blue-700 bg-blue-100 px-1 rounded font-bold"
-                            : isAmount && displayValue && !isNaN(parseFloat(displayValue))
+              <table className="w-full text-sm border-collapse">
+                <tbody>
+                  {[
+                    { label: "Name", value: getCustomerData('name') },
+                    { label: "Mobile", value: getCustomerData('mobile'), important: true },
+                    { label: "Alternate Mobile", value: getCustomerData('alternate_no'), important: true },
+                    { label: "CRN No", value: getCustomerData('crnno'), important: true },
+                    { label: "Loan No", value: getCustomerData('loan_no'), important: true },
+                    { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
+                    { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
+                    { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
+                    { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
+                    { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
+                    { label: "Customer A/c No", value: getCustomerData('customer_ac_no'), important: true },
+                  ].map((item, index) => {
+                    const displayValue = item.value === "--" ? "" : item.value;
+                    const isImportant = item.important;
+                    const isAmount = item.amount;
+                    let formattedValue = displayValue;
+                    
+                    if (isAmount && displayValue && displayValue !== "--") {
+                      formattedValue = formatCurrency(displayValue);
+                    }
+                    
+                    return (
+                      <tr key={index} className="border-b border-gray-400">
+                        <td className={`py-1 pr-2 font-medium text-left whitespace-nowrap ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                          {item.label}:
+                        </td>
+                        <td className="py-1 text-right w-full">
+                          <span className={`inline-block ${
+                            isImportant 
                               ? isDark 
-                                ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
-                                : item.label === "Overdue Amount" && parseFloat(displayValue) > 0
-                                  ? "text-red-600 bg-red-50 px-1 rounded font-bold"
-                                  : "text-green-700 bg-green-50 px-1 rounded font-bold"
-                              : isDark 
-                                ? "text-gray-100" 
-                                : "text-gray-900"
-                        }`}>
-                          {formattedValue || "--"}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                                ? "text-white bg-blue-900/30 px-1 rounded font-bold" 
+                                : "text-blue-700 bg-blue-100 px-1 rounded font-bold"
+                              : isAmount && displayValue && !isNaN(parseFloat(displayValue))
+                                ? isDark 
+                                  ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
+                                  : item.label === "Overdue Amount" && parseFloat(displayValue) > 0
+                                    ? "text-red-600 bg-red-50 px-1 rounded font-bold"
+                                    : "text-green-700 bg-green-50 px-1 rounded font-bold"
+                                : isDark 
+                                  ? "text-gray-100" 
+                                  : "text-gray-900"
+                          }`}>
+                            {formattedValue || "--"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
+            {/* Loan Details */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -345,59 +336,50 @@ const CallDetailsModal = ({
                 }`}>Loan Details</h3>
               </div>
               
-              <div className="space-y-2 text-sm">
-                {[
-                  { label: "Disburse Date", value: formatDate(getCustomerData('disburse_date')) },
-                  { label: "Sanction Amount", value: getCustomerData('sanction_amount'), amount: true },
-                  { label: "Disburse Amount", value: getCustomerData('disburse_amount'), amount: true },
-                  { label: "Ledger Amount", value: getCustomerData('ledger_amount'), amount: true },
-                  { label: "Penal Interest", value: getCustomerData('penal_interest'), amount: true },
-                  { label: "Penalty", value: getCustomerData('penality'), amount: true },
-                ].map((item, index) => {
-                  const displayValue = item.value === "--" ? "" : item.value;
-                  const isAmount = item.amount;
-                  let formattedValue = displayValue;
-                  
-                  if (isAmount && displayValue && displayValue !== "--") {
-                    formattedValue = formatCurrency(displayValue);
-                  }
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      className="border-b border-gray-400 py-[1px]"
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <div className="flex-shrink-0">
-                        <span className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                          {item.label}: 
-                        </span>
-                      </div>
-                      
-                      <div className="flex-grow text-right min-w-0">
-                        <span className={`inline-block ${
-                          isAmount && displayValue && !isNaN(parseFloat(displayValue))
-                            ? isDark 
-                              ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
-                              : "text-green-700 bg-green-50 px-1 rounded font-bold"
-                            : isDark 
-                              ? "text-gray-100" 
-                              : "text-gray-900"
-                        }`}>
-                          {formattedValue || "--"}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <table className="w-full text-sm border-collapse">
+                <tbody>
+                  {[
+                    { label: "Disburse Date", value: formatDate(getCustomerData('disburse_date')) },
+                    { label: "Sanction Amount", value: getCustomerData('sanction_amount'), amount: true },
+                    { label: "Disburse Amount", value: getCustomerData('disburse_amount'), amount: true },
+                    { label: "Ledger Amount", value: getCustomerData('ledger_amount'), amount: true },
+                    { label: "Penal Interest", value: getCustomerData('penal_interest'), amount: true },
+                    { label: "Penalty", value: getCustomerData('penality'), amount: true },
+                  ].map((item, index) => {
+                    const displayValue = item.value === "--" ? "" : item.value;
+                    const isAmount = item.amount;
+                    let formattedValue = displayValue;
+                    
+                    if (isAmount && displayValue && displayValue !== "--") {
+                      formattedValue = formatCurrency(displayValue);
+                    }
+                    
+                    return (
+                      <tr key={index} className="border-b border-gray-400">
+                        <td className={`py-1 pr-2 font-medium text-left whitespace-nowrap ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                          {item.label}:
+                        </td>
+                        <td className="py-1 text-right w-full">
+                          <span className={`inline-block ${
+                            isAmount && displayValue && !isNaN(parseFloat(displayValue))
+                              ? isDark 
+                                ? "text-green-400 bg-green-900/20 px-1 rounded font-bold"
+                                : "text-green-700 bg-green-50 px-1 rounded font-bold"
+                              : isDark 
+                                ? "text-gray-100" 
+                                : "text-gray-900"
+                          }`}>
+                            {formattedValue || "--"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
+            {/* Call Details Form */}
             <div className={`rounded-lg border p-4 ${
               isDark ? "border-gray-600 bg-gray-800" : "border-blue-200 bg-white/70"
             }`}>
@@ -408,7 +390,7 @@ const CallDetailsModal = ({
                 }`}>Call Details</h3>
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="space-y-3">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
@@ -422,7 +404,6 @@ const CallDetailsModal = ({
                       setSubmitError("");
                     }}
                     rows={3}
-                    required
                     disabled={submitting}
                     className={`w-full px-3 py-2 text-sm rounded border transition-all duration-200 ${
                       isDark
@@ -457,16 +438,17 @@ const CallDetailsModal = ({
                 </div>
 
                 <button
-                  type="submit"
+                  onClick={handleSubmit}
                   disabled={submitting || !remarks.trim()}
                   className="w-full px-4 py-3 text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium shadow hover:shadow-md"
                 >
                   {submitting ? "Submitting..." : "Submit Call"}
                 </button>
-              </form>
+              </div>
             </div>
           </div>
 
+          {/* Call History Table */}
           <div className={`rounded-lg border overflow-hidden ${
             isDark ? "border-gray-600" : "border-blue-200"
           }`}>
