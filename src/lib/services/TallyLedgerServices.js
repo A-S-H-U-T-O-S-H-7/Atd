@@ -666,7 +666,9 @@ export const createLedgerHTML = (ledgerData, applicationId, applicantData = null
           <div style="text-align: center; margin-top: 16px; padding: 12px; border-top: 1px solid #e2e8f0;">
             <p style="font-size: 11px; color: #64748b; margin-bottom: 4px;">
               <strong>Current Balance:</strong> 
-              <span style="color: #2563eb; font-size: 14px; font-weight: bold;">₹${finalBalance.toFixed(2)}</span>
+<span style="color: ${finalBalance < 0 ? '#dc2626' : '#2563eb'}; font-size: 14px; font-weight: bold;">
+  ${finalBalance < 0 ? '-₹' : '₹'}${Math.abs(finalBalance).toFixed(2)}
+</span>
             </p>
           </div>
         </div>

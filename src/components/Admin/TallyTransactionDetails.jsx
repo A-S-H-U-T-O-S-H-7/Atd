@@ -252,13 +252,13 @@ const TallyTransactionDetails = ({
                 <div>
                   <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>Balance</p>
                   <p className={`text-lg font-bold ${
-                    (summary.balance || finalBalance) < 0 
-                      ? isDark ? "text-green-400" : "text-green-600"
-                      : isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`}>
-                    ₹{Math.abs(summary.balance || finalBalance).toLocaleString()}
-                    {(summary.balance || finalBalance) < 0 ? "" : ""}
-                  </p>
+  (summary.balance || finalBalance) < 0 
+    ? isDark ? "text-red-400" : "text-red-600"  
+    : isDark ? "text-emerald-400" : "text-emerald-600"
+}`}>
+  {(summary.balance || finalBalance) < 0 ? '- ₹' : '₹'}  
+  {Math.abs(summary.balance || finalBalance).toLocaleString()}
+</p>
                 </div>
               </div>
             </div>
@@ -327,13 +327,13 @@ const TallyTransactionDetails = ({
                           {transaction.credit > 0 ? transaction.credit.toLocaleString() : "0"}
                         </td>
                         <td className={`px-3 py-2 text-xs text-right font-bold ${
-                          transaction.balance < 0 
-                            ? isDark ? "text-green-400" : "text-green-600"
-                            : isDark ? "text-emerald-400" : "text-emerald-600"
-                        }`}>
-                          {Math.abs(transaction.balance).toLocaleString()}
-                          {transaction.balance < 0 ? "" : ""}
-                        </td>
+  transaction.balance < 0 
+    ? isDark ? "text-red-400" : "text-red-600"  
+    : isDark ? "text-emerald-400" : "text-emerald-600"
+}`}>
+  {transaction.balance < 0 ? '- ₹' : '₹'}  
+  {Math.abs(transaction.balance).toLocaleString()}
+</td>
                       </tr>
                     ))
                   ) : (
