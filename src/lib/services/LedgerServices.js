@@ -102,6 +102,7 @@ export const formatLedgerDetailsForUI = (ledgerDetails) => {
     particular: transaction.particular || "Transaction",
     debit: transaction.trx_type === 'debit' ? parseFloat(transaction.trx_amount || 0) : 0,
     credit: transaction.trx_type === 'credit' ? parseFloat(transaction.trx_amount || 0) : 0,
+    diff_days: transaction.diff_days || 0,
     balance: 0
   }));
 
@@ -545,7 +546,7 @@ const createLedgerHTML = (response, applicationId, applicantData = null) => {
               ${transactionsWithBalance.length > 0 ? transactionsWithBalance.map(transaction => `
                 <tr>
                   <td>${formatDatePDF(transaction.create_date)}</td>
-                  <td>${transaction.particular}</td>
+                  <td>${transaction.particular}${transaction.diff_days > 0 && (transaction.particular === 'NORMAL INTEREST' || transaction.particular === 'PENAL INTEREST') ? ` (${transaction.diff_days} day${transaction.diff_days !== 1 ? 's' : ''})` : ''}</td>
                   <td class="debit-amount">${transaction.trx_type === 'debit' ? transaction.trx_amount.toFixed(2) : '-'}</td>
                   <td class="credit-amount">${transaction.trx_type === 'credit' ? transaction.trx_amount.toFixed(2) : '-'}</td>
                   <td class="balance-amount">${transaction.balance.toFixed(2)}</td>

@@ -301,8 +301,20 @@ useEffect(() => {
                         {transaction.date}
                       </td>
                       <td className={`px-3 py-2 text-xs font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                        {transaction.particular}
-                      </td>
+  <div className="flex items-center gap-1">
+    <span>{transaction.particular}</span>
+    {(transaction.particular === 'NORMAL INTEREST' || transaction.particular === 'PENAL INTEREST') && 
+     transaction.diff_days > 0 && (
+      <span className={`inline-flex items-center px-1.5 py-0.5 rounded font-bold text-xs ${
+        transaction.particular === 'NORMAL INTEREST'
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow"
+          : "bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow"
+      }`}>
+        {transaction.diff_days} day{transaction.diff_days !== 1 ? 's' : ''}
+      </span>
+    )}
+  </div>
+</td>
                       <td className={`px-3 py-2 text-xs text-right font-semibold ${
                         isDark ? "text-red-400" : "text-red-600"
                       }`}>
