@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Calendar, Mail, Edit, CheckCircle,RefreshCw, X, FileText, Eye } from "lucide-react";
 import { manageApplicationService } from "@/lib/services/ManageApplicationServices";
 import { useAdminAuthStore } from '@/lib/store/authAdminStore';
-
+import { useRouter } from "next/navigation";
 
 // Import reusable document components
 import PhotoDocument from "../documents/PhotoDocument";
@@ -57,6 +57,7 @@ const ApplicationRow = ({
   onNOCModalOpen,
 }) => {
 
+  const router = useRouter();
   const { hasPermission } = useAdminAuthStore();
   const [nocLoading, setNocLoading] = useState(false);
 
@@ -191,10 +192,17 @@ const ApplicationRow = ({
   );
 },
       "Loan No.": () => (
-        <span className={`text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-          {application.loanNo}
-        </span>
-      ),
+    <button
+      onClick={() => router.push(`/crm/statement-of-account?id=${application.id}`)}
+      className={`text-sm underline cursor-pointer transition-colors duration-200 ${
+        isDark
+          ? "text-emerald-400 hover:text-emerald-300"
+          : "text-emerald-600 hover:text-emerald-800"
+      }`}
+    >
+      {application.loanNo}
+    </button>
+  ),
       "CRN No.": () => (
         <CRNLink 
           crnNo={application.crnNo} 

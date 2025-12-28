@@ -10,7 +10,6 @@ import {
   Grid,
   IndianRupee
 } from "lucide-react";
-import { FaRupeeSign } from "react-icons/fa";
 import Pagination from "../Pagination";
 import ApplicationRow from "./ManageApplicationRow";
 import { motion, AnimatePresence } from "framer-motion";

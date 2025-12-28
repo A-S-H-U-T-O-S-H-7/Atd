@@ -1,4 +1,3 @@
-// services/soaService.js
 "use client";
 import api from "@/utils/axiosInstance";
 
@@ -7,7 +6,6 @@ export const soaAPI = {
   getSoaData: async (applicationId) => {
     try {
       const response = await api.get(`/crm/soa/${applicationId}`);
-      console.log("Raw API response for ID", applicationId, ":", response);
       return response;
     } catch (error) {
       console.error("API Error in soaService:", error);
@@ -18,7 +16,6 @@ export const soaAPI = {
 
 // Format SOA data for UI - Keep exact API field names
 export const formatSoaDataForUI = (apiData) => {
-  console.log("Formatting data:", apiData);
   
   if (!apiData || !apiData.data) {
     console.error("Invalid API data structure:", apiData);
@@ -27,17 +24,28 @@ export const formatSoaDataForUI = (apiData) => {
   
   const { data } = apiData;
   
-  // Helper function to format date
+  // Helper function to format date to dd-mm-yyyy
   const formatDateString = (dateString) => {
     if (!dateString) return 'N/A';
     
     try {
-      // If date has time component, extract just date part for display
-      const dateOnly = dateString.split(' ')[0];
-      const [year, month, day] = dateOnly.split('-');
-      return `${day}-${month}-${year}`;
+      const dateOnly = dateString.includes(' ') ? dateString.split(' ')[0] : dateString;
+      
+      // Check if date is ALREADY in dd-mm-yyyy format
+      if (dateOnly.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        return dateOnly; // Return as-is
+      }
+      
+      // Convert yyyy-mm-dd format to dd-mm-yyyy
+      if (dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateOnly.split('-');
+        return `${day}-${month}-${year}`;
+      }
+      
+      // If format doesn't match, return original
+      return dateString;
     } catch (error) {
-      console.error('Date formatting error:', error);
+      console.error('Date formatting error for:', dateString, error);
       return dateString || 'N/A';
     }
   };
@@ -62,7 +70,7 @@ export const formatSoaDataForUI = (apiData) => {
     crnno: data.crnno || "P17DN229",
     fullname: data.fullname || "Priyanka Gaur",
     tenure: data.tenure || 30,
-    roi: `${data.roi}%` ,
+    roi: `${data.roi}%`,
     sanction_date: formatDateString(data.sanction_date),
     sanction_amount: formatAmount(data.sanction_amount),
     process_percent: `${data.process_percent || 12}%`,
