@@ -309,16 +309,10 @@ const allMenuItems = [
     permissionKey: 'clients_history'
   },
   { 
-    name: 'Registered From App', 
-    link: '/crm/registered-from-app', 
-    icon: <FaMobileAlt />,
-    permissionKey: 'register_from_app'
-  },
-  { 
-    name: 'Download App', 
-    link: '/crm/download-app', 
-    icon: <MdDownload />,
-    permissionKey: 'download_app'
+    name: 'Statement Of Account', 
+    link: '/crm/statement-of-account', 
+    icon: <GiMoneyStack />,
+    permissionKey: 'statement_of_account'
   },
   { 
     name: 'Notifications', 
@@ -363,11 +357,18 @@ const allMenuItems = [
     permissionKey: 'create_myastro_account'
   },
   { 
-    name: 'Statement Of Account', 
-    link: '/crm/statement-of-account', 
-    icon: <GiMoneyStack />,
-    permissionKey: 'statement_of_account'
+    name: 'Registered From App', 
+    link: '/crm/registered-from-app', 
+    icon: <FaMobileAlt />,
+    permissionKey: 'register_from_app'
   },
+  { 
+    name: 'Download App', 
+    link: '/crm/download-app', 
+    icon: <MdDownload />,
+    permissionKey: 'download_app'
+  },
+  
   {
     name: 'Business Loan Enquiry',
     icon: <FaMoneyCheckAlt />,

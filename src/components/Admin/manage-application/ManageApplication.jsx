@@ -16,7 +16,6 @@ import RemarksModal from "../application-modals/RemarkModal";
 import RefundPDCModal from "../application-modals/RefundPdcModal";
 import DocumentVerificationModal from "../application-modals/DocumentVerificationStatusModal";
 import NormalCollectionForm from "./collectionForms/NormalCollectionForm";
-import RecollectionForm from "./collectionForms/RecollectionForm";
 import RenewalCollectionForm from "./collectionForms/RenewalCollectionForm";
 import CreateEmiForm from "./collectionForms/CreateEmiForm";
 import { useThemeStore } from "@/lib/store/useThemeStore";
@@ -28,6 +27,7 @@ import {
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
 import NOCModal from "../application-modals/NOCModal";
+import { collectionService } from "@/lib/services/colletionForms/CollectionService";
 
 const ManageApplication = () => {
   const { theme } = useThemeStore();
@@ -63,14 +63,20 @@ const ManageApplication = () => {
   const [documentVerificationModalOpen, setDocumentVerificationModalOpen] = useState(false);
   const [currentDocumentApplication, setCurrentDocumentApplication] = useState(null);
   const [nocModalOpen, setNocModalOpen] = useState(false);
-   const [currentNOCApplication, setCurrentNOCApplication] = useState(null);
-   const [loadingRemarks, setLoadingRemarks] = useState(false);
-    const [remarksData, setRemarksData] = useState(null);
+  const [currentNOCApplication, setCurrentNOCApplication] = useState(null);
+  const [loadingRemarks, setLoadingRemarks] = useState(false);
+  const [remarksData, setRemarksData] = useState(null);
   
   // Collection modal states
   const [collectionModalOpen, setCollectionModalOpen] = useState(false);
   const [collectionType, setCollectionType] = useState(null);
   const [currentCollectionApplication, setCurrentCollectionApplication] = useState(null);
+  
+// Renewal modal states
+const [renewalModalOpen, setRenewalModalOpen] = useState(false);
+const [currentRenewalApplication, setCurrentRenewalApplication] = useState(null);
+const [renewalData, setRenewalData] = useState(null);
+const [renewalLoading, setRenewalLoading] = useState(false);
 
   // Search and filter states
   const [searchField, setSearchField] = useState("");
@@ -262,6 +268,55 @@ const buildApiParams = () => {
       throw error;
     }
   };
+
+  // renewal handlers
+
+  const handleRenewalClick = async (application) => {
+  setCurrentRenewalApplication(application);
+  
+  // Pre-fetch renewal calculation data
+  try {
+    setRenewalLoading(true);
+    const response = await collectionService.calculateRenewalCollection(application.id, new Date().toISOString().split('T')[0]);
+    
+    if (response.success) {
+      setRenewalData(response.data);
+      setRenewalModalOpen(true);
+    } else {
+      toast.error('Failed to fetch renewal data');
+    }
+  } catch (error) {
+    console.error('Error fetching renewal data:', error);
+    toast.error('Failed to fetch renewal data');
+  } finally {
+    setRenewalLoading(false);
+  }
+};
+
+const handleRenewalModalClose = () => {
+  setRenewalModalOpen(false);
+  setCurrentRenewalApplication(null);
+  setRenewalData(null);
+};
+
+const handleRenewalSubmit = async (applicationId, formData) => {
+  try {
+    const response = await collectionService.submitRenewalCollection(applicationId, formData);
+    
+    if (response.success) {
+      toast.success('Renewal submitted successfully!');
+      await fetchApplications(); 
+      handleRenewalModalClose();
+    } else {
+      throw new Error(response.message || 'Failed to submit renewal');
+    }
+  } catch (error) {
+    console.error('Renewal submission error:', error);
+    toast.error('Failed to submit renewal');
+    throw error;
+  }
+};
+
 
   // Bank Verification Handler
   const handleBankVerification = async (application) => {
@@ -982,6 +1037,7 @@ const handleNOCGenerate = async (applicationId, nocData) => {
           onDisburseApproval={handleDisburseApproval}
           onCollectionClick={handleCollectionClick}
           onNOCModalOpen={handleNOCModalOpen}
+          onRenewalClick={handleRenewalClick}
         />
       </div>
 
@@ -1005,6 +1061,17 @@ const handleNOCGenerate = async (applicationId, nocData) => {
     loanNo={currentNOCApplication.loanNo}
     applicationId={currentNOCApplication.id}
     onSuccess={fetchApplications} 
+  />
+)}
+
+{currentRenewalApplication && (
+  <RenewalCollectionForm
+    isOpen={renewalModalOpen}
+    onClose={handleRenewalModalClose}
+    application={currentRenewalApplication}
+    onRenewalSubmit={handleRenewalSubmit}
+    initialData={renewalData}
+    isDark={isDark}
   />
 )}
 
@@ -1111,15 +1178,6 @@ const handleNOCGenerate = async (applicationId, nocData) => {
         />
       )}
 
-      {currentCollectionApplication && collectionType === 'recollection' && (
-        <RecollectionForm
-          isOpen={collectionModalOpen}
-          onClose={handleCollectionClose}
-          application={currentCollectionApplication}
-          onCollectionSubmit={handleCollectionSubmit}
-          isDark={isDark}
-        />
-      )}
 
       {currentCollectionApplication && collectionType === 'renewal' && (
         <RenewalCollectionForm

@@ -1,7 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
 
-// collectionService.js - Complete updated service
 export const collectionService = {
   // Get bank list
   getBankList: async () => {
@@ -69,10 +68,14 @@ export const collectionService = {
   },
 
 
-  // Submit recollection
-  submitRecollection: async (applicationId, formData) => {
+  
+
+
+  calculateRenewalCollection: async (applicationId, collectionDate) => {
     try {
-      const response = await api.post(`/crm/collection/recollection/${applicationId}`, formData);
+      const response = await api.patch(`/crm/collection/get/renewal/${applicationId}`, {
+        collection_date: collectionDate
+      });
       return response;
     } catch (error) {
       throw error;
@@ -82,7 +85,7 @@ export const collectionService = {
   // Submit renewal collection
   submitRenewalCollection: async (applicationId, formData) => {
     try {
-      const response = await api.post(`/crm/collection/renewal/${applicationId}`, formData);
+      const response = await api.put(`/crm/collection/renewal-collection/${applicationId}`, formData);
       return response;
     } catch (error) {
       throw error;

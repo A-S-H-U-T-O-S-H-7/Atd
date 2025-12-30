@@ -44,6 +44,7 @@ const ManageApplicationTable = ({
   onCollectionClick,
   onNOCModalOpen,
   onSuccess,
+  onRenewalClick,
 }) => {
 
   // State for collapsed sections
@@ -68,6 +69,7 @@ const ManageApplicationTable = ({
       { label: "SR. No", width: "90px" },
       { label: "Call", width: "20px" },
       { label: "Collection", width: "90px" },
+      { label: "Renewal", width: "90px" },
       { label: "Name", width: "150px" },
       { label: "Loan No.", width: "80px" },
       { label: "CRN No.", width: "60px" },
@@ -399,6 +401,7 @@ const ManageApplicationTable = ({
                   onCollectionClick={onCollectionClick}
                   onNOCModalOpen = {onNOCModalOpen}
                   onSuccess={onSuccess}
+                  onRenewalClick ={onRenewalClick}
                   />
               ))}
             </tbody>

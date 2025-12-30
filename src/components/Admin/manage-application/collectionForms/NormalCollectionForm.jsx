@@ -27,7 +27,6 @@ const NormalCollectionForm = ({
   
   const [loading, setLoading] = useState(false);
   const [collectionData, setCollectionData] = useState(null);
-  const [applicationData, setApplicationData] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [banks, setBanks] = useState([]);
@@ -40,9 +39,8 @@ const NormalCollectionForm = ({
 
   useEffect(() => {
     if (isOpen && application) {
-      fetchApplicationData();
       setFormData({
-        collectionDate: "", // Changed from current date to empty
+        collectionDate: "",
         normalInterest: "",
         penalInterest: "",
         penaltyInput: "",
@@ -54,7 +52,7 @@ const NormalCollectionForm = ({
         totalDueAmount: ""
       });
       setSelectedBankId("");
-      setCollectionData(null); // Reset collection data
+      setCollectionData(null);
     }
   }, [isOpen, application]);
 
@@ -81,41 +79,16 @@ const NormalCollectionForm = ({
     }
   };
 
-  const fetchApplicationData = async () => {
-    if (!application?.id) return;
-    
-    try {
-      setApiLoading(true);
-      setApiError(null);
-      
-      const response = await manageApplicationService.getApplications({
-        id: application.id,
-        per_page: 1
-      });
-      
-      if (response.success && response.data && response.data.length > 0) {
-        setApplicationData(response.data[0]);
-      } else {
-        throw new Error("Failed to fetch application data");
-      }
-    } catch (error) {
-      console.error("Error fetching application data:", error);
-      setApiError(error.message || "Failed to load application details");
-    } finally {
-      setApiLoading(false);
-    }
-  };
-
   const calculateCharges = async (date) => {
-    // Use the date parameter instead of formData.collectionDate
     if (!application?.id || !date) return;
 
     try {
       setApiLoading(true);
+      setApiError(null);
       
       const response = await collectionService.calculateCollection(
         application.id, 
-        date  // Use the date parameter directly
+        date
       );
       
       if (response.success && response.data) {
@@ -164,6 +137,8 @@ const NormalCollectionForm = ({
             fetchBankDetails(bank.id);
           }
         }
+      } else {
+        throw new Error(response.message || "Failed to calculate charges");
       }
     } catch (error) {
       console.error("Error calculating charges:", error);
@@ -311,10 +286,12 @@ const NormalCollectionForm = ({
     return `${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const sanctionAmount = applicationData?.approved_amount || "0";
-  const disburseDate = applicationData?.disburse_date || "";
-  const transactionDate = applicationData?.transaction_date || "";
-  const dueDate = applicationData?.duedate || "";
+  // Get data from collectionData (API response) instead of applicationData
+  const sanctionAmount = application?.approvedAmount || "0"; // Only this from application
+  const disburseDate = collectionData?.disburse_date || "";
+  const transactionDate = collectionData?.transaction_date || "";
+  const dueDate = collectionData?.due_date || "";
+  const lastCollectionDate = collectionData?.last_collection_date || "";
   const principalAmount = collectionData?.principal_amount || "0";
   const amtDisbursedFrom = collectionData?.disburse_bank || "";
 
@@ -374,13 +351,13 @@ const NormalCollectionForm = ({
               Application Details
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div>
                 <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Sanction Amount
                 </div>
                 <div className={`text-lg font-bold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                  {formatCurrency(sanctionAmount)}
+                  ₹{formatCurrency(sanctionAmount)}
                 </div>
               </div>
 
@@ -388,7 +365,7 @@ const NormalCollectionForm = ({
                 <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Disburse Date
                 </div>
-                <div className={` font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
                   <Calendar className="w-4 h-4 mr-2" />
                   {formatDate(disburseDate)}
                 </div>
@@ -408,9 +385,19 @@ const NormalCollectionForm = ({
                 <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Due Date
                 </div>
-                <div className={` font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
                   <Calendar className="w-4 h-4 mr-2" />
                   {formatDate(dueDate)}
+                </div>
+              </div>
+
+              <div>
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Last Collection
+                </div>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {formatDate(lastCollectionDate)}
                 </div>
               </div>
             </div>

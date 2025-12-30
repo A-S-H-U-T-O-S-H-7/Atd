@@ -55,6 +55,7 @@ const ApplicationRow = ({
   onDisburseApproval,
   onCollectionClick,
   onNOCModalOpen,
+  onRenewalClick,
 }) => {
 
   const router = useRouter();
@@ -141,7 +142,7 @@ const ApplicationRow = ({
       </div>
     );
   }
-
+  
   return (
     <div className="flex items-center justify-center">
       {application.loanStatusId === 11 && (
@@ -153,24 +154,8 @@ const ApplicationRow = ({
           Collection
         </button>
       )}
-      {application.loanStatusId === 12 && (
-        <button
-          onClick={() => onCollectionClick && onCollectionClick(application, 'recollection')}
-          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-          title="Re-collection"
-        >
-          Re-collection
-        </button>
-      )}
-      {application.loanStatusId === 18 && (
-        <button
-          onClick={() => onCollectionClick && onCollectionClick(application, 'renewal')}
-          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
-          title="Renewal"
-        >
-          Renewal
-        </button>
-      )}
+      
+      
       {application.loanStatusId === 19 && (
         <button
           onClick={() => onCollectionClick && onCollectionClick(application, 'emi')}
@@ -188,6 +173,40 @@ const ApplicationRow = ({
       {![11, 12, 13, 18, 19].includes(application.loanStatusId) && (
         <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>-</span>
       )}
+    </div>
+  );
+},
+
+"Renewal": () => {
+  if (!hasPermission('collection')) {
+    return (
+      <div className="flex items-center justify-center">
+        <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          --
+        </span>
+      </div>
+    );
+  }
+
+  const showRenewalButton = [18, 13, 11, 12, 19].includes(application.loanStatusId); 
+
+  if (!showRenewalButton) {
+    return (
+      <div className="flex items-center justify-center">
+        <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>-</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center">
+      <button
+        onClick={() => onRenewalClick && onRenewalClick(application)}
+        className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+        title="Renew Loan"
+      >
+        Renewal
+      </button>
     </div>
   );
 },

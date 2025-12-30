@@ -1,58 +1,146 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Calendar, IndianRupee, BanknoteIcon, ArrowRight } from "lucide-react";
+import { collectionService } from "@/lib/services/colletionForms/CollectionService";
+import toast from "react-hot-toast";
 
-const CollectionRenewalForm = ({
+const RenewalCollectionForm = ({
   isOpen,
   onClose,
   application,
   onRenewalSubmit,
+  initialData = null,
   isDark
 }) => {
   const [formData, setFormData] = useState({
     collectionDate: "",
-    interest: "",
-    penaltyChecked: false,
-    penaltyAmount: "",
-    renewalCharge: "",
-    totalDueAmount: "",
+    principalAmount: "0",
+    normalInterestBefore: "0",
+    normalInterestAfter: "0",
+    penalInterestBefore: "0",
+    penalInterestAfter: "0",
+    penaltyBefore: "0",
+    penaltyAfter: "0",
+    bounceCharge: "0", 
+    renewalCharge: "0", 
+    renewalGst: "0",
+    totalDueAmount: "0",
     collectionBy: "",
-    bankName: "",
-    amtDisbursedFrom: "",
-    transactionId: "",
-    collectionAmount: ""
+    collectionBankName: "", 
+    disbursedBank: "",
+    collectionAmount: "0",
+    collectionTransactionId: "" 
   });
-  const [loading, setLoading] = useState(false);
 
-  const bankOptions = [
-    "Yes Bank",
-    "ICICI Bank-A/c-5399",
-    "ICICI Bank-A/C-1738",
-    "ICICI Bank-A/c-5395",
-    "ICICI Bank-A/c-5403",
-    "ICICI Bank-A/c-5402",
-    "ICICI Bank-A/c-1661",
-    "CASH FEE",
-    "ICICI Bank-A/c-5400"
-  ];
+  const [bankList, setBankList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [selectedBankDetails, setSelectedBankDetails] = useState(null);
+  const [selectedBankId, setSelectedBankId] = useState("");
 
   useEffect(() => {
     if (isOpen && application) {
+      // Initialize form with default values
       setFormData({
         collectionDate: "",
-        interest: "",
-        penaltyChecked: false,
-        penaltyAmount: "",
-        renewalCharge: "",
-        totalDueAmount: "",
+        principalAmount: "0",
+        normalInterestBefore: "0",
+        normalInterestAfter: "0",
+        penalInterestBefore: "0",
+        penalInterestAfter: "0",
+        penaltyBefore: "0",
+        penaltyAfter: "0",
+        bounceCharge: "0",
+        renewalCharge: "0",
+        renewalGst: "0",
+        totalDueAmount: "0",
         collectionBy: "",
-        bankName: "",
-        amtDisbursedFrom: "",
-        transactionId: "",
-        collectionAmount: ""
+        collectionBankName: "",
+        disbursedBank: initialData?.disburse_bank || "",
+        collectionAmount: "0",
+        collectionTransactionId: ""
       });
+
+      fetchBankList();
+      
+      // If initialData is already provided, populate the form
+      if (initialData) {
+        populateFormWithInitialData(initialData);
+      }
     }
-  }, [isOpen, application]);
+  }, [isOpen, application, initialData]);
+
+  const fetchBankList = async () => {
+    try {
+      const response = await collectionService.getBankList();
+      console.log("Bank list response:", response);
+      
+      if (response.success) {
+        const banks = response.data || response.bank || response.banks || response;
+        setBankList(Array.isArray(banks) ? banks : []);
+      } else {
+        setBankList(Array.isArray(response) ? response : []);
+      }
+    } catch (error) {
+      console.error('Error fetching bank list:', error);
+      toast.error('Failed to load bank list');
+      setBankList([]);
+    }
+  };
+
+  const fetchBankDetails = async (bankId) => {
+    try {
+      const response = await collectionService.getBankDetails(bankId);
+      if (response.success) {
+        setSelectedBankDetails(response.bank || response.data);
+      } else {
+        setSelectedBankDetails(null);
+      }
+    } catch (error) {
+      console.error('Error fetching bank details:', error);
+      setSelectedBankDetails(null);
+    }
+  };
+
+  const populateFormWithInitialData = (data) => {
+    const formattedData = {
+      principalAmount: data.principal_amount || "0",
+      normalInterestBefore: data.normal_interest_before || "0",
+      normalInterestAfter: data.normal_interest_after || "0",
+      penalInterestBefore: data.penal_interest_before || "0",
+      penalInterestAfter: data.penal_interest_after || "0",
+      penaltyBefore: data.penalty_before || "0",
+      penaltyAfter: data.penalty_after || "0",
+      bounceCharge: data.bounce_amount || "0",
+      renewalCharge: data.renewal || "0",
+      renewalGst: data.renewal_gst || "0",
+      disbursedBank: data.disburse_bank || ""
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      ...formattedData
+    }));
+
+    calculateTotalDueAmount(formattedData);
+  };
+
+  const calculateTotalDueAmount = (data) => {
+    const principal = parseFloat(data.principalAmount || 0);
+    const normalInterest = parseFloat(data.normalInterestAfter || 0);
+    const penalInterest = parseFloat(data.penalInterestAfter || 0);
+    const penalty = parseFloat(data.penaltyAfter || 0);
+    const bounceCharge = parseFloat(data.bounceCharge || 0);
+    const renewalCharge = parseFloat(data.renewalCharge || 0);
+    const renewalGst = parseFloat(data.renewalGst || 0);
+
+    const totalDue = principal + normalInterest + penalInterest + penalty + bounceCharge + renewalCharge + renewalGst;
+    
+    setFormData(prev => ({
+      ...prev,
+      totalDueAmount: totalDue.toFixed(2)
+    }));
+  };
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -60,67 +148,174 @@ const CollectionRenewalForm = ({
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = async (e) => {
+    const { name, value } = e.target;
     
-    if (name === "penaltyChecked") {
+    if (name === "collectionDate") {
       setFormData(prev => ({
         ...prev,
-        penaltyChecked: checked,
-        penaltyAmount: checked ? "500" : ""
+        collectionDate: value
       }));
+      
+      // Auto-calculate when date is selected
+      if (value && application?.id) {
+        try {
+          setCalculating(true);
+          const response = await collectionService.calculateRenewalCollection(
+            application.id,
+            value
+          );
+
+          if (response.success) {
+            populateFormWithInitialData(response.data);
+            toast.success('Renewal calculated successfully');
+          } else {
+            toast.error('Failed to calculate renewal');
+          }
+        } catch (error) {
+          console.error('Calculation error:', error);
+          toast.error('Failed to calculate renewal');
+        } finally {
+          setCalculating(false);
+        }
+      }
     } else if (name === "collectionBy") {
       setFormData(prev => ({
         ...prev,
         collectionBy: value,
-        bankName: value === "by cash" ? "" : prev.bankName
+        collectionBankName: value === "by cash" ? "" : prev.collectionBankName
       }));
-    } else {
+      if (value === "by cash") {
+        setSelectedBankId("");
+        setSelectedBankDetails(null);
+      }
+    } else if (name === "collectionBankName") {
+      const bankId = value;
+      setSelectedBankId(bankId);
+      
+      const selectedBank = bankList.find(bank => bank.id && bank.id.toString() === bankId);
+      if (selectedBank) {
+        setFormData(prev => ({
+          ...prev,
+          collectionBankName: selectedBank.bank_name || selectedBank.name || ""
+        }));
+        fetchBankDetails(selectedBank.id);
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          collectionBankName: ""
+        }));
+        setSelectedBankDetails(null);
+      }
+    } else if (name === "bounceCharge" || name === "renewalCharge" || name === "renewalGst" || name === "collectionAmount") {
       setFormData(prev => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value
+        [name]: value
+      }));
+      
+      // Recalculate total if these fields change
+      if (name !== "collectionAmount") {
+        setTimeout(() => recalculateTotal(), 10);
+      }
+    } else if (name === "collectionTransactionId") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
       }));
     }
   };
 
+  const recalculateTotal = () => {
+    const principal = parseFloat(formData.principalAmount || 0);
+    const normalInterest = parseFloat(formData.normalInterestAfter || 0);
+    const penalInterest = parseFloat(formData.penalInterestAfter || 0);
+    const penalty = parseFloat(formData.penaltyAfter || 0);
+    const bounceCharge = parseFloat(formData.bounceCharge || 0);
+    const renewalCharge = parseFloat(formData.renewalCharge || 0);
+    const renewalGst = parseFloat(formData.renewalGst || 0);
+
+    const totalDue = principal + normalInterest + penalInterest + penalty + bounceCharge + renewalCharge + renewalGst;
+    
+    setFormData(prev => ({
+      ...prev,
+      totalDueAmount: totalDue.toFixed(2)
+    }));
+  };
+
   const handleSubmit = async () => {
     // Validation
-    if (!formData.collectionDate || !formData.interest || !formData.renewalCharge || 
-        !formData.totalDueAmount || !formData.collectionBy || !formData.collectionAmount) {
-      alert('Please fill all required fields.');
+    const requiredFields = ['collectionDate', 'collectionAmount', 'collectionBy', 'totalDueAmount'];
+    const missingFields = requiredFields.filter(field => !formData[field] && field !== 'collectionAmount');
+    
+    if (missingFields.length > 0) {
+      toast.error(`Please fill all required fields: ${missingFields.join(', ')}`);
       return;
     }
 
-    if (formData.collectionBy === "by bank" && !formData.bankName) {
-      alert('Please select a bank.');
+    if (formData.collectionBy === "by bank" && !selectedBankId) {
+      toast.error('Please select a bank');
+      return;
+    }
+
+    const collectionAmount = parseFloat(formData.collectionAmount || 0);
+    const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
+    
+    if (collectionAmount < totalDueAmount) {
+      toast.error('Collection amount cannot be less than total due amount');
       return;
     }
 
     try {
       setLoading(true);
       
-      await onRenewalSubmit(application.id, formData);
+      // Prepare payload matching the API structure
+      const submissionData = {
+        collection_date: formData.collectionDate,
+        principal_amount: parseFloat(formData.principalAmount || 0),
+        normal_interest_before: parseFloat(formData.normalInterestBefore || 0),
+        normal_interest_after: parseFloat(formData.normalInterestAfter || 0),
+        penal_interest_before: parseFloat(formData.penalInterestBefore || 0),
+        penal_interest_after: parseFloat(formData.penalInterestAfter || 0),
+        penalty_before: parseFloat(formData.penaltyBefore || 0),
+        penalty_after: parseFloat(formData.penaltyAfter || 0),
+        bounce_charge: parseFloat(formData.bounceCharge || 0),
+        renewal_charge: parseFloat(formData.renewalCharge || 0),
+        renewal_gst: parseFloat(formData.renewalGst || 0),
+        total_due_amount: totalDueAmount,
+        collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
+        disbursed_bank: formData.disbursedBank || "",
+        collection_amount: collectionAmount,
+        collection_transaction_id: formData.collectionTransactionId || "",
+        collection_by: formData.collectionBy
+      };
+
+      console.log('Submitting renewal data:', submissionData);
       
-      alert('Renewal processed successfully!');
-      onClose();
+      await onRenewalSubmit(application.id, submissionData);
+      
     } catch (error) {
       console.error("Renewal error:", error);
-      alert('Failed to process renewal. Please try again.');
+      toast.error('Failed to submit renewal');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  const formatCurrency = (amount) => {
+    const num = parseFloat(amount || 0);
+    return `${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
-  const sanctionAmount = application?.sanctionAmount || "14000";
-  const processFee = application?.processFee || "1982";
-  const processFeeDetail = "(Principal: 1680 + GST: 302)";
-  const disburseDate = application?.disburseDate || "";
-  const transactionDate = application?.transactionDate || "";
-  const dueDate = application?.dueDate || "";
-  const interest = application?.interest || "";
-  const amtDisbursedFrom = application?.amtDisbursedFrom || "";
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div 
@@ -137,11 +332,18 @@ const CollectionRenewalForm = ({
         <div className={`px-6 py-4 border-b flex items-center justify-between sticky top-0 z-10 ${
           isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
         }`}>
-          <h2 className={`text-xl font-bold ${
-            isDark ? "text-emerald-400" : "text-emerald-600"
-          }`}>
-            Renewal of {application?.name || "Faizan Adeeb"}
-          </h2>
+          <div>
+            <h2 className={`text-xl font-bold ${
+              isDark ? "text-purple-400" : "text-purple-600"
+            }`}>
+              Loan Renewal - {application?.name || "Customer"}
+            </h2>
+            <p className={`text-sm mt-1 ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}>
+              Loan No: {application?.loanNo} | CRN: {application?.crnNo}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className={`p-2 rounded-lg transition-colors ${
@@ -156,370 +358,407 @@ const CollectionRenewalForm = ({
 
         {/* Form Content */}
         <div className="p-6">
-          {/* Non-editable Application Details */}
-          <div className={`mb-6 p-5 rounded-xl border ${
+          {/* Loan Information Section */}
+          <div className={`mb-6 p-4 rounded-xl border ${
             isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
-            <h3 className={`text-lg font-semibold mb-4 ${
-              isDark ? "text-gray-300" : "text-gray-700"
+            <h3 className={`text-lg font-semibold mb-3 flex items-center ${
+              isDark ? "text-purple-300" : "text-purple-700"
             }`}>
-              Application Details
+              Loan Information
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Sanction Amount
-                </label>
-                <input
-                  type="text"
-                  value={sanctionAmount}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Process Fee
-                </label>
-                <div className="space-y-1">
-                  <input
-                    type="text"
-                    value={processFee}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                    }`}
-                  />
-                  <p className={`text-xs px-1 ${
-                    isDark ? "text-gray-400" : "text-gray-500"
-                  }`}>
-                    {processFeeDetail}
-                  </p>
+                </div>
+                <div className={`text-lg font-bold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                  ₹{formatCurrency(application?.approvedAmount || 0)}
                 </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Disburse Date
-                </label>
-                <input
-                  type="date"
-                  value={disburseDate}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
+                </div>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {initialData?.disburse_date ? formatDate(initialData.disburse_date) : "N/A"}
+                </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Transaction Date
-                </label>
-                <input
-                  type="date"
-                  value={transactionDate}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                />
+                </div>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {initialData?.transaction_date ? formatDate(initialData.transaction_date) : "N/A"}
+                </div>
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Due Date
-                </label>
+                </div>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {initialData?.due_date ? formatDate(initialData.due_date) : "N/A"}
+                </div>  
+                
+              </div>
+
+              <div >
+                <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Last Collection Date
+                </div>
+                <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {initialData?.last_collection_date ? formatDate(initialData.last_collection_date) : "N/A"}
+                </div>
+              </div>
+
+              
+            </div>
+          </div>
+
+          {/* Collection Date */}
+          <div className="mb-6">
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${
+                isDark ? "text-gray-300" : "text-gray-700"
+              }`}>
+                Collection Date <span className="text-red-500">*</span>
+                {calculating && <span className="ml-2 text-yellow-500 text-sm">(Calculating...)</span>}
+              </label>
+              <div className="relative">
+                <Calendar className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                  isDark ? "text-gray-400" : "text-gray-500"
+                }`} />
                 <input
                   type="date"
-                  value={dueDate}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                  name="collectionDate"
+                  value={formData.collectionDate}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
                     isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                   }`}
+                  required
                 />
               </div>
             </div>
           </div>
 
-          {/* Renew Details */}
+          {/* Renewal Calculation Section */}
           <div className={`mb-6 p-5 rounded-xl border ${
             isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
           }`}>
-            <h3 className={`text-lg font-semibold mb-4 ${
-              isDark ? "text-gray-300" : "text-gray-700"
+            <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+              isDark ? "text-purple-300" : "text-purple-700"
             }`}>
-              Renew Details
+              <IndianRupee className="w-5 h-5" />
+              Renewal Calculation
             </h3>
             
-            <div className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Collection date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="collectionDate"
-                    value={formData.collectionDate}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                    required
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Principal Amount */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Principal Amount
+                </label>
+                <input
+                  type="number"
+                  name="principalAmount"
+                  value={formData.principalAmount}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                    isDark 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                  }`}
+                  step="0.01"
+                />
+              </div>
 
+              {/* Normal Interest */}
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
-                    Interest
+                    Normal Interest Before
                   </label>
                   <input
-                    type="text"
-                    value={interest}
+                    type="number"
+                    name="normalInterestBefore"
+                    value={formData.normalInterestBefore}
                     readOnly
                     className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                       isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
                     }`}
+                    step="0.01"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
-                    Penality
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      name="penaltyAmount"
-                      value={formData.penaltyAmount}
-                      readOnly
-                      placeholder="Penalty amount"
-                      className={`flex-1 px-3 py-2.5 rounded-lg border text-sm ${
-                        isDark 
-                          ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                          : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                      }`}
-                    />
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        name="penaltyChecked"
-                        checked={formData.penaltyChecked}
-                        onChange={handleChange}
-                        className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                      />
-                      <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                        Apply Penalty
-                      </span>
-                    </div>
-                  </div>
-                  <p className={`text-xs px-1 mt-1 ${
-                    isDark ? "text-gray-400" : "text-gray-500"
-                  }`}>
-                    (Principal: + GST: )
-                  </p>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Penal Interest
+                    Normal Interest After
                   </label>
                   <input
-                    type="text"
+                    type="number"
+                    name="normalInterestAfter"
+                    value={formData.normalInterestAfter}
                     readOnly
                     className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                       isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
                     }`}
+                    step="0.01"
                   />
-                  <p className={`text-xs px-1 mt-1 ${
-                    isDark ? "text-gray-400" : "text-gray-500"
-                  }`}>
-                    (Penal Int: + GST: )
-                  </p>
+                </div>
+                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                    Before: ₹{formatCurrency(formData.normalInterestBefore)}
+                  </span>
+                  <span className={isDark ? "text-blue-300" : "text-blue-600"}>
+                    <ArrowRight className="w-3 h-3 inline mr-1" />
+                    After: ₹{formatCurrency(formData.normalInterestAfter)}
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Penal Interest */}
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
-                    Renewal Charge <span className="text-red-500">*</span>
+                    Penal Interest Before
+                  </label>
+                  <input
+                    type="number"
+                    name="penalInterestBefore"
+                    value={formData.penalInterestBefore}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                    }`}
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Penal Interest After
+                  </label>
+                  <input
+                    type="number"
+                    name="penalInterestAfter"
+                    value={formData.penalInterestAfter}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                    }`}
+                    step="0.01"
+                  />
+                </div>
+                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                    Before: ₹{formatCurrency(formData.penalInterestBefore)}
+                  </span>
+                  <span className={isDark ? "text-amber-300" : "text-amber-600"}>
+                    <ArrowRight className="w-3 h-3 inline mr-1" />
+                    After: ₹{formatCurrency(formData.penalInterestAfter)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Penalty */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Penalty Before
+                  </label>
+                  <input
+                    type="number"
+                    name="penaltyBefore"
+                    value={formData.penaltyBefore}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                    }`}
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Penalty After
+                  </label>
+                  <input
+                    type="number"
+                    name="penaltyAfter"
+                    value={formData.penaltyAfter}
+                    readOnly
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                    }`}
+                    step="0.01"
+                  />
+                </div>
+                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                    Before: ₹{formatCurrency(formData.penaltyBefore)}
+                  </span>
+                  <span className={isDark ? "text-red-300" : "text-red-600"}>
+                    <ArrowRight className="w-3 h-3 inline mr-1" />
+                    After: ₹{formatCurrency(formData.penaltyAfter)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Renewal Charges */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Renewal Charge
                   </label>
                   <input
                     type="number"
                     name="renewalCharge"
                     value={formData.renewalCharge}
                     onChange={handleChange}
-                    placeholder="Enter renewal charge"
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                    required
-                    min="0"
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Total Due Amount <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="totalDueAmount"
-                    value={formData.totalDueAmount}
-                    onChange={handleChange}
-                    placeholder="Enter total due amount"
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                    required
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Collection By <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="collectionBy"
-                    value={formData.collectionBy}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                       isDark 
                         ? "bg-gray-600 border-gray-500 text-white" 
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
-                    required
-                  >
-                    <option value="">--Select--</option>
-                    <option value="by bank">By Bank</option>
-                    <option value="by cash">By Cash</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Bank Name
-                  </label>
-                  <select
-                    name="bankName"
-                    value={formData.bankName}
-                    onChange={handleChange}
-                    disabled={formData.collectionBy === "by cash"}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-                      formData.collectionBy === "by cash"
-                        ? isDark
-                          ? "bg-gray-600/50 border-gray-600 text-gray-400 cursor-not-allowed"
-                          : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                        : isDark 
-                          ? "bg-gray-600 border-gray-500 text-white" 
-                          : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                  >
-                    <option value="">--Select Bank--</option>
-                    {bankOptions.map((bank, index) => (
-                      <option key={index} value={bank}>
-                        {bank}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Amt Disbursed From
-                  </label>
-                  <input
-                    type="text"
-                    value={amtDisbursedFrom}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-300 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                    }`}
+                    step="0.01"
+                    min="0"
                   />
                 </div>
-
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
                   }`}>
-                    Transaction Id
+                    Renewal GST
                   </label>
                   <input
-                    type="text"
-                    name="transactionId"
-                    value={formData.transactionId}
+                    type="number"
+                    name="renewalGst"
+                    value={formData.renewalGst}
                     onChange={handleChange}
-                    placeholder="Enter transaction ID"
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                       isDark 
-                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                        ? "bg-gray-600 border-gray-500 text-white" 
+                        : "bg-white border-gray-300 text-gray-900"
                     }`}
+                    step="0.01"
+                    min="0"
                   />
                 </div>
               </div>
 
+              {/* Bounce Charge */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Bounce Charge
+                </label>
+                <input
+                  type="number"
+                  name="bounceCharge"
+                  value={formData.bounceCharge}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    isDark 
+                      ? "bg-gray-600 border-gray-500 text-white" 
+                      : "bg-white border-gray-300 text-gray-900"
+                  }`}
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+
+              {/* Disbursed Bank */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Disbursed Bank
+                </label>
+                <input
+                  type="text"
+                  name="disbursedBank"
+                  value={formData.disbursedBank}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                    isDark 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                  }`}
+                />
+              </div>
+
+              {/* Total Due Amount */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Total Due Amount <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="totalDueAmount"
+                  value={formData.totalDueAmount}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm font-bold ${
+                    isDark 
+                      ? "bg-purple-900/30 border-purple-700 text-purple-300 cursor-not-allowed" 
+                      : "bg-purple-50 border-purple-300 text-purple-700 cursor-not-allowed"
+                  }`}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Collection Details Section */}
+          <div className={`mb-6 p-5 rounded-xl border ${
+            isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
+          }`}>
+            <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${
+              isDark ? "text-purple-300" : "text-purple-700"
+            }`}>
+              <BanknoteIcon className="w-5 h-5" />
+              Collection Details
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Collection Amount */}
               <div>
                 <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
@@ -531,17 +770,103 @@ const CollectionRenewalForm = ({
                   name="collectionAmount"
                   value={formData.collectionAmount}
                   onChange={handleChange}
-                  placeholder="Enter collection amount"
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                     isDark 
-                      ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                      ? "bg-gray-600 border-gray-500 text-white" 
+                      : "bg-white border-gray-300 text-gray-900"
                   }`}
+                  step="0.01"
                   required
                   min="0"
-                  step="0.01"
                 />
               </div>
+
+              {/* Collection By */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Collection By <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="collectionBy"
+                  value={formData.collectionBy}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    isDark 
+                      ? "bg-gray-600 border-gray-500 text-white" 
+                      : "bg-white border-gray-300 text-gray-900"
+                  }`}
+                  required
+                >
+                  <option value="">-- Select Method --</option>
+                  <option value="by cash">By Cash</option>
+                  <option value="by bank">By Bank</option>
+                </select>
+              </div>
+
+              {/* Bank Selection (conditionally shown) */}
+              {formData.collectionBy === "by bank" && (
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Bank Name <span className="text-red-500">*</span>
+                    {selectedBankDetails && (
+                      <span className={`text-xs ml-2 ${
+                        isDark ? "text-emerald-300" : "text-emerald-600"
+                      }`}>
+                        ({selectedBankDetails.branch_name || selectedBankDetails.branch})
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    name="collectionBankName"
+                    value={selectedBankId}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white" 
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
+                    required
+                  >
+                    <option value="">-- Select Bank --</option>
+                    {bankList.length > 0 ? (
+                      bankList.map((bank) => (
+                        <option key={bank.id || bank._id} value={bank.id || bank._id}>
+                          {bank.bank_name || bank.name || `Bank ${bank.id}`}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Loading banks...</option>
+                    )}
+                  </select>
+                </div>
+              )}
+
+              {/* Transaction ID */}
+              {formData.collectionBy === "by bank" && (
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    isDark ? "text-gray-300" : "text-gray-700"
+                  }`}>
+                    Transaction ID
+                  </label>
+                  <input
+                    type="text"
+                    name="collectionTransactionId"
+                    value={formData.collectionTransactionId}
+                    onChange={handleChange}
+                    placeholder="Enter transaction ID"
+                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                      isDark 
+                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
+                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -562,12 +887,12 @@ const CollectionRenewalForm = ({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || !formData.collectionDate || !formData.collectionAmount || calculating}
               className={`px-8 py-3 rounded-lg text-white transition-colors flex items-center justify-center gap-2 font-medium ${
-                loading
-                  ? "bg-emerald-400 cursor-not-allowed"
-                  : "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
-              }`}
+                loading || calculating
+                  ? "bg-purple-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg shadow-purple-600/20"
+              } ${(!formData.collectionDate || !formData.collectionAmount || calculating) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? (
                 <>
@@ -577,7 +902,7 @@ const CollectionRenewalForm = ({
               ) : (
                 <>
                   Submit Renewal
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
@@ -587,4 +912,5 @@ const CollectionRenewalForm = ({
     </div>
   );
 };
-export default CollectionRenewalForm;
+
+export default RenewalCollectionForm;
