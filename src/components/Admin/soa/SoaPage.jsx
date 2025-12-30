@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import SoaDetails from "./SoaDetails";
 import SoaTable from "./SoaTable";
@@ -19,16 +19,21 @@ const SoaPageContent = () => {
   const [error, setError] = useState(null);
   const [soaData, setSoaData] = useState(null);
   const [allDetails, setAllDetails] = useState([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  // Infinite scroll configuration
+  const itemsPerPage = 20;
+  const observerTarget = useRef(null);
+  const currentOffsetRef = useRef(0);
 
   // Get application ID from URL
   const applicationId = searchParams.get("id");
 
   useEffect(() => {
     if (applicationId) {
+      currentOffsetRef.current = 0;
+      setAllDetails([]);
       fetchSoaData(applicationId);
     } else {
       setError("No application ID provided in URL");
@@ -36,40 +41,74 @@ const SoaPageContent = () => {
     }
   }, [applicationId]);
 
-  const fetchSoaData = async (id) => {
+  const fetchSoaData = async (id, isLoadMore = false) => {
     try {
-      setLoading(true);
-      const response = await soaAPI.getSoaData(id);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+
+      const response = await soaAPI.getSoaData(id, {
+        limit: itemsPerPage,
+        offset: currentOffsetRef.current
+      });
       
       if (response && response.success) {
         const formattedData = formatSoaDataForUI(response);
         
-        setSoaData(formattedData);
-        setAllDetails(formattedData.details || []);
+        if (!isLoadMore) {
+          // Initial load
+          setSoaData(formattedData);
+          setAllDetails(formattedData.details || []);
+          currentOffsetRef.current = (formattedData.details || []).length;
+        } else {
+          // Load more
+          setAllDetails(prev => [...prev, ...(formattedData.details || [])]);
+          currentOffsetRef.current += (formattedData.details || []).length;
+        }
+        
+        // Check if we have more data to load
+        setHasMore((formattedData.details || []).length === itemsPerPage);
         setError(null);
-        setCurrentPage(1);
       } else {
         throw new Error(response?.message || "Invalid API response");
       }
     } catch (err) {
       console.error("Error fetching SOA data:", err);
-      setError(`Failed to load statement of account data: ${err.message}`);
+      if (!isLoadMore) {
+        setError(`Failed to load statement of account data: ${err.message}`);
+      }
     } finally {
-      setLoading(false);
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
-  // Calculate pagination
-  const totalItems = allDetails.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedDetails = allDetails.slice(startIndex, endIndex);
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore || !observerTarget.current) return;
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 600, behavior: 'smooth' });
-  };
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          fetchSoaData(applicationId, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(observerTarget.current);
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [loading, loadingMore, hasMore, applicationId]);
 
   const handleExport = (type) => {
     if (!allDetails || allDetails.length === 0) {
@@ -122,91 +161,91 @@ const SoaPageContent = () => {
   if (error || !soaData) {
     return (
       <div className={" flex flex-col items-center justify-center p-6 "}>
-  <div className={`relative max-w-lg w-full p-8 rounded-3xl overflow-hidden shadow-2xl ${
-    isDark 
-      ? "bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border border-gray-700/50"
-      : "bg-gradient-to-br from-white via-gray-50 to-white border border-gray-200/50"
-  }`}>
-    
-    {/* Animated gradient background */}
-    <div className={`absolute inset-0 z-0 opacity-10 ${
-      isDark 
-        ? "bg-gradient-to-r from-red-500 via-orange-500 to-red-500 animate-gradient-x"
-        : "bg-gradient-to-r from-red-400 via-orange-300 to-red-400 animate-gradient-x"
-    }`}></div>
-    
-    <div className="relative z-10">
-      {/* Error icon */}
-      <div className="flex justify-center mb-6">
-        <div className={`p-4 rounded-full ${
+        <div className={`relative max-w-lg w-full p-8 rounded-3xl overflow-hidden shadow-2xl ${
           isDark 
-            ? "bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-700/30"
-            : "bg-gradient-to-br from-red-100 to-red-50 border border-red-200"
+            ? "bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 border border-gray-700/50"
+            : "bg-gradient-to-br from-white via-gray-50 to-white border border-gray-200/50"
         }`}>
-          <div className={`p-3 rounded-full ${
+          
+          {/* Animated gradient background */}
+          <div className={`absolute inset-0 z-0 opacity-10 ${
             isDark 
-              ? "bg-gradient-to-br from-red-700 to-red-800"
-              : "bg-gradient-to-br from-red-500 to-red-600"
-          }`}>
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.694-.833-3.464 0L4.346 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+              ? "bg-gradient-to-r from-red-500 via-orange-500 to-red-500 animate-gradient-x"
+              : "bg-gradient-to-r from-red-400 via-orange-300 to-red-400 animate-gradient-x"
+          }`}></div>
+          
+          <div className="relative z-10">
+            {/* Error icon */}
+            <div className="flex justify-center mb-6">
+              <div className={`p-4 rounded-full ${
+                isDark 
+                  ? "bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-700/30"
+                  : "bg-gradient-to-br from-red-100 to-red-50 border border-red-200"
+              }`}>
+                <div className={`p-3 rounded-full ${
+                  isDark 
+                    ? "bg-gradient-to-br from-red-700 to-red-800"
+                    : "bg-gradient-to-br from-red-500 to-red-600"
+                }`}>
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.694-.833-3.464 0L4.346 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Error title */}
+            <h2 className={`text-2xl font-bold text-center mb-3 ${
+              isDark 
+                ? "text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400"
+                : "text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600"
+            }`}>
+              Something Went Wrong
+            </h2>
+            
+            {/* Error message */}
+            <div className={`mb-8 p-4 rounded-xl border-l-4 ${
+              isDark 
+                ? "bg-gray-800/50 border-red-500 text-gray-300"
+                : "bg-gray-50 border-red-400 text-gray-700"
+            }`}>
+              <p className="text-center font-medium">{error || "No data available"}</p>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => router.back()}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                  isDark
+                    ? "bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-gray-300 shadow-lg hover:shadow-gray-800/50"
+                    : "bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 shadow-lg hover:shadow-gray-300/50"
+                }`}
+              >
+                ← Go Back
+              </button>
+              
+              <button
+                onClick={() => router.push('/crm/manage-application')}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg ${
+                  isDark
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white hover:shadow-emerald-900/50"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white hover:shadow-emerald-400/50"
+                  }`}
+              >
+                Manage Applications
+              </button>
+            </div>
+            
+            {/* Additional help text */}
+            <div className={`mt-6 pt-6 border-t text-center text-sm ${
+              isDark ? "border-gray-700 text-gray-500" : "border-gray-200 text-gray-500"
+            }`}>
+              <p>If the problem persists, please contact support</p>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Error title */}
-      <h2 className={`text-2xl font-bold text-center mb-3 ${
-        isDark 
-          ? "text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400"
-          : "text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600"
-      }`}>
-        Something Went Wrong
-      </h2>
-      
-      {/* Error message */}
-      <div className={`mb-8 p-4 rounded-xl border-l-4 ${
-        isDark 
-          ? "bg-gray-800/50 border-red-500 text-gray-300"
-          : "bg-gray-50 border-red-400 text-gray-700"
-      }`}>
-        <p className="text-center font-medium">{error || "No data available"}</p>
-      </div>
-      
-      {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <button
-          onClick={() => router.back()}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-            isDark
-              ? "bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-gray-300 shadow-lg hover:shadow-gray-800/50"
-              : "bg-gradient-to-r from-gray-200 to-gray-300 hover:from-gray-300 hover:to-gray-400 text-gray-800 shadow-lg hover:shadow-gray-300/50"
-          }`}
-        >
-          ← Go Back
-        </button>
-        
-        <button
-          onClick={() => router.push('/crm/manage-application')}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg ${
-            isDark
-              ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white hover:shadow-emerald-900/50"
-              : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white hover:shadow-emerald-400/50"
-          }`}
-        >
-          Manage Applications
-        </button>
-      </div>
-      
-      {/* Additional help text */}
-      <div className={`mt-6 pt-6 border-t text-center text-sm ${
-        isDark ? "border-gray-700 text-gray-500" : "border-gray-200 text-gray-500"
-      }`}>
-        <p>If the problem persists, please contact support</p>
-      </div>
-    </div>
-  </div>
-</div>
     );
   }
 
@@ -266,13 +305,11 @@ const SoaPageContent = () => {
         <SoaDetails data={soaData} isDark={isDark} />
 
         <SoaTable 
-          details={paginatedDetails} 
-          allDetails={allDetails}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
+          details={allDetails} 
           isDark={isDark}
-          onPageChange={handlePageChange}
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          observerRef={observerTarget}
         />
       </div>
     </div>

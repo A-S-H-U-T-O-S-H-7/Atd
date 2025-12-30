@@ -1,16 +1,14 @@
+// SoaTable.tsx
 import React from "react";
 import { FileText } from "lucide-react";
-import Pagination from "../Pagination";
 import SoaRow from "./SoaRow";
 
 const SoaTable = ({ 
   details,           
-  allDetails,       
-  currentPage,
-  totalPages,
-  itemsPerPage,
   isDark,
-  onPageChange
+  loadingMore,
+  hasMore,
+  observerRef
 }) => {
   // Table headers configuration
   const tableHeaders = [
@@ -64,7 +62,7 @@ const SoaTable = ({
           <tbody>
             {details.map((item, index) => (
               <SoaRow
-                key={`${item.id}-${currentPage}-${index}`}
+                key={`${item.id}-${index}`}
                 item={item}
                 index={index}
                 isDark={isDark}
@@ -74,8 +72,27 @@ const SoaTable = ({
         </table>
       </div>
       
+      {/* Loading indicator for infinite scroll */}
+      {loadingMore && (
+        <div className={`py-6 text-center ${
+          isDark ? "text-gray-400" : "text-gray-600"
+        }`}>
+          <div className="flex items-center justify-center space-x-3">
+            <Loader2 className={`w-5 h-5 animate-spin ${
+              isDark ? "text-emerald-400" : "text-emerald-600"
+            }`} />
+            <span>Loading more transactions...</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Observer target for infinite scroll */}
+      {hasMore && !loadingMore && (
+        <div ref={observerRef} className="h-10 w-full" />
+      )}
+      
       {/* Empty State */}
-      {allDetails.length === 0 ? (
+      {details.length === 0 && !loadingMore && (
         <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           <div className="flex flex-col items-center space-y-4">
             <FileText className="w-16 h-16 opacity-50" />
@@ -83,16 +100,16 @@ const SoaTable = ({
             <p className="text-sm">No transactions available for this account</p>
           </div>
         </div>
-      ) : (
-        /* Pagination Component */
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          totalItems={allDetails.length}
-          itemsPerPage={itemsPerPage}
-          className={isDark ? "border-gray-700" : "border-gray-200"}
-        />
+      )}
+      
+      {/* End of list message */}
+      {details.length > 0 && !hasMore && !loadingMore && (
+        <div className={`py-4 text-center text-sm ${
+          isDark ? "text-gray-500 border-t border-gray-700" : "text-gray-500 border-t border-gray-200"
+        }`}>
+          <p>All transactions loaded</p>
+          
+        </div>
       )}
     </div>
   );
