@@ -5,9 +5,11 @@ import CallButton from "../call/CallButton";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast"; 
 import { useAdminAuthStore } from '@/lib/store/authAdminStore'; 
+import { useRouter } from "next/navigation";
 
 const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDownloadPDF, onSettle }) => {
-  const { hasPermission } = useAdminAuthStore(); 
+  const { hasPermission } = useAdminAuthStore();
+  const router = useRouter();  
   
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -138,12 +140,19 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
       </td>
 
       <td className={cellStyle}>
-        <div className="flex items-center justify-center space-x-2">
-          <CreditCard className={iconAccent} />
-          <span className={`text-sm font-semibold ${textAccent}`}>
+        <button
+          onClick={() => router.push(`/crm/statement-of-account?id=${item.application_id}`)}
+          className={`flex items-center justify-center space-x-2 text-sm underline cursor-pointer transition-colors duration-200 ${
+            isDark
+              ? "text-emerald-400 hover:text-emerald-300"
+              : "text-emerald-600 hover:text-emerald-800"
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span className="font-semibold">
             {item.loanNo}
           </span>
-        </div>
+        </button>
       </td>
 
       <td className={cellStyle}>

@@ -4,6 +4,7 @@ import {
   Mail
 } from "lucide-react";
 import CallButton from "../call/CallButton";
+import { useRouter } from "next/navigation";
 
 const OverdueApplicantListRow = ({
   applicant,
@@ -17,6 +18,7 @@ const OverdueApplicantListRow = ({
   onChargeICICI,
   onSREAssign
 }) => {
+  const router = useRouter();
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -58,15 +60,19 @@ const OverdueApplicantListRow = ({
 
       {/* Loan No */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className="flex items-center space-x-2">
-          <span
-            className={`text-sm font-semibold ${isDark
-              ? "text-emerald-400"
-              : "text-emerald-600"}`}
-          >
+        <button
+          onClick={() => router.push(`/crm/statement-of-account?id=${applicant.application_id}`)}
+          className={`flex items-center space-x-2 text-sm underline cursor-pointer transition-colors duration-200 ${
+            isDark
+              ? "text-emerald-400 hover:text-emerald-300"
+              : "text-emerald-600 hover:text-emerald-800"
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span className="font-semibold">
             {applicant.loanNo}
           </span>
-        </div>
+        </button>
       </td>
 
       {/* Due Date */}
