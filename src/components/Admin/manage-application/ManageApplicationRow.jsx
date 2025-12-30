@@ -188,7 +188,19 @@ const ApplicationRow = ({
     );
   }
 
-  const showRenewalButton = [18, 13, 11, 12, 19].includes(application.loanStatusId); 
+  const isLoanClosed = application.loanStatusId === 13;
+  
+  const showRenewalButton = [18, 11, 12, 19].includes(application.loanStatusId); 
+
+  if (isLoanClosed) {
+    return (
+      <div className="flex items-center justify-center">
+        <div className={`border-2 rounded-md px-2 py-1 ${isDark ? 'border-purple-400 bg-purple-900/30' : 'border-purple-500 bg-purple-100'}`}>
+          <CheckCircle className={`w-5 h-5 ${isDark ? 'text-purple-300' : 'text-purple-600'}`} />
+        </div>
+      </div>
+    );
+  }
 
   if (!showRenewalButton) {
     return (
@@ -198,6 +210,7 @@ const ApplicationRow = ({
     );
   }
 
+  // Show renewal button for eligible statuses
   return (
     <div className="flex items-center justify-center">
       <button
