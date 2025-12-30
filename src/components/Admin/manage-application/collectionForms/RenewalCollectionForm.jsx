@@ -365,7 +365,7 @@ const RenewalCollectionForm = ({
                 <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Sanction Amount
                 </div>
-                <div className={`text-lg font-bold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+                <div className={` font-bold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
                   ₹{formatCurrency(application?.approvedAmount || 0)}
                 </div>
               </div>
