@@ -7,9 +7,10 @@ import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
 import LedgerTable from "./LedgerTable";
 import CustomerTransactionDetails from "../CustomerTransactionDetails";
+import RenewalModal from "./RenewalModal";
 import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService,settleService } from "@/lib/services/LedgerServices";
+import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService,settleService,renewalService} from "@/lib/services/LedgerServices";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
 
@@ -30,11 +31,16 @@ const LedgerPage = () => {
   const [selectedTransactionData, setSelectedTransactionData] = useState(null);
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [selectedApplicantForAdjustment, setSelectedApplicantForAdjustment] = useState(null);
+
+  //Renewal modal states
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [selectedApplicantForRenewal, setSelectedApplicantForRenewal] = useState(null);
   
   const [ledgerData, setLedgerData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [settling, setSettling] = useState(false);
+  const [renewing, setRenewing] = useState(false);
 
 
   const itemsPerPage = 10;
@@ -251,6 +257,52 @@ const LedgerPage = () => {
     } finally {
       setShowAdjustmentModal(false);
       setSelectedApplicantForAdjustment(null);
+    }
+  };
+
+  //Handle Renewal Click
+  const handleRenewalClick = (applicant) => {
+    setSelectedApplicantForRenewal(applicant);
+    setShowRenewalModal(true);
+  };
+
+  //Handle Renewal Submit
+  const handleRenewalSubmit = async (renewalData) => {
+    try {
+      setRenewing(true);
+      const result = await renewalService.submitRenewal(
+        renewalData.applicant.application_id, 
+        renewalData
+      );
+      
+      if (result.success) {
+        await Swal.fire({
+          title: 'Renewal Successful!',
+          text: result.message || 'Loan has been renewed successfully.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          background: isDark ? "#1f2937" : "#ffffff",
+          color: isDark ? "#f9fafb" : "#111827",
+        });
+        
+        fetchLedgerData();
+      } else {
+        throw new Error(result.message || 'Renewal failed');
+      }
+    } catch (error) {
+      console.error("Renewal error:", error);
+      await Swal.fire({
+        title: 'Renewal Failed!',
+        text: error.message || 'Failed to submit renewal. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    } finally {
+      setRenewing(false);
+      setShowRenewalModal(false);
+      setSelectedApplicantForRenewal(null);
     }
   };
 
@@ -522,8 +574,9 @@ const LedgerPage = () => {
           onAdjustment={handleAdjustmentClick}
           onDownloadPDF={handleDownloadPDF}
           onSettle={handleSettleClick}
-          loading={loading || settling} 
+          loading={loading || settling || renewing} 
           totalItems={totalCount}
+          onRenewal={handleRenewalClick}
         />
       </div>
 
@@ -537,6 +590,19 @@ const LedgerPage = () => {
         isDark={isDark}
         onSubmit={handleAdjustmentSubmit}
       />
+
+      {/*  Renewal Modal */}
+      <RenewalModal
+        isOpen={showRenewalModal}
+        onClose={() => {
+          setShowRenewalModal(false);
+          setSelectedApplicantForRenewal(null);
+        }}
+        applicant={selectedApplicantForRenewal}
+        isDark={isDark}
+        onSubmit={handleRenewalSubmit}
+      />
+
 
       <CustomerTransactionDetails
         isOpen={showTransactionModal}

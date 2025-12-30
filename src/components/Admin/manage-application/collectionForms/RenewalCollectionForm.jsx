@@ -37,7 +37,6 @@ const RenewalCollectionForm = ({
 
   useEffect(() => {
     if (isOpen && application) {
-      // Initialize form with default values
       setFormData({
         collectionDate: "",
         principalAmount: "0",
@@ -238,7 +237,7 @@ const RenewalCollectionForm = ({
     }));
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
   // Validation
   const requiredFields = ['collectionDate', 'collectionAmount', 'collectionBy', 'totalDueAmount'];
   const missingFields = requiredFields.filter(field => !formData[field] && field !== 'collectionAmount');
@@ -250,14 +249,6 @@ const RenewalCollectionForm = ({
 
   if (formData.collectionBy === "by bank" && !selectedBankId) {
     toast.error('Please select a bank');
-    return;
-  }
-
-  const collectionAmount = parseFloat(formData.collectionAmount || 0);
-  const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
-  
-  if (collectionAmount < totalDueAmount) {
-    toast.error('Collection amount cannot be less than total due amount');
     return;
   }
 
@@ -279,7 +270,7 @@ const RenewalCollectionForm = ({
       total_due_amount: totalDueAmount,
       collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
       disbursed_bank: formData.disbursedBank || "",
-      collection_amount: collectionAmount,
+      collection_amount: parseFloat(formData.collectionAmount),
       collection_transaction_id: formData.collectionTransactionId || "",
       collection_by: formData.collectionBy
     };

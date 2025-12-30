@@ -36,7 +36,17 @@ export const ledgerAPI = {
     } catch (error) {
       throw error;
     }
+  },
+
+  submitRenewal: async (applicationId, renewalData) => {
+    try {
+      const response = await api.put(`/crm/ledger/renewal/${applicationId}`, renewalData);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
+
 };
 
 export const formatLedgerDataForUI = (ledger) => {
@@ -74,7 +84,8 @@ export const formatLedgerDataForUI = (ledger) => {
     passed_days: ledger.passed_days || 0, 
     crnno: ledger.crnno || "N/A",
     city: ledger.city || "",
-    state: ledger.state || ""
+    state: ledger.state || "",
+    loan_status: ledger.loan_status
   };
 };
 
@@ -672,6 +683,22 @@ export const adjustmentService = {
       return response;
     } catch (error) {
       throw new Error(error.response?.data?.message || error.message || 'Failed to submit adjustment');
+    }
+  }
+};
+
+export const renewalService = {
+  submitRenewal: async (applicationId, renewalData) => {
+    try {
+      const formattedData = {
+        renewal_date: renewalData.renewal_date,
+        renewal_amount: parseFloat(renewalData.renewal_amount || 0)
+      };
+      
+      const response = await ledgerAPI.submitRenewal(applicationId, formattedData);
+      return response;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || error.message || 'Failed to submit renewal');
     }
   }
 };

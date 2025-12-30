@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useAdminAuthStore } from '@/lib/store/authAdminStore'; 
 import { useRouter } from "next/navigation";
 
-const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDownloadPDF, onSettle }) => {
+const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDownloadPDF, onSettle,onRenewal}) => {
   const { hasPermission } = useAdminAuthStore();
   const router = useRouter();  
   
@@ -96,6 +96,9 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
   // Check conditions for buttons
   const balance = parseFloat(item.balance || 0);
   const isAdjustmentDisabled = balance <= 0;
+
+  // Check if it should show Renewal or Adjustment
+  const isRenewal = item.loan_status === 18;
   
   // Settle button conditions
   const isAlreadySettled = item.settled === 1;
@@ -104,6 +107,19 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
   // Permission checks
   const hasAdjustmentPermission = hasPermission('adjustment');
   const hasSettlePermission = hasPermission('settle');
+  const hasRenewalPermission = hasPermission('adjustment');
+
+  const handleRenewalClick = () => {
+    if (onRenewal) {
+      onRenewal(item);
+    }
+  };
+
+  const handleAdjustmentClick = () => {
+    if (!isAdjustmentDisabled && onAdjustment) {
+      onAdjustment(item);
+    }
+  };
 
   return (
     <tr
@@ -182,41 +198,74 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
       {/* ADJUSTMENT COLUMN */}
       <td className={cellStyle}>
         <div className="relative group flex justify-center">
-          {!hasAdjustmentPermission ? (
-            <div className="opacity-50 cursor-not-allowed pointer-events-none">
+          {isRenewal ? (
+            // RENEWAL BUTTON
+            !hasRenewalPermission ? (
+              <div className="opacity-50 cursor-not-allowed pointer-events-none">
+                <button
+                  className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 flex items-center gap-1 ${
+                    isDark
+                      ? "bg-gray-900/50 text-gray-300 border-gray-700"
+                      : "bg-gray-100 text-gray-600 border-gray-200"
+                  }`}
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Renewal
+                </button>
+              </div>
+            ) : (
               <button
-                className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 ${
+                onClick={handleRenewalClick}
+                className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 flex items-center gap-1 ${
                   isDark
-                    ? "bg-gray-900/50 text-gray-300 border-gray-700"
-                    : "bg-gray-100 text-gray-600 border-gray-200"
+                    ? "bg-blue-900/50 text-blue-300 border-blue-700 hover:bg-blue-800 hover:scale-105"
+                    : "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 hover:scale-105"
                 }`}
+                title="Renew loan account"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Renewal
+              </button>
+            )
+          ) : (
+            // ADJUSTMENT BUTTON
+            !hasAdjustmentPermission ? (
+              <div className="opacity-50 cursor-not-allowed pointer-events-none">
+                <button
+                  className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 ${
+                    isDark
+                      ? "bg-gray-900/50 text-gray-300 border-gray-700"
+                      : "bg-gray-100 text-gray-600 border-gray-200"
+                  }`}
+                >
+                  Adjustment
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleAdjustmentClick}
+                disabled={isAdjustmentDisabled}
+                className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 ${
+                  isAdjustmentDisabled
+                    ? isDark
+                      ? "bg-gray-700 text-gray-400 border-gray-600 cursor-not-allowed opacity-60"
+                      : "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed opacity-60"
+                    : isDark
+                      ? "bg-pink-900/50 text-pink-300 border-pink-700 hover:bg-pink-800 hover:scale-105"
+                      : "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-200 hover:scale-105"
+                }`}
+                title={isAdjustmentDisabled ? "Adjustment disabled when balance ≤ ₹0" : "Make adjustment"}
               >
                 Adjustment
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => onAdjustment(item)}
-              disabled={isAdjustmentDisabled}
-              className={`px-3 py-2 rounded-md text-xs font-semibold border transition-all duration-200 ${
-                isAdjustmentDisabled
-                  ? isDark
-                    ? "bg-gray-700 text-gray-400 border-gray-600 cursor-not-allowed opacity-60"
-                    : "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed opacity-60"
-                  : isDark
-                    ? "bg-pink-900/50 text-pink-300 border-pink-700 hover:bg-pink-800 hover:scale-105"
-                    : "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-200 hover:scale-105"
-              }`}
-              title={isAdjustmentDisabled ? "Adjustment disabled when balance ≤ ₹0" : "Make adjustment"}
-            >
-              Adjustment
-            </button>
+            )
           )}
           
-          {!hasAdjustmentPermission && (
+          {/* Tooltip for no permission */}
+          {(!hasAdjustmentPermission || !hasRenewalPermission) && (
             <div className="absolute z-50 hidden group-hover:block bottom-full left-1/2 transform -translate-x-1/2 mb-2">
               <div className="bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                No permission for adjustment
+                No permission for {isRenewal ? 'renewal' : 'adjustment'}
               </div>
               <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
             </div>
