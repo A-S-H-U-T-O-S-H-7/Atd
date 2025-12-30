@@ -8,15 +8,16 @@ const FileUploadField = ({ label, name, document, onFileChange, onFileRemove, is
   const [viewLoading, setViewLoading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const getAcceptedTypes = () => {
-    if (name === 'bankVerificationReport') {
+   const getAcceptedTypes = () => {
+    if (name === 'bankVerificationReport' || name === 'bankFraudAnalysisReport') {
       return '.xlsx,.xls,.csv';
     }
     return '.pdf,.jpg,.jpeg,.png,.mp4,.avi,.mov';
   };
 
+
   const getFileTypeText = () => {
-    if (name === 'bankVerificationReport') {
+    if (name === 'bankVerificationReport' || name === 'bankFraudAnalysisReport') {
       return 'XLSX, XLS, CSV (Max 10MB)';
     }
     return 'PDF, JPG, PNG, MP4 (Max 10MB)';

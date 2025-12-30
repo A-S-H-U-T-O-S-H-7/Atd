@@ -242,10 +242,16 @@ useEffect(() => {
                   <p className={`text-lg font-bold ${
   (summary.balance || finalBalance) < 0 
     ? isDark ? "text-red-400" : "text-red-600"
-    : isDark ? "text-emerald-400" : "text-emerald-600"
+    : (summary.balance || finalBalance) > 0 
+      ? isDark ? "text-emerald-400" : "text-emerald-600"
+      : isDark ? "text-gray-400" : "text-gray-600"
 }`}>
-  {(summary.balance || finalBalance) < 0 ? '-' : ''}
-  ₹{Math.abs(summary.balance || finalBalance).toLocaleString()}
+  {/* Change this section */}
+  {(() => {
+    const balance = summary.balance || finalBalance;
+    if (balance === 0 || Math.abs(balance) < 0.01) return '₹0.00';
+    return `${balance < 0 ? '-' : ''}₹${Math.abs(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  })()}
 </p>
                 </div>
               </div>
@@ -328,10 +334,16 @@ useEffect(() => {
                       <td className={`px-3 py-2 text-xs text-right font-bold ${
   transaction.balance < 0 
     ? isDark ? "text-red-400" : "text-red-600"
-    : isDark ? "text-emerald-400" : "text-emerald-600"
+    : transaction.balance > 0
+      ? isDark ? "text-emerald-400" : "text-emerald-600"
+      : isDark ? "text-gray-400" : "text-gray-600"
 }`}>
-  {transaction.balance < 0 ? '-' : ''}
-  ₹{Math.abs(transaction.balance).toLocaleString()}
+  {/* Change this section */}
+  {(() => {
+    const balance = transaction.balance;
+    if (balance === 0 || Math.abs(balance) < 0.01) return '₹0.00';
+    return `${balance < 0 ? '-' : ''}₹${Math.abs(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  })()}
 </td>
                     </tr>
                   ))}

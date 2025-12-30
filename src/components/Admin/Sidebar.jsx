@@ -308,12 +308,7 @@ const allMenuItems = [
     icon: <MdOutlineHistoryEdu />,
     permissionKey: 'clients_history'
   },
-  { 
-    name: 'Statement Of Account', 
-    link: '/crm/statement-of-account', 
-    icon: <GiMoneyStack />,
-    permissionKey: 'statement_of_account'
-  },
+  
   { 
     name: 'Notifications', 
     link: '/crm/notifications', 

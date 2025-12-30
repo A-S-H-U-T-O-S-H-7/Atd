@@ -14,7 +14,7 @@ export const DOCUMENT_FIELDS_MAPPING = {
   bankStatement: 'bank_statement',
   bankStatement2: 'second_bank_statement',
   bankVerificationReport: 'bank_verif_report',
-  bankFraudAnalysisReport: 'bank_fraud_analysis_report',
+  bankFraudAnalysisReport: 'bank_fraud_report',
   camSheet: 'cam_sheet',
   socialScoreReport: 'social_score_report',
   cibilScoreReport: 'cibil_score_report',
@@ -39,14 +39,14 @@ export const FOLDER_MAPPINGS = {
   'bank_statement': 'bank-statement',
   'second_bank_statement': 'bank-statement',
   'bank_verif_report': 'reports',
-  'bank_fraud_analysis_report': 'reports',
+  'bank_fraud_report': 'reports',
   'cam_sheet': 'reports',
   'social_score_report': 'reports',
   'cibil_score_report': 'reports',
   'nach_form': 'nach-form',
-  'pdc': 'pdc',                      
-  'aggrement': 'agreement',          
-  'video': 'video-kyc' 
+  'pdc': 'pdc',
+  'aggrement': 'agreement',
+  'video': 'video-kyc'
 };
 
 export const kycService = {
@@ -62,17 +62,17 @@ export const kycService = {
         return formatKYCDataForUI(response.data);
       }
       
-      throw new Error(response.data?.message || response.message || 'Failed to fetch KYC details');
+      throw new Error('Failed to fetch KYC details');
     } catch (error) {
       if (error.response?.status === 404) {
-        throw new Error('KYC record not found for this application');
+        throw new Error('KYC record not found');
       } else if (error.response?.status === 401) {
-        throw new Error('Unauthorized. Please log in again.');
+        throw new Error('Unauthorized');
       } else if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
       
-      throw new Error('Failed to fetch KYC details. Please try again.');
+      throw new Error('Failed to fetch KYC details');
     }
   },
 
@@ -82,18 +82,14 @@ export const kycService = {
         throw new Error(`Invalid document field: ${field}`);
       }
 
-      const payload = {
-        field: field,
-        value: fileName
-      };
-
+      const payload = { field: field, value: fileName };
       const response = await api.put(`/crm/application/kyc/update/${documentId}`, payload);
       
       const successMessage = response.data?.message || response.message || '';
       const isSuccess = successMessage.toLowerCase().includes('updated successfully') || 
                         successMessage.toLowerCase().includes('success');
       
-      if (response.status === 200 || response.data?.status === true || response.data?.status === 'success' || isSuccess) {
+      if (response.status === 200 || response.data?.status === true || isSuccess) {
         return {
           success: true,
           message: successMessage || 'Document updated successfully',
@@ -101,15 +97,11 @@ export const kycService = {
         };
       }
       
-      throw new Error(response.data?.message || response.message || 'Failed to update document');
+      throw new Error('Failed to update document');
     } catch (error) {
       const errorMessage = error.message || error.response?.data?.message || '';
       if (errorMessage.toLowerCase().includes('updated successfully')) {
-        return {
-          success: true,
-          message: errorMessage,
-          fileName: fileName
-        };
+        return { success: true, message: errorMessage, fileName: fileName };
       }
       
       if (error.response?.data?.message) {
@@ -123,14 +115,10 @@ export const kycService = {
   uploadFileToStorage: async (file, documentType) => {
     try {
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
-      if (!apiField) {
-        throw new Error(`Invalid document type: ${documentType}`);
-      }
+      if (!apiField) throw new Error(`Invalid document type: ${documentType}`);
 
       const folder = FOLDER_MAPPINGS[apiField];
-      if (!folder) {
-        throw new Error(`Folder mapping not found for: ${apiField}`);
-      }
+      if (!folder) throw new Error(`Folder mapping not found for: ${apiField}`);
 
       const timestamp = Date.now();
       const fileExtension = file.name.split('.').pop();
@@ -142,32 +130,22 @@ export const kycService = {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      return {
-        fileName: fileName,
-        downloadURL: downloadURL,
-        filePath: filePath
-      };
+      return { fileName, downloadURL, filePath };
     } catch (error) {
-      console.error('Error uploading file to storage:', error);
+      console.error('Upload error:', error);
       throw error;
     }
   },
 
   viewFile: async (fileName, documentType) => {
     try {
-      if (!fileName) {
-        throw new Error('No file available');
-      }
+      if (!fileName) throw new Error('No file available');
 
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
-      if (!apiField) {
-        throw new Error(`Invalid document type: ${documentType}`);
-      }
+      if (!apiField) throw new Error(`Invalid document type: ${documentType}`);
 
       const folder = FOLDER_MAPPINGS[apiField];
-      if (!folder) {
-        throw new Error(`Folder mapping not found for: ${apiField}`);
-      }
+      if (!folder) throw new Error(`Folder mapping not found for: ${apiField}`);
       
       const filePath = `${folder}/${fileName}`;
       const fileRef = ref(storage, filePath);
@@ -175,7 +153,7 @@ export const kycService = {
       
       return url;
     } catch (error) {
-      console.error('Error viewing file:', error);
+      console.error('View error:', error);
       throw error;
     }
   },
@@ -184,32 +162,25 @@ export const kycService = {
     try {
       const uploadResult = await kycService.uploadFileToStorage(file, documentType);
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
-      const updateResult = await kycService.updateKYCDocument(
-        documentId, 
-        apiField, 
-        uploadResult.fileName
-      );
+      const updateResult = await kycService.updateKYCDocument(documentId, apiField, uploadResult.fileName);
       
-      return {
-        ...updateResult,
-        uploadData: uploadResult
-      };
+      return { ...updateResult, uploadData: uploadResult };
     } catch (error) {
-      console.error('Error in upload and update process:', error);
+      console.error('Upload and update error:', error);
       throw error;
     }
   },
 
   validateFile: (file, documentType = null) => {
     const getAcceptedTypes = (type) => {
-      if (type === 'bankVerificationReport') {
+      if (type === 'bankVerificationReport' || type === 'bankFraudAnalysisReport') {
         return ['.xlsx', '.xls', '.csv'];
       }
       return ['.pdf', '.jpg', '.jpeg', '.png', '.mp4', '.avi', '.mov'];
     };
 
     const getMimeTypes = (type) => {
-      if (type === 'bankVerificationReport') {
+      if (type === 'bankVerificationReport' || type === 'bankFraudAnalysisReport') {
         return [
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'application/vnd.ms-excel',
@@ -222,7 +193,7 @@ export const kycService = {
       return [
         'application/pdf',
         'image/jpeg',
-        'image/jpg', 
+        'image/jpg',
         'image/png',
         'video/mp4',
         'video/avi',
@@ -236,7 +207,7 @@ export const kycService = {
     const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
 
     if (!mimeTypes.includes(file.type) && !acceptedExtensions.includes(fileExtension)) {
-      const allowedFiles = documentType === 'bankVerificationReport' 
+      const allowedFiles = (documentType === 'bankVerificationReport' || documentType === 'bankFraudAnalysisReport') 
         ? 'Excel (XLSX, XLS) or CSV' 
         : 'PDF, JPG, PNG, MP4';
       throw new Error(`Invalid file type. Please upload ${allowedFiles} files.`);
@@ -251,9 +222,7 @@ export const kycService = {
 };
 
 export const formatKYCDataForUI = (apiData) => {
-  if (!apiData) {
-    throw new Error('No data received from API');
-  }
+  if (!apiData) throw new Error('No data received from API');
   
   const kycDocuments = {};
 
@@ -285,7 +254,7 @@ export const formatUIForKYCUpdate = (uiData) => {
     if (document.newFile) {
       const apiField = DOCUMENT_FIELDS_MAPPING[uiField];
       if (apiField) {
-        updateData[apiField] = document.newFile.name; 
+        updateData[apiField] = document.newFile.name;
       }
     }
   });
