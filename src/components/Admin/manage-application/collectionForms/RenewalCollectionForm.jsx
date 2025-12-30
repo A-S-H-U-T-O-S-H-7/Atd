@@ -15,12 +15,9 @@ const RenewalCollectionForm = ({
   const [formData, setFormData] = useState({
     collectionDate: "",
     principalAmount: "0",
-    normalInterestBefore: "0",
-    normalInterestAfter: "0",
-    penalInterestBefore: "0",
-    penalInterestAfter: "0",
-    penaltyBefore: "0",
-    penaltyAfter: "0",
+    normalInterest: "0",
+    penalInterest: "0",
+    penaltyInput: "0",
     bounceCharge: "0", 
     renewalCharge: "0", 
     renewalGst: "0",
@@ -44,12 +41,9 @@ const RenewalCollectionForm = ({
       setFormData({
         collectionDate: "",
         principalAmount: "0",
-        normalInterestBefore: "0",
-        normalInterestAfter: "0",
-        penalInterestBefore: "0",
-        penalInterestAfter: "0",
-        penaltyBefore: "0",
-        penaltyAfter: "0",
+        normalInterest: "0",
+        penalInterest: "0",
+        penaltyInput: "0",
         bounceCharge: "0",
         renewalCharge: "0",
         renewalGst: "0",
@@ -103,14 +97,16 @@ const RenewalCollectionForm = ({
   };
 
   const populateFormWithInitialData = (data) => {
+    // Calculate total amounts like NormalCollectionForm
+    const normalInterestTotal = (parseFloat(data.normal_interest_before || 0) + parseFloat(data.normal_interest_after || 0));
+    const penalInterestTotal = (parseFloat(data.penal_interest_before || 0) + parseFloat(data.penal_interest_after || 0));
+    const penaltyTotal = (parseFloat(data.penalty_before || 0) + parseFloat(data.penalty_after || 0));
+
     const formattedData = {
       principalAmount: data.principal_amount || "0",
-      normalInterestBefore: data.normal_interest_before || "0",
-      normalInterestAfter: data.normal_interest_after || "0",
-      penalInterestBefore: data.penal_interest_before || "0",
-      penalInterestAfter: data.penal_interest_after || "0",
-      penaltyBefore: data.penalty_before || "0",
-      penaltyAfter: data.penalty_after || "0",
+      normalInterest: normalInterestTotal.toFixed(2),
+      penalInterest: penalInterestTotal.toFixed(2),
+      penaltyInput: penaltyTotal.toFixed(2),
       bounceCharge: data.bounce_amount || "0",
       renewalCharge: data.renewal || "0",
       renewalGst: data.renewal_gst || "0",
@@ -127,9 +123,9 @@ const RenewalCollectionForm = ({
 
   const calculateTotalDueAmount = (data) => {
     const principal = parseFloat(data.principalAmount || 0);
-    const normalInterest = parseFloat(data.normalInterestAfter || 0);
-    const penalInterest = parseFloat(data.penalInterestAfter || 0);
-    const penalty = parseFloat(data.penaltyAfter || 0);
+    const normalInterest = parseFloat(data.normalInterest || 0);
+    const penalInterest = parseFloat(data.penalInterest || 0);
+    const penalty = parseFloat(data.penaltyInput || 0);
     const bounceCharge = parseFloat(data.bounceCharge || 0);
     const renewalCharge = parseFloat(data.renewalCharge || 0);
     const renewalGst = parseFloat(data.renewalGst || 0);
@@ -227,9 +223,9 @@ const RenewalCollectionForm = ({
 
   const recalculateTotal = () => {
     const principal = parseFloat(formData.principalAmount || 0);
-    const normalInterest = parseFloat(formData.normalInterestAfter || 0);
-    const penalInterest = parseFloat(formData.penalInterestAfter || 0);
-    const penalty = parseFloat(formData.penaltyAfter || 0);
+    const normalInterest = parseFloat(formData.normalInterest || 0);
+    const penalInterest = parseFloat(formData.penalInterest || 0);
+    const penalty = parseFloat(formData.penaltyInput || 0);
     const bounceCharge = parseFloat(formData.bounceCharge || 0);
     const renewalCharge = parseFloat(formData.renewalCharge || 0);
     const renewalGst = parseFloat(formData.renewalGst || 0);
@@ -243,63 +239,62 @@ const RenewalCollectionForm = ({
   };
 
   const handleSubmit = async () => {
-    // Validation
-    const requiredFields = ['collectionDate', 'collectionAmount', 'collectionBy', 'totalDueAmount'];
-    const missingFields = requiredFields.filter(field => !formData[field] && field !== 'collectionAmount');
+  // Validation
+  const requiredFields = ['collectionDate', 'collectionAmount', 'collectionBy', 'totalDueAmount'];
+  const missingFields = requiredFields.filter(field => !formData[field] && field !== 'collectionAmount');
+  
+  if (missingFields.length > 0) {
+    toast.error(`Please fill all required fields: ${missingFields.join(', ')}`);
+    return;
+  }
+
+  if (formData.collectionBy === "by bank" && !selectedBankId) {
+    toast.error('Please select a bank');
+    return;
+  }
+
+  const collectionAmount = parseFloat(formData.collectionAmount || 0);
+  const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
+  
+  if (collectionAmount < totalDueAmount) {
+    toast.error('Collection amount cannot be less than total due amount');
+    return;
+  }
+
+  try {
+    setLoading(true);
     
-    if (missingFields.length > 0) {
-      toast.error(`Please fill all required fields: ${missingFields.join(', ')}`);
-      return;
-    }
+    const submissionData = {
+      collection_date: formData.collectionDate,
+      principal_amount: parseFloat(formData.principalAmount || 0),
+      normal_interest_before: parseFloat(initialData?.normal_interest_before || 0),
+      normal_interest_after: parseFloat(initialData?.normal_interest_after || 0),
+      penal_interest_before: parseFloat(initialData?.penal_interest_before || 0),
+      penal_interest_after: parseFloat(initialData?.penal_interest_after || 0),
+      penalty_before: parseFloat(initialData?.penalty_before || 0),
+      penalty_after: parseFloat(initialData?.penalty_after || 0),
+      bounce_charge: parseFloat(formData.bounceCharge || 0),
+      renewal_charge: parseFloat(formData.renewalCharge || 0),
+      renewal_gst: parseFloat(formData.renewalGst || 0),
+      total_due_amount: totalDueAmount,
+      collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
+      disbursed_bank: formData.disbursedBank || "",
+      collection_amount: collectionAmount,
+      collection_transaction_id: formData.collectionTransactionId || "",
+      collection_by: formData.collectionBy
+    };
 
-    if (formData.collectionBy === "by bank" && !selectedBankId) {
-      toast.error('Please select a bank');
-      return;
-    }
-
-    const collectionAmount = parseFloat(formData.collectionAmount || 0);
-    const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
+    console.log('Submitting renewal data:', submissionData);
     
-    if (collectionAmount < totalDueAmount) {
-      toast.error('Collection amount cannot be less than total due amount');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Prepare payload matching the API structure
-      const submissionData = {
-        collection_date: formData.collectionDate,
-        principal_amount: parseFloat(formData.principalAmount || 0),
-        normal_interest_before: parseFloat(formData.normalInterestBefore || 0),
-        normal_interest_after: parseFloat(formData.normalInterestAfter || 0),
-        penal_interest_before: parseFloat(formData.penalInterestBefore || 0),
-        penal_interest_after: parseFloat(formData.penalInterestAfter || 0),
-        penalty_before: parseFloat(formData.penaltyBefore || 0),
-        penalty_after: parseFloat(formData.penaltyAfter || 0),
-        bounce_charge: parseFloat(formData.bounceCharge || 0),
-        renewal_charge: parseFloat(formData.renewalCharge || 0),
-        renewal_gst: parseFloat(formData.renewalGst || 0),
-        total_due_amount: totalDueAmount,
-        collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
-        disbursed_bank: formData.disbursedBank || "",
-        collection_amount: collectionAmount,
-        collection_transaction_id: formData.collectionTransactionId || "",
-        collection_by: formData.collectionBy
-      };
-
-      console.log('Submitting renewal data:', submissionData);
-      
-      await onRenewalSubmit(application.id, submissionData);
-      
-    } catch (error) {
-      console.error("Renewal error:", error);
-      toast.error('Failed to submit renewal');
-    } finally {
-      setLoading(false);
-    }
-  };
+    await onRenewalSubmit(application.id, submissionData);
+    
+  } catch (error) {
+    console.error("Renewal error:", error);
+    toast.error('Failed to submit renewal');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatCurrency = (amount) => {
     const num = parseFloat(amount || 0);
@@ -406,10 +401,9 @@ const RenewalCollectionForm = ({
                   <Calendar className="w-4 h-4 mr-2" />
                   {initialData?.due_date ? formatDate(initialData.due_date) : "N/A"}
                 </div>  
-                
               </div>
 
-              <div >
+              <div>
                 <div className={`text-sm font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                   Last Collection Date
                 </div>
@@ -418,8 +412,6 @@ const RenewalCollectionForm = ({
                   {initialData?.last_collection_date ? formatDate(initialData.last_collection_date) : "N/A"}
                 </div>
               </div>
-
-              
             </div>
           </div>
 
@@ -472,170 +464,108 @@ const RenewalCollectionForm = ({
                   Principal Amount
                 </label>
                 <input
-                  type="number"
-                  name="principalAmount"
-                  value={formData.principalAmount}
+                  type="text"
+                  value={formatCurrency(formData.principalAmount)}
                   readOnly
                   className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
                     isDark 
                       ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
                       : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
                   }`}
-                  step="0.01"
                 />
               </div>
 
               {/* Normal Interest */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Normal Interest Before
-                  </label>
-                  <input
-                    type="number"
-                    name="normalInterestBefore"
-                    value={formData.normalInterestBefore}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Normal Interest After
-                  </label>
-                  <input
-                    type="number"
-                    name="normalInterestAfter"
-                    value={formData.normalInterestAfter}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
-                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                    Before: ₹{formatCurrency(formData.normalInterestBefore)}
-                  </span>
-                  <span className={isDark ? "text-blue-300" : "text-blue-600"}>
-                    <ArrowRight className="w-3 h-3 inline mr-1" />
-                    After: ₹{formatCurrency(formData.normalInterestAfter)}
-                  </span>
-                </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Normal Interest
+                </label>
+                <input
+                  type="text"
+                  name="normalInterest"
+                  value={formatCurrency(formData.normalInterest)}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                    isDark 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                  }`}
+                />
+                {initialData && (
+                  <div className="text-xs mt-1 flex justify-between px-1">
+                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                      Before: ₹{formatCurrency(initialData.normal_interest_before || 0)}
+                    </span>
+                    <span className={isDark ? "text-blue-300" : "text-blue-600"}>
+                      <ArrowRight className="w-3 h-3 inline mr-1" />
+                      After: ₹{formatCurrency(initialData.normal_interest_after || 0)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Penal Interest */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Penal Interest Before
-                  </label>
-                  <input
-                    type="number"
-                    name="penalInterestBefore"
-                    value={formData.penalInterestBefore}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Penal Interest After
-                  </label>
-                  <input
-                    type="number"
-                    name="penalInterestAfter"
-                    value={formData.penalInterestAfter}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
-                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                    Before: ₹{formatCurrency(formData.penalInterestBefore)}
-                  </span>
-                  <span className={isDark ? "text-amber-300" : "text-amber-600"}>
-                    <ArrowRight className="w-3 h-3 inline mr-1" />
-                    After: ₹{formatCurrency(formData.penalInterestAfter)}
-                  </span>
-                </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Penal Interest
+                </label>
+                <input
+                  type="text"
+                  name="penalInterest"
+                  value={formatCurrency(formData.penalInterest)}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                    isDark 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                  }`}
+                />
+                {initialData && (
+                  <div className="text-xs mt-1 flex justify-between px-1">
+                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                      Before: ₹{formatCurrency(initialData.penal_interest_before || 0)}
+                    </span>
+                    <span className={isDark ? "text-amber-300" : "text-amber-600"}>
+                      <ArrowRight className="w-3 h-3 inline mr-1" />
+                      After: ₹{formatCurrency(initialData.penal_interest_after || 0)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Penalty */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Penalty Before
-                  </label>
-                  <input
-                    type="number"
-                    name="penaltyBefore"
-                    value={formData.penaltyBefore}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Penalty After
-                  </label>
-                  <input
-                    type="number"
-                    name="penaltyAfter"
-                    value={formData.penaltyAfter}
-                    readOnly
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                        : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                    }`}
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-span-2 text-xs mt-1 flex justify-between px-1">
-                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                    Before: ₹{formatCurrency(formData.penaltyBefore)}
-                  </span>
-                  <span className={isDark ? "text-red-300" : "text-red-600"}>
-                    <ArrowRight className="w-3 h-3 inline mr-1" />
-                    After: ₹{formatCurrency(formData.penaltyAfter)}
-                  </span>
-                </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Penalty
+                </label>
+                <input
+                  type="text"
+                  name="penaltyInput"
+                  value={formatCurrency(formData.penaltyInput)}
+                  readOnly
+                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
+                    isDark 
+                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                  }`}
+                />
+                {initialData && (
+                  <div className="text-xs mt-1 flex justify-between px-1">
+                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
+                      Before: ₹{formatCurrency(initialData.penalty_before || 0)}
+                    </span>
+                    <span className={isDark ? "text-red-300" : "text-red-600"}>
+                      <ArrowRight className="w-3 h-3 inline mr-1" />
+                      After: ₹{formatCurrency(initialData.penalty_after || 0)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Renewal Charges */}
@@ -732,9 +662,8 @@ const RenewalCollectionForm = ({
                   Total Due Amount <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
-                  name="totalDueAmount"
-                  value={formData.totalDueAmount}
+                  type="text"
+                  value={formatCurrency(formData.totalDueAmount)}
                   readOnly
                   className={`w-full px-3 py-2.5 rounded-lg border text-sm font-bold ${
                     isDark 
