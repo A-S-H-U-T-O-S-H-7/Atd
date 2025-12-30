@@ -255,6 +255,12 @@ const RenewalCollectionForm = ({
   try {
     setLoading(true);
     
+    // Calculate values to ensure consistency
+    const bounceCharge = parseFloat(formData.bounceCharge || 0);
+    const renewalCharge = parseFloat(formData.renewalCharge || 0);
+    const renewalGst = parseFloat(formData.renewalGst || 0);
+    const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
+    
     const submissionData = {
       collection_date: formData.collectionDate,
       principal_amount: parseFloat(formData.principalAmount || 0),
@@ -264,9 +270,9 @@ const RenewalCollectionForm = ({
       penal_interest_after: parseFloat(initialData?.penal_interest_after || 0),
       penalty_before: parseFloat(initialData?.penalty_before || 0),
       penalty_after: parseFloat(initialData?.penalty_after || 0),
-      bounce_charge: parseFloat(formData.bounceCharge || 0),
-      renewal_charge: parseFloat(formData.renewalCharge || 0),
-      renewal_gst: parseFloat(formData.renewalGst || 0),
+      bounce_charge: bounceCharge,
+      renewal_charge: renewalCharge,
+      renewal_gst: renewalGst,
       total_due_amount: totalDueAmount,
       collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
       disbursed_bank: formData.disbursedBank || "",
