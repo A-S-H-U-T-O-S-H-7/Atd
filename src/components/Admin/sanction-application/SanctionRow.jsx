@@ -27,6 +27,8 @@ import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
 
 const SanctionRow = ({
   application,
@@ -415,6 +417,17 @@ const SanctionRow = ({
         />
       </td>
 
+      <td className={cellStyle}>
+      <SecondBankStatementDocument
+      fileName={application.secondBankStatementFileName}
+      hasDoc={application.hasSecondBankStatement}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+    </td>
+
       {/* Video KYC */}
       <td className={cellStyle}>
         <VideoKYCDocument
@@ -452,6 +465,18 @@ const SanctionRow = ({
           isDark={isDark}
         />
       </td>
+
+      {/* Bank Fraud Report */}
+      <td className={cellStyle}>
+      <BankFraudReportDocument
+            fileName={application.bankFraudReportFileName}
+            hasDoc={application.hasBankFraudReport}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+        </td>
 
       {/* Social Score Report */}
       <td className={cellStyle}>
@@ -909,7 +934,7 @@ const SanctionRow = ({
           </div>
         )}
         
-        {/* Account Numbers - Only show if not pending and status is Success */}
+        {/* Account Numbers  */}
         {!isPending && isSuccess && (
           <div className="space-y-1.5 pt-1">
             

@@ -3,7 +3,8 @@ import api from "@/utils/axiosInstance";
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { storage } from '@/lib/firebase';
 
-export const DOCUMENT_FIELDS_MAPPING = {
+// Make sure these are defined as const at the top level
+const DOCUMENT_FIELDS_MAPPING = {
   photo: 'selfie',
   panCard: 'pan_proof', 
   addressProof: 'address_proof',
@@ -24,11 +25,11 @@ export const DOCUMENT_FIELDS_MAPPING = {
   video: 'video'
 };
 
-export const REVERSE_DOCUMENT_MAPPING = Object.fromEntries(
+const REVERSE_DOCUMENT_MAPPING = Object.fromEntries(
   Object.entries(DOCUMENT_FIELDS_MAPPING).map(([key, value]) => [value, key])
 );
 
-export const FOLDER_MAPPINGS = {
+const FOLDER_MAPPINGS = {
   'selfie': 'photo',
   'pan_proof': 'pan',
   'address_proof': 'address',
@@ -49,7 +50,31 @@ export const FOLDER_MAPPINGS = {
   'video': 'video-kyc'
 };
 
-export const kycService = {
+const DOCUMENT_CONFIG = [
+  { name: 'photo', label: 'Photo', required: true },
+  { name: 'panCard', label: 'PAN Proof', required: true },
+  { name: 'addressProof', label: 'Address Proof', required: true },
+  { name: 'idProof', label: 'ID Proof', required: true },
+  { name: 'salarySlip1', label: '1st Month Salary Slip', required: false },
+  { name: 'salarySlip2', label: '2nd Month Salary Slip', required: false },
+  { name: 'salarySlip3', label: '3rd Month Salary Slip', required: false },
+  { name: 'bankStatement', label: 'Bank Statement', required: false },
+  { name: 'bankStatement2', label: '2nd Bank Statement', required: false },
+  { name: 'bankVerificationReport', label: 'Banking Verification Report', required: false },
+  { name: 'bankFraudAnalysisReport', label: 'Bank Fraud Analysis Report', required: false },
+  { name: 'camSheet', label: 'CAM Sheet', required: false },
+  { name: 'nachForm', label: 'NACH Form', required: false },
+  { name: 'socialScoreReport', label: 'Social Score Report', required: false },
+  { name: 'cibilScoreReport', label: 'CIBIL Score Report', required: false },
+  { name: 'pdc', label: 'PDC', required: false },
+  { name: 'agreement', label: 'Agreement', required: false },
+  { name: 'video', label: 'Video', required: false }
+];
+
+const kycService = {
+  // Add the mapping as a property of the service object
+  DOCUMENT_FIELDS_MAPPING,
+
   getKYCDetails: async (applicationId) => {
     try {
       const response = await api.get(`/crm/application/kyc/edit/${applicationId}`);
@@ -78,12 +103,24 @@ export const kycService = {
 
   updateKYCDocument: async (documentId, field, fileName) => {
     try {
-      if (!Object.values(DOCUMENT_FIELDS_MAPPING).includes(field)) {
-        throw new Error(`Invalid document field: ${field}`);
+      console.log('updateKYCDocument called with:', { documentId, field, fileName });
+      
+      // Get all valid API fields from the mapping
+      const validApiFields = Object.values(DOCUMENT_FIELDS_MAPPING);
+      console.log('Valid API fields:', validApiFields);
+      console.log('Field to check:', field);
+      console.log('Is field valid?', validApiFields.includes(field));
+      
+      if (!validApiFields.includes(field)) {
+        throw new Error(`Invalid field name: "${field}". Valid fields are: ${validApiFields.join(', ')}`);
       }
 
       const payload = { field: field, value: fileName };
+      console.log('Sending payload:', payload);
+      
       const response = await api.put(`/crm/application/kyc/update/${documentId}`, payload);
+      
+      console.log('Update response:', response);
       
       const successMessage = response.data?.message || response.message || '';
       const isSuccess = successMessage.toLowerCase().includes('updated successfully') || 
@@ -99,6 +136,7 @@ export const kycService = {
       
       throw new Error('Failed to update document');
     } catch (error) {
+      console.error('Update error details:', error);
       const errorMessage = error.message || error.response?.data?.message || '';
       if (errorMessage.toLowerCase().includes('updated successfully')) {
         return { success: true, message: errorMessage, fileName: fileName };
@@ -160,9 +198,16 @@ export const kycService = {
 
   uploadAndUpdateDocument: async (file, documentType, documentId) => {
     try {
+      console.log('uploadAndUpdateDocument starting:', { documentType, documentId, fileName: file.name });
+      
       const uploadResult = await kycService.uploadFileToStorage(file, documentType);
+      console.log('File uploaded to storage:', uploadResult.fileName);
+      
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
+      console.log('UI field to API field mapping:', `${documentType} -> ${apiField}`);
+      
       const updateResult = await kycService.updateKYCDocument(documentId, apiField, uploadResult.fileName);
+      console.log('Database updated successfully');
       
       return { ...updateResult, uploadData: uploadResult };
     } catch (error) {
@@ -221,7 +266,7 @@ export const kycService = {
   }
 };
 
-export const formatKYCDataForUI = (apiData) => {
+const formatKYCDataForUI = (apiData) => {
   if (!apiData) throw new Error('No data received from API');
   
   const kycDocuments = {};
@@ -247,7 +292,7 @@ export const formatKYCDataForUI = (apiData) => {
   };
 };
 
-export const formatUIForKYCUpdate = (uiData) => {
+const formatUIForKYCUpdate = (uiData) => {
   const updateData = {};
   
   Object.entries(uiData).forEach(([uiField, document]) => {
@@ -262,25 +307,14 @@ export const formatUIForKYCUpdate = (uiData) => {
   return updateData;
 };
 
-export const DOCUMENT_CONFIG = [
-  { name: 'photo', label: 'Photo', required: true },
-  { name: 'panCard', label: 'PAN Proof', required: true },
-  { name: 'addressProof', label: 'Address Proof', required: true },
-  { name: 'idProof', label: 'ID Proof', required: true },
-  { name: 'salarySlip1', label: '1st Month Salary Slip', required: false },
-  { name: 'salarySlip2', label: '2nd Month Salary Slip', required: false },
-  { name: 'salarySlip3', label: '3rd Month Salary Slip', required: false },
-  { name: 'bankStatement', label: 'Bank Statement', required: false },
-  { name: 'bankStatement2', label: '2nd Bank Statement', required: false },
-  { name: 'bankVerificationReport', label: 'Banking Verification Report', required: false },
-  { name: 'bankFraudAnalysisReport', label: 'Bank Fraud Analysis Report', required: false },
-  { name: 'camSheet', label: 'CAM Sheet', required: false },
-  { name: 'nachForm', label: 'NACH Form', required: false },
-  { name: 'socialScoreReport', label: 'Social Score Report', required: false },
-  { name: 'cibilScoreReport', label: 'CIBIL Score Report', required: false },
-  { name: 'pdc', label: 'PDC', required: false },
-  { name: 'agreement', label: 'Agreement', required: false },
-  { name: 'video', label: 'Video', required: false }
-];
+// Export everything
+export {
+  DOCUMENT_FIELDS_MAPPING,
+  REVERSE_DOCUMENT_MAPPING,
+  FOLDER_MAPPINGS,
+  DOCUMENT_CONFIG,
+  formatKYCDataForUI,
+  formatUIForKYCUpdate
+};
 
 export default kycService;

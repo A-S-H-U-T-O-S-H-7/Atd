@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import kycService from '@/lib/services/replaceKycSevice';
+import kycService, { DOCUMENT_FIELDS_MAPPING } from '@/lib/services/replaceKycSevice';
 
 export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
   const [submitting, setSubmitting] = useState(false);
@@ -21,11 +21,26 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
       return;
     }
 
-    // Debug log
-    console.log('=== UPLOAD DEBUG ===');
-    filesToUpload.forEach(({ documentType, file }) => {
-      console.log(`Will upload ${documentType}: ${file.name} (${file.type})`);
+    // Enhanced debug log
+    console.log('=== UPLOAD DEBUG START ===');
+    console.log('Document ID:', enquiry.documentId || enquiry.kycDocuments?.documentId);
+    console.log('Available mappings:', DOCUMENT_FIELDS_MAPPING);
+    console.log('Files to upload:');
+    
+    filesToUpload.forEach(({ documentType, file, apiField }) => {
+      console.log(`- ${documentType} (UI) -> ${apiField} (API): ${file.name} (${file.type})`);
+      
+      // Check if apiField is valid using imported mapping
+      const validApiFields = Object.values(DOCUMENT_FIELDS_MAPPING);
+      const isValid = validApiFields.includes(apiField);
+      console.log(`  API Field valid? ${isValid} (Available fields: ${validApiFields.join(', ')})`);
+      
+      // Also check what the mapping says
+      const expectedApiField = DOCUMENT_FIELDS_MAPPING[documentType];
+      console.log(`  Expected mapping: ${documentType} -> ${expectedApiField}`);
+      console.log(`  Actual apiField in doc: ${apiField}`);
     });
+    console.log('=== UPLOAD DEBUG END ===');
 
     setSubmitting(true);
     const uploadToast = toast.loading(`Uploading ${filesToUpload.length} file(s)...`);
@@ -42,7 +57,7 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
         try {
           console.log(`Validating ${documentType}: ${file.name}`);
           
-          // FIXED: Pass documentType to validateFile
+          // Validate file
           kycService.validateFile(file, documentType);
           
           console.log(`Uploading ${documentType}: ${file.name}`);
@@ -81,11 +96,10 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
           ? 'All uploads failed' 
           : `${failedUploads.length} of ${filesToUpload.length} uploads failed`;
         
-        // Dismiss the loading toast
         toast.dismiss(uploadToast);
         toast.error(errorMessage);
         
-        // Show specific errors for failed uploads (only first 3 to avoid spam)
+        // Show specific errors for failed uploads
         failedUploads.slice(0, 3).forEach(failed => {
           toast.error(`Failed to upload ${failed.documentType}: ${failed.error}`);
         });
@@ -96,7 +110,6 @@ export const useFileUpload = (documents, resetNewFiles, onBack, enquiry) => {
       // All uploads successful
       const successCount = results.filter(result => result.success).length;
       
-      // Dismiss the loading toast and show success
       toast.dismiss(uploadToast);
       toast.success(`Successfully uploaded ${successCount} file(s)`);
       

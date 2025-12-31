@@ -100,6 +100,8 @@ export const formatSanctionApplicationForUI = (application) => {
     hasPdc: !!application.pdc,
     hasAgreement: !!application.aggrement,
     sanctionLetter: !!application.sanction_letter, 
+    hasSecondBankStatement: !!application.second_bank_statement,
+    hasBankFraudReport: !!application.bank_fraud_report,
 
     // Document file names
     photoFileName: application.selfie,
@@ -118,6 +120,8 @@ export const formatSanctionApplicationForUI = (application) => {
     pdcFileName: application.pdc,
     agreementFileName: application.aggrement,
     sanctionLetterFileName: application.sanction_letter,
+    secondBankStatementFileName: application.second_bank_statement,
+    bankFraudReportFileName: application.bank_fraud_report,
 
     // Status information 
     approvalNote: application.approval_note,
@@ -264,6 +268,7 @@ export const fileService = {
 
     const folderMappings = {
       'bank_statement': 'bank-statement',
+      'second_bank_statement': 'bank-statement',
       'aadhar_proof': 'idproof', 
       'address_proof': 'address',
       'pan_proof': 'pan',
@@ -272,6 +277,7 @@ export const fileService = {
       'second_salary_slip': 'second_salaryslip', 
       'third_salary_slip': 'third_salaryslip',
       'bank_verif_report': 'reports',
+      'bank_fraud_report': 'reports',
       'social_score_report': 'reports',
       'cibil_score_report': 'reports',
       'pdc_file': 'agreement',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DOCUMENT_CONFIG } from '@/lib/services/replaceKycSevice';
+import { DOCUMENT_CONFIG, DOCUMENT_FIELDS_MAPPING } from '@/lib/services/replaceKycSevice';
 
 export const useDocuments = (enquiry) => {
   const [documents, setDocuments] = useState({});
@@ -9,14 +9,14 @@ export const useDocuments = (enquiry) => {
     if (enquiry?.kycDocuments) {
       setDocuments(enquiry.kycDocuments);
     } else {
-      // Initialize empty documents structure
+      // Initialize empty documents structure with correct apiField
       const initialDocuments = {};
       DOCUMENT_CONFIG.forEach(field => {
         initialDocuments[field.name] = {
           available: false,
           fileName: null,
           newFile: null,
-          apiField: field.name
+          apiField: DOCUMENT_FIELDS_MAPPING[field.name] 
         };
       });
       setDocuments(initialDocuments);
@@ -28,7 +28,9 @@ export const useDocuments = (enquiry) => {
       ...prev,
       [documentName]: {
         ...prev[documentName],
-        newFile: file
+        newFile: file,
+        // Ensure apiField is set correctly
+        apiField: prev[documentName]?.apiField || DOCUMENT_FIELDS_MAPPING[documentName]
       }
     }));
   };

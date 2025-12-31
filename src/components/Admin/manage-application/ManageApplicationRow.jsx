@@ -27,6 +27,8 @@ import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import { FaFilePdf } from "react-icons/fa";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 
 const ApplicationRow = ({
   application,
@@ -427,6 +429,19 @@ const ApplicationRow = ({
           isDark={isDark}
         />
       ),
+
+      "Second Bank Statement": () => (
+    <SecondBankStatementDocument
+      fileName={application.secondBankStatementFileName}
+      hasDoc={application.hasSecondBankStatement}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+  ),
+
+  
       "Video KYC": () => (
         <VideoKYCDocument
           fileName={application.videoKycFileName}
@@ -457,6 +472,17 @@ const ApplicationRow = ({
           isDark={isDark}
         />
       ),
+      
+      "Bank Fraud Report": () => (
+    <BankFraudReportDocument
+      fileName={application.bankFraudReportFileName}
+      hasDoc={application.hasBankFraudReport}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+  ),
       "Social Score Report": () => (
         <SocialScoreDocument
           fileName={application.socialScoreFileName}
