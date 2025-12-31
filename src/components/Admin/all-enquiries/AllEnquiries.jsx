@@ -6,11 +6,10 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
 import { enquiryAPI, formatEnquiryForUI } from "@/lib/services/AllEnquiriesServices";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from '@/lib/firebase';
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
+import { fileService } from "@/lib/services/CompletedApplicationServices";// file serice i can create in one util file and use everywhere but i realize it late
 
 const AllEnquiries = () => {
   const { theme } = useThemeStore();
@@ -24,7 +23,11 @@ const AllEnquiries = () => {
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
- 
+  
+  // File loading states
+  const [fileLoading, setFileLoading] = useState(false);
+  const [loadingFileName, setLoadingFileName] = useState('');
+  
   // Advanced Search States
   const [searchField, setSearchField] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,29 +87,29 @@ const AllEnquiries = () => {
     return params;
   };
 
- const fetchEnquiries = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    
-    const params = buildApiParams();
-    const response = await enquiryAPI.getAllEnquiries(params);
-    
-    if (response.success) {
-      const formattedEnquiries = response.data.map(formatEnquiryForUI);
-      setEnquiries(formattedEnquiries);
-      setTotalCount(response.pagination?.total || response.data.length);
-      setTotalPages(response.pagination?.total_pages || 1);
-    } else {
-      setError(response.message || "Failed to fetch enquiries");
+  const fetchEnquiries = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = buildApiParams();
+      const response = await enquiryAPI.getAllEnquiries(params);
+      
+      if (response.success) {
+        const formattedEnquiries = response.data.map(formatEnquiryForUI);
+        setEnquiries(formattedEnquiries);
+        setTotalCount(response.pagination?.total || response.data.length);
+        setTotalPages(response.pagination?.total_pages || 1);
+      } else {
+        setError(response.message || "Failed to fetch enquiries");
+      }
+    } catch (err) {
+      console.error("Error fetching enquiries:", err);
+      setError("Failed to fetch enquiries. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching enquiries:", err);
-    setError("Failed to fetch enquiries. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Load data on component mount and when filters change
   useEffect(() => {
@@ -122,8 +125,6 @@ const AllEnquiries = () => {
     }
   }, [searchField, searchTerm, dateRange]);
 
-  
-  
   // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
     if (!field || !term.trim()) {
@@ -153,6 +154,32 @@ const AllEnquiries = () => {
     setSourceFilter("all");
     setStatusFilter("all");
     setCurrentPage(1);
+  };
+
+  // Handle file view using the shared file service
+  const handleFileView = async (fileName, documentCategory, enquiry = null) => {
+    if (!fileName) {
+      alert('No file available');
+      return;
+    }
+    
+    setFileLoading(true);
+    setLoadingFileName(fileName);
+    
+    try {
+      const url = await fileService.viewFile(fileName, documentCategory);
+      
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        alert('Popup blocked! Please allow popups for this site.');
+      }
+    } catch (error) {
+      console.error("Failed to load file:", error);
+      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
+    } finally {
+      setFileLoading(false);
+      setLoadingFileName('');
+    }
   };
 
   // Format enquiries for display
@@ -250,48 +277,6 @@ const AllEnquiries = () => {
     }
   };
 
-  // File view handler
-  const handleFileView = async (fileName, documentCategory, enquiry = null) => {
-    if (!fileName) {
-      alert('No file available');
-      return;
-    }
-
-    try {
-      const folderMappings = {
-        'bank_statement': 'bank-statement',
-        'aadhar_proof': 'idproof', 
-        'address_proof': 'address',
-        'pan_proof': 'pan',
-        'selfie': 'photo',
-        'salary_slip': 'first_salaryslip',
-        'second_salary_slip': 'second_salaryslip', 
-        'third_salary_slip': 'third_salaryslip',
-        'bank_verif_report': 'reports',
-        'social_score_report': 'reports',
-        'cibil_score_report': 'reports',
-      };
-
-      const folder = folderMappings[documentCategory];
-      if (!folder) {
-        alert('Document type not configured');
-        return;
-      }
-      
-      const filePath = `${folder}/${fileName}`;
-      const fileRef = ref(storage, filePath);
-      const url = await getDownloadURL(fileRef);
-      
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Popup blocked! Please allow popups for this site.');
-      }
-    } catch (error) {
-      console.error("Failed to load file:", error);
-      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
-    }
-  };
-
   // Navigation handlers
   const handleLoanEligibilityClick = (enquiry) => {
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
@@ -345,54 +330,54 @@ const AllEnquiries = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-  <div className="flex items-center gap-3 sm:gap-4">
-    <button
-      onClick={() => router.back()}
-      className={`p-2.5 sm:p-3 cursor-pointer rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
-        isDark
-          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-      }`}
-    >
-      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
-        isDark ? "text-emerald-400" : "text-emerald-600"
-      }`} />
-    </button>
-    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
-      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-    } bg-clip-text text-transparent`}>
-      All Enquiries ({totalCount})
-    </h1>
-  </div>
-  
-  <div className="flex gap-2 w-full sm:w-auto">
-    <button
-      onClick={() => fetchEnquiries()}
-      disabled={loading}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-gray-700 hover:bg-gray-600 text-white"
-          : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-      } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">Refresh</span>
-    </button>
-    
-    <button
-      onClick={() => handleExport('excel')}
-      disabled={exporting}
-      className={`px-3 sm:px-4 py-2 cursor-pointer rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-green-600 hover:bg-green-700 text-white"
-          : "bg-green-500 hover:bg-green-600 text-white"
-      } ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
-    </button>
-  </div>
-</div>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button
+                onClick={() => router.back()}
+                className={`p-2.5 sm:p-3 cursor-pointer rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
+                <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  isDark ? "text-emerald-400" : "text-emerald-600"
+                }`} />
+              </button>
+              <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+              } bg-clip-text text-transparent`}>
+                All Enquiries ({totalCount})
+              </h1>
+            </div>
+            
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => fetchEnquiries()}
+                disabled={loading}
+                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="text-xs sm:text-sm">Refresh</span>
+              </button>
+              
+              <button
+                onClick={() => handleExport('excel')}
+                disabled={exporting}
+                className={`px-3 sm:px-4 py-2 cursor-pointer rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -539,6 +524,8 @@ const AllEnquiries = () => {
           onVerifyClick={handleVerifyClick}
           onCheckClick={handleCheckClick}
           loading={loading}
+          fileLoading={fileLoading}
+          loadingFileName={loadingFileName}
         />
       </div>
     </div>

@@ -1,9 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Save, X, User, Key, Mail, Phone, Shield, UserCheck,
-  Upload, ChevronDown, ChevronUp, Eye, EyeOff, CheckCircle, XCircle
-} from 'lucide-react';
+import { Save, X, User, Key, Mail, Phone, Shield, UserCheck, Upload, ChevronDown, ChevronUp, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import { useFormik } from 'formik';
 import { toast } from 'react-hot-toast';
 import * as Yup from 'yup';
@@ -239,30 +236,30 @@ const AdminForm = ({
     }
   };
 
-  const inputClasses = `w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium focus:ring-2 focus:ring-purple-500/20 focus:outline-none ${
+  const inputClasses = `w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium focus:ring-2 focus:ring-emerald-500/20 focus:outline-none ${
     isDark
-      ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 hover:border-purple-500 focus:border-purple-400'
-      : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 hover:border-purple-400 focus:border-purple-500'
+      ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 hover:border-emerald-500 focus:border-emerald-400'
+      : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 hover:border-emerald-400 focus:border-emerald-500'
   }`;
 
   return (
     <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${
       isDark
-        ? 'bg-gray-800 border-purple-600/50 shadow-purple-900/20'
-        : 'bg-white border-purple-300 shadow-purple-500/10'
+        ? 'bg-gray-800 border-emerald-600/50 shadow-emerald-900/20'
+        : 'bg-white border-emerald-300 shadow-emerald-500/10'
     }`}>
       <button
         type="button"
         onClick={onToggleExpand}
         className={`w-full px-6 py-4 flex items-center justify-between border-b transition-colors ${
           isDark
-            ? 'bg-gradient-to-r from-gray-900 to-gray-800 border-purple-600/50 hover:bg-gray-700/50'
-            : 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300 hover:bg-purple-100'
+            ? 'bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50 hover:bg-gray-700/50'
+            : 'bg-gradient-to-r from-emerald-50 to-emerald-50/80 border-emerald-300 hover:bg-emerald-100'
         }`}
       >
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-            <UserCheck className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+          <div className={`p-2 rounded-lg ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+            <UserCheck className={`w-5 h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
           </div>
           <div className="text-left">
             <h2 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
@@ -288,8 +285,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <User className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Username *</span>
                 </label>
@@ -315,8 +312,8 @@ const AdminForm = ({
                   <div className="flex items-center mt-1 space-x-1">
                     {usernameAvailable ? (
                       <>
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="text-xs text-green-500">Username is available</span>
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="text-xs text-emerald-500">Username is available</span>
                       </>
                     ) : (
                       <>
@@ -333,8 +330,8 @@ const AdminForm = ({
                   <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                     isDark ? 'text-gray-100' : 'text-gray-700'
                   }`}>
-                    <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                      <Key className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                      <Key className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                     </div>
                     <span>Password *</span>
                   </label>
@@ -366,8 +363,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <User className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Full Name *</span>
                 </label>
@@ -389,8 +386,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <Mail className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Mail className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Email (Optional)</span>
                 </label>
@@ -412,8 +409,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <Phone className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Phone className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Phone Number (Optional)</span>
                 </label>
@@ -435,8 +432,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <Shield className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Shield className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Admin Type *</span>
                 </label>
@@ -462,8 +459,8 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <UserCheck className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <UserCheck className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Status *</span>
                 </label>
@@ -489,16 +486,16 @@ const AdminForm = ({
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
                   isDark ? 'text-gray-100' : 'text-gray-700'
                 }`}>
-                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <Upload className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Upload className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span>Profile Selfie (Optional)</span>
                 </label>
                 
                 <div className={`border-2 border-dashed rounded-lg p-4 transition-all duration-200 ${
                   isDark
-                    ? 'border-purple-600/30 bg-gray-800/50 hover:border-purple-500/50'
-                    : 'border-purple-300 bg-purple-50/50 hover:border-purple-400'
+                    ? 'border-emerald-600/30 bg-gray-800/50 hover:border-emerald-500/50'
+                    : 'border-emerald-300 bg-emerald-50/50 hover:border-emerald-400'
                 }`}>
                   <input
                     ref={fileInputRef}
@@ -582,8 +579,8 @@ const AdminForm = ({
                   isSubmitting || (usernameAvailable === false && !isEditMode) || !formik.isValid
                     ? 'bg-gray-400 cursor-not-allowed'
                     : isDark
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 focus:ring-purple-500/50 shadow-lg shadow-purple-500/25'
-                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 focus:ring-purple-500/50 shadow-lg shadow-purple-500/25'
+                    ? 'bg-gradient-to-r from-emerald-700 to-emerald-900 hover:from-emerald-600 hover:to-emerald-800 focus:ring-emerald-500/50 shadow-lg shadow-emerald-500/25'
+                    : 'bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 focus:ring-emerald-500/50 shadow-lg shadow-emerald-500/25'
                 }`}
               >
                 {isSubmitting ? (

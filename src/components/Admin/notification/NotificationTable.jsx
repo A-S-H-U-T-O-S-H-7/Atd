@@ -25,7 +25,7 @@ const NotificationTable = ({
     isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
   }`;
   
-  const tableContainerStyle = `rounded-2xl shadow-2xl border-2 overflow-hidden ${
+  const tableContainerStyle = `rounded-b-2xl shadow-2xl border-2 overflow-hidden ${
     isDark 
       ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20" 
       : "bg-white border-emerald-300 shadow-emerald-500/10"

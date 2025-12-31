@@ -1,24 +1,10 @@
-// components/admin/AdminRow.jsx
 'use client';
 import React, { useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Shield, 
-  UserCheck, 
-  Calendar,
-  Edit2,
-  Key,
-  CheckCircle,
-  XCircle,
-  Power,
-  Lock
-} from 'lucide-react';
+import { User, Mail, Phone, Shield, UserCheck, Calendar, Edit2, Key, CheckCircle, XCircle, Power, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
-const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatus, onOpenPermissions }) => {
+const AdminRow = ({ admin, index, isDark, onEdit, onToggleStatus, onOpenPermissions }) => {
   const isActive = admin.isActive === true || admin.isActive === 1;
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
@@ -29,14 +15,13 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
   const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
   const textSecondary = isDark ? "text-gray-200" : "text-gray-700";
   const iconBlue = `w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`;
-  const iconPurple = `w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`;
-  const iconGreen = `w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`;
+  const iconGreen = `w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`;
   const iconOrange = `w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-600"}`;
 
   const normalRowBg = index % 2 === 0
     ? isDark ? "bg-gray-700/30" : "bg-gray-50"
     : "";
-  const normalHoverBg = isDark ? "hover:bg-gray-700/50" : "hover:bg-purple-50/50";
+  const normalHoverBg = isDark ? "hover:bg-gray-700/50" : "hover:bg-emerald-50/50";
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -73,7 +58,6 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
     }
   };
 
-  
   const handleToggleStatus = async () => {
     if (!onToggleStatus || !admin.id) return;
     
@@ -124,7 +108,7 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
 
   return (
     <tr className={`border-b transition-all duration-200 hover:shadow-lg ${normalRowBg} ${normalHoverBg} ${
-      isDark ? "border-purple-700" : "border-purple-300"
+      isDark ? "border-emerald-700" : "border-emerald-300"
     }`}>
       
       {/* S.No */}
@@ -141,14 +125,14 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
                 <img 
                   src={admin.selfieUrl} 
                   alt={admin.name}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-purple-300"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-emerald-300"
                 />
               </div>
             ) : (
               <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                isDark ? 'bg-purple-900/50' : 'bg-purple-100'
+                isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'
               }`}>
-                <User className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                <User className={`w-5 h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -159,7 +143,7 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
                     ? isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-700'
                     : admin.type === 'admin'
                     ? isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'
-                    : isDark ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'
+                    : isDark ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'
                 }`}>
                   {getTypeLabel(admin.type)}
                 </span>
@@ -210,8 +194,8 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
         <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${
           isActive
             ? isDark
-              ? "bg-green-900/40 text-green-300 border-green-700"
-              : "bg-green-100 text-green-700 border-green-300"
+              ? "bg-emerald-900/40 text-emerald-300 border-emerald-700"
+              : "bg-emerald-100 text-emerald-700 border-emerald-300"
             : isDark
               ? "bg-red-900/40 text-red-300 border-red-700"
               : "bg-red-100 text-red-700 border-red-300"
@@ -260,8 +244,8 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
                   ? "bg-red-900/50 hover:bg-red-800 text-red-300"
                   : "bg-red-100 hover:bg-red-200 text-red-700"
                 : isDark
-                  ? "bg-green-900/50 hover:bg-green-800 text-green-300"
-                  : "bg-green-100 hover:bg-green-200 text-green-700"
+                  ? "bg-emerald-900/50 hover:bg-emerald-800 text-emerald-300"
+                  : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
             }`}
             title={isActive ? "Deactivate Admin" : "Activate Admin"}
           >
@@ -275,7 +259,11 @@ const AdminRow = ({ admin, index, isDark, onEdit, onResetPassword, onToggleStatu
           {/* Permissions Button */}
           <button
             onClick={handleOpenPermissions}
-            className="px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25"
+            className={`px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 flex items-center space-x-1 text-white shadow-lg ${
+              isDark
+                ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-800 shadow-purple-500/25'
+                : 'bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 shadow-purple-500/25'
+            }`}
             title="Manage Permissions"
           >
             <Lock className="w-4 h-4" />

@@ -13,12 +13,12 @@ const AdminTable = ({
 }) => {
   const styles = {
     headerClass: `px-4 py-5 text-left text-sm font-bold border-r ${
-      isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+      isDark ? "text-gray-100 border-gray-600" : "text-gray-700 border-gray-300"
     }`,
     gradientClass: `border-b-2 ${
       isDark
-        ? "bg-gradient-to-r from-gray-900 to-gray-800 border-purple-600/50"
-        : "bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300"
+        ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
+        : "bg-gradient-to-r from-emerald-50 to-emerald-50/80 border-emerald-300"
     }`
   };
 

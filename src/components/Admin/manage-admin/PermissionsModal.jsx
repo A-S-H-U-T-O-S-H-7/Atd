@@ -89,7 +89,18 @@ const PERMISSION_GROUPS = {
 };
 
 const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSavePermissions }) => {
-  const [permissions, setPermissions] = useState({});
+  // Initialize permissions with all keys set to 0 (false) to prevent uncontrolled inputs
+  const initializePermissions = () => {
+    const initialPermissions = {};
+    Object.values(PERMISSION_GROUPS).forEach(group => {
+      group.forEach(item => {
+        initialPermissions[item.key] = 0; // Initialize all to false (0)
+      });
+    });
+    return initialPermissions;
+  };
+
+  const [permissions, setPermissions] = useState(initializePermissions());
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectAllState, setSelectAllState] = useState({});
@@ -101,7 +112,9 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
       const response = await adminService.getPermissions(adminId);
       
       if (response.success) {
-        const normalizedPermissions = {};
+        const normalizedPermissions = initializePermissions(); // Start with all false
+        
+        // Update with actual values from API
         Object.keys(response.data).forEach(key => {
           if (['id', 'admin_id', 'created_at', 'updated_at'].includes(key)) return;
           normalizedPermissions[key] = response.data[key] ? 1 : 0;
@@ -131,7 +144,10 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
   };
 
   const handlePermissionChange = (key) => {
-    const newPermissions = { ...permissions, [key]: permissions[key] ? 0 : 1 };
+    const newPermissions = { 
+      ...permissions, 
+      [key]: permissions[key] ? 0 : 1 
+    };
     setPermissions(newPermissions);
     updateSelectAllForGroup(key, newPermissions);
   };
@@ -225,7 +241,8 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
     if (isOpen && adminId) {
       loadPermissions();
     } else {
-      setPermissions({});
+      // Reset to initialized state when modal closes
+      setPermissions(initializePermissions());
       setSelectAllState({});
     }
   }, [isOpen, adminId]);
@@ -247,12 +264,12 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
             
             {/* Header */}
             <div className={`sticky top-0 z-10 px-6 py-4 border-b rounded-t-xl ${
-              isDark ? 'border-purple-600/50 bg-gray-900' : 'border-purple-300 bg-purple-50'
+              isDark ? 'border-emerald-600/50 bg-gray-900' : 'border-emerald-300 bg-emerald-50'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${isDark ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                    <Shield className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+                  <div className={`p-2 rounded-lg ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Shield className={`w-5 h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <div>
                     <h2 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
@@ -277,8 +294,8 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center space-x-2">
-                  <div className={`p-1.5 rounded ${isDark ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                    <CheckSquare className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
+                  <div className={`p-1.5 rounded ${isDark ? 'bg-emerald-900/30' : 'bg-emerald-100'}`}>
+                    <CheckSquare className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
                   <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
                     Global Permissions
@@ -286,8 +303,8 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => handleSelectAllGlobal(true)} className={`px-3 py-1.5 text-sm rounded-lg flex items-center space-x-1 ${
-                    isDark ? 'bg-green-900/30 hover:bg-green-800/50 text-green-300 border border-green-700' 
-                    : 'bg-green-100 hover:bg-green-200 text-green-700 border border-green-300'
+                    isDark ? 'bg-emerald-900/30 hover:bg-emerald-800/50 text-emerald-300 border border-emerald-700' 
+                    : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300'
                   }`}>
                     <CheckSquare className="w-4 h-4" />
                     <span>Select All</span>
@@ -308,7 +325,7 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-4">
                   <div className={`w-10 h-10 border-2 border-t-transparent rounded-full animate-spin ${
-                    isDark ? 'border-purple-400' : 'border-purple-600'
+                    isDark ? 'border-emerald-400' : 'border-emerald-600'
                   }`}></div>
                   <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     Loading permissions...
@@ -318,10 +335,10 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {Object.entries(PERMISSION_GROUPS).map(([groupKey, groupItems]) => (
                     <div key={groupKey} className={`rounded-lg border ${
-                      isDark ? 'border-purple-600/30 bg-gray-900/30' : 'border-purple-300 bg-purple-50/30'
+                      isDark ? 'border-emerald-600/30 bg-gray-900/30' : 'border-emerald-300 bg-emerald-50/30'
                     }`}>
                       <div className={`p-4 border-b flex justify-between items-center ${
-                        isDark ? 'border-purple-600/20' : 'border-purple-300'
+                        isDark ? 'border-emerald-600/20' : 'border-emerald-300'
                       }`}>
                         <h3 className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-700'}`}>
                           {groupKey}
@@ -329,7 +346,7 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                         <div className="flex space-x-2">
                           <button onClick={() => handleSelectAll(groupKey, true)} className={`p-1.5 rounded ${
                             selectAllState[groupKey] === 'all' 
-                              ? isDark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'
+                              ? isDark ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700'
                               : isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
                           }`}>
                             <CheckSquare className="w-4 h-4" />
@@ -345,7 +362,7 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                       <div className="p-4">
                         <div className="space-y-2">
                           {groupItems.map((item) => {
-                            const isChecked = permissions[item.key];
+                            const isChecked = Boolean(permissions[item.key]); // Ensure boolean
                             return (
                               <div key={item.key} className="flex items-center justify-between hover:bg-gray-100/10 dark:hover:bg-gray-700/10 p-2 rounded">
                                 <label className={`flex items-center space-x-3 cursor-pointer w-full ${
@@ -356,15 +373,15 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                                     checked={isChecked}
                                     onChange={() => handlePermissionChange(item.key)}
                                     className={`w-4 h-4 rounded cursor-pointer ${
-                                      isDark ? 'bg-gray-700 border-purple-600 text-purple-500 focus:ring-purple-600'
-                                      : 'border-purple-300 text-purple-600 focus:ring-purple-500'
+                                      isDark ? 'bg-gray-700 border-emerald-500 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-gray-800'
+                                      : 'border-emerald-400 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-white'
                                     }`}
                                   />
                                   <span className="text-sm">{item.label}</span>
                                 </label>
                                 <div className={`px-2 py-1 text-xs rounded ${
                                   isChecked
-                                    ? isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-100 text-green-700'
+                                    ? isDark ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'
                                     : isDark ? 'bg-red-900/30 text-red-300' : 'bg-red-100 text-red-700'
                                 }`}>
                                   {isChecked ? 'Allowed' : 'Denied'}
@@ -397,7 +414,9 @@ const PermissionsModal = ({ isOpen, onClose, adminId, adminName, isDark, onSaveP
                   </button>
                   <button onClick={handleSave} disabled={isSaving} className={`px-6 py-2 rounded-lg font-medium text-white flex items-center space-x-2 ${
                     isSaving ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
+                    : isDark 
+                      ? 'bg-gradient-to-r from-emerald-700 to-emerald-900 hover:from-emerald-600 hover:to-emerald-800'
+                      : 'bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600'
                   }`}>
                     {isSaving ? (
                       <>

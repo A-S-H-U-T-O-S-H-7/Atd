@@ -211,42 +211,49 @@ const ManageNotifications = ({ isDark }) => {
     loadNotifications();
   };
 
-  const tableHeaderStyle = isDark 
-    ? "text-gray-100 border-gray-600/40" 
-    : "text-gray-700 border-gray-300/40";
-
   return (
     <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${isDark ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20" : "bg-white border-emerald-300 shadow-emerald-500/10"}`}>
-      <div className={`px-6 py-5 border-b-2 ${isDark ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"}`}>
-        <div className="flex items-center justify-between">
+      {/* Header Section - Made Responsive */}
+      <div className={`px-4 sm:px-6 py-4 sm:py-5 border-b-2 ${isDark ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50" : "bg-gradient-to-r from-emerald-50 to-emerald-50/80 border-emerald-300"}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Title Section */}
           <div>
-            <h2 className={`text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
+            <h2 className={`text-lg sm:text-xl font-bold ${isDark ? "text-gray-100" : "text-gray-700"}`}>
               All Notifications ({totalCount})
             </h2>
+            <p className={`text-xs sm:text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              Showing {Math.min(itemsPerPage, totalCount)} of {totalCount} notifications
+            </p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                isDark
-                  ? "bg-gray-700 hover:bg-gray-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
-            </button>
+          {/* Controls Section */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Refresh Button */}
+            <div className="flex">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className={`flex-1 sm:flex-none px-3 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+                <span className="sm:hidden">Reload</span>
+              </button>
+            </div>
 
-            <div className="flex items-center gap-2">
-              <span className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+            {/* Items Per Page Selector */}
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <span className={`text-sm font-medium whitespace-nowrap ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                 Show:
               </span>
               <select
                 value={itemsPerPage}
                 onChange={handleItemsPerPageChange}
-                className={`px-3 py-2 rounded-lg border-2 font-medium transition-all ${
+                className={`px-3 py-2 rounded-lg border-2 font-medium transition-all w-full sm:w-auto ${
                   isDark
                     ? "bg-gray-700 border-emerald-600/50 text-white"
                     : "bg-white border-emerald-300 text-gray-900"
@@ -262,6 +269,7 @@ const ManageNotifications = ({ isDark }) => {
         </div>
       </div>
 
+      {/* Table Section - Will handle its own responsiveness */}
       <NotificationTable
         notifications={notifications}
         loading={loading}

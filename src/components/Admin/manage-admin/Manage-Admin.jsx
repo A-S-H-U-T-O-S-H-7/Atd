@@ -1,15 +1,6 @@
-// app/admin/manage/page.jsx (or wherever your main page is)
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  ArrowLeft, 
-  Download, 
-  RefreshCw, 
-  UserPlus,
-  Shield,
-  Filter,
-  Search
-} from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw, UserPlus, Shield, Filter, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
 import { toast } from 'react-hot-toast';
@@ -25,7 +16,7 @@ const ManageAdminPage = () => {
   const isDark = theme === "dark";
   const router = useRouter();
   
-  // State Management
+  // State
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +27,7 @@ const ManageAdminPage = () => {
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   
-  // Permissions Modal State
+  // Permissions Modal
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [selectedAdminForPermissions, setSelectedAdminForPermissions] = useState(null);
   const [selectedAdminName, setSelectedAdminName] = useState('');
@@ -51,7 +42,6 @@ const ManageAdminPage = () => {
 
   const itemsPerPage = 10;
 
-  // Fetch admins with debounce
   const fetchAdmins = useCallback(async (page = 1, search = "", type = filterType, status = filterStatus) => {
     try {
       setIsLoading(true);
@@ -64,7 +54,6 @@ const ManageAdminPage = () => {
       if (response.success) {
         let formattedAdmins = response.data.map(formatAdminForUI);
         
-        // Apply additional filters
         if (type !== 'all') {
           formattedAdmins = formattedAdmins.filter(admin => admin.type === type);
         }
@@ -97,7 +86,6 @@ const ManageAdminPage = () => {
     }
   }, [filterType, filterStatus]);
 
-  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchAdmins(1, searchTerm, filterType, filterStatus);
@@ -106,52 +94,44 @@ const ManageAdminPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, filterType, filterStatus, fetchAdmins]);
 
-  // Initial fetch
   useEffect(() => {
     fetchAdmins(currentPage, searchTerm, filterType, filterStatus);
   }, [currentPage, fetchAdmins]);
 
+  const handleSubmitAdmin = async (formData) => {
+    try {
+      const { user: currentAdmin } = useAdminAuthStore.getState();
+      
+      if (currentAdmin?.id) {
+        formData.append('admin_id', currentAdmin.id);
+      }
+      
+      if (!isEditMode && currentAdmin?.id) {
+        formData.append('created_by', currentAdmin.id);
+      }
+      
+      if (isEditMode && selectedAdmin) {
+        formData.append('id', selectedAdmin.id);
+      }
+      
+      if (isEditMode && selectedAdmin) {
+        await adminService.updateAdmin(selectedAdmin.id, formData);
+        toast.success('Admin updated successfully!');
+      } else {
+        await adminService.addAdmin(formData);
+        toast.success('Admin added successfully!');
+      }
+      
+      await fetchAdmins(currentPage, searchTerm, filterType, filterStatus);
+      resetForm();
+      
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "Failed to save admin";
+      toast.error(errorMessage);
+      throw err;
+    }
+  };
 
-const handleSubmitAdmin = async (formData) => {
-  try {
-    // Get current admin from your auth store
-    const { getToken, user: currentAdmin } = useAdminAuthStore.getState();
-    
-    if (currentAdmin?.id) {
-      formData.append('admin_id', currentAdmin.id);
-    }
-    
-    // Add created_by only for new admin creation
-    if (!isEditMode && currentAdmin?.id) {
-      formData.append('created_by', currentAdmin.id);
-    }
-    
-    // For updates, ensure we have the ID
-    if (isEditMode && selectedAdmin) {
-      formData.append('id', selectedAdmin.id);
-    }
-    
-    // Call the service
-    if (isEditMode && selectedAdmin) {
-      await adminService.updateAdmin(selectedAdmin.id, formData);
-      toast.success('Admin updated successfully!');
-    } else {
-      await adminService.addAdmin(formData);
-      toast.success('Admin added successfully!');
-    }
-    
-    // Refresh list
-    await fetchAdmins(currentPage, searchTerm, filterType, filterStatus);
-    resetForm();
-    
-  } catch (err) {
-    const errorMessage = err.response?.data?.message || err.message || "Failed to save admin";
-    toast.error(errorMessage);
-    throw err;
-  }
-};
-
-  // Handle edit
   const handleEdit = async (admin) => {
     try {
       const response = await adminService.getAdminById(admin.id);
@@ -160,7 +140,6 @@ const handleSubmitAdmin = async (formData) => {
         setSelectedAdmin(adminData);
         setIsEditMode(true);
         setIsFormExpanded(true);
-        
       }
     } catch (err) {
       console.error("Error fetching admin:", err);
@@ -168,12 +147,10 @@ const handleSubmitAdmin = async (formData) => {
     }
   };
 
-  // Handle toggle status
   const handleToggleStatus = async (id) => {
     try {
       const response = await adminService.toggleStatus(id);
       if (response.success) {
-        // Refresh the list to show updated status
         await fetchAdmins(currentPage, searchTerm, filterType, filterStatus);
         toast.success('Status updated successfully!');
       } else {
@@ -185,43 +162,38 @@ const handleSubmitAdmin = async (formData) => {
     }
   };
 
-  // Handle open permissions modal
   const handleOpenPermissions = (adminId, adminName) => {
     setSelectedAdminForPermissions(adminId);
     setSelectedAdminName(adminName);
     setShowPermissionsModal(true);
   };
 
-  // Handle save permissions
   const handleSavePermissions = async (adminId, permissions) => {
-  try {
-    const response = await adminService.updatePermissions(adminId, permissions);
-    if (response.success) {
-      return response;
-    } else {
-      throw new Error(response.message || "Failed to update permissions");
+    try {
+      const response = await adminService.updatePermissions(adminId, permissions);
+      if (response.success) {
+        return response;
+      } else {
+        throw new Error(response.message || "Failed to update permissions");
+      }
+    } catch (err) {
+      console.error("Error saving permissions:", err);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to save permissions";
+      toast.error(errorMessage);
+      throw err;
     }
-  } catch (err) {
-    console.error("Error saving permissions:", err);
-    const errorMessage = err.response?.data?.message || err.message || "Failed to save permissions";
-    toast.error(errorMessage);
-    throw err;
-  }
-};
+  };
 
-  // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Reset form
   const resetForm = () => {
     setIsFormExpanded(false);
     setIsEditMode(false);
     setSelectedAdmin(null);
   };
 
-  // Toggle form expansion
   const toggleForm = () => {
     if (isFormExpanded && isEditMode) {
       resetForm();
@@ -230,51 +202,8 @@ const handleSubmitAdmin = async (formData) => {
     }
   };
 
-  // Export to CSV
-  const handleExport = async () => {
-    try {
-      // Create CSV content
-      const headers = ['S.No', 'Username', 'Name', 'Email', 'Phone', 'Type', 'Status', 'Created By', 'Created At'];
-      const csvRows = [];
-      
-      // Add headers
-      csvRows.push(headers.join(','));
-      
-      // Add data rows
-      admins.forEach((admin, index) => {
-        const row = [
-          index + 1,
-          `"${admin.username}"`,
-          `"${admin.name}"`,
-          `"${admin.email || 'N/A'}"`,
-          `"${admin.phone || 'N/A'}"`,
-          admin.type,
-          admin.isActive ? 'Active' : 'Inactive',
-          `"${admin.createdBy}"`,
-          `"${new Date(admin.createdAt).toLocaleDateString()}"`
-        ];
-        csvRows.push(row.join(','));
-      });
-      
-      // Create and download CSV file
-      const csvContent = csvRows.join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `admins_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast.success('Export completed!');
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export data');
-    }
-  };
+  
 
-  // Handle clear filters
   const handleClearFilters = () => {
     setFilterType('all');
     setFilterStatus('all');
@@ -282,24 +211,9 @@ const handleSubmitAdmin = async (formData) => {
     setCurrentPage(1);
   };
 
-  // Calculate filtered admins for table
-  const filteredAdmins = admins.filter(admin => {
-    if (filterType !== 'all' && admin.type !== filterType) return false;
-    if (filterStatus !== 'all') {
-      const statusValue = filterStatus === '1';
-      return admin.isActive === statusValue;
-    }
-    return true;
-  });
-
-  // Calculate paginated admins
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedAdmins = filteredAdmins.slice(startIndex, endIndex);
-
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
-      isDark ? "bg-gray-900" : "bg-purple-50/30"
+      isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>
       <div className="p-4 md:p-6 lg:p-8">
         {/* Header */}
@@ -310,25 +224,25 @@ const handleSubmitAdmin = async (formData) => {
                 onClick={() => router.back()}
                 className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                   isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-purple-600/30"
-                    : "hover:bg-purple-50 bg-purple-50/50 border border-purple-200"
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
                 }`}
               >
                 <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-purple-400" : "text-purple-600"
+                  isDark ? "text-emerald-400" : "text-emerald-600"
                 }`} />
               </button>
               <div className="flex items-center space-x-3">
                 <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-purple-900/50" : "bg-purple-100"
+                  isDark ? "bg-emerald-900/50" : "bg-emerald-100"
                 }`}>
                   <Shield className={`w-6 h-6 ${
-                    isDark ? "text-purple-400" : "text-purple-600"
+                    isDark ? "text-emerald-400" : "text-emerald-600"
                   }`} />
                 </div>
                 <div>
                   <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
-                    isDark ? "from-purple-400 to-indigo-400" : "from-purple-600 to-indigo-600"
+                    isDark ? "from-emerald-400 to-emerald-500" : "from-emerald-600 to-emerald-700"
                   } bg-clip-text text-transparent`}>
                     Manage Admins
                   </h1>
@@ -350,30 +264,15 @@ const handleSubmitAdmin = async (formData) => {
                 }}
                 className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                   isDark
-                    ? "bg-purple-600 hover:bg-purple-700 text-white"
-                    : "bg-purple-500 hover:bg-purple-600 text-white"
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
                 }`}
               >
                 <UserPlus size={16} />
                 <span>Add Admin</span>
               </button>
               
-              <button
-                onClick={handleExport}
-                disabled={admins.length === 0}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  admins.length === 0
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                } ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
+             
               
               <button
                 onClick={() => fetchAdmins(currentPage, searchTerm, filterType, filterStatus)}
@@ -408,9 +307,9 @@ const handleSubmitAdmin = async (formData) => {
                     }}
                     className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all duration-200 ${
                       isDark
-                        ? 'bg-gray-800 border-purple-600/50 text-white placeholder-gray-400 focus:border-purple-500'
-                        : 'bg-white border-purple-300 text-gray-900 placeholder-gray-500 focus:border-purple-500'
-                    } focus:ring-2 focus:ring-purple-500/20 focus:outline-none`}
+                        ? 'bg-gray-800 border-emerald-600/50 text-white placeholder-gray-400 focus:border-emerald-500'
+                        : 'bg-white border-emerald-300 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
+                    } focus:ring-2 focus:ring-emerald-500/20 focus:outline-none`}
                   />
                 </div>
               </div>
@@ -420,8 +319,8 @@ const handleSubmitAdmin = async (formData) => {
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                   className={`px-4 py-3 rounded-xl flex items-center space-x-2 ${
                     isDark
-                      ? 'bg-gray-800 hover:bg-gray-700 border border-purple-600/50 text-gray-300'
-                      : 'bg-white hover:bg-gray-50 border border-purple-300 text-gray-700'
+                      ? 'bg-gray-800 hover:bg-gray-700 border border-emerald-600/50 text-gray-300'
+                      : 'bg-white hover:bg-gray-50 border border-emerald-300 text-gray-700'
                   }`}
                 >
                   <Filter size={16} />
@@ -430,12 +329,11 @@ const handleSubmitAdmin = async (formData) => {
               </div>
             </div>
             
-            {/* Advanced Filters */}
             {showAdvancedFilters && (
               <div className={`mt-4 p-4 rounded-xl border ${
                 isDark
-                  ? 'bg-gray-800 border-purple-600/50'
-                  : 'bg-white border-purple-300'
+                  ? 'bg-gray-800 border-emerald-600/50'
+                  : 'bg-white border-emerald-300'
               }`}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -452,8 +350,8 @@ const handleSubmitAdmin = async (formData) => {
                       }}
                       className={`w-full px-4 py-2 rounded-lg border ${
                         isDark
-                          ? 'bg-gray-700 border-purple-600/50 text-white'
-                          : 'bg-white border-purple-300 text-gray-900'
+                          ? 'bg-gray-700 border-emerald-600/50 text-white'
+                          : 'bg-white border-emerald-300 text-gray-900'
                       }`}
                     >
                       <option value="all">All Types</option>
@@ -482,8 +380,8 @@ const handleSubmitAdmin = async (formData) => {
                       }}
                       className={`w-full px-4 py-2 rounded-lg border ${
                         isDark
-                          ? 'bg-gray-700 border-purple-600/50 text-white'
-                          : 'bg-white border-purple-300 text-gray-900'
+                          ? 'bg-gray-700 border-emerald-600/50 text-white'
+                          : 'bg-white border-emerald-300 text-gray-900'
                       }`}
                     >
                       <option value="all">All Status</option>
@@ -524,37 +422,34 @@ const handleSubmitAdmin = async (formData) => {
 
         {/* Admin Table */}
         <div className="mb-6">
-  <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
-    isDark
-      ? "bg-gray-800 border-purple-600/50"
-      : "bg-white border-purple-300"
-  }`}>
-    <AdminTable
-      admins={admins}
-      isDark={isDark}
-      onEdit={handleEdit}
-      onToggleStatus={handleToggleStatus}
-      onOpenPermissions={handleOpenPermissions}
-      isLoading={isLoading}
-    />
+          <div className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
+            isDark
+              ? "bg-gray-800 border-emerald-600/50"
+              : "bg-white border-emerald-300"
+          }`}>
+            <AdminTable
+              admins={admins}
+              isDark={isDark}
+              onEdit={handleEdit}
+              onToggleStatus={handleToggleStatus}
+              onOpenPermissions={handleOpenPermissions}
+              isLoading={isLoading}
+            />
             
-            {/* Pagination */}
             {!isLoading && admins.length > 0 && (
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <Pagination
-          currentPage={pagination.current_page}
-          totalPages={pagination.total_pages}
-          onPageChange={handlePageChange}
-          totalItems={pagination.total}
-          itemsPerPage={pagination.per_page}
-        />
-      </div>
-    )}
-  
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <Pagination
+                  currentPage={pagination.current_page}
+                  totalPages={pagination.total_pages}
+                  onPageChange={handlePageChange}
+                  totalItems={pagination.total}
+                  itemsPerPage={pagination.per_page}
+                />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Permissions Modal */}
         <PermissionsModal
           isOpen={showPermissionsModal}
           onClose={() => {
