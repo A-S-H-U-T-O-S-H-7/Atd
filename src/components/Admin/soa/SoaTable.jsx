@@ -13,7 +13,7 @@ const SoaTable = ({
   // Table headers configuration
   const tableHeaders = [
     { label: "SN", width: "60px" },
-    { label: "Date", width: "140px" },
+    { label: "Date", width: "150px" },
     { label: "Normal Interest Charged", width: "80px" },
     { label: "Penal Interest Charged", width: "80px" },
     { label: "Penality Charged", width: "80px" },
