@@ -195,72 +195,67 @@ const handleEdit = async (bankOrId) => {
       <div className="p-0 md:p-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
-                    : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"
-                }`}
-              >
-                <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`} />
-              </button>
-              <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
-                  isDark ? "bg-emerald-900/50" : "bg-emerald-100"
-                }`}>
-                  <Building2 className={`w-6 h-6 ${
-                    isDark ? "text-emerald-400" : "text-emerald-600"
-                  }`} />
-                </div>
-                <h1 className={`text-xl md:text-3xl font-bold bg-gradient-to-r ${
-                  isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-                } bg-clip-text text-transparent`}>
-                  Manage Banks
-                </h1>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => {
-                  if (isEditMode) cancelEdit();
-                  setIsFormExpanded(true);
-                }}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
-              >
-                <Plus size={16} />
-                <span>Add Bank Account</span>
-              </button>
-              
-              <button
-                onClick={() => fetchBanks(currentPage, searchTerm)}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                <span>Refresh</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="mb-6">
-            
-          </div>
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+  <div className="flex items-center gap-3 sm:gap-4">
+    <button
+      onClick={() => router.back()}
+      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+        isDark
+          ? "hover:bg-gray-800 bg-gray-800/50 border border-blue-600/30"
+          : "hover:bg-blue-50 bg-blue-50/50 border border-blue-200"
+      }`}
+    >
+      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+        isDark ? "text-emerald-400" : "text-emerald-600"
+      }`} />
+    </button>
+    <div className="flex items-center gap-2 sm:gap-3">
+      <div className={`p-2 sm:p-3 rounded-lg ${
+        isDark ? "bg-emerald-900/50" : "bg-emerald-100"
+      }`}>
+        <Building2 className={`w-5 h-5 sm:w-6 sm:h-6 ${
+          isDark ? "text-emerald-400" : "text-emerald-600"
+        }`} />
+      </div>
+      <h1 className={`text-lg sm:text-xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+        isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+      } bg-clip-text text-transparent`}>
+        Manage Banks
+      </h1>
+    </div>
+  </div>
+  
+  <div className="flex gap-2 w-full sm:w-auto">
+    <button
+      onClick={() => {
+        if (isEditMode) cancelEdit();
+        setIsFormExpanded(true);
+      }}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-blue-600 hover:bg-blue-700 text-white"
+          : "bg-blue-500 hover:bg-blue-600 text-white"
+      }`}
+    >
+      <Plus size={14} className="sm:size-[16px]" />
+      <span className="text-xs sm:text-sm">Add Bank</span>
+    </button>
+    
+    <button
+      onClick={() => fetchBanks(currentPage, searchTerm)}
+      disabled={isLoading}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-gray-700 hover:bg-gray-600 text-white"
+          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <RefreshCw size={14} className={`sm:size-[16px] ${isLoading ? 'animate-spin' : ''}`} />
+      <span className="text-xs sm:text-sm">Refresh</span>
+    </button>
+  </div>
+</div>
+         
 
           
         </div>

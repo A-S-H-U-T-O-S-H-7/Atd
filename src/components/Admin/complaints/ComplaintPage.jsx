@@ -169,57 +169,58 @@ const transformedComplaints = complaints.map(complaint => ({
       <div className="p-0 md:p-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-                }`}
-              >
-                <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`} />
-              </button>
-              <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-              } bg-clip-text text-transparent`}>
-                List Of Complaints
-              </h1>
-              {isLoading && (
-                <RefreshCw className="w-5 h-5 animate-spin text-emerald-500" />
-              )}
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                <span>Refresh</span>
-              </button>
-              <button
-                onClick={() => handleExport('excel')}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                }`}
-              >
-                <Download size={16} />
-                <span>Export</span>
-              </button>
-            </div>
-          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+  <div className="flex items-center gap-3 sm:gap-4">
+    <button
+      onClick={() => router.back()}
+      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+        isDark
+          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+      }`}
+    >
+      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+        isDark ? "text-emerald-400" : "text-emerald-600"
+      }`} />
+    </button>
+    <div className="flex items-center gap-2">
+      <h1 className={`text-lg sm:text-xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+        isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+      } bg-clip-text text-transparent`}>
+        List Of Complaints
+      </h1>
+      {isLoading && (
+        <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-emerald-500" />
+      )}
+    </div>
+  </div>
+  
+  <div className="flex gap-2 w-full sm:w-auto">
+    <button
+      onClick={handleRefresh}
+      disabled={isLoading}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-gray-700 hover:bg-gray-600 text-white"
+          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <RefreshCw size={14} className={`sm:size-[16px] ${isLoading ? 'animate-spin' : ''}`} />
+      <span className="text-xs sm:text-sm">Refresh</span>
+    </button>
+    <button
+      onClick={() => handleExport('excel')}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-green-600 hover:bg-green-700 text-white"
+          : "bg-green-500 hover:bg-green-600 text-white"
+      }`}
+    >
+      <Download size={14} className="sm:size-[16px]" />
+      <span className="text-xs sm:text-sm">Export</span>
+    </button>
+  </div>
+</div>
 
           {/* Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

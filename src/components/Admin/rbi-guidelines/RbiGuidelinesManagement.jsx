@@ -319,49 +319,49 @@ const RbiGuidelinesPage = () => {
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <div className="p-0 md:p-4">
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className={`p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-                }`}
-              >
-                <ArrowLeft className={`w-5 h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-              </button>
-              <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-              } bg-clip-text text-transparent`}>
-                List Of RBI Guidelines
-              </h1>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleExport}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-500 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                } shadow-lg hover:shadow-xl`}
-              >
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
-              <button
-                onClick={handleCreateGuideline}
-                className={`flex cursor-pointer items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white"
-                    : "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white"
-                } shadow-lg hover:shadow-xl`}
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Guideline</span>
-              </button>
-            </div>
-          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+  <div className="flex items-center gap-3 sm:gap-4">
+    <button
+      onClick={() => router.back()}
+      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+        isDark
+          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+      }`}
+    >
+      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+    </button>
+    <h1 className={`text-lg sm:text-xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+    } bg-clip-text text-transparent`}>
+      List Of RBI Guidelines
+    </h1>
+  </div>
+  <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+    <button
+      onClick={handleExport}
+      className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-green-600 hover:bg-green-500 text-white"
+          : "bg-green-500 hover:bg-green-600 text-white"
+      } shadow-lg hover:shadow-xl`}
+    >
+      <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+      <span className="text-xs sm:text-sm">Export</span>
+    </button>
+    <button
+      onClick={handleCreateGuideline}
+      className={`flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium sm:font-semibold transition-all duration-200 hover:scale-105 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white"
+          : "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white"
+      } shadow-lg hover:shadow-xl`}
+    >
+      <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+      <span className="text-xs sm:text-sm">Add Guideline</span>
+    </button>
+  </div>
+</div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="md:col-span-2">

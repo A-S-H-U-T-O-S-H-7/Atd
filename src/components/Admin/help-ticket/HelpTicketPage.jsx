@@ -193,11 +193,7 @@ const HelpTicketPage = () => {
                   } bg-clip-text text-transparent`}>
                     Help Tickets
                   </h1>
-                  <p className={`text-sm mt-1 ${
-                    isDark ? "text-gray-400" : "text-gray-600"
-                  }`}>
-                    Raise and track issues with the development team
-                  </p>
+                  
                 </div>
               </div>
             </div>

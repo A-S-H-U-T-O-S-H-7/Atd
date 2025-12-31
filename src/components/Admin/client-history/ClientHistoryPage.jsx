@@ -88,16 +88,13 @@ const fetchClientHistories = async () => {
       
       // Handle different response structures
       if (response && typeof response === 'object') {
-        // Check if response has success property
         if (response.success !== undefined) {
           if (response.success) {
-            // Check if clients array exists
             if (response.clients && Array.isArray(response.clients)) {
               console.log(`📋 Found ${response.clients.length} clients`);
               
               // Transform API data
               const transformedData = response.clients.map((client, index) => {
-                console.log(`👤 Client ${index}:`, client);
                 return {
                   id: client.user_id || client.id || `client-${index}`,
                   sn: index + 1,
@@ -112,12 +109,10 @@ const fetchClientHistories = async () => {
                 };
               });
               
-              console.log("🔄 Transformed data:", transformedData);
               
               setClientHistoryData(transformedData);
               setTotalCount(response.clients.length);
               setTotalPages(Math.ceil(response.clients.length / itemsPerPage));
-              console.log("✅ Data set successfully");
             } else {
               console.error("❌ No clients array in response:", response);
               setError("No client data found in response");
@@ -131,7 +126,6 @@ const fetchClientHistories = async () => {
         } 
         // If response is directly an array
         else if (Array.isArray(response)) {
-          console.log(`📋 Response is array with ${response.length} items`);
           
           const transformedData = response.map((client, index) => ({
             id: client.user_id || client.id || `client-${index}`,
@@ -200,7 +194,6 @@ const fetchClientHistories = async () => {
     console.error("❌ Stack trace:", err.stack);
     setError("An unexpected error occurred. Please refresh the page.");
   } finally {
-    console.log("🏁 FINISH: fetchClientHistories completed");
     setLoading(false);
   }
 };
@@ -384,56 +377,55 @@ const fetchClientHistories = async () => {
       <div className="p-0 md:p-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => router.back()}
-                className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                  isDark
-                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-                }`}
-              >
-                <ArrowLeft className={`w-5 h-5 ${
-                  isDark ? "text-emerald-400" : "text-emerald-600"
-                }`} />
-              </button>
-              <h1 className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${
-                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-              } bg-clip-text text-transparent`}>
-                Client History ({totalCount})
-              </h1>
-            </div>
-            
-            {/* Export and Refresh */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => fetchClientHistories()}
-                disabled={loading}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
-              </button>
-              
-              <button
-                onClick={handleExportToExcel}
-                disabled={exporting || clientHistoryData.length === 0}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  isDark
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                } ${exporting || clientHistoryData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <Download className={`w-4 h-4 ${exporting ? 'animate-spin' : ''}`} />
-                <span>{exporting ? 'Exporting...' : 'Export'}</span>
-              </button>
-            </div>
-          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+  <div className="flex items-center gap-3 sm:gap-4">
+    <button 
+      onClick={() => router.back()}
+      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+        isDark
+          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+      }`}
+    >
+      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+        isDark ? "text-emerald-400" : "text-emerald-600"
+      }`} />
+    </button>
+    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+    } bg-clip-text text-transparent`}>
+      Client History ({totalCount})
+    </h1>
+  </div>
+  
+  <div className="flex gap-2 w-full sm:w-auto">
+    <button
+      onClick={() => fetchClientHistories()}
+      disabled={loading}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-gray-700 hover:bg-gray-600 text-white"
+          : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+      } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+      <span className="text-xs sm:text-sm">Refresh</span>
+    </button>
+    
+    <button
+      onClick={handleExportToExcel}
+      disabled={exporting || clientHistoryData.length === 0}
+      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+        isDark
+          ? "bg-green-600 hover:bg-green-700 text-white"
+          : "bg-green-500 hover:bg-green-600 text-white"
+      } ${exporting || clientHistoryData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
+      <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
+    </button>
+  </div>
+</div>
 
           {/* Error Message */}
           {error && (
@@ -453,7 +445,7 @@ const fetchClientHistories = async () => {
           )}
 
           {/* Search and Filters */}
-          <div className="mb-6 grid grid-cols-2">
+          <div className="mb-6 md:grid md:grid-cols-2">
             <AdvancedSearchBar 
               searchOptions={SearchOptions}
               onSearch={handleAdvancedSearch}
