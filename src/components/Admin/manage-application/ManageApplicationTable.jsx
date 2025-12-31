@@ -8,7 +8,9 @@ import {
   DollarSign,
   Settings,
   Grid,
-  IndianRupee
+  IndianRupee,
+  Menu,
+  X
 } from "lucide-react";
 import Pagination from "../Pagination";
 import ApplicationRow from "./ManageApplicationRow";
@@ -55,6 +57,9 @@ const ManageApplicationTable = ({
     otherDetails: true
   });
 
+  // State for mobile controls menu
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Toggle section function
   const toggleSection = (section) => {
     setCollapsedSections(prev => ({
@@ -63,7 +68,7 @@ const ManageApplicationTable = ({
     }));
   };
 
-  // Define column groups with metadata
+  // Define column groups with metadata - KEEPING DESKTOP WIDTHS SAME
   const columnGroups = {
     fixed: [
       { label: "SR. No", width: "90px" },
@@ -76,7 +81,6 @@ const ManageApplicationTable = ({
       { label: "Approved Date", width: "100px" },
       { label: "Disburse Date", width: "120px" },
       { label: "Due Date", width: "120px" },
-
     ],
     personalInfo: [
       { label: "Current Address", width: "150px" },
@@ -141,7 +145,7 @@ const ManageApplicationTable = ({
     ]
   };
 
-  // Get all visible headers
+  // Get all visible headers - SAME AS BEFORE
   const getVisibleHeaders = () => {
     return [
       ...columnGroups.fixed,
@@ -178,40 +182,132 @@ const ManageApplicationTable = ({
 
   return (
     <>
-    {/* Loan Status Color Indicators */}
-    <div className={`flex justify-end items-center gap-6 mb-4 px-3   ${
-      isDark ? "bg-gray-900 " : "bg-gray-50/80 "
-    }`}>
-      {/* Closed Loans Indicator */}
-      <div className="flex items-center gap-2">
-        <div className={`w-5 h-5 rounded-sm ${
-          isDark ? "bg-orange-900/60 border border-orange-700/50" : "bg-orange-100 border border-orange-300"
-        }`}></div>
-        <span className={`text-xs font-medium tracking-wide ${
-          isDark ? "text-orange-200" : "text-orange-700"
-        }`}>
-          Closed
-        </span>
+      {/* Loan Status Color Indicators - Responsive */}
+      <div className={`flex justify-start md:justify-end items-center gap-3 md:gap-6 mb-4 px-3 py-2 md:py-0 ${
+        isDark ? "bg-gray-900" : "bg-gray-50/80"
+      }`}>
+        {/* Closed Loans Indicator */}
+        <div className="flex items-center gap-2">
+          <div className={`w-4 h-4 md:w-5 md:h-5 rounded-sm ${
+            isDark ? "bg-orange-900/60 border border-orange-700/50" : "bg-orange-100 border border-orange-300"
+          }`}></div>
+          <span className={`text-xs md:text-sm font-medium tracking-wide ${
+            isDark ? "text-orange-200" : "text-orange-700"
+          }`}>
+            Closed
+          </span>
+        </div>
+        
+        {/* Renewal Loans Indicator */}
+        <div className="flex items-center gap-2">
+          <div className={`w-4 h-4 md:w-5 md:h-5 rounded-sm ${
+            isDark ? "bg-blue-900/50 border border-blue-700/40" : "bg-blue-50 border border-blue-300"
+          }`}></div>
+          <span className={`text-xs md:text-sm font-medium tracking-wide ${
+            isDark ? "text-blue-200" : "text-blue-700"
+          }`}>
+            Renewal
+          </span>
+        </div>
       </div>
-      
-      {/* Renewal Loans Indicator */}
-      <div className="flex items-center gap-2">
-        <div className={`w-5 h-5 rounded-sm ${
-          isDark ? "bg-blue-900/50 border border-blue-700/40" : "bg-blue-50 border border-blue-300"
-        }`}></div>
-        <span className={`text-xs font-medium tracking-wide ${
-          isDark ? "text-blue-200" : "text-blue-700"
-        }`}>
-          Renewal
-        </span>
-      </div>
-       </div>
 
-      {/* Minimal Compact Controls - Integrated with table */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          
-          {/* Column Group Controls */}
+      {/* Mobile Menu Toggle Button (Only on mobile) */}
+      <div className="flex md:hidden mb-4">
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg w-full justify-center ${
+            isDark 
+              ? "bg-gray-800 hover:bg-gray-700 text-gray-300" 
+              : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+          }`}
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          <span className="font-medium">Column Controls</span>
+        </button>
+      </div>
+
+      {/* Column Controls Container - Mobile stacked, Desktop row (EXACTLY like original) */}
+      <div className={`
+        ${mobileMenuOpen ? 'block' : 'hidden md:flex'}
+        md:flex md:items-center md:justify-between mb-4
+      `}>
+        {/* Mobile: Full width stacked layout */}
+        <div className="md:hidden mb-4">
+          <div className={`text-sm font-semibold mb-2 pl-2 ${
+            isDark ? "text-gray-300" : "text-gray-700"
+          }`}>
+            Toggle Column Groups:
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => toggleSection('personalInfo')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-200 ${
+                collapsedSections.personalInfo
+                  ? isDark 
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  : isDark
+                    ? "bg-emerald-700/30 hover:bg-emerald-700/40 text-emerald-300 border border-emerald-500/30"
+                    : "bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300"
+              }`}
+            >
+              <User className="w-4 h-4" />
+              <span className="text-xs">Personal</span>
+            </button>
+            
+            <button
+              onClick={() => toggleSection('loanDetails')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-200 ${
+                collapsedSections.loanDetails
+                  ? isDark 
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  : isDark
+                    ? "bg-amber-700/30 hover:bg-amber-700/40 text-amber-300 border border-amber-500/30"
+                    : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-300"
+              }`}
+            >
+              <IndianRupee className="w-4 h-4" />
+              <span className="text-xs">Loan</span>
+            </button>
+
+            <button
+              onClick={() => toggleSection('documents')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-200 ${
+                collapsedSections.documents
+                  ? isDark 
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  : isDark
+                    ? "bg-purple-700/30 hover:bg-purple-700/40 text-purple-300 border border-purple-500/30"
+                    : "bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-300"
+              }`}
+            >
+              <File className="w-4 h-4" />
+              <span className="text-xs">Documents</span>
+            </button>
+
+            <button
+              onClick={() => toggleSection('otherDetails')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-200 ${
+                collapsedSections.otherDetails
+                  ? isDark 
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  : isDark
+                    ? "bg-blue-700/30 hover:bg-blue-700/40 text-blue-300 border border-blue-500/30"
+                    : "bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-300"
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span className="text-xs">Details</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop: EXACTLY YOUR ORIGINAL ROW LAYOUT */}
+        <div className="hidden md:flex md:items-center md:gap-3">
+          {/* Column Group Controls - EXACTLY SAME */}
           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
             isDark ? "bg-gray-800/50" : "bg-gray-100"
           }`}>
@@ -221,7 +317,7 @@ const ManageApplicationTable = ({
             </span>
           </div>
 
-          {/* Personal Info Toggle */}
+          {/* Personal Info Toggle - EXACTLY SAME */}
           <button
             onClick={() => toggleSection('personalInfo')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
@@ -243,7 +339,7 @@ const ManageApplicationTable = ({
             )}
           </button>
           
-          {/* Loan Details Toggle */}
+          {/* Loan Details Toggle - EXACTLY SAME */}
           <button
             onClick={() => toggleSection('loanDetails')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
@@ -257,8 +353,6 @@ const ManageApplicationTable = ({
             }`}
           >
             <IndianRupee className="w-3.5 h-3.5" />
-
-
             <span>Loan</span>
             {collapsedSections.loanDetails ? (
               <ChevronRight className="w-3.5 h-3.5" />
@@ -267,7 +361,7 @@ const ManageApplicationTable = ({
             )}
           </button>
 
-          {/* Documents Toggle */}
+          {/* Documents Toggle - EXACTLY SAME */}
           <button
             onClick={() => toggleSection('documents')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
@@ -289,7 +383,7 @@ const ManageApplicationTable = ({
             )}
           </button>
 
-          {/* Other Details Toggle */}
+          {/* Other Details Toggle - EXACTLY SAME */}
           <button
             onClick={() => toggleSection('otherDetails')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${
@@ -310,15 +404,13 @@ const ManageApplicationTable = ({
               <ChevronDown className="w-3.5 h-3.5" />
             )}
           </button>
-
-          
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2">
+        {/* Quick Actions - Desktop right side, Mobile below */}
+        <div className="flex flex-col sm:flex-row gap-2 md:flex md:items-center md:gap-2">
           <button
             onClick={expandAll}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+            className={`px-3 py-2.5 md:px-3 md:py-1.5 rounded-md text-xs md:text-xs font-medium transition-all duration-200 ${
               isDark 
                 ? "bg-emerald-600 hover:bg-emerald-500 text-white" 
                 : "bg-emerald-500 hover:bg-emerald-600 text-white"
@@ -328,7 +420,7 @@ const ManageApplicationTable = ({
           </button>
           <button
             onClick={collapseAll}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+            className={`px-3 py-2.5 md:px-3 md:py-1.5 rounded-md text-xs md:text-xs font-medium transition-all duration-200 ${
               isDark 
                 ? "bg-gray-700 hover:bg-gray-600 text-gray-300" 
                 : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -339,26 +431,25 @@ const ManageApplicationTable = ({
         </div>
       </div>
 
-      
-
-      {/* Animated Table */}
+      {/* Table Container - Desktop stays exactly same, mobile/tab responsive */}
       <motion.div
         key={JSON.stringify(collapsedSections)}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
-        className={`rounded-2xl shadow-2xl border-2 overflow-hidden ${
+        className={`rounded-lg md:rounded-2xl shadow-lg md:shadow-2xl border md:border-2 overflow-hidden ${
           isDark
-            ? "bg-gray-800 border-emerald-600/50 shadow-emerald-900/20"
-            : "bg-white border-emerald-300 shadow-emerald-500/10"
+            ? "bg-gray-800 border-gray-700 md:border-emerald-600/50 shadow-emerald-900/10 md:shadow-emerald-900/20"
+            : "bg-white border-gray-200 md:border-emerald-300 shadow-gray-500/10 md:shadow-emerald-500/10"
         }`}
       >
+        {/* Horizontal Scroll Container for mobile/tablet */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "200px" }}>
-            <thead className={`border-b-2 ${
+          <table className="w-full min-w-max md:min-w-full" style={{ minWidth: "1200px" }}>
+            <thead className={`border-b md:border-b-2 ${
               isDark
-                ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
-                : "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300"
+                ? "bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700 md:border-emerald-600/50"
+                : "bg-gradient-to-r from-emerald-50 to-teal-50 border-gray-200 md:border-emerald-300"
             }`}>
               <tr>
                 {getVisibleHeaders().map((header, index) => (
@@ -393,7 +484,6 @@ const ManageApplicationTable = ({
                   onLoanEligibilityClick={onLoanEligibilityClick}  
                   onCheckClick={onCheckClick}
                   onReplaceKYCClick = {onReplaceKYCClick}
-                  
                   onDocumentStatusClick={onDocumentStatusClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
@@ -410,17 +500,18 @@ const ManageApplicationTable = ({
           </table>
         </div>
         
-        {/* Empty State */}
+        {/* Empty State - Responsive sizing */}
         {paginatedApplications.length === 0 && (
-          <div className={`text-center py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            <div className="flex flex-col items-center space-y-4">
-              <FileText className="w-16 h-16 opacity-50" />
-              <p className="text-lg font-medium">No applications found</p>
-              <p className="text-sm">Try adjusting your search criteria</p>
+          <div className={`text-center py-8 md:py-12 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className="flex flex-col items-center space-y-3 md:space-y-4">
+              <FileText className="w-12 h-12 md:w-16 md:h-16 opacity-50" />
+              <p className="text-base md:text-lg font-medium">No applications found</p>
+              <p className="text-xs md:text-sm">Try adjusting your search criteria</p>
             </div>
           </div>
         )}
         
+        {/* Pagination */}
         {totalPages > 0 && (
           <div>
             <Pagination
@@ -433,6 +524,11 @@ const ManageApplicationTable = ({
           </div>
         )}
       </motion.div>
+
+      {/* Mobile Helper Text */}
+      <div className="md:hidden text-xs text-center text-gray-500 dark:text-gray-400 mt-4 px-4">
+        <p>Scroll horizontally to view all columns</p>
+      </div>
     </>
   );
 };
