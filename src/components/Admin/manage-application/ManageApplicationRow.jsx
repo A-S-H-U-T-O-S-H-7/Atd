@@ -156,6 +156,15 @@ const ApplicationRow = ({
           Collection
         </button>
       )}
+      {application.loanStatusId === 12 && (
+        <button
+          onClick={() => onCollectionClick && onCollectionClick(application, 'normal')}
+          className={`px-4 py-1 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105`}
+          title="Re-Collection"
+        >
+          Re-Collection
+        </button>
+      )}
       
       
       {application.loanStatusId === 19 && (

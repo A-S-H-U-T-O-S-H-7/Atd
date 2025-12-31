@@ -68,7 +68,7 @@ const ManageApplicationTable = ({
     fixed: [
       { label: "SR. No", width: "90px" },
       { label: "Call", width: "20px" },
-      { label: "Collection", width: "90px" },
+      { label: "Collection", width: "140px" },
       { label: "Renewal", width: "90px" },
       { label: "Name", width: "150px" },
       { label: "Loan No.", width: "80px" },
