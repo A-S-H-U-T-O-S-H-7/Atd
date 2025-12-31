@@ -31,9 +31,8 @@ export const formatSoaDataForUI = (apiData) => {
     try {
       const dateOnly = dateString.includes(' ') ? dateString.split(' ')[0] : dateString;
       
-      // Check if date is ALREADY in dd-mm-yyyy format
       if (dateOnly.match(/^\d{2}-\d{2}-\d{4}$/)) {
-        return dateOnly; // Return as-is
+        return dateOnly; 
       }
       
       // Convert yyyy-mm-dd format to dd-mm-yyyy

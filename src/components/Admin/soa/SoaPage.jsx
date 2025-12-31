@@ -7,6 +7,8 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { soaAPI, formatSoaDataForUI } from "@/lib/services/SoaService";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 // Content component that uses useSearchParams
 const SoaPageContent = () => {
@@ -110,34 +112,131 @@ const SoaPageContent = () => {
     };
   }, [loading, loadingMore, hasMore, applicationId]);
 
-  const handleExport = (type) => {
-    if (!allDetails || allDetails.length === 0) {
-      alert("No data available to export");
-      return;
-    }
 
-    const exportData = allDetails.map(item => ({
-      'SN': item.sn,
-      'Date': item.date,
-      'Normal Interest Charged': item.normal_interest_charged,
-      'Penal Interest Charged': item.penal_interest_charged,
-      'Penality Charged': item.penality_charged,
-      'Collection Received': item.collection_received,
-      'Principle Adjusted': item.principle_adjusted,
-      'Normal Interest Adjusted': item.normal_interest_adjusted,
-      'Penal Interest Adjusted': item.penal_interest_adjusted,
-      'Penalty Adjusted': item.penalty_adjusted,
-      'Principle After Adjusted': item.principle_after_adjusted,
-      'Normal Interest After Adjusted': item.normal_interest_after_adjusted,
-      'Penal Interest After Adjusted': item.penal_interest_after_adjusted,
-      'Penalty After Adjusted': item.penalty_after_adjusted,
-      'Total Outstanding Amount': item.total_outstanding_amount
-    }));
+const handleExport = async () => {
+  if (!soaData || !allDetails || allDetails.length === 0) {
+    toast.error('No data available to export');
+    return;
+  }
 
-    if (type === 'excel') {
-      exportToExcel(exportData, `statement-of-account-${soaData?.loan_no || applicationId}`);
+  const result = await Swal.fire({
+    title: 'Export SOA Data?',
+    text: `This will export SOA data for ${soaData.fullname} (Loan: ${soaData.loan_no})`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Export Excel',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) return;
+
+  const toastId = toast.loading('Preparing export...');
+
+  try {
+    // Prepare export data
+    const exportData = [];
+    
+    // 1. Add title and summary section
+    exportData.push(['STATEMENT OF ACCOUNT']);
+    exportData.push([]);
+    
+    // 2. Add customer information
+    exportData.push(['Customer Information']);
+    exportData.push(['Loan Number', soaData.loan_no]);
+    exportData.push(['CRN Number', soaData.crnno]);
+    exportData.push(['Customer Name', soaData.fullname]);
+    exportData.push(['Application ID', applicationId]);
+    exportData.push([]);
+    
+    // 3. Add loan details
+    exportData.push(['Loan Details']);
+    exportData.push(['Sanction Date', soaData.sanction_date]);
+    exportData.push(['Sanction Amount', soaData.sanction_amount]);
+    exportData.push(['Tenure', soaData.tenure]);
+    exportData.push(['ROI', soaData.roi]);
+    exportData.push(['Process Fee', soaData.process_fee]);
+    exportData.push(['GST', soaData.gst]);
+    exportData.push(['Disburse Date', soaData.disburse_date]);
+    exportData.push(['Disburse Amount', soaData.disburse_amount]);
+    exportData.push(['Transaction Date', soaData.transaction_date]);
+    exportData.push(['Due Date', soaData.due_date]);
+    exportData.push(['Ledger Balance', soaData.ledger_balance]);
+    if (soaData.closed_date) {
+      exportData.push(['Closed Date', soaData.closed_date]);
     }
-  };
+    exportData.push([]);
+    
+    // 4. Add transaction history header
+    exportData.push(['Transaction History']);
+    
+    // 5. Add table headers
+    const headers = [
+      'SN',
+      'Date',
+      'Normal Interest Charged',
+      'Penal Interest Charged',
+      'Penality Charged',
+      'Collection Received',
+      'Principle Adjusted',
+      'Normal Interest Adjusted',
+      'Penal Interest Adjusted',
+      'Penalty Adjusted',
+      'Principle After Adjusted',
+      'Normal Interest After Adjusted',
+      'Penal Interest After Adjusted',
+      'Penalty After Adjusted',
+      'Total Outstanding Amount'
+    ];
+    exportData.push(headers);
+    
+    // 6. Add all transaction data
+    allDetails.forEach(item => {
+      exportData.push([
+        item.sn,
+        item.date,
+        item.normal_interest_charged,
+        item.penal_interest_charged,
+        item.penality_charged,
+        item.collection_received,
+        item.principle_adjusted,
+        item.normal_interest_adjusted,
+        item.penal_interest_adjusted,
+        item.penalty_adjusted,
+        item.principle_after_adjusted,
+        item.normal_interest_after_adjusted,
+        item.penal_interest_after_adjusted,
+        item.penalty_after_adjusted,
+        item.total_outstanding_amount
+      ]);
+    });
+    
+    // 7. Add footer with export date
+    exportData.push([]);
+    exportData.push(['Exported on', new Date().toLocaleDateString('en-IN')]);
+    
+    // 8. Export to Excel
+    exportToExcel(exportData, `SOA_${soaData.loan_no}_${soaData.fullname}_${new Date().toISOString().split('T')[0]}`);
+    
+    // Update toast to success
+    toast.success('Statement of Account exported successfully!', {
+      id: toastId,
+      duration: 3000,
+    });
+    
+  } catch (err) {
+    console.error('Export error:', err);
+    
+    // Update toast to error
+    toast.error('Failed to export data. Please try again.', {
+      id: toastId,
+      duration: 3000,
+    });
+  }
+};
 
   if (loading) {
     return (
