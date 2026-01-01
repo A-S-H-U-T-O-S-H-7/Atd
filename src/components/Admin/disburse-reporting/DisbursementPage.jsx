@@ -84,9 +84,9 @@ const DisbursementPage = () => {
     };
 
     if (filterBy === "transaction") {
-      params.status = "10";
+      params.status = "true";
     } else if (filterBy === "not_transaction") {
-      params.status = "9";
+      params.status = "false";
     }
 
     if (searchField && searchTerm.trim()) {
