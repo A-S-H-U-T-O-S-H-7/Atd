@@ -454,7 +454,7 @@ const AdminForm = ({
                   <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
                     <Mail className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
-                  <span>Email (Optional)</span>
+                  <span>Email</span>
                 </label>
                 <input
                   type="email"
@@ -477,7 +477,7 @@ const AdminForm = ({
                   <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
                     <Phone className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
-                  <span>Phone Number (Optional)</span>
+                  <span>Phone Number</span>
                 </label>
                 <input
                   type="text"
