@@ -46,9 +46,9 @@ export const completedApplicationAPI = {
   },
 
   // Activate account 
-  activateAccount: async (applicationId) => {
+  sendActivationEmail: async (applicationId) => {
     try {
-      const response = await api.put(`/crm/application/activate/${applicationId}`);
+      const response = await api.get(`/crm/office/email/${applicationId}`);
       return response;
     } catch (error) {
       throw error;
@@ -215,13 +215,14 @@ export const statusService = {
     }
   },
 
-  activateAccount: async (applicationId) => {
+  sendActivationEmail: async (applicationId) => {
     try {
-      const response = await completedApplicationAPI.activateAccount(applicationId);
+      const response = await completedApplicationAPI.sendActivationEmail(applicationId);
       return response;
     } catch (error) {
       throw error;
     }
+  
   }
 };
 

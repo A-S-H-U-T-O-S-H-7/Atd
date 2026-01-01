@@ -15,6 +15,7 @@ import {
   fileService 
 } from "@/lib/services/CompletedApplicationServices";
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
 
 const CompletedApplication = () => {
   const { theme } = useThemeStore();
@@ -341,47 +342,51 @@ const CompletedApplication = () => {
   };
 
   // Handle account activation
-  const handleActivateAccount = async (applicationId) => {
-    try {
-      const result = await Swal.fire({
-        title: 'Activate Account?',
-        text: 'Activate customer account?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, Activate!',
-        cancelButtonText: 'Cancel',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+const handleActivateAccount = async (applicationId) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Send Activation Email?',
+      text: 'This will send office activation email to the customer.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Send Email!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
 
-      if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
-      await statusService.activateAccount(applicationId);
-      
-      await Swal.fire({
-        title: 'Account Activated!',
-        text: 'Customer account has been activated successfully.',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
+    // Call the email sending API
+    const response = await statusService.sendActivationEmail(applicationId);    
+    
+    if (response && response.success) {
+      toast.success(response.message || 'Office activation email sent successfully!', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#ffffff',
+          color: isDark ? '#f9fafb' : '#111827',
+          border: isDark ? '1px solid #374151' : '1px solid #d1d5db',
+        },
       });
-
-      fetchApplications();
-    } catch (error) {
-      console.error("Activation error:", error);
-      await Swal.fire({
-        title: 'Activation Failed!',
-        text: error.response?.data?.message || 'Failed to activate account. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+    } else {
+      throw new Error(response?.message || 'Failed to send email');
     }
-  };
+  } catch (error) {
+    console.error("Email sending error:", error);
+    await Swal.fire({
+      title: 'Failed to Send Email!',
+      text: error.response?.data?.message || error.message || 'Failed to send activation email. Please try again.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
 
   // Navigation handlers
   const handleLoanEligibilityClick = (application) => {
