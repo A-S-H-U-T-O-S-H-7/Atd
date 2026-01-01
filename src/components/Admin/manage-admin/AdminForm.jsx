@@ -14,7 +14,8 @@ const adminSchema = Yup.object().shape({
     .matches(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores')
     .trim(),
   password: Yup.string()
-    .when('isEditMode', (isEditMode, schema) => isEditMode ? schema : schema.required('Password is required'))
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
     .min(8, 'Password must be at least 8 characters')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
@@ -25,8 +26,14 @@ const adminSchema = Yup.object().shape({
     .min(3, 'Name must be at least 3 characters')
     .max(100, 'Name must be less than 100 characters')
     .trim(),
-  email: Yup.string().email('Please enter a valid email address').nullable(),
-  phone: Yup.string().nullable().matches(/^[0-9+\s()-]*$/, 'Please enter a valid phone number'),
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .nullable()
+    .transform((value) => (value === '' ? null : value)),
+  phone: Yup.string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .matches(/^[0-9+\s()-]*$/, 'Please enter a valid phone number'),
   type: Yup.string()
     .required('Admin type is required')
     .oneOf(['user', 'verifier', 'account', 'manager', 'admin', 'superadmin', 'collection', 'agency']),
@@ -63,9 +70,11 @@ const AdminForm = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
   const [usernameAvailable, setUsernameAvailable] = useState(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [backendErrors, setBackendErrors] = useState({});
   const fileInputRef = useRef(null);
 
   const getInitialValues = () => {
@@ -105,6 +114,7 @@ const AdminForm = ({
     }
     
     setUsernameAvailable(null);
+    setBackendErrors({});
   }, [initialData]);
 
   useEffect(() => {
@@ -113,6 +123,7 @@ const AdminForm = ({
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setBackendErrors({});
     }
   }, [isExpanded]);
 
@@ -141,6 +152,14 @@ const AdminForm = ({
     try {
       const response = await adminService.checkUsername(username);
       setUsernameAvailable(response.success);
+      if (response.success) {
+        // Clear backend error if username becomes available
+        setBackendErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.username;
+          return newErrors;
+        });
+      }
     } catch (error) {
       setUsernameAvailable(false);
     } finally {
@@ -187,6 +206,7 @@ const AdminForm = ({
 
   const handleSubmit = async (values) => {
     setIsSubmitting(true);
+    setBackendErrors({});
     
     try {
       const formData = new FormData();
@@ -198,7 +218,8 @@ const AdminForm = ({
       formData.append('email', values.email || '');
       formData.append('phone', values.phone || '');
       
-      if (!isEditMode && values.password) {
+      // Only append password if it's provided
+      if (values.password) {
         formData.append('password', values.password);
       }
       
@@ -218,6 +239,18 @@ const AdminForm = ({
       }
       
     } catch (error) {
+      // Handle 422 validation errors
+      if (error.response?.status === 422) {
+        const errors = error.response.data?.errors || {};
+        setBackendErrors(errors);
+        
+        // Show toast for each error
+        Object.values(errors).flat().forEach(errorMessage => {
+          toast.error(errorMessage, { duration: 5000 });
+        });
+      } else {
+        toast.error(error.message || 'An error occurred');
+      }
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -234,6 +267,35 @@ const AdminForm = ({
     if (usernameAvailable !== null) {
       setUsernameAvailable(null);
     }
+    // Clear backend error when user starts typing
+    if (backendErrors.username) {
+      setBackendErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.username;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleFieldChange = (e) => {
+    formik.handleChange(e);
+    // Clear backend error for this field when user starts typing
+    const fieldName = e.target.name;
+    if (backendErrors[fieldName]) {
+      setBackendErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
+
+  // Helper function to get error message for a field
+  const getErrorMessage = (fieldName) => {
+    const formikError = formik.touched[fieldName] && formik.errors[fieldName];
+    const backendError = backendErrors[fieldName]?.[0];
+    
+    return backendError || formikError;
   };
 
   const inputClasses = `w-full px-4 py-3 text-sm rounded-lg border transition-all duration-200 font-medium focus:ring-2 focus:ring-emerald-500/20 focus:outline-none ${
@@ -298,7 +360,7 @@ const AdminForm = ({
                     onChange={handleUsernameChange}
                     onBlur={handleUsernameBlur}
                     placeholder="Enter username"
-                    className={`${inputClasses} ${formik.touched.username && formik.errors.username ? 'border-red-500' : ''}`}
+                    className={`${inputClasses} ${getErrorMessage('username') ? 'border-red-500' : ''}`}
                   />
                   {checkingUsername && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -306,9 +368,10 @@ const AdminForm = ({
                     </div>
                   )}
                 </div>
-                {formik.touched.username && formik.errors.username ? (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.username}</p>
-                ) : usernameAvailable !== null && (
+                {getErrorMessage('username') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('username')}</p>
+                )}
+                {!getErrorMessage('username') && usernameAvailable !== null && (
                   <div className="flex items-center mt-1 space-x-1">
                     {usernameAvailable ? (
                       <>
@@ -325,39 +388,41 @@ const AdminForm = ({
                 )}
               </div>
 
-              {!isEditMode && (
-                <div>
-                  <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
-                    isDark ? 'text-gray-100' : 'text-gray-700'
-                  }`}>
-                    <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                      <Key className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                    </div>
-                    <span>Password *</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formik.values.password}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      placeholder="Enter password"
-                      className={`${inputClasses} pr-10 ${formik.touched.password && formik.errors.password ? 'border-red-500' : ''}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+              {/* Password field - always shown, but optional in edit mode */}
+              <div>
+                <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
+                  isDark ? 'text-gray-100' : 'text-gray-700'
+                }`}>
+                  <div className={`p-1.5 rounded-md ${isDark ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                    <Key className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   </div>
-                  {formik.touched.password && formik.errors.password && (
-                    <p className="mt-1 text-xs text-red-500">{formik.errors.password}</p>
-                  )}
+                  <span>
+                    Password {!isEditMode ? '* ' : ''}
+                    {isEditMode && <span className="text-xs font-normal opacity-70">(Optional)</span>}
+                  </span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formik.values.password}
+                    onChange={handleFieldChange}
+                    onBlur={formik.handleBlur}
+                    placeholder={isEditMode ? "Enter new password (optional)" : "Enter password"}
+                    className={`${inputClasses} pr-10 ${getErrorMessage('password') ? 'border-red-500' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
-              )}
+                {getErrorMessage('password') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('password')}</p>
+                )}
+              </div>
 
               <div>
                 <label className={`flex items-center space-x-2 text-sm font-bold mb-2 ${
@@ -372,13 +437,13 @@ const AdminForm = ({
                   type="text"
                   name="name"
                   value={formik.values.name}
-                  onChange={formik.handleChange}
+                  onChange={handleFieldChange}
                   onBlur={formik.handleBlur}
                   placeholder="Enter full name"
-                  className={`${inputClasses} ${formik.touched.name && formik.errors.name ? 'border-red-500' : ''}`}
+                  className={`${inputClasses} ${getErrorMessage('name') ? 'border-red-500' : ''}`}
                 />
-                {formik.touched.name && formik.errors.name && (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.name}</p>
+                {getErrorMessage('name') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('name')}</p>
                 )}
               </div>
 
@@ -395,13 +460,13 @@ const AdminForm = ({
                   type="email"
                   name="email"
                   value={formik.values.email || ''}
-                  onChange={formik.handleChange}
+                  onChange={handleFieldChange}
                   onBlur={formik.handleBlur}
                   placeholder="admin@example.com"
-                  className={`${inputClasses} ${formik.touched.email && formik.errors.email ? 'border-red-500' : ''}`}
+                  className={`${inputClasses} ${getErrorMessage('email') ? 'border-red-500' : ''}`}
                 />
-                {formik.touched.email && formik.errors.email && (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.email}</p>
+                {getErrorMessage('email') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('email')}</p>
                 )}
               </div>
 
@@ -418,13 +483,13 @@ const AdminForm = ({
                   type="text"
                   name="phone"
                   value={formik.values.phone || ''}
-                  onChange={formik.handleChange}
+                  onChange={handleFieldChange}
                   onBlur={formik.handleBlur}
                   placeholder="+91 9876543210"
-                  className={`${inputClasses} ${formik.touched.phone && formik.errors.phone ? 'border-red-500' : ''}`}
+                  className={`${inputClasses} ${getErrorMessage('phone') ? 'border-red-500' : ''}`}
                 />
-                {formik.touched.phone && formik.errors.phone && (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.phone}</p>
+                {getErrorMessage('phone') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('phone')}</p>
                 )}
               </div>
 
@@ -440,9 +505,9 @@ const AdminForm = ({
                 <select
                   name="type"
                   value={formik.values.type}
-                  onChange={formik.handleChange}
+                  onChange={handleFieldChange}
                   onBlur={formik.handleBlur}
-                  className={`${inputClasses} ${formik.touched.type && formik.errors.type ? 'border-red-500' : ''}`}
+                  className={`${inputClasses} ${getErrorMessage('type') ? 'border-red-500' : ''}`}
                 >
                   {adminTypes.map(type => (
                     <option key={type.value} value={type.value}>
@@ -450,8 +515,8 @@ const AdminForm = ({
                     </option>
                   ))}
                 </select>
-                {formik.touched.type && formik.errors.type && (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.type}</p>
+                {getErrorMessage('type') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('type')}</p>
                 )}
               </div>
 
@@ -467,9 +532,9 @@ const AdminForm = ({
                 <select
                   name="isActive"
                   value={formik.values.isActive}
-                  onChange={formik.handleChange}
+                  onChange={handleFieldChange}
                   onBlur={formik.handleBlur}
-                  className={`${inputClasses} ${formik.touched.isActive && formik.errors.isActive ? 'border-red-500' : ''}`}
+                  className={`${inputClasses} ${getErrorMessage('isActive') ? 'border-red-500' : ''}`}
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -477,8 +542,8 @@ const AdminForm = ({
                     </option>
                   ))}
                 </select>
-                {formik.touched.isActive && formik.errors.isActive && (
-                  <p className="mt-1 text-xs text-red-500">{formik.errors.isActive}</p>
+                {getErrorMessage('isActive') && (
+                  <p className="mt-1 text-xs text-red-500">{getErrorMessage('isActive')}</p>
                 )}
               </div>
 
@@ -558,6 +623,7 @@ const AdminForm = ({
                 onClick={() => {
                   setPreviewUrl('');
                   setUsernameAvailable(null);
+                  setBackendErrors({});
                   if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                   }
@@ -574,9 +640,9 @@ const AdminForm = ({
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || (usernameAvailable === false && !isEditMode) || !formik.isValid}
+                disabled={isSubmitting || (usernameAvailable === false && !isEditMode)}
                 className={`px-6 py-2 rounded-lg text-white text-sm font-bold transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:outline-none flex items-center space-x-2 ${
-                  isSubmitting || (usernameAvailable === false && !isEditMode) || !formik.isValid
+                  isSubmitting || (usernameAvailable === false && !isEditMode)
                     ? 'bg-gray-400 cursor-not-allowed'
                     : isDark
                     ? 'bg-gradient-to-r from-emerald-700 to-emerald-900 hover:from-emerald-600 hover:to-emerald-800 focus:ring-emerald-500/50 shadow-lg shadow-emerald-500/25'
