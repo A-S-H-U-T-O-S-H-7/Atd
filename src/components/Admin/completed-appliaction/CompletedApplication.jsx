@@ -138,15 +138,15 @@ const CompletedApplication = () => {
 
   // Handle Status Update
   const handleStatusUpdate = async (applicationId, status, remark = "") => {
-    try {
-      await statusService.updateStatus(applicationId, status, remark);
-      // Refresh applications after status update
-      fetchApplications();
-    } catch (error) {
-      console.error("Status update error:", error);
-      throw error; // Re-throw to be handled by the modal
-    }
-  };
+  try {
+    await statusService.updateStatus(applicationId, status, remark);
+    fetchApplications();
+    return true;
+  } catch (error) {
+    
+    throw error;
+  }
+};
 
   // Open Status Modal
   const handleOpenStatusModal = (application) => {

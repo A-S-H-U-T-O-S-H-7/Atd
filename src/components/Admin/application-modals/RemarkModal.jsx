@@ -43,11 +43,7 @@ const RemarksModal = ({
       content: remarksData?.OrganizationRemark || remarksData?.organizationRemark,
       formattedContent: formatRemarks(remarksData?.OrganizationRemark || remarksData?.organizationRemark)
     },
-    {
-      title: "Salary Slip Remarks",
-      content: remarksData?.salary_remark || remarksData?.SalarySlipRemark,
-      formattedContent: formatRemarks(remarksData?.salary_remark || remarksData?.SalarySlipRemark)
-    },
+    
     {
       title: "Bank Remarks",
       content: remarksData?.BankRemark || remarksData?.bankRemark,

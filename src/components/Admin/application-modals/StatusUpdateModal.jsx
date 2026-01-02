@@ -50,59 +50,63 @@ const StatusUpdateModal = ({
     };
   }, [isOpen, loading]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // In StatusUpdateModal.js
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!selectedStatus) {
+    toast.error('Please select a status.', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: '#f9fafb',
+      }
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
     
-    if (!selectedStatus) {
-      toast.error('Please select a status.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
-        }
-      });
-      return;
-    }
+    await onStatusUpdate(application.id, selectedStatus, remark);
+    
+    toast.success('Application status has been updated successfully.', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#10b981',
+        secondary: '#f9fafb',
+      }
+    });
 
-    try {
-      setLoading(true);
-      
-      await onStatusUpdate(application.id, selectedStatus, remark);
-      
-      toast.success('Application status has been updated successfully.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#10b981',
-          secondary: '#f9fafb',
-        }
-      });
+    handleClose();
+    
+  } catch (error) {
+    console.error("Status update error:", error);
+    
+    toast.error(error.message || 'Failed to update status. Please try again.', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: '#f9fafb',
+      }
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-      handleClose();
-    } catch (error) {
-      console.error("Status update error:", error);
-      toast.error('Failed to update status. Please try again.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
-        }
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleClose = () => {
     if (!loading) {

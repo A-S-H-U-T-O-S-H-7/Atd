@@ -27,13 +27,29 @@ export const completedApplicationAPI = {
 
   // Update application status 
   updateApplicationStatus: async (applicationId, statusData) => {
-    try {
-      const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
-      return response;
-    } catch (error) {
+  try {
+    const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+    
+    if (response.success === false) {
+      const error = new Error(response.message || 'Status update failed');
       throw error;
     }
-  },
+    
+    return response;
+    
+  } catch (error) {
+    if (error.message && error.message !== 'No response data received') {
+      throw error;
+    }
+    
+    if (error.response) {
+      const errorData = error.response.data || error.response;
+      throw new Error(errorData.message || 'Status update failed');
+    }
+    
+    throw new Error(error.message || 'Status update failed');
+  }
+},
 
   // Blacklist application
   blacklistApplication: async (applicationId) => {
@@ -194,17 +210,22 @@ export const formatCompletedApplicationForUI = (application) => {
 // Status update utility
 export const statusService = {
   updateStatus: async (applicationId, statusName, remark = "") => {
-    try {
-      const statusData = {
-        status: getStatusId(statusName),
-        remark: remark
-      };
-      const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+  try {
+    const statusData = {
+      status: getStatusId(statusName),
+      remark: remark
+    };
+    
+    const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
+    
+    return response;
+    
+  } catch (error) {
+  
+    throw error;
+  }
+},
+
 
   blacklist: async (applicationId) => {
     try {
