@@ -75,7 +75,7 @@ const AdminHeader = () => {
               }`}>
               {user?.selfie ? (
                 <img
-                 src={user?.selfie ? getUserImageUrl(user.selfie) : null}
+                  src={user.selfie}
                   alt="Profile"
                   className="w-full h-full rounded-full object-cover"
                 />
