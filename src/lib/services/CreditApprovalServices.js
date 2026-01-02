@@ -322,7 +322,7 @@ export const creditApprovalService = {
   }
 },
 };
-
+ 
 // File view utility (same as sanction)
 export const fileService = {
   viewFile: async (fileName, documentCategory) => {

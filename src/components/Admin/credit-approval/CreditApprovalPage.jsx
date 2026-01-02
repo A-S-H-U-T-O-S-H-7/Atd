@@ -181,107 +181,117 @@ if (dateRange.end) {
 
   // Bank Verification Handler
   const handleBankVerification = async (application) => {
-    if (application.bankVerification === "verified") {
-      toast.success('Bank verification already completed!');
-      return;
-    }
+  if (application.bankVerification === "verified") {
+    toast.success('Bank verification already completed!');
+    return;
+  }
 
-    const result = await Swal.fire({
-      title: 'Confirm Bank Verification?',
-      text: `Are you sure you want to verify bank account for ${application.name}?`,
-      icon: 'question',
-      showCancelButton: true,
+  const result = await Swal.fire({
+    title: 'Confirm Bank Verification?',
+    text: `Are you sure you want to verify bank account for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Verify!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await creditApprovalService.updateBankVerification(application.id);
+    
+    // Update local state immediately
+    setApplications(prev => prev.map(app => 
+      app.id === application.id 
+        ? { 
+            ...app, 
+            bankVerification: "verified",
+            bankVerifiedRaw: 1  
+          }
+        : app
+    ));
+    
+    await Swal.fire({
+      title: 'Verified!',
+      text: 'Bank verification completed successfully!',
+      icon: 'success',
       confirmButtonColor: '#10b981',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Verify!',
-      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await creditApprovalService.updateBankVerification(application.id);
-      
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, bankVerification: "verified" }
-          : app
-      ));
-      
-      await Swal.fire({
-        title: 'Verified!',
-        text: 'Bank verification completed successfully!',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    } catch (error) {
-      console.error('Error updating bank verification:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Failed to update bank verification',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    }
-  };
+  } catch (error) {
+    console.error('Error updating bank verification:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update bank verification',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
 
   // Disburse Approval Handler
   const handleDisburseApproval = async (application) => {
-    if (application.disburseApproval === "approved") {
-      toast.success('Disburse approval already completed!');
-      return;
-    }
+  if (application.disburseApproval === "approved") {
+    toast.success('Disburse approval already completed!');
+    return;
+  }
 
-    const result = await Swal.fire({
-      title: 'Confirm Disburse Approval?',
-      text: `Are you sure you want to approve disbursement for ${application.name}?`,
-      icon: 'question',
-      showCancelButton: true,
+  const result = await Swal.fire({
+    title: 'Confirm Disburse Approval?',
+    text: `Are you sure you want to approve disbursement for ${application.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Yes, Approve!',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    await creditApprovalService.updateDisburseApproval(application.id);
+    
+    // Update local state immediately
+    setApplications(prev => prev.map(app => 
+      app.id === application.id 
+        ? { 
+            ...app, 
+            disburseApproval: "approved",
+            creditApprovalRaw: 1  
+          }
+        : app
+    ));
+    
+    await Swal.fire({
+      title: 'Approved!',
+      text: 'Disburse approval completed successfully!',
+      icon: 'success',
       confirmButtonColor: '#10b981',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Approve!',
-      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await creditApprovalService.updateDisburseApproval(application.id);
-      
-      setApplications(prev => prev.map(app => 
-        app.id === application.id 
-          ? { ...app, disburseApproval: "approved" }
-          : app
-      ));
-      
-      await Swal.fire({
-        title: 'Approved!',
-        text: 'Disburse approval completed successfully!',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    } catch (error) {
-      console.error('Error updating disburse approval:', error);
-      await Swal.fire({
-        title: 'Error!',
-        text: 'Failed to update disburse approval',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    }
-  };
+  } catch (error) {
+    console.error('Error updating disburse approval:', error);
+    await Swal.fire({
+      title: 'Error!',
+      text: 'Failed to update disburse approval',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
 
   // Modal handlers
   const handleChequeModalOpen = (application, chequeNumber) => {
