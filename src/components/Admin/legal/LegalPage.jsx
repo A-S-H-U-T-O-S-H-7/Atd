@@ -98,7 +98,13 @@ const LegalPage = () => {
   };
 
 const handleEdit = (legal) => {
-  router.push(`/crm/cheque-management/manage-cheque-deposit?id=${legal.id}`);
+  const medium = legal.medium?.toLowerCase() || '';
+  
+  if (medium.includes('emandate') || medium.includes('e-mandate')) {
+    router.push(`/crm/e-mandate-management/manage-e-mandate?id=${legal.id}`);
+  } else {
+    router.push(`/crm/cheque-management/manage-cheque-deposit?id=${legal.id}`);
+  }
 };
 
   const handleCreateNotice = (legal) => {
@@ -352,6 +358,35 @@ const handleEdit = (legal) => {
             </div>
           </div>
         </div>
+        
+        {/* Medium Color Indicators */}
+<div className={`flex justify-start md:justify-end items-center gap-3 md:gap-6 mb-4 px-3 py-2 md:py-0 ${
+  isDark ? "bg-gray-900/50" : "bg-gray-50/80"
+} rounded-lg`}>
+  {/* Cheque Indicator */}
+  <div className="flex items-center gap-2">
+    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-sm ${
+      isDark ? "bg-blue-900/50 border border-blue-700/50" : "bg-blue-50 border border-blue-300"
+    }`}></div>
+    <span className={`text-xs md:text-sm font-medium tracking-wide ${
+      isDark ? "text-blue-200" : "text-blue-700"
+    }`}>
+      Cheque
+    </span>
+  </div>
+  
+  {/* Emandate Indicator */}
+  <div className="flex items-center gap-2">
+    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-sm ${
+      isDark ? "bg-emerald-900/40 border border-emerald-700/50" : "bg-emerald-50 border border-emerald-300"
+    }`}></div>
+    <span className={`text-xs md:text-sm font-medium tracking-wide ${
+      isDark ? "text-emerald-200" : "text-emerald-700"
+    }`}>
+      E-Mandate
+    </span>
+  </div>
+</div>
 
         {/* Legal Table */}
         <LegalTable

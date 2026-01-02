@@ -213,7 +213,8 @@ export const formatLegalCaseForUI = (legalCase) => {
     id: legalCase.cheque_deposit_id,
     sNo: legalCase.cheque_deposit_id,
     applicationId: legalCase.application_id,
-    chequeId: legalCase.cheque_deposit_id, // Added for address APIs
+    chequeId: legalCase.cheque_deposit_id, 
+    medium: legalCase.medium || 'N/A',
     
     // Customer Details
     customerName: customer.customer_name || 'N/A',

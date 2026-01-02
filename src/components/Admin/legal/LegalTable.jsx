@@ -38,6 +38,13 @@ const LegalTable = ({
                 }`} style={{ minWidth: "80px" }}>
                   S.No.
                 </th>
+
+                {/* Medium */}
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                }`} style={{ minWidth: "100px" }}>
+                  Medium
+                </th>
                 
                 {/* Customer Details */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
@@ -166,7 +173,7 @@ const LegalTable = ({
         )}
         
         {!isLoading && totalPages > 0 && (
-          <div className="mt-8">
+          <div >
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

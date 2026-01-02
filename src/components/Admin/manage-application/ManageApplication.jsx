@@ -176,42 +176,32 @@ const buildApiParams = () => {
   }, [searchField, searchTerm, dateRange]);
 
   const fetchRemarks = async (applicationId) => {
-    try {
-      setLoadingRemarks(true);
-      setRemarksData(null);
+  try {
+    setLoadingRemarks(true);
+    setRemarksData(null);
+    
+    const response = await manageApplicationService.getAppraisalRemarks(applicationId);
+    
+    if (response.success) {
       
-      const response = await manageApplicationService.getAppraisalRemarks(applicationId);
+      const formattedRemarks = {
+        PerRemark: response.data?.PerRemark || response.data?.perRemark,
+        SalaryRemark: response.data?.SalaryRemark || response.data?.salaryRemark,
+        OrganizationRemark: response.data?.OrganizationRemark || response.data?.organizationRemark,
+        SalarySlipRemark: response.data?.salary_remark || response.data?.SalarySlipRemark,
+        BankRemark: response.data?.BankRemark || response.data?.bankRemark,
+        SocialRemark: response.data?.SocialRemark || response.data?.socialRemark,
+        CibilRemark: response.data?.CibilRemark || response.data?.cibilRemark
+      };
       
-      if (response.success) {
-        // Format the API response into the expected structure
-        const formattedRemarks = {
-          PerRemark: response.data.PerRemark,
-          SalaryRemark: response.data.SalaryRemark,
-          OrganizationRemark: response.data.OrganizationRemark,
-          SalarySlipRemark: response.data.salary_remark,
-          BankRemark: response.data.BankRemark,
-          SocialRemark: response.data.SocialRemark,
-          CibilRemark: response.data.CibilRemark
-        };
-        
-        setRemarksData(formattedRemarks);
-      } else {
-        toast.error('Failed to load remarks');
-        // Set empty remarks structure
-        setRemarksData({
-          PerRemark: null,
-          SalaryRemark: null,
-          OrganizationRemark: null,
-          SalarySlipRemark: null,
-          BankRemark: null,
-          SocialRemark: null,
-          CibilRemark: null
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching remarks:', error);
+      // Debug: Log the actual API response to see its structure
+      console.log('Raw API response:', response.data);
+      console.log('Formatted remarks:', formattedRemarks);
+      
+      setRemarksData(formattedRemarks);
+    } else {
       toast.error('Failed to load remarks');
-      // Set empty remarks structure on error
+      // Set empty remarks structure
       setRemarksData({
         PerRemark: null,
         SalaryRemark: null,
@@ -221,10 +211,24 @@ const buildApiParams = () => {
         SocialRemark: null,
         CibilRemark: null
       });
-    } finally {
-      setLoadingRemarks(false);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching remarks:', error);
+    toast.error('Failed to load remarks');
+    // Set empty remarks structure on error
+    setRemarksData({
+      PerRemark: null,
+      SalaryRemark: null,
+      OrganizationRemark: null,
+      SalarySlipRemark: null,
+      BankRemark: null,
+      SocialRemark: null,
+      CibilRemark: null
+    });
+  } finally {
+    setLoadingRemarks(false);
+  }
+};
 
 
   // Status update handlers

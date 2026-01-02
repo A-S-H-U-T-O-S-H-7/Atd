@@ -17,11 +17,81 @@ import {
   CalendarDays,
   CheckCircle,
   XCircle,
-  ExternalLink
+  ExternalLink,
+  Smartphone,
+  Landmark
 } from "lucide-react";
 
-const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowCriminalStatus, onShowAddress,onEdit}) => {
+const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowCriminalStatus, onShowAddress, onEdit }) => {
   
+  // Common CSS classes for better optimization
+  const commonClasses = {
+    // Field/Label styles
+    fieldLabel: isDark 
+      ? "text-xs text-gray-400" 
+      : "text-xs text-gray-500",
+    
+    // Value styles
+    valueText: isDark 
+      ? "text-sm text-gray-300" 
+      : "text-sm text-gray-600",
+    
+    // Important value styles (for amounts, IDs, etc)
+    importantValue: isDark 
+      ? "text-sm font-medium text-gray-200" 
+      : "text-sm font-medium text-gray-700",
+    
+    // Special values (emerald for loan ID, orange for CRN, etc)
+    specialValue: (type) => {
+      switch(type) {
+        case 'loanId':
+          return isDark ? "text-emerald-400" : "text-emerald-600";
+        case 'crnNo':
+          return isDark ? "text-orange-400" : "text-orange-600";
+        case 'amount':
+          return isDark ? "text-green-400" : "text-green-600";
+        case 'important':
+          return isDark ? "text-gray-200" : "text-gray-700";
+        default:
+          return isDark ? "text-gray-300" : "text-gray-600";
+      }
+    },
+    
+    // Container styles
+    cellBorder: isDark 
+      ? "border-r border-gray-600" 
+      : "border-r border-gray-800/20",
+    
+    // Icon colors
+    icon: {
+      blue: isDark ? "text-blue-400" : "text-blue-600",
+      green: isDark ? "text-green-400" : "text-green-600",
+      red: isDark ? "text-red-400" : "text-red-600",
+      orange: isDark ? "text-orange-400" : "text-orange-600",
+      purple: isDark ? "text-purple-400" : "text-purple-600",
+      emerald: isDark ? "text-emerald-400" : "text-emerald-600",
+      yellow: isDark ? "text-yellow-400" : "text-yellow-600",
+    }
+  };
+
+  // Get background color based on medium - Fixed to be more visible
+  const getMediumColor = (medium) => {
+    const lowerMedium = medium?.toLowerCase() || '';
+    if (lowerMedium.includes('emandate') || lowerMedium.includes('e-mandate')) {
+      return isDark
+        ? "bg-emerald-900/80 hover:bg-emerald-900/70 border-r-4 border-emerald-500"
+        : "bg-emerald-100 hover:bg-emerald-200 border-r-4 border-emerald-400";
+    } else if (lowerMedium.includes('cheque')) {
+      return isDark
+        ? "bg-blue-900/20 hover:bg-blue-900/30 border-r-4 border-blue-500"
+        : "bg-blue-100 hover:bg-blue-200 border-r-4 border-blue-400";
+    } else {
+      return isDark
+        ? "bg-purple-900/20 hover:bg-purple-900/30 border-r-4 border-purple-500"
+        : "bg-purple-50 hover:bg-purple-100 border-r-4 border-purple-400";
+    }
+  };
+
   const getDeliveryStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "delivered":
@@ -66,7 +136,26 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
     }
   };
 
-  // Get bounce reason color for better visibility
+  const getMediumIcon = (medium) => {
+    const lowerMedium = medium?.toLowerCase() || '';
+    if (lowerMedium.includes('emandate') || lowerMedium.includes('e-mandate')) {
+      return <Smartphone className="w-4 h-4" />;
+    } else if (lowerMedium.includes('cheque')) {
+      return <Landmark className="w-4 h-4" />;
+    }
+    return <FileText className="w-4 h-4" />;
+  };
+
+  const getMediumTextColor = (medium) => {
+    const lowerMedium = medium?.toLowerCase() || '';
+    if (lowerMedium.includes('emandate') || lowerMedium.includes('e-mandate')) {
+      return isDark ? "text-emerald-300" : "text-emerald-700";
+    } else if (lowerMedium.includes('cheque')) {
+      return isDark ? "text-blue-300" : "text-blue-700";
+    }
+    return isDark ? "text-purple-300" : "text-purple-700";
+  };
+
   const getBounceReasonColor = (reason) => {
     if (!reason || reason === 'N/A') return '';
     
@@ -88,76 +177,78 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
                           legal.bounceDate !== null && 
                           legal.bounceDate !== 'null';
 
-  // Determine if cheque was bounced based on bounceDate
   const isChequeBounced = hasBounceDetails;
 
-  // Show primary address (first available)
   const primaryAddress = legal.addresses && legal.addresses.length > 0 
     ? legal.addresses[0].address 
     : legal.currentAddress || legal.permanentAddress || legal.companyAddress || 'N/A';
 
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
+      className={`border-b transition-all duration-200 hover:shadow-lg ${getMediumColor(legal.medium)} ${
         isDark
-          ? "border-emerald-700 hover:bg-gray-700/50"
-          : "border-emerald-300 hover:bg-blue-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark
-            ? "bg-gray-700/30"
-            : "bg-gray-50"
-          : ""
+          ? "border-emerald-700/30 hover:bg-gray-700/30"
+          : "border-emerald-700/30 hover:bg-blue-50/30"
       }`}
     >
       {/* S.No */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`}>
+        <span className={`font-bold ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {index + 1}
         </span>
       </td>
 
-      {/* Customer Information */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      {/* Medium Column - NEW */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "120px" }}>
+        <div className="flex flex-col items-center justify-center space-y-2">
+          {getMediumIcon(legal.medium)}
+          <span className={`text-sm font-bold ${getMediumTextColor(legal.medium)}`}>
+            {legal.medium || 'N/A'}
+          </span>
+        </div>
+      </td>
+
+      {/* Customer Information - Restored to original font styles */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <User className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <User className={`w-4 h-4 ${commonClasses.icon.blue}`} />
             <span className={`font-medium text-sm ${isDark ? "text-gray-100" : "text-gray-900"}`}>
               {legal.customerName}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <User className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <User className={`w-4 h-4 ${commonClasses.icon.blue}`} />
             <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
               Father: {legal.fatherHusbandName}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Phone className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <Phone className={`w-4 h-4 ${commonClasses.icon.blue}`} />
             <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
               {legal.mobileNo}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Hash className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+            <Hash className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('loanId')}`}>
               Loan ID: {legal.loanId}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-orange-400" : "text-orange-600"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('crnNo')}`}>
               CRN: {legal.crnNo}
             </span>
           </div>
         </div>
       </td>
 
-      {/* Address - Single column with Show Address button */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      {/* Address */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
         <div className="space-y-3">
           <div className="flex items-start space-x-2">
-            <MapPin className={`w-4 h-4 mt-0.5 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <MapPin className={`w-4 h-4 mt-0.5 ${commonClasses.icon.blue}`} />
             <div className="flex-1">
               <p className={`text-xs font-medium mb-1 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
                 Address
@@ -188,41 +279,41 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       </td>
 
       {/* Financial Information */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center space-x-2">
-              <CreditCard className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
-              <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+              <CreditCard className={`w-4 h-4 ${commonClasses.icon.green}`} />
+              <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
                 Principal: ₹{legal.principal?.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 ROI: {legal.roi}%
               </span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Interest: ₹{legal.interest?.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Penal Interest: ₹{legal.penalInterest?.toLocaleString()}
               </span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Penalty: ₹{legal.penalty?.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Bounce Charge: ₹{legal.bounceCharge?.toLocaleString()}
               </span>
             </div>
@@ -230,18 +321,17 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
           
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center space-x-2">
-              <CreditCard className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <CreditCard className={`w-4 h-4 ${commonClasses.icon.purple}`} />
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Processing: ₹{legal.processingFee?.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 GST: ₹{legal.gst?.toLocaleString()}
               </span>
             </div>
           </div>
-          {/* Fixed: Total (PF+GST) design - Calculated as processingFee + gst */}
           <div className={`flex items-center space-x-2 p-2 rounded-lg ${isDark ? "bg-emerald-900/30 border border-emerald-700/50" : "bg-emerald-50 border border-emerald-200"}`}>
             <span className={`text-sm font-bold ${isDark ? "text-emerald-300" : "text-emerald-700"}`}>
               Total (PF+GST): ₹{legal.totalPfGst?.toLocaleString()}
@@ -256,44 +346,42 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       </td>
 
       {/* Loan Details */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "200px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "200px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <CreditCard className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            <CreditCard className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
               Approved: ₹{legal.principal?.toLocaleString()}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <CalendarDays className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <CalendarDays className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Tenure: {legal.tenure} days
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Banknote className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Banknote className={`w-4 h-4 ${commonClasses.icon.green}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Disbursed: ₹{legal.disbursementAmount?.toLocaleString()}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Approved: {legal.approvedDate}
             </span>
           </div>
-          {/* Fixed: Due date with icon */}
           <div className="flex items-center space-x-2">
-            <Clock className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Clock className={`w-4 h-4 ${commonClasses.icon.orange}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Due Date: {legal.dueDate || 'N/A'}
             </span>
           </div>
-          {/* Close Date */}
           {legal.closeDate && legal.closeDate !== 'N/A' && (
             <div className="flex items-center space-x-2">
-              <Calendar className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <Calendar className={`w-4 h-4 ${commonClasses.icon.red}`} />
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Closed: {legal.closeDate}
               </span>
             </div>
@@ -302,26 +390,26 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       </td>
 
       {/* ATD Bank Details */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Building2 className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            <Building2 className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
               {legal.companyBankName || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               A/C: {legal.companyAccountNo || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               IFSC: {legal.companyIfsc || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Branch: {legal.companyBankBranch || 'N/A'}
             </span>
           </div>
@@ -329,31 +417,31 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       </td>
 
       {/* Customer Bank Details */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Building2 className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            <Building2 className={`w-4 h-4 ${commonClasses.icon.green}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
               {legal.bankName || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               A/C: {legal.accountNo || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               IFSC: {legal.ifsc || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Branch: {legal.bankBranch || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Type: {legal.accountType || 'N/A'}
             </span>
           </div>
@@ -361,44 +449,43 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
       </td>
 
       {/* Cheque Details */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
               Cheque: {legal.chequeNo}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Date: {legal.chequeDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <CreditCard className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <CreditCard className={`w-4 h-4 ${commonClasses.icon.green}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Amount: ₹{legal.chequeAmount?.toLocaleString()}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <CalendarDays className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <CalendarDays className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Deposit: {legal.depositDate || 'N/A'}
             </span>
           </div>
-          {/* Show cheque status based on bounce */}
           <div className="flex items-center space-x-2">
             {isChequeBounced ? (
               <>
-                <XCircle className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                <XCircle className={`w-4 h-4 ${commonClasses.icon.red}`} />
                 <span className={`text-sm ${isDark ? "text-red-300" : "text-red-600"}`}>
                   Cheque Bounced
                 </span>
               </>
             ) : (
               <>
-                <CheckCircle className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
+                <CheckCircle className={`w-4 h-4 ${commonClasses.icon.green}`} />
                 <span className={`text-sm ${isDark ? "text-green-300" : "text-green-600"}`}>
                   ✓ Cheque Clear
                 </span>
@@ -408,34 +495,31 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
         </div>
       </td>
 
-      {/* Cheque Return Details - Fixed Logic */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      {/* Cheque Return Details */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
-          {/* BOUNCE LOGIC: Show bounce details only when bounceDate exists */}
           {isChequeBounced ? (
             <>
               <div className="flex items-center space-x-2">
-                <AlertCircle className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
-                <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+                <AlertCircle className={`w-4 h-4 ${commonClasses.icon.red}`} />
+                <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
                   Bounce Date: {legal.bounceDate}
                 </span>
               </div>
               
-              {/* Show memo received date if available */}
               {legal.memoReceivedDate && legal.memoReceivedDate !== 'N/A' && (
                 <div className="flex items-center space-x-2">
-                  <Receipt className={`w-4 h-4 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                  <Receipt className={`w-4 h-4 ${commonClasses.icon.orange}`} />
+                  <span className={`text-sm ${commonClasses.valueText}`}>
                     Memo Received: {legal.memoReceivedDate}
                   </span>
                 </div>
               )}
               
-              {/* Show intimation mail dates if available */}
               {legal.intimationMailDespatch && legal.intimationMailDespatch !== 'N/A' && (
                 <div className="flex items-center space-x-2">
-                  <Mail className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                  <Mail className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+                  <span className={`text-sm ${commonClasses.valueText}`}>
                     Intimation Dispatch: {legal.intimationMailDespatch}
                   </span>
                 </div>
@@ -443,8 +527,8 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
               
               {legal.intimationMailDeliver && legal.intimationMailDeliver !== 'N/A' && (
                 <div className="flex items-center space-x-2">
-                  <Mail className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                  <Mail className={`w-4 h-4 ${commonClasses.icon.green}`} />
+                  <span className={`text-sm ${commonClasses.valueText}`}>
                     Intimation Deliver: {legal.intimationMailDeliver}
                   </span>
                 </div>
@@ -452,17 +536,16 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
               
               {legal.chequeReturnMemo && legal.chequeReturnMemo !== 'N/A' && (
                 <div className="flex items-center space-x-2">
-                  <FileText className={`w-4 h-4 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                  <FileText className={`w-4 h-4 ${commonClasses.icon.purple}`} />
+                  <span className={`text-sm ${commonClasses.valueText}`}>
                     Return Memo: {legal.chequeReturnMemo}
                   </span>
                 </div>
               )}
               
-              {/* Show bounce reason if available - with colored text for better visibility */}
               {legal.bounceReason && legal.bounceReason !== 'N/A' && (
                 <div className="flex items-start space-x-2 mt-2">
-                  <AlertCircle className={`w-4 h-4 mt-0.5 ${isDark ? "text-red-400" : "text-red-600"}`} />
+                  <AlertCircle className={`w-4 h-4 mt-0.5 ${commonClasses.icon.red}`} />
                   <div>
                     <span className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                       Reason for Bounce:
@@ -476,7 +559,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
             </>
           ) : (
             <div className="flex items-center space-x-2">
-              <CheckCircle className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`} />
+              <CheckCircle className={`w-4 h-4 ${commonClasses.icon.green}`} />
               <span className={`text-sm ${isDark ? "text-green-300" : "text-green-600"}`}>
                 ✓ No Bounce Recorded
               </span>
@@ -485,57 +568,56 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
         </div>
       </td>
 
-      {/* Important Dates - Updated to remove statement dates */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      {/* Important Dates */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Approved: {legal.approvedDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Transaction: {legal.transactionDate || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Clock className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Clock className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Last Collection: {legal.lastCollectionDate || 'N/A'}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Loan Agreement: {legal.loanAgreementDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Loan Application: {legal.loanApplicationDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Board Resolution: {legal.boardResolutionDate}
             </span>
           </div>
         </div>
       </td>
 
-      {/* Legal Notice Status - Updated heading */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "300px" }}>
+      {/* Legal Notice Status */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
         <div className="space-y-2">
-          {/* Make Delivery Status more prominent */}
           <div className="flex items-center space-x-2 mb-2">
             {legal.deliveryStatus?.toLowerCase() === 'delivered' ? (
-              <CheckCircle className={`w-5 h-5 ${isDark ? "text-green-400" : "text-green-600"}`} />
+              <CheckCircle className={`w-5 h-5 ${commonClasses.icon.green}`} />
             ) : (
-              <AlertCircle className={`w-5 h-5 ${isDark ? "text-orange-400" : "text-orange-600"}`} />
+              <AlertCircle className={`w-5 h-5 ${commonClasses.icon.orange}`} />
             )}
             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getDeliveryStatusColor(legal.deliveryStatus)}`}>
               {legal.deliveryStatus || 'N/A'}
@@ -543,37 +625,37 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
           </div>
           
           <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Notice Date: {legal.noticeDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Mail className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Mail className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Speed Post: {legal.legalNoticeSpeedPostDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Speed Post Received: {legal.speedpostReceivedDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Scale className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Reply Received: {legal.replyReceivedDate}
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <Scale className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+            <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
               Case Filed: {legal.caseFilledDate}
             </span>
           </div>
           {legal.remarkWithCaseDetails && legal.remarkWithCaseDetails !== 'N/A' && (
             <div className="mt-2">
-              <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <span className={`text-sm ${commonClasses.valueText}`}>
                 Remarks: {legal.remarkWithCaseDetails}
               </span>
             </div>
@@ -581,56 +663,55 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
         </div>
       </td>
 
-      {/* NEW: Criminal Case Status */}
-<td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`} style={{ minWidth: "250px" }}>
-  <div className="space-y-2">
-    <div className="flex items-center space-x-2 mb-2">
-      {legal.criminalCaseStatus?.toLowerCase() === 'filed' ? (
-        <CheckCircle className={`w-5 h-5 ${isDark ? "text-green-400" : "text-green-600"}`} />
-      ) : (
-        <AlertCircle className={`w-5 h-5 ${isDark ? "text-yellow-400" : "text-yellow-600"}`} />
-      )}
-      <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getCriminalCaseStatusColor(legal.criminalCaseStatus)}`}>
-        {legal.criminalCaseStatus || 'Pending'}
-      </span>
-    </div>
-    
-    {legal.criminalComplaintNo && legal.criminalComplaintNo !== 'N/A' && (
-      <div className="flex items-center space-x-2">
-        <FileText className={`w-4 h-4 ${isDark ? "text-red-400" : "text-red-600"}`} />
-        <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-          Complaint No: {legal.criminalComplaintNo}
-        </span>
-      </div>
-    )}
-    
-    <div className="flex items-center space-x-2">
-      <Building2 className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-      <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-        Police Station: {legal.policeStation || 'N/A'}
-      </span>
-    </div>
-    
-    {/* Add Show Status Button */}
-    <button
-      onClick={() => onShowCriminalStatus(legal)}
-      className={`w-full px-3 py-2 mt-2 text-sm rounded-lg flex items-center justify-center space-x-2 transition-colors ${
-        isDark
-          ? "bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-700/50"
-          : "bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200"
-      }`}
-    >
-      <Scale className="w-3 h-3" />
-      <span>Show Criminal Status</span>
-    </button>
-  </div>
-</td>
+      {/* Criminal Case Status */}
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 mb-2">
+            {legal.criminalCaseStatus?.toLowerCase() === 'filed' ? (
+              <CheckCircle className={`w-5 h-5 ${commonClasses.icon.green}`} />
+            ) : (
+              <AlertCircle className={`w-5 h-5 ${commonClasses.icon.yellow}`} />
+            )}
+            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getCriminalCaseStatusColor(legal.criminalCaseStatus)}`}>
+              {legal.criminalCaseStatus || 'Pending'}
+            </span>
+          </div>
+          
+          {legal.criminalComplaintNo && legal.criminalComplaintNo !== 'N/A' && (
+            <div className="flex items-center space-x-2">
+              <FileText className={`w-4 h-4 ${commonClasses.icon.red}`} />
+              <span className={`text-sm ${commonClasses.valueText}`}>
+                Complaint No: {legal.criminalComplaintNo}
+              </span>
+            </div>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            <Building2 className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+            <span className={`text-sm ${commonClasses.valueText}`}>
+              Police Station: {legal.policeStation || 'N/A'}
+            </span>
+          </div>
+          
+          <button
+            onClick={() => onShowCriminalStatus(legal)}
+            className={`w-full px-3 py-2 mt-2 text-sm rounded-lg flex items-center justify-center space-x-2 transition-colors ${
+              isDark
+                ? "bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-700/50"
+                : "bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200"
+            }`}
+          >
+            <Scale className="w-3 h-3" />
+            <span>Show Criminal Status</span>
+          </button>
+        </div>
+      </td>
 
-      {/* Actions - Added new buttons */}
+      {/* Actions */}
       <td className="px-2 py-4" style={{ minWidth: "350px" }}>
         <div className="flex flex-wrap gap-2">
           <button
-          onClick={() => onEdit(legal)} 
+            onClick={() => onEdit(legal)} 
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300 border border-blue-700"
@@ -668,7 +749,6 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase,onShowC
           >
             Criminal Case
           </button>
-          {/* NEW BUTTONS */}
           <button
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               isDark

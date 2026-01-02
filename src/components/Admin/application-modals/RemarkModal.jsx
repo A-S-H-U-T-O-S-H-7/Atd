@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'; // Added useEffect and useRef
+import React, { useEffect, useRef } from 'react'; 
 import { X, MessageSquare, Loader2 } from 'lucide-react';
 
 const RemarksModal = ({ 
@@ -10,19 +10,19 @@ const RemarksModal = ({
   remarksData, 
   loading = false 
 }) => {
-  const modalRef = useRef(null); // Added ref for modal
+  const modalRef = useRef(null); 
 
-  // Format remarks for display
+  // Format remarks for display WITHOUT numbering
   const formatRemarks = (remarks) => {
     if (!remarks) return null;
     
     // Split by multiple dots and clean up the string
-    return remarks.split('...................').map((item, index) => {
+    return remarks.split('...................').map((item) => {
       const trimmedItem = item.trim();
       if (!trimmedItem) return null;
       
-      // Add numbering
-      return `${index + 1}. ${trimmedItem}`;
+      // Return just the trimmed item
+      return trimmedItem;
     }).filter(Boolean);
   };
 
@@ -30,38 +30,38 @@ const RemarksModal = ({
   const remarksDisplay = [
     {
       title: "Personal Remarks",
-      content: remarksData?.PerRemark,
-      formattedContent: formatRemarks(remarksData?.PerRemark)
+      content: remarksData?.PerRemark || remarksData?.perRemark,
+      formattedContent: formatRemarks(remarksData?.PerRemark || remarksData?.perRemark)
     },
     {
       title: "Salary Remarks",
-      content: remarksData?.SalaryRemark,
-      formattedContent: formatRemarks(remarksData?.SalaryRemark)
+      content: remarksData?.SalaryRemark || remarksData?.salaryRemark,
+      formattedContent: formatRemarks(remarksData?.SalaryRemark || remarksData?.salaryRemark)
     },
     {
       title: "Organization Remarks",
-      content: remarksData?.OrganizationRemark,
-      formattedContent: formatRemarks(remarksData?.OrganizationRemark)
+      content: remarksData?.OrganizationRemark || remarksData?.organizationRemark,
+      formattedContent: formatRemarks(remarksData?.OrganizationRemark || remarksData?.organizationRemark)
     },
     {
       title: "Salary Slip Remarks",
-      content: remarksData?.salary_remark || remarksData?.SalarySlipRemark, // Fixed key name
+      content: remarksData?.salary_remark || remarksData?.SalarySlipRemark,
       formattedContent: formatRemarks(remarksData?.salary_remark || remarksData?.SalarySlipRemark)
     },
     {
       title: "Bank Remarks",
-      content: remarksData?.BankRemark,
-      formattedContent: formatRemarks(remarksData?.BankRemark)
+      content: remarksData?.BankRemark || remarksData?.bankRemark,
+      formattedContent: formatRemarks(remarksData?.BankRemark || remarksData?.bankRemark)
     },
     {
       title: "Social Score Remarks",
-      content: remarksData?.SocialRemark,
-      formattedContent: formatRemarks(remarksData?.SocialRemark)
+      content: remarksData?.SocialRemark || remarksData?.socialRemark,
+      formattedContent: formatRemarks(remarksData?.SocialRemark || remarksData?.socialRemark)
     },
     {
       title: "Cibil Score Remarks",
-      content: remarksData?.CibilRemark,
-      formattedContent: formatRemarks(remarksData?.CibilRemark)
+      content: remarksData?.CibilRemark || remarksData?.cibilRemark,
+      formattedContent: formatRemarks(remarksData?.CibilRemark || remarksData?.cibilRemark)
     }
   ];
 
@@ -98,7 +98,7 @@ const RemarksModal = ({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-md bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div 
-        ref={modalRef} // Added ref here
+        ref={modalRef}
         className={`w-full max-w-4xl max-h-[80vh] rounded-lg shadow-2xl ${
           isDark 
             ? 'bg-gray-800 border border-gray-700' 
@@ -181,7 +181,6 @@ const RemarksModal = ({
                           {remark.formattedContent ? (
                             remark.formattedContent.map((item, idx) => (
                               <div key={idx} className="flex items-start">
-                                <span className="inline-block min-w-[20px] mr-2">{idx + 1}.</span>
                                 <span className="flex-1 whitespace-pre-wrap break-words">
                                   {item}
                                 </span>
@@ -218,7 +217,7 @@ const RemarksModal = ({
         }`}>
           <button
             onClick={onClose}
-            className={`px-6 py-2.5  rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
               isDark
                 ? 'bg-gray-700 hover:bg-gray-600 text-white shadow-lg hover:shadow-xl'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-800 shadow-lg hover:shadow-xl'
