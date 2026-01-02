@@ -80,7 +80,6 @@ const FollowUpApplication = () => {
       params.to_date = dateRange.end;
     }
 
-    console.log('API Params:', params);
     return params;
   };
 
@@ -93,7 +92,6 @@ const FollowUpApplication = () => {
       const params = buildApiParams();
       const response = await followUpApplicationAPI.getFollowUpApplications(params);
       
-      console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       

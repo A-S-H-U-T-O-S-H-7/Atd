@@ -238,7 +238,6 @@ const [selectedApplicantForCharge, setSelectedApplicantForCharge] = useState(nul
 
   const handleAdjustmentSubmit = async (adjustmentData) => {
     try {
-      console.log("Adjustment submitted:", adjustmentData);
       await Swal.fire({
         title: 'Adjustment Submitted!',
         text: 'Adjustment has been submitted successfully.',
@@ -270,7 +269,6 @@ const [selectedApplicantForCharge, setSelectedApplicantForCharge] = useState(nul
   };
 
   const handleRenew = (applicant) => {
-    console.log("Renewing for:", applicant.name);
     // Add renew logic here
   };
 
@@ -291,7 +289,6 @@ const [selectedApplicantForCharge, setSelectedApplicantForCharge] = useState(nul
 
 const handleChargeSubmit = async (chargeData) => {
   try {
-    console.log("Charge scheduled:", chargeData);
     fetchOverdueApplicants(); 
     
     Swal.fire({
@@ -315,7 +312,6 @@ const handleChargeSubmit = async (chargeData) => {
   };
 
   const handleBalanceUpdate = (updateData) => {
-    console.log('Balance updated:', updateData);
     setShowLedgerModal(false);
     setSelectedApplicantForLedger(null);
   };

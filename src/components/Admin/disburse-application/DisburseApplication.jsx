@@ -77,7 +77,6 @@ const DisburseApplication = () => {
       params.to_date = dateRange.end;
     }
 
-    console.log('API Params:', params);
     return params;
   };
 

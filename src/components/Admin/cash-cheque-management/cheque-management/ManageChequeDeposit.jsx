@@ -448,8 +448,8 @@ const ManageChequeDepositPage = () => {
   };
 
   const handleCancel = () => {
-    router.push("/crm/cheque-management");
-  };
+  router.back();
+};
 
   const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
     const isNumberField = type === "number";

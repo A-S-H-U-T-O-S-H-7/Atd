@@ -21,20 +21,36 @@ export const salaryVerificationService = {
   saveSalarySlipRemark: async (data) => {
   try {
     if (!data.application_id) {
+      toast.error('Application ID is required');
       throw new Error('Application ID is required');
     }
 
     if (!data.remarks || data.remarks.trim().length === 0) {
+      toast.error('Remark cannot be empty');
       throw new Error('Remark cannot be empty');
     }
 
-    // ✅ FIX: Use direct API call, not recursive call
+    console.log('Saving salary remark:', data);
     const response = await api.post('/crm/appraisal/salary/remarks', data);
-    // Toast shown in component layer to avoid duplicates
+    
+    // ✅ Show success toast
+    if (response.data?.success) {
+      toast.success(response.data.message || 'Salary remark saved successfully');
+    }
+    
     return response;
   } catch (error) {
     console.error('Error saving salary remark:', error);
-    salaryVerificationService.handleApiError(error, 'salary remark');
+    
+    // ✅ Better error handling
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message);
+    } else if (error.message) {
+      toast.error(error.message);
+    } else {
+      toast.error('Failed to save salary remark');
+    }
+    
     throw error;
   }
 },

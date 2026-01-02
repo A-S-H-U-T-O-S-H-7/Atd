@@ -119,7 +119,7 @@ const CreateNoticeModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
 
       if (response instanceof Blob) {
         const customerName = legal.customerName || 'notice';
-        const fileName = `Legal_Notice_${customerName.replace(/\s+/g, '_')}_${formData.date}.docx`;
+        const fileName = `Legal_Notice_${customerName.replace(/\s+/g, '_')}_${formData.date}.doc`;
         
         handleDownloadFile(response, fileName);
         toast.success("Notice created and downloaded successfully!");

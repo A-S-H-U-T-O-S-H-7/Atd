@@ -106,7 +106,6 @@ const buildApiParams = () => {
     params.to_approved_date = `${dateRange.end} 23:59:59`;
   }
 
-  console.log('API Params:', params);
   return params;
 };
 
@@ -119,7 +118,6 @@ const buildApiParams = () => {
       const params = buildApiParams();
       const response = await sanctionApplicationAPI.getSanctionApplications(params);
       
-      // console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       

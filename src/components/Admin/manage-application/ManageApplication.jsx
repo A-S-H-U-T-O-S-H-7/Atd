@@ -121,7 +121,6 @@ const buildApiParams = () => {
     params.to_date = `${dateRange.end} 23:59:59`;
   }
 
-  // console.log('API Params with time:', params);
   return params;
 };
 
@@ -194,9 +193,7 @@ const buildApiParams = () => {
         CibilRemark: response.data?.CibilRemark || response.data?.cibilRemark
       };
       
-      // Debug: Log the actual API response to see its structure
-      console.log('Raw API response:', response.data);
-      console.log('Formatted remarks:', formattedRemarks);
+      
       
       setRemarksData(formattedRemarks);
     } else {
@@ -263,7 +260,6 @@ const buildApiParams = () => {
 
   const handleCollectionSubmit = async (applicationId, formData) => {
     try {
-      console.log('Collection submitted:', { applicationId, formData, type: collectionType });
       
       await fetchApplications();
       toast.success('Collection processed successfully!');

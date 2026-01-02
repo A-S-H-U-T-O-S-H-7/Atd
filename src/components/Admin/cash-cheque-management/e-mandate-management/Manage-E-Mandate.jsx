@@ -439,8 +439,8 @@ const ManageEmandatePage = () => {
   };
 
   const handleCancel = () => {
-    router.push("/crm/e-mandate-management");
-  };
+  router.back();
+};
 
   const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
     const isNumberField = type === "number";

@@ -275,6 +275,6 @@ const SalarySlipVerification = ({ formik, isDark }) => {
       </div>
     </div>
   );
-};
+}; 
 
 export default SalarySlipVerification;

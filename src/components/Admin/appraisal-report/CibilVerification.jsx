@@ -43,29 +43,43 @@ const CibilVerification = ({ formik, onSectionSave, isDark, saving }) => {
   } disabled:cursor-not-allowed`;
 
   const debouncedSaveRemark = useCallback((value) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
 
-    timeoutRef.current = setTimeout(async () => {
-      try {
-        if (!value || value.trim().length === 0 || !formik.values.applicationId) {
-          return;
-        }
-
-        setRemarkSaving(true);
-        
-        await cibilVerificationService.saveCibilRemark({
-          application_id: parseInt(formik.values.applicationId),
-          remarks: value.trim()
-        });
-      } catch (error) {
-        // Error handled in service
-      } finally {
-        setRemarkSaving(false);
+  timeoutRef.current = setTimeout(async () => {
+    try {
+      // ✅ Add better validation
+      if (!value || value.trim().length === 0) {
+        console.log('CIBIL remark is empty, not saving');
+        return;
       }
-    }, 3000);
-  }, [formik.values.applicationId]);
+      
+      if (!formik.values.applicationId) {
+        toast.error('Application ID is required to save CIBIL remark');
+        return;
+      }
+
+      setRemarkSaving(true);
+      
+      const response = await cibilVerificationService.saveCibilRemark({
+        application_id: parseInt(formik.values.applicationId),
+        remarks: value.trim()
+      });
+      
+      // ✅ Explicitly show success toast
+      if (response?.data?.success) {
+        toast.success('CIBIL remark saved successfully');
+      }
+    } catch (error) {
+      // ✅ Show error toast
+      toast.error('Failed to save CIBIL remark');
+      console.error('Error saving CIBIL remark:', error);
+    } finally {
+      setRemarkSaving(false);
+    }
+  }, 2000); // Reduce to 2 seconds for better UX
+}, [formik.values.applicationId]);
 
   // Sync external changes to local state
   useEffect(() => {

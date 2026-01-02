@@ -14,30 +14,37 @@ class CibilVerificationService {
 
   // ==================== BUSINESS LOGIC METHODS ====================
   
-  /**
-   * Save CIBIL remark with validation
-   */
+  // Save CIBIL remark with validation
   saveCibilRemark = async (data) => {
-    try {
-      // Validate remark data
-      await cibilRemarkSchema.validate(data);
-      
-      if (!data.application_id) {
-        throw new Error('Application ID is required');
-      }
-
-      const response = await this.saveCibilRemarks(data);
-      // Toast shown in component layer to avoid duplicates
-      return response;
-    } catch (error) {
-      this.handleApiError(error, 'CIBIL remark');
-      throw error;
+  try {
+    console.log('Saving CIBIL remark:', data);
+    
+    if (!data.application_id) {
+      toast.error('Application ID is required for CIBIL remark');
+      throw new Error('Application ID is required');
     }
-  };
 
-  /**
- * Save complete CIBIL verification with validation
- */
+    if (!data.remarks || data.remarks.trim().length === 0) {
+      toast.error('CIBIL remark cannot be empty');
+      throw new Error('CIBIL remark cannot be empty');
+    }
+
+    const response = await this.saveCibilRemarks(data);
+    
+    // ✅ Show success toast
+    if (response.data?.success) {
+      toast.success(response.data.message || 'CIBIL remark saved successfully');
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Error saving CIBIL remark:', error);
+    this.handleApiError(error, 'CIBIL remark');
+    throw error;
+  }
+};
+
+  // Save complete CIBIL verification with validation
 saveCibilVerificationData = async (data) => {
   if (!data.application_id) {
     toast.error('Application ID is required');

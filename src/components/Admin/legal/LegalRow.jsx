@@ -737,7 +737,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
                 : "bg-green-100 hover:bg-green-200 text-green-700 border border-green-200"
             }`}
           >
-            Create Notice
+            Create Notice (138)
           </button>
           <button
             onClick={() => onCriminalCase(legal)}
@@ -747,7 +747,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
                 : "bg-purple-100 hover:bg-purple-200 text-purple-700 border border-purple-200"
             }`}
           >
-            Criminal Case
+            Criminal Case (138)
           </button>
           <button
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${

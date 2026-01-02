@@ -83,7 +83,6 @@ const AllEnquiries = () => {
       params.source_by = sourceFilter;
     }
 
-    console.log('API Params:', params);
     return params;
   };
 

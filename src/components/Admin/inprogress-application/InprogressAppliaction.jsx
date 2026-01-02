@@ -80,7 +80,6 @@ const InProgressApplication = () => {
       params.to_date = dateRange.end;
     }
 
-    console.log('API Params:', params);
     return params;
   };
 
@@ -93,7 +92,6 @@ const InProgressApplication = () => {
       const params = buildApiParams();
       const response = await inProgressApplicationAPI.getInProgressApplications(params);
       
-      console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       

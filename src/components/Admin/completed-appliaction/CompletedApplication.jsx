@@ -82,7 +82,6 @@ const CompletedApplication = () => {
       params.to_date = dateRange.end;
     }
 
-    console.log('API Params:', params);
     return params;
   };
 
@@ -95,7 +94,6 @@ const CompletedApplication = () => {
       const params = buildApiParams();
       const response = await completedApplicationAPI.getCompletedApplications(params);
       
-      console.log('API Response:', response);
       
       const actualResponse = response?.success ? response : { success: true, data: response, pagination: {} };
       

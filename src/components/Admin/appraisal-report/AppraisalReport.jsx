@@ -10,7 +10,7 @@ import personalVerificationService from '@/lib/services/appraisal/personalVerifi
 import { appraisalCoreService } from '@/lib/services/appraisal';
 import { documentVerificationSchema } from '@/lib/schema/documentVerificationSchema';
 import { salaryVerificationService } from '@/lib/services/appraisal';
-import { bankVerificationService } from '@/lib/services/appraisal';
+import { bankVerificationService } from '@/lib/services/appraisal'; 
 
 // Import components
 import BasicInformation from './BasicInfo';
