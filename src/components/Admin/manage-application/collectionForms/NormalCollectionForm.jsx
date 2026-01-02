@@ -287,10 +287,10 @@ const NormalCollectionForm = ({
   };
 
   // Get data from collectionData (API response) instead of applicationData
-  const sanctionAmount = application?.approvedAmount || "0"; // Only this from application
-  const disburseDate = collectionData?.disburse_date || "";
-  const transactionDate = collectionData?.transaction_date || "";
-  const dueDate = collectionData?.due_date || "";
+  const sanctionAmount = application?.approvedAmount || "0"; 
+  const disburseDate = application?.disburse_date || "";
+  const transactionDate = application?.transaction_date || "";
+  const dueDate = application?.due_date || "";
   const lastCollectionDate = collectionData?.last_collection_date || "";
   const principalAmount = collectionData?.principal_amount || "0";
   const amtDisbursedFrom = collectionData?.disburse_bank || "";
@@ -367,7 +367,7 @@ const NormalCollectionForm = ({
                 </div>
                 <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
                   <Calendar className="w-4 h-4 mr-2" />
-                  {formatDate(disburseDate)}
+                  {formatDate(application?.disburseDateTime)}
                 </div>
               </div>
 
@@ -377,7 +377,7 @@ const NormalCollectionForm = ({
                 </div>
                 <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
                   <Calendar className="w-4 h-4 mr-2" />
-                  {formatDate(transactionDate)}
+                  {formatDate(application?.transactionDateTime )}
                 </div>
               </div>
 
@@ -387,7 +387,7 @@ const NormalCollectionForm = ({
                 </div>
                 <div className={`font-semibold flex items-center ${isDark ? "text-gray-200" : "text-gray-800"}`}>
                   <Calendar className="w-4 h-4 mr-2" />
-                  {formatDate(dueDate)}
+                  {formatDate(application?.dueDateTime)}
                 </div>
               </div>
 
