@@ -15,6 +15,21 @@ export const useAdminAuthStore = create(
       isAuthenticated: false,
       loading: true,
       error: null,
+
+      getUserImageUrl: (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If it's already a full URL, return as is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+          return imagePath;
+        }
+        
+        const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+        
+        return `/storage/${cleanPath}`;
+        
+        
+      },
       
       login: async (credentials) => {
         try {

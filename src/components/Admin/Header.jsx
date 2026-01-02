@@ -6,7 +6,7 @@ import { useAdminAuthStore } from '@/lib/store/authAdminStore';
 import { useRouter } from 'next/navigation'
 const AdminHeader = () => {
 
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme, toggleTheme, getUserImageUrl } = useThemeStore();
   const { user, logout } = useAdminAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter()
@@ -75,7 +75,7 @@ const AdminHeader = () => {
               }`}>
               {user?.selfie ? (
                 <img
-                  src={user.selfie}
+                 src={user?.selfie ? getUserImageUrl(user.selfie) : null}
                   alt="Profile"
                   className="w-full h-full rounded-full object-cover"
                 />
