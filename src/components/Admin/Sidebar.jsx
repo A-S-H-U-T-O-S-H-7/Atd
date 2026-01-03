@@ -319,7 +319,7 @@ const allMenuItems = [
     name: 'References', 
     link: '/crm/references', 
     icon: <VscReferences />,
-    permissionKey: 'reference'
+    permissionKey: 'references'
   },
   { 
     name: 'Help Ticket', 
