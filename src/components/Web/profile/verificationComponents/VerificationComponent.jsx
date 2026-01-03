@@ -7,7 +7,7 @@ import DigitalLoanAgreement from "./DigitalLoanAgreement";
 const VerificationComponent = ({ loanStatus = 2, user }) => {
   const currentLoanStatus = parseInt(loanStatus);
   
-  const isSanctioned = currentLoanStatus = 6;
+  const isSanctioned = currentLoanStatus === 6;
   
   const isEMandateEnabled = isSanctioned && user?.emandate_status !== "0300";
   const isEMandateCompleted = user?.emandate_status === "0300";
