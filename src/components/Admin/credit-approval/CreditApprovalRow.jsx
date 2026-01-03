@@ -24,6 +24,8 @@ import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 
 const CreditApprovalRow = ({
   application,
@@ -367,6 +369,18 @@ const getLoanStatusClassName = (application) => {
         />
       </td>
 
+      {/*second Bank Statement */}
+            <td className={cellStyle}>
+            <SecondBankStatementDocument
+            fileName={application.secondBankStatementFileName}
+            hasDoc={application.hasSecondBankStatement}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+          </td>
+
       {/* Video KYC */}
       <td className={cellStyle}>
         <VideoKYCDocument
@@ -404,6 +418,18 @@ const getLoanStatusClassName = (application) => {
           isDark={isDark}
         />
       </td>
+
+      {/* Bank Fraud Report */}
+      <td className={cellStyle}>
+      <BankFraudReportDocument
+            fileName={application.bankFraudReportFileName}
+            hasDoc={application.hasBankFraudReport}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+        </td>
 
       {/* Social Score Report */}
       <td className={cellStyle}>

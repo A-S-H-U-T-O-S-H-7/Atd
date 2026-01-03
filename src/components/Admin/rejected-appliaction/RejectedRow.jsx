@@ -353,7 +353,7 @@ const RejectedRow = ({
       <td className={cellStyle}>
         {applicationForButtons.showAppraisalButton ? (
           <AppraisalReportButton
-            enquiry={applicationForButtons}  // FIXED: Use 'enquiry' prop name
+            enquiry={applicationForButtons}  
             isDark={isDark}
             onFileView={onFileView}
             onCheckClick={onCheckClick}
@@ -367,7 +367,7 @@ const RejectedRow = ({
       <td className={cellStyle}>
         {applicationForButtons.showEligibilityButton ? (
           <EligibilityButton
-            enquiry={applicationForButtons}  // FIXED: Use 'enquiry' prop name
+            enquiry={applicationForButtons} 
             isDark={isDark}
             onLoanEligibilityClick={onLoanEligibilityClick}
           />
@@ -380,9 +380,9 @@ const RejectedRow = ({
       <td className={cellStyle}>
         {applicationForButtons.showActionButton ? (
           <ActionButton
-            enquiry={applicationForButtons}  // FIXED: Use 'enquiry' prop name
+            enquiry={applicationForButtons}  
             isDark={isDark}
-            onVerifyClick={onActionClick}  // FIXED: Use 'onVerifyClick' prop name
+            onVerifyClick={onActionClick} 
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>

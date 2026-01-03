@@ -417,6 +417,7 @@ const SanctionRow = ({
         />
       </td>
 
+      {/*second Bank Statement */}
       <td className={cellStyle}>
       <SecondBankStatementDocument
       fileName={application.secondBankStatementFileName}

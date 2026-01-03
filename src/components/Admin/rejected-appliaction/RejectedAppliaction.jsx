@@ -50,7 +50,7 @@ const RejectedApplication = () => {
 
   // Build API parameters
   const buildApiParams = () => {
-    const params = {
+    const params = { 
       per_page: itemsPerPage,
       page: currentPage,
     };

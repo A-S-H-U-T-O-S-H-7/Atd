@@ -98,7 +98,7 @@ export const formatSanctionApplicationForUI = (application) => {
     hasVideoKyc: !!application.video,
     hasNachForm: !!application.nach_form,
     hasPdc: !!application.pdc,
-    hasAgreement: !!application.aggrement,
+    hasAgreement: !!application.aggrement, 
     sanctionLetter: !!application.sanction_letter, 
     hasSecondBankStatement: !!application.second_bank_statement,
     hasBankFraudReport: !!application.bank_fraud_report,

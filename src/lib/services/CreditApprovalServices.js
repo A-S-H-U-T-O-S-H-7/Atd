@@ -121,6 +121,8 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     hasPdc: !!application.pdc,
     hasAgreement: !!application.aggrement,
     sanctionLetter: !!application.sanction_letter, 
+    hasSecondBankStatement: !!application.second_bank_statement,
+    hasBankFraudReport: !!application.bank_fraud_report,
 
     // Document file names
     photoFileName: application.selfie,
@@ -139,6 +141,8 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     pdcFileName: application.pdc,
     agreementFileName: application.aggrement,
     sanctionLetterFileName: application.sanction_letter,
+    secondBankStatementFileName: application.second_bank_statement,
+    bankFraudReportFileName: application.bank_fraud_report,
 
     // Status and process information
     approvalNote: application.approval_note,

@@ -52,11 +52,11 @@ const FollowUpRow = ({
   // Blacklisted row styles
   const blacklistedRowBg = isDark 
     ? "bg-red-950/20 border-l-4 border-l-red-500" 
-    : "bg-red-50/80 border-l-4 border-l-red-500";
+    : "bg-red-300/80 border-l-4 border-l-red-500";
   
   const blacklistedHoverBg = isDark
     ? "hover:bg-red-900/30"
-    : "hover:bg-red-100/90";
+    : "hover:bg-red-400/90";
 
   const normalRowBg = index % 2 === 0
     ? isDark ? "bg-gray-700/30" : "bg-gray-50"
@@ -135,7 +135,7 @@ const FollowUpRow = ({
       <td className={cellStyle}>
         <div className="flex items-center justify-center space-x-1">
           {isBlacklisted && (
-            <Ban className={`w-3 h-3 ${isDark ? "text-red-400" : "text-red-500"}`} />
+            <Ban className={`w-7 h-7 ${isDark ? "text-red-500" : "text-red-500"}`} />
           )}
           <span className={`font-medium ${textPrimary}`}>
             {application.srNo}
