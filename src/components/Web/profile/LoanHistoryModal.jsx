@@ -8,6 +8,8 @@ const LOAN_STATUS_MAP = {
   5: 'inprogress',
   6: 'sanctioned',
   9: 'disbursed',
+  11: 'disbursed',
+  12: 'disbursed',
   13: 'closed'
 };
 

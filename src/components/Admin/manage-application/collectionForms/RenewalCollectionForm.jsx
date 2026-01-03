@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { X, Calendar, IndianRupee, BanknoteIcon, ArrowRight } from "lucide-react";
 import { collectionService } from "@/lib/services/colletionForms/CollectionService";
 import toast from "react-hot-toast";
@@ -12,7 +14,60 @@ const RenewalCollectionForm = ({
   initialData = null,
   isDark
 }) => {
-  const [formData, setFormData] = useState({
+  const [bankList, setBankList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [selectedBankDetails, setSelectedBankDetails] = useState(null);
+
+  // Validation Schema
+  const validationSchema = Yup.object({
+    collectionDate: Yup.string()
+      .required('Collection date is required'),
+    principalAmount: Yup.number()
+      .min(0, 'Principal amount cannot be negative')
+      .required('Principal amount is required'),
+    normalInterest: Yup.number()
+      .min(0, 'Interest cannot be negative')
+      .required('Normal interest is required'),
+    penalInterest: Yup.number()
+      .min(0, 'Penal interest cannot be negative')
+      .required('Penal interest is required'),
+    penaltyInput: Yup.number()
+      .min(0, 'Penalty cannot be negative')
+      .required('Penalty is required'),
+    bounceCharge: Yup.number()
+      .min(0, 'Bounce charge cannot be negative')
+      .required('Bounce charge is required'),
+    renewalCharge: Yup.number()
+      .min(0, 'Renewal charge cannot be negative')
+      .required('Renewal charge is required'),
+    renewalGst: Yup.number()
+      .min(0, 'Renewal GST cannot be negative')
+      .required('Renewal GST is required'),
+    totalDueAmount: Yup.number()
+      .min(0, 'Total due amount cannot be negative')
+      .required('Total due amount is required'),
+    collectionBy: Yup.string()
+      .required('Collection method is required'),
+    collectionBankName: Yup.string()
+      .when('collectionBy', {
+        is: 'by bank',
+        then: (schema) => schema.required('Bank name is required for bank collection'),
+        otherwise: (schema) => schema.notRequired()
+      }),
+    collectionAmount: Yup.number()
+      .min(1, 'Collection amount must be greater than 0')
+      .required('Collection amount is required'),
+    collectionTransactionId: Yup.string()
+      .when('collectionBy', {
+        is: 'by bank',
+        then: (schema) => schema.required('Transaction ID is required for bank collection'),
+        otherwise: (schema) => schema.notRequired()
+      })
+  });
+
+  // Initial Values
+  const initialValues = {
     collectionDate: "",
     principalAmount: "0",
     normalInterest: "0",
@@ -26,37 +81,25 @@ const RenewalCollectionForm = ({
     collectionBankName: "", 
     disbursedBank: "",
     collectionAmount: "0",
-    collectionTransactionId: "" 
-  });
+    collectionTransactionId: "",
+    selectedBankId: ""
+  };
 
-  const [bankList, setBankList] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [calculating, setCalculating] = useState(false);
-  const [selectedBankDetails, setSelectedBankDetails] = useState(null);
-  const [selectedBankId, setSelectedBankId] = useState("");
+  const formik = useFormik({
+    initialValues,
+    validationSchema,
+    onSubmit: async (values) => {
+      await handleSubmit(values);
+    },
+    enableReinitialize: true
+  });
 
   useEffect(() => {
     if (isOpen && application) {
-      setFormData({
-        collectionDate: "",
-        principalAmount: "0",
-        normalInterest: "0",
-        penalInterest: "0",
-        penaltyInput: "0",
-        bounceCharge: "0",
-        renewalCharge: "0",
-        renewalGst: "0",
-        totalDueAmount: "0",
-        collectionBy: "",
-        collectionBankName: "",
-        disbursedBank: initialData?.disburse_bank || "",
-        collectionAmount: "0",
-        collectionTransactionId: ""
-      });
-
+      // Reset form when modal opens
+      formik.resetForm();
       fetchBankList();
       
-      // If initialData is already provided, populate the form
       if (initialData) {
         populateFormWithInitialData(initialData);
       }
@@ -96,7 +139,7 @@ const RenewalCollectionForm = ({
   };
 
   const populateFormWithInitialData = (data) => {
-    // Calculate total amounts like NormalCollectionForm
+    // Calculate total amounts
     const normalInterestTotal = (parseFloat(data.normal_interest_before || 0) + parseFloat(data.normal_interest_after || 0));
     const penalInterestTotal = (parseFloat(data.penal_interest_before || 0) + parseFloat(data.penal_interest_after || 0));
     const penaltyTotal = (parseFloat(data.penalty_before || 0) + parseFloat(data.penalty_after || 0));
@@ -112,10 +155,10 @@ const RenewalCollectionForm = ({
       disbursedBank: data.disburse_bank || ""
     };
 
-    setFormData(prev => ({
-      ...prev,
-      ...formattedData
-    }));
+    // Update form values
+    Object.keys(formattedData).forEach(key => {
+      formik.setFieldValue(key, formattedData[key]);
+    });
 
     calculateTotalDueAmount(formattedData);
   };
@@ -131,28 +174,16 @@ const RenewalCollectionForm = ({
 
     const totalDue = principal + normalInterest + penalInterest + penalty + bounceCharge + renewalCharge + renewalGst;
     
-    setFormData(prev => ({
-      ...prev,
-      totalDueAmount: totalDue.toFixed(2)
-    }));
-  };
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    formik.setFieldValue('totalDueAmount', totalDue.toFixed(2));
   };
 
   const handleChange = async (e) => {
     const { name, value } = e.target;
     
+    // Let Formik handle the change first
+    await formik.setFieldValue(name, value);
+    
     if (name === "collectionDate") {
-      setFormData(prev => ({
-        ...prev,
-        collectionDate: value
-      }));
-      
-      // Auto-calculate when date is selected
       if (value && application?.id) {
         try {
           setCalculating(true);
@@ -175,123 +206,87 @@ const RenewalCollectionForm = ({
         }
       }
     } else if (name === "collectionBy") {
-      setFormData(prev => ({
-        ...prev,
-        collectionBy: value,
-        collectionBankName: value === "by cash" ? "" : prev.collectionBankName
-      }));
       if (value === "by cash") {
-        setSelectedBankId("");
+        await formik.setFieldValue("selectedBankId", "");
+        await formik.setFieldValue("collectionBankName", "");
+        await formik.setFieldValue("collectionTransactionId", "");
         setSelectedBankDetails(null);
       }
-    } else if (name === "collectionBankName") {
-      const bankId = value;
-      setSelectedBankId(bankId);
-      
-      const selectedBank = bankList.find(bank => bank.id && bank.id.toString() === bankId);
+    } else if (name === "selectedBankId") {
+      const selectedBank = bankList.find(bank => bank.id && bank.id.toString() === value);
       if (selectedBank) {
-        setFormData(prev => ({
-          ...prev,
-          collectionBankName: selectedBank.bank_name || selectedBank.name || ""
-        }));
+        await formik.setFieldValue("collectionBankName", selectedBank.bank_name || selectedBank.name || "");
         fetchBankDetails(selectedBank.id);
       } else {
-        setFormData(prev => ({
-          ...prev,
-          collectionBankName: ""
-        }));
+        await formik.setFieldValue("collectionBankName", "");
         setSelectedBankDetails(null);
       }
-    } else if (name === "bounceCharge" || name === "renewalCharge" || name === "renewalGst" || name === "collectionAmount") {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-      
+    } else if (['bounceCharge', 'renewalCharge', 'renewalGst', 'collectionAmount'].includes(name)) {
       // Recalculate total if these fields change
       if (name !== "collectionAmount") {
         setTimeout(() => recalculateTotal(), 10);
       }
-    } else if (name === "collectionTransactionId") {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
     }
   };
 
   const recalculateTotal = () => {
-    const principal = parseFloat(formData.principalAmount || 0);
-    const normalInterest = parseFloat(formData.normalInterest || 0);
-    const penalInterest = parseFloat(formData.penalInterest || 0);
-    const penalty = parseFloat(formData.penaltyInput || 0);
-    const bounceCharge = parseFloat(formData.bounceCharge || 0);
-    const renewalCharge = parseFloat(formData.renewalCharge || 0);
-    const renewalGst = parseFloat(formData.renewalGst || 0);
+    const values = formik.values;
+    const principal = parseFloat(values.principalAmount || 0);
+    const normalInterest = parseFloat(values.normalInterest || 0);
+    const penalInterest = parseFloat(values.penalInterest || 0);
+    const penalty = parseFloat(values.penaltyInput || 0);
+    const bounceCharge = parseFloat(values.bounceCharge || 0);
+    const renewalCharge = parseFloat(values.renewalCharge || 0);
+    const renewalGst = parseFloat(values.renewalGst || 0);
 
     const totalDue = principal + normalInterest + penalInterest + penalty + bounceCharge + renewalCharge + renewalGst;
     
-    setFormData(prev => ({
-      ...prev,
-      totalDueAmount: totalDue.toFixed(2)
-    }));
+    formik.setFieldValue('totalDueAmount', totalDue.toFixed(2));
   };
 
- const handleSubmit = async () => {
-  // Validation
-  const requiredFields = ['collectionDate', 'collectionAmount', 'collectionBy', 'totalDueAmount'];
-  const missingFields = requiredFields.filter(field => !formData[field] && field !== 'collectionAmount');
-  
-  if (missingFields.length > 0) {
-    toast.error(`Please fill all required fields: ${missingFields.join(', ')}`);
-    return;
-  }
+  const handleSubmit = async (values) => {
+    if (values.collectionBy === "by bank" && !values.selectedBankId) {
+      toast.error('Please select a bank');
+      return;
+    }
 
-  if (formData.collectionBy === "by bank" && !selectedBankId) {
-    toast.error('Please select a bank');
-    return;
-  }
+    try {
+      setLoading(true);
+      
+      const bounceCharge = parseFloat(values.bounceCharge || 0);
+      const renewalCharge = parseFloat(values.renewalCharge || 0);
+      const renewalGst = parseFloat(values.renewalGst || 0);
+      const totalDueAmount = parseFloat(values.totalDueAmount || 0);
+      
+      const submissionData = {
+        collection_date: values.collectionDate,
+        principal_amount: parseFloat(values.principalAmount || 0),
+        normal_interest_before: parseFloat(initialData?.normal_interest_before || 0),
+        normal_interest_after: parseFloat(initialData?.normal_interest_after || 0),
+        penal_interest_before: parseFloat(initialData?.penal_interest_before || 0),
+        penal_interest_after: parseFloat(initialData?.penal_interest_after || 0),
+        penalty_before: parseFloat(initialData?.penalty_before || 0),
+        penalty_after: parseFloat(initialData?.penalty_after || 0),
+        bounce_charge: bounceCharge,
+        renewal_charge: renewalCharge,
+        renewal_gst: renewalGst,
+        total_due_amount: totalDueAmount,
+        collection_bank_name: values.selectedBankId ? parseInt(values.selectedBankId) : null,
+        disbursed_bank: values.disbursedBank || "",
+        collection_amount: parseFloat(values.collectionAmount),
+        collection_transaction_id: values.collectionTransactionId || "",
+        collection_by: values.collectionBy
+      };
 
-  try {
-    setLoading(true);
-    
-    // Calculate values to ensure consistency
-    const bounceCharge = parseFloat(formData.bounceCharge || 0);
-    const renewalCharge = parseFloat(formData.renewalCharge || 0);
-    const renewalGst = parseFloat(formData.renewalGst || 0);
-    const totalDueAmount = parseFloat(formData.totalDueAmount || 0);
-    
-    const submissionData = {
-      collection_date: formData.collectionDate,
-      principal_amount: parseFloat(formData.principalAmount || 0),
-      normal_interest_before: parseFloat(initialData?.normal_interest_before || 0),
-      normal_interest_after: parseFloat(initialData?.normal_interest_after || 0),
-      penal_interest_before: parseFloat(initialData?.penal_interest_before || 0),
-      penal_interest_after: parseFloat(initialData?.penal_interest_after || 0),
-      penalty_before: parseFloat(initialData?.penalty_before || 0),
-      penalty_after: parseFloat(initialData?.penalty_after || 0),
-      bounce_charge: bounceCharge,
-      renewal_charge: renewalCharge,
-      renewal_gst: renewalGst,
-      total_due_amount: totalDueAmount,
-      collection_bank_name: selectedBankId ? parseInt(selectedBankId) : null,
-      disbursed_bank: formData.disbursedBank || "",
-      collection_amount: parseFloat(formData.collectionAmount),
-      collection_transaction_id: formData.collectionTransactionId || "",
-      collection_by: formData.collectionBy
-    };
-
-    console.log('Submitting renewal data:', submissionData);
-    
-    await onRenewalSubmit(application.id, submissionData);
-    
-  } catch (error) {
-    console.error("Renewal error:", error);
-    toast.error('Failed to submit renewal');
-  } finally {
-    setLoading(false);
-  }
-};
+      await onRenewalSubmit(application.id, submissionData);
+      
+    } catch (error) {
+      console.error("Renewal error:", error);
+      toast.error('Failed to submit renewal');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatCurrency = (amount) => {
     const num = parseFloat(amount || 0);
@@ -307,7 +302,52 @@ const RenewalCollectionForm = ({
     return `${day}-${month}-${year}`;
   };
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
+
+  // Helper function to render form field with error
+  const renderField = (name, label, type = "text", options = {}) => {
+    const { isReadOnly = false, isRequired = true, showError = true, customClass = "" } = options;
+    const error = formik.touched[name] && formik.errors[name];
+
+    return (
+      <div>
+        <label className={`block text-sm font-medium mb-2 ${
+          isDark ? "text-gray-300" : "text-gray-700"
+        }`}>
+          {label} {isRequired && <span className="text-red-500">*</span>}
+        </label>
+        <input
+          type={type}
+          name={name}
+          value={formik.values[name]}
+          onChange={handleChange}
+          onBlur={formik.handleBlur}
+          readOnly={isReadOnly}
+          className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+            isDark 
+              ? isReadOnly 
+                ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+                : "bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+              : isReadOnly
+                ? "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+                : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+          } ${error ? 'border-red-500' : ''} ${customClass}`}
+          step={type === "number" ? "0.01" : undefined}
+          min={type === "number" ? "0" : undefined}
+          required={isRequired}
+        />
+        {showError && error && (
+          <div className="text-red-500 text-xs mt-1">{error}</div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div 
@@ -349,7 +389,7 @@ const RenewalCollectionForm = ({
         </div>
 
         {/* Form Content */}
-        <div className="p-6">
+        <form onSubmit={formik.handleSubmit} className="p-6">
           {/* Loan Information Section */}
           <div className={`mb-6 p-4 rounded-xl border ${
             isDark ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"
@@ -428,16 +468,20 @@ const RenewalCollectionForm = ({
                 <input
                   type="date"
                   name="collectionDate"
-                  value={formData.collectionDate}
+                  value={formik.values.collectionDate}
                   onChange={handleChange}
+                  onBlur={formik.handleBlur}
                   className={`w-full pl-10 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
                     isDark 
                       ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
                       : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
+                  } ${formik.touched.collectionDate && formik.errors.collectionDate ? 'border-red-500' : ''}`}
                   required
                 />
               </div>
+              {formik.touched.collectionDate && formik.errors.collectionDate && (
+                <div className="text-red-500 text-xs mt-1">{formik.errors.collectionDate}</div>
+              )}
             </div>
           </div>
 
@@ -454,221 +498,35 @@ const RenewalCollectionForm = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Principal Amount */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Principal Amount
-                </label>
-                <input
-                  type="text"
-                  value={formatCurrency(formData.principalAmount)}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                />
-              </div>
+              {renderField('principalAmount', 'Principal Amount', 'number', { isReadOnly: true, showError: false })}
 
               {/* Normal Interest */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Normal Interest
-                </label>
-                <input
-                  type="text"
-                  name="normalInterest"
-                  value={formatCurrency(formData.normalInterest)}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                />
-                {initialData && (
-                  <div className="text-xs mt-1 flex justify-between px-1">
-                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                      Before: ₹{formatCurrency(initialData.normal_interest_before || 0)}
-                    </span>
-                    <span className={isDark ? "text-blue-300" : "text-blue-600"}>
-                      <ArrowRight className="w-3 h-3 inline mr-1" />
-                      After: ₹{formatCurrency(initialData.normal_interest_after || 0)}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {renderField('normalInterest', 'Normal Interest', 'number', { isReadOnly: true, showError: false })}
 
               {/* Penal Interest */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Penal Interest
-                </label>
-                <input
-                  type="text"
-                  name="penalInterest"
-                  value={formatCurrency(formData.penalInterest)}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                />
-                {initialData && (
-                  <div className="text-xs mt-1 flex justify-between px-1">
-                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                      Before: ₹{formatCurrency(initialData.penal_interest_before || 0)}
-                    </span>
-                    <span className={isDark ? "text-amber-300" : "text-amber-600"}>
-                      <ArrowRight className="w-3 h-3 inline mr-1" />
-                      After: ₹{formatCurrency(initialData.penal_interest_after || 0)}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {renderField('penalInterest', 'Penal Interest', 'number', { isReadOnly: true, showError: false })}
 
               {/* Penalty */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Penalty
-                </label>
-                <input
-                  type="text"
-                  name="penaltyInput"
-                  value={formatCurrency(formData.penaltyInput)}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                />
-                {initialData && (
-                  <div className="text-xs mt-1 flex justify-between px-1">
-                    <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                      Before: ₹{formatCurrency(initialData.penalty_before || 0)}
-                    </span>
-                    <span className={isDark ? "text-red-300" : "text-red-600"}>
-                      <ArrowRight className="w-3 h-3 inline mr-1" />
-                      After: ₹{formatCurrency(initialData.penalty_after || 0)}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {renderField('penaltyInput', 'Penalty', 'number', { isReadOnly: true, showError: false })}
 
               {/* Renewal Charges */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Renewal Charge
-                  </label>
-                  <input
-                    type="number"
-                    name="renewalCharge"
-                    value={formData.renewalCharge}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white" 
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                    step="0.01"
-                    min="0"
-                  />
+                  {renderField('renewalCharge', 'Renewal Charge', 'number')}
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Renewal GST
-                  </label>
-                  <input
-                    type="number"
-                    name="renewalGst"
-                    value={formData.renewalGst}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white" 
-                        : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                    step="0.01"
-                    min="0"
-                  />
+                  {renderField('renewalGst', 'Renewal GST', 'number')}
                 </div>
               </div>
 
               {/* Bounce Charge */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Bounce Charge
-                </label>
-                <input
-                  type="number"
-                  name="bounceCharge"
-                  value={formData.bounceCharge}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  step="0.01"
-                  min="0"
-                />
-              </div>
+              {renderField('bounceCharge', 'Bounce Charge', 'number')}
 
               {/* Disbursed Bank */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Disbursed Bank
-                </label>
-                <input
-                  type="text"
-                  name="disbursedBank"
-                  value={formData.disbursedBank}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                    isDark 
-                      ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                      : "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                  }`}
-                />
-              </div>
+              {renderField('disbursedBank', 'Disbursed Bank', 'text', { isReadOnly: true, isRequired: false, showError: false })}
 
               {/* Total Due Amount */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Total Due Amount <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formatCurrency(formData.totalDueAmount)}
-                  readOnly
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm font-bold ${
-                    isDark 
-                      ? "bg-purple-900/30 border-purple-700 text-purple-300 cursor-not-allowed" 
-                      : "bg-purple-50 border-purple-300 text-purple-700 cursor-not-allowed"
-                  }`}
-                />
-              </div>
+              {renderField('totalDueAmount', 'Total Due Amount', 'number', { isReadOnly: true, showError: false })}
             </div>
           </div>
 
@@ -685,27 +543,7 @@ const RenewalCollectionForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Collection Amount */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDark ? "text-gray-300" : "text-gray-700"
-                }`}>
-                  Collection Amount <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="collectionAmount"
-                  value={formData.collectionAmount}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                    isDark 
-                      ? "bg-gray-600 border-gray-500 text-white" 
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                  step="0.01"
-                  required
-                  min="0"
-                />
-              </div>
+              {renderField('collectionAmount', 'Collection Amount', 'number')}
 
               {/* Collection By */}
               <div>
@@ -716,23 +554,27 @@ const RenewalCollectionForm = ({
                 </label>
                 <select
                   name="collectionBy"
-                  value={formData.collectionBy}
+                  value={formik.values.collectionBy}
                   onChange={handleChange}
+                  onBlur={formik.handleBlur}
                   className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                     isDark 
                       ? "bg-gray-600 border-gray-500 text-white" 
                       : "bg-white border-gray-300 text-gray-900"
-                  }`}
+                  } ${formik.touched.collectionBy && formik.errors.collectionBy ? 'border-red-500' : ''}`}
                   required
                 >
                   <option value="">-- Select Method --</option>
                   <option value="by cash">By Cash</option>
                   <option value="by bank">By Bank</option>
                 </select>
+                {formik.touched.collectionBy && formik.errors.collectionBy && (
+                  <div className="text-red-500 text-xs mt-1">{formik.errors.collectionBy}</div>
+                )}
               </div>
 
               {/* Bank Selection (conditionally shown) */}
-              {formData.collectionBy === "by bank" && (
+              {formik.values.collectionBy === "by bank" && (
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${
                     isDark ? "text-gray-300" : "text-gray-700"
@@ -747,15 +589,16 @@ const RenewalCollectionForm = ({
                     )}
                   </label>
                   <select
-                    name="collectionBankName"
-                    value={selectedBankId}
+                    name="selectedBankId"
+                    value={formik.values.selectedBankId}
                     onChange={handleChange}
+                    onBlur={formik.handleBlur}
                     className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                       isDark 
                         ? "bg-gray-600 border-gray-500 text-white" 
                         : "bg-white border-gray-300 text-gray-900"
-                    }`}
-                    required
+                    } ${formik.touched.selectedBankId && formik.errors.selectedBankId ? 'border-red-500' : ''}`}
+                    required={formik.values.collectionBy === "by bank"}
                   >
                     <option value="">-- Select Bank --</option>
                     {bankList.length > 0 ? (
@@ -768,29 +611,19 @@ const RenewalCollectionForm = ({
                       <option value="" disabled>Loading banks...</option>
                     )}
                   </select>
+                  {formik.touched.selectedBankId && formik.errors.selectedBankId && (
+                    <div className="text-red-500 text-xs mt-1">{formik.errors.selectedBankId}</div>
+                  )}
                 </div>
               )}
 
               {/* Transaction ID */}
-              {formData.collectionBy === "by bank" && (
+              {formik.values.collectionBy === "by bank" && (
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${
-                    isDark ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Transaction ID
-                  </label>
-                  <input
-                    type="text"
-                    name="collectionTransactionId"
-                    value={formData.collectionTransactionId}
-                    onChange={handleChange}
-                    placeholder="Enter transaction ID"
-                    className={`w-full px-3 py-2.5 rounded-lg border text-sm ${
-                      isDark 
-                        ? "bg-gray-600 border-gray-500 text-white placeholder-gray-400" 
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                  />
+                  {renderField('collectionTransactionId', 'Transaction ID', 'text', { 
+                    isRequired: false, 
+                    placeholder: 'Enter transaction ID' 
+                  })}
                 </div>
               )}
             </div>
@@ -811,14 +644,13 @@ const RenewalCollectionForm = ({
               Cancel
             </button>
             <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading || !formData.collectionDate || !formData.collectionAmount || calculating}
+              type="submit"
+              disabled={loading || !formik.isValid || calculating || !formik.dirty}
               className={`px-8 py-3 rounded-lg text-white transition-colors flex items-center justify-center gap-2 font-medium ${
-                loading || calculating
+                loading || calculating || !formik.isValid || !formik.dirty
                   ? "bg-purple-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg shadow-purple-600/20"
-              } ${(!formData.collectionDate || !formData.collectionAmount || calculating) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              }`}
             >
               {loading ? (
                 <>
@@ -833,7 +665,7 @@ const RenewalCollectionForm = ({
               )}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
