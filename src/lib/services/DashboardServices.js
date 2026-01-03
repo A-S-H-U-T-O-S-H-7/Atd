@@ -5,9 +5,11 @@ const API_ENDPOINTS = {
 };
 
 export const dashboardAPI = {
-  getDashboardData: async () => {
+  getDashboardData: async (params = {}) => {
     try {
-      const response = await api.get(API_ENDPOINTS.GET_DASHBOARD_DATA);
+      const response = await api.get(API_ENDPOINTS.GET_DASHBOARD_DATA, { 
+        params 
+      });
       return response;
     } catch (error) {
       console.error("Dashboard API Error:", error);
