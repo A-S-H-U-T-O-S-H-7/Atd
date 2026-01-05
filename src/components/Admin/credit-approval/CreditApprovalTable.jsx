@@ -127,7 +127,6 @@ const CreditApprovalTable = ({
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
                   onChequeModalOpen={onChequeModalOpen}
                   onCourierModalOpen={onCourierModalOpen}
                   onCourierPickedModalOpen={onCourierPickedModalOpen}
@@ -135,9 +134,6 @@ const CreditApprovalTable = ({
                   onDisburseEmandateModalOpen={onDisburseEmandateModalOpen}
                   onChangeStatusClick={onChangeStatusClick}
                   onRefundPDCClick={onRefundPDCClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick={onReplaceKYCClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                   // NEW: Pass the bank verification and disburse approval handlers
