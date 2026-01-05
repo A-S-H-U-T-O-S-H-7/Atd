@@ -87,8 +87,7 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     updatedDate: updatedDate.toLocaleDateString('en-GB'),
     updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    approvedDate: enquiryDate.toLocaleDateString('en-GB'),
-    disburseDate: application.disburse_date || 'N/A',
+    approvedDate: application.approved_date ? new Date(application.approved_date).toLocaleDateString('en-GB') : 'N/A',    disburseDate: application.disburse_date || 'N/A',
     dueDate: application.due_date || 'N/A',
 
     // Personal information
