@@ -5,7 +5,6 @@ import ExportDateFilter from '../ExportDateFilter';
 import { useRouter } from 'next/navigation';
 import { useThemeStore } from '@/lib/store/useThemeStore';
 import { tallyExportAPI, formatTallyExportForCSV, createTallyExportCSV, downloadCSV } from '@/lib/services/TallyExportServices';
-import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 
 const TallyExport = () => {

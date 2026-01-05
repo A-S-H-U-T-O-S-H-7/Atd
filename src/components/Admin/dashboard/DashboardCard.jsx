@@ -49,7 +49,7 @@ const DashboardCard = ({
         </div>
       </div>
       
-      {trend && (
+      {/* {trend && (
         <div className="flex items-center mt-4">
           <span className={`text-sm font-medium flex items-center ${
             trend === "up" 
@@ -67,7 +67,7 @@ const DashboardCard = ({
             from last period
           </span>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

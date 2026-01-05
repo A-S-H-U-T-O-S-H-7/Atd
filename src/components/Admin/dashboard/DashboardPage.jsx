@@ -344,7 +344,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <DashboardCard
               title="Total Applications"
               value={totals?.totalApplications || 0}
@@ -356,7 +356,17 @@ const DashboardPage = () => {
               isDark={isDark}
               subtitle="Applications"
             />
-            
+            <DashboardCard
+    title="Pending Applications"
+    value={(totals?.totalApplications || 0) - (totals?.completedApplications || 0)}
+    icon={Clock}
+    trend="down"
+    trendValue="-4%"
+    iconColor="text-amber-600"
+    bgColor="bg-gradient-to-br from-amber-50 to-orange-50"
+    isDark={isDark}
+    subtitle="Applications"
+  />
             <DashboardCard
               title="Completed Applications"
               value={totals?.completedApplications || 0}
