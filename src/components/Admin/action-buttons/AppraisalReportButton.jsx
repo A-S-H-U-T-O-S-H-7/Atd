@@ -67,20 +67,20 @@ const AppraisalReportButton = ({
     }
   };
 
-  const handleClick = (e) => {
-    const isNewTabClick = e.ctrlKey || e.metaKey || e.shiftKey;
+  const handleLinkClick = (e) => {
+    const isNewTabClick = e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1;
     
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
     
-    if (finalReportStatus === "Recommended") {
-      e.preventDefault();
-      handlePdfView(e);
-      return;
-    }
-    
-    // Only prevent if disabled/loading for normal clicks
+    // Only prevent default if disabled/loading for normal clicks
     if (!isNewTabClick && (disabled || loading || isDownloading)) {
       e.preventDefault();
+    }
+    
+    // For Recommended status, the PDF view is handled separately
+    if (finalReportStatus === "Recommended") {
+      // This shouldn't be called for the Review link, only for the Recommended button
+      return;
     }
   };
 
@@ -100,12 +100,13 @@ const AppraisalReportButton = ({
     );
   }
 
+  // For Recommended status, show both buttons in a vertical layout
   if (finalReportStatus === "Recommended") {
-    const buttonContent = (
+    const recommendedButton = (
       <button
         onClick={handlePdfView}
         disabled={disabled || loading || isDownloading}
-        className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 ${
+        className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 w-full ${
           disabled || loading || isDownloading
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer hover:bg-green-200"
@@ -115,9 +116,30 @@ const AppraisalReportButton = ({
       </button>
     );
 
+    const reviewButton = (
+      <Link
+        href={href}
+        onClick={handleLinkClick}
+        className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border w-full mt-1 ${
+          disabled || loading || isDownloading
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer hover:scale-105"
+        } ${
+          isDark
+            ? "bg-blue-900/50 border-blue-700 text-blue-300 hover:bg-blue-800"
+            : "bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200"
+        } ${className}`}
+      >
+        Review
+      </Link>
+    );
+
     return (
       <PermissionWrapper permissionKey="appraisal" tooltipText="No permission for appraisal">
-        {buttonContent}
+        <div className="flex flex-col min-w-[80px]">
+          {recommendedButton}
+          {reviewButton}
+        </div>
       </PermissionWrapper>
     );
   }
@@ -126,9 +148,7 @@ const AppraisalReportButton = ({
   const buttonContent = (
     <Link
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={handleClick}
+      onClick={handleLinkClick}
       className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border ${
         disabled || loading || isDownloading
           ? "opacity-50 cursor-not-allowed"
