@@ -8,7 +8,7 @@ export default function LoanStatusTracker ({ loanStatus = 2 }) {
       case 3: return 'rejected';
       case 6: return 'sanctioned';
       case 7: return 'sanctioned';
-      case 8: return 'disbursed';
+      case 8: return 'sanctioned';
       case 11: return 'disbursed'; 
       case 12: return 'disbursed'; 
       case 13: return 'closed';

@@ -105,14 +105,10 @@ const InProgressTable = ({
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick={onReplaceKYCClick}
                   onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
-                  onOpenStatusModal={onOpenStatusModal} // Pass the modal opener
+                  onOpenStatusModal={onOpenStatusModal} 
                 />
               ))}
             </tbody>

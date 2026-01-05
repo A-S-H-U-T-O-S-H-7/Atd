@@ -68,13 +68,10 @@ const AppraisalReportButton = ({
   };
 
   const handleClick = (e) => {
-    // Check if Ctrl/Cmd/Shift is pressed (new tab)
     const isNewTabClick = e.ctrlKey || e.metaKey || e.shiftKey;
     
-    // Save to localStorage for both normal and new tab clicks
     localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
     
-    // If it's a "Recommended" PDF view, handle specially
     if (finalReportStatus === "Recommended") {
       e.preventDefault();
       handlePdfView(e);

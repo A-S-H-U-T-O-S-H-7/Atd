@@ -45,6 +45,7 @@ export default function StepCompleteProfile({
     REJECTED: 3,
     SANCTIONED: 6,
     SANCTIONED: 7, 
+    SANCTIONED: 8,
     DISBURSED: 9,
     DISBURSED: 11,
     DISBURSED: 12,
