@@ -6,7 +6,7 @@ import { eligibilityAPI, formatEligibilityForUI, formatRejectionStatusForUI } fr
 import { useThemeStore } from '@/lib/store/useThemeStore';
 
 // Toast Component
-const Toast = ({ message, type, onClose }) => {
+const Toast = ({ message, type, onClose }) => { 
   const { theme } = useThemeStore();
     const isDark = theme === "dark";
   

@@ -12,9 +12,6 @@ const PendingTable = ({
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
-  onLoanEligibilityClick,  
-   onCheckClick, 
    onSendMail,
 }) => {
 
@@ -64,7 +61,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
     { label: "Status", width: "80px" },
     { label: "Action", width: "80px" },
     { label: "Appraisal Report", width: "120px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     // { label: "Link", width: "160px" },
 
   ];
@@ -103,9 +100,6 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
                   onSendMail={onSendMail}
                   />
               ))}

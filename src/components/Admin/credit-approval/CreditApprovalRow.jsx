@@ -31,16 +31,12 @@ const CreditApprovalRow = ({
   application,
   index,
   isDark,
-  onLoanEligibilityClick,
-  onCheckClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
   onOriginalDocumentsModalOpen,
   onDisburseEmandateModalOpen,
   onChangeStatusClick,
-  onReplaceKYCClick,
-  onActionClick,
   onFileView,
   fileLoading,
   loadingFileName,
@@ -921,7 +917,6 @@ const getLoanStatusClassName = (application) => {
         <ActionButton
           enquiry={application}
           isDark={isDark}
-          onVerifyClick={onActionClick} 
           className="w-full flex justify-center"
         />
       </td>
@@ -932,7 +927,6 @@ const getLoanStatusClassName = (application) => {
           enquiry={application}
           isDark={isDark}
           onFileView={onFileView}
-          onCheckClick={onCheckClick}
           className="w-full flex justify-center"
         />
       </td>
@@ -942,7 +936,6 @@ const getLoanStatusClassName = (application) => {
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
-          onLoanEligibilityClick={onLoanEligibilityClick}
           className="w-full flex justify-center"
         />
       </td>
@@ -952,7 +945,6 @@ const getLoanStatusClassName = (application) => {
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
-    onReplaceKYCClick={onReplaceKYCClick}
   />
 </td>
     </tr>

@@ -379,12 +379,11 @@ const PendingRow = ({
         />
       </td>
 
-      {/* Eligibility - FIXED PROP NAMES */}
+      {/* Eligibility  */}
       <td className={cellStyle}>
         <EligibilityButton
           enquiry={applicationForButtons}      
           isDark={isDark}
-          onLoanEligibilityClick={onLoanEligibilityClick}
         />
       </td>
     </tr>

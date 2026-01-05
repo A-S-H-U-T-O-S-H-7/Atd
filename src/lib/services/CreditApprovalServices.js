@@ -336,6 +336,7 @@ export const fileService = {
 
     const folderMappings = {
       'bank_statement': 'bank-statement',
+      'second_bank_statement': 'bank-statement',
       'aadhar_proof': 'idproof', 
       'address_proof': 'address',
       'pan_proof': 'pan',
@@ -344,6 +345,7 @@ export const fileService = {
       'second_salary_slip': 'second_salaryslip', 
       'third_salary_slip': 'third_salaryslip',
       'bank_verif_report': 'reports',
+      'bank_fraud_report': 'reports',
       'social_score_report': 'reports',
       'cibil_score_report': 'reports',
       'pdc_file': 'agreement',

@@ -34,16 +34,12 @@ const SanctionRow = ({
   application,
   index,
   isDark,
-  onLoanEligibilityClick,
-  onCheckClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
   onOriginalDocumentsModalOpen,
   onDisburseEmandateModalOpen,
   onChangeStatusClick,
-  onReplaceKYCClick,
-  onActionClick,
   onStatusClick,
   onFileView,
   fileLoading,
@@ -1073,7 +1069,6 @@ const SanctionRow = ({
         <ActionButton
           enquiry={application}
           isDark={isDark}
-          onVerifyClick={onActionClick} 
           className="w-full flex justify-center"
         />
       </td>
@@ -1084,7 +1079,6 @@ const SanctionRow = ({
           enquiry={application}
           isDark={isDark}
           onFileView={onFileView}
-          onCheckClick={onCheckClick}
           className="w-full flex justify-center"
         />
       </td>
@@ -1094,7 +1088,6 @@ const SanctionRow = ({
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
-          onLoanEligibilityClick={onLoanEligibilityClick}
           className="w-full flex justify-center"
         />
       </td>
@@ -1104,7 +1097,6 @@ const SanctionRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
-    onReplaceKYCClick={onReplaceKYCClick}
   />
 </td>
     </tr>

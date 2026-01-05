@@ -20,7 +20,7 @@ export default function VerifyPage() {
         if (parsedEnquiry.id === parseInt(enquiryId)) {
           setEnquiry(parsedEnquiry);
           setLoading(false);
-          return;
+          return; 
         }
       } catch (error) {
         console.error('Error parsing stored enquiry:', error);

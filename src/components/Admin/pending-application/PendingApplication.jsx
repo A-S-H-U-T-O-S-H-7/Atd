@@ -304,21 +304,7 @@ const PendingApplication = () => {
     }
   };
 
-  // Navigation handlers
-  const handleLoanEligibilityClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/loan-eligibility/${application.id}`);
-  };
-
-  const handleCheckClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/appraisal-report/${application.id}`);
-  };
-
-  const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
+  
 
   if (loading && applications.length === 0) {
     return (
@@ -489,10 +475,7 @@ const PendingApplication = () => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
-          onActionClick={handleActionClick}
           loading={loading}
-          onLoanEligibilityClick={handleLoanEligibilityClick}  
-          onCheckClick={handleCheckClick}
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}

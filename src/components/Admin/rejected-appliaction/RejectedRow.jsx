@@ -15,14 +15,13 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 
 const RejectedRow = ({
   application,
   index,
   isDark,
-  onLoanEligibilityClick,
-  onCheckClick,
-  onActionClick,
   onFileView,
   fileLoading,
   loadingFileName,
@@ -309,6 +308,28 @@ const RejectedRow = ({
           loadingFileName={loadingFileName}
         />
       </td>
+      {/*second Bank Statement */}
+      <td className={cellStyle}>
+      <SecondBankStatementDocument
+      fileName={application.secondBankStatementFileName}
+      hasDoc={application.hasSecondBankStatement}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+    </td>
+    {/* Bank Fraud Report */}
+      <td className={cellStyle}>
+      <BankFraudReportDocument
+            fileName={application.bankFraudReportFileName}
+            hasDoc={application.hasBankFraudReport}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+        </td>
 
       {/* Remark */}
       <td className={cellStyle}>
@@ -331,7 +352,7 @@ const RejectedRow = ({
       {/* User By */}
       <td className={cellStyle}>
         <span className={`text-sm ${textSecondary}`}>
-          {application.verifierName || "N/A"}
+          {application.verifierName || "N/A"} 
         </span>
       </td>
 
@@ -356,7 +377,6 @@ const RejectedRow = ({
             enquiry={applicationForButtons}  
             isDark={isDark}
             onFileView={onFileView}
-            onCheckClick={onCheckClick}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -369,7 +389,6 @@ const RejectedRow = ({
           <EligibilityButton
             enquiry={applicationForButtons} 
             isDark={isDark}
-            onLoanEligibilityClick={onLoanEligibilityClick}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -382,7 +401,6 @@ const RejectedRow = ({
           <ActionButton
             enquiry={applicationForButtons}  
             isDark={isDark}
-            onVerifyClick={onActionClick} 
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>

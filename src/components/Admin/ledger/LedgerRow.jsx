@@ -156,20 +156,33 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
       </td>
 
       <td className={cellStyle}>
-        <button
-          onClick={() => router.push(`/crm/statement-of-account?id=${item.application_id}`)}
-          className={`flex items-center justify-center space-x-2 text-sm underline cursor-pointer transition-colors duration-200 ${
-            isDark
-              ? "text-emerald-400 hover:text-emerald-300"
-              : "text-emerald-600 hover:text-emerald-800"
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span className="font-semibold">
-            {item.loanNo}
-          </span>
-        </button>
-      </td>
+  <button
+    onClick={() => {
+      if (item.dueDate && item.dueDate !== 'N/A' && item.dueDate !== null ) {
+        router.push(`/crm/statement-of-account?id=${item.application_id}`);
+      }
+    }}
+    className={`flex items-center justify-center space-x-2 text-sm transition-colors duration-200 ${
+      item.dueDate && item.dueDate !== 'N/A' 
+        ? 'underline cursor-pointer' 
+        : 'no-underline cursor-default'
+    } ${
+      item.dueDate && item.dueDate !== 'N/A'
+        ? (isDark
+            ? "text-emerald-400 hover:text-emerald-300"
+            : "text-emerald-600 hover:text-emerald-800")
+        : (isDark
+            ? "text-gray-400"
+            : "text-gray-500")
+    }`}
+    disabled={!(item.dueDate && item.dueDate !== 'N/A')}
+  >
+    <CreditCard className="w-4 h-4" />
+    <span className="font-semibold">
+      {item.loanNo}
+    </span>
+  </button>
+</td>
 
       <td className={cellStyle}>
         <div className="flex items-center justify-center space-x-2">

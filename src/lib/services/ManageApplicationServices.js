@@ -283,7 +283,7 @@ export const formatManageApplicationForUI = (application) => {
     activateDate: application.activateDate || null,
     blacklist: application.blacklist || 0,
     blacklistdate: application.blacklistdate || null
-  };
+  }; 
 };
 
 // Combined service with direct API calls

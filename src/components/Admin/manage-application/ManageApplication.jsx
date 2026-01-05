@@ -801,26 +801,6 @@ const handleNOCGenerate = async (applicationId, nocData) => {
     }
   };
 
-  // Navigation handlers
-  const handleLoanEligibilityClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/loan-eligibility/${application.id}`);
-  };
-
-  const handleCheckClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/appraisal-report/${application.id}`);
-  };
-
-  const handleReplaceKYCClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/replace-kyc/${application.id}`);
-  };
-
-  const handleActionClick = (application) => {
-    localStorage.setItem('selectedEnquiry', JSON.stringify(application));
-    router.push(`/crm/application-form/${application.id}`);
-  };
 
   // Handle file view
   const handleFileView = async (fileName, documentCategory) => {
@@ -1019,7 +999,6 @@ const handleNOCGenerate = async (applicationId, nocData) => {
           itemsPerPage={itemsPerPage}
           isDark={isDark}
           onPageChange={setCurrentPage}
-          onActionClick={handleActionClick}
           loading={loading}
           onChequeModalOpen={handleChequeModalOpen}
           onCourierModalOpen={handleCourierModalOpen}
@@ -1029,10 +1008,7 @@ const handleNOCGenerate = async (applicationId, nocData) => {
           onChangeStatusClick={handleChangeStatusModalOpen} 
           onRemarksClick={handleRemarksModalOpen}
           onRefundPDCClick={handleRefundPDCModalOpen}
-          onLoanEligibilityClick={handleLoanEligibilityClick}  
-          onCheckClick={handleCheckClick}
           onDocumentStatusClick={handleDocumentVerificationModalOpen}
-          onReplaceKYCClick={handleReplaceKYCClick} 
           onFileView={handleFileView}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}

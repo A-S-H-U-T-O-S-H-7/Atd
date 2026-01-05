@@ -8,15 +8,11 @@ const CompletedTable = ({
     filteredApplications,
   currentPage,
   totalPages,
-  itemsPerPage,
+  itemsPerPage, 
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
-    onCall, 
-  onLoanEligibilityClick,  
-   onCheckClick, 
-   onReplaceKYCClick,
+  onCall, 
    fileLoading,
    loadingFileName,
    onStatusUpdate,
@@ -68,8 +64,10 @@ const CompletedTable = ({
     { label: "ID Proof", width: "100px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "90px" },
+    { label: "Second Bank Statement", width: "60px" },
 
     { label: "Bank Verification Report", width: "140px" },
+    { label: "Bank Fraud Report", width: "100px" },
     { label: "Social Score Report", width: "120px" },
     { label: "Cibil Score Report", width: "120px" },
     { label: "Approval Note", width: "140px" },
@@ -77,7 +75,7 @@ const CompletedTable = ({
     { label: "Status", width: "100px" },
     { label: "Action", width: "90px" },
     { label: "Appraisal Report", width: "120px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
     // { label: "Link", width: "160px" },
     { label: "BlackList", width: "120px" },
@@ -119,10 +117,6 @@ const CompletedTable = ({
   index={index}
   isDark={isDark}
   onFileView={onFileView}
-  onActionClick={onActionClick}
-  onLoanEligibilityClick={onLoanEligibilityClick}  
-  onCheckClick={onCheckClick}
-  onReplaceKYCClick={onReplaceKYCClick}
   onCall={onCall}
   fileLoading={fileLoading}
   loadingFileName={loadingFileName}

@@ -4,19 +4,15 @@ import Pagination from "../Pagination";
 import InProgressRow from "./InprogressRow";
 
 const InProgressTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
-  itemsPerPage,
+  itemsPerPage, 
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
-    onCall, 
-  onLoanEligibilityClick,  
-   onCheckClick, 
-   onReplaceKYCClick,
+  onCall,
    fileLoading,
    loadingFileName,
    onOpenStatusModal 
@@ -58,8 +54,10 @@ const InProgressTable = ({
     { label: "ID Proof", width: "80px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
+    { label: "Second Bank Statement", width: "60px" },
 
     { label: "Bank Verification Report", width: "140px" },
+    { label: "Bank Fraud Report", width: "100px" },
     { label: "Social Score Report", width: "120px" },
     { label: "Cibil Score Report", width: "120px" },
     { label: "PDC", width: "80px" },
@@ -69,7 +67,7 @@ const InProgressTable = ({
     { label: "Loan Status", width: "100px" },
     { label: "Action", width: "120px" },
     { label: "Appraisal Report", width: "120px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
   ];
 

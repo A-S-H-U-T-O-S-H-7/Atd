@@ -13,7 +13,6 @@ const SanctionTable = ({
   onPageChange,
   onCall,
   onFileView, 
-  onActionClick,
   onVerifyClick,
   onChequeModalOpen,
   onCourierModalOpen,
@@ -23,9 +22,6 @@ const SanctionTable = ({
   onChangeStatusClick,
   onRemarksClick,
   onRefundPDCClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
-  onReplaceKYCClick,
   fileLoading,
   loadingFileName,
   onStatusClick,
@@ -67,7 +63,7 @@ const SanctionTable = ({
     { label: "Second Bank Statement", width: "60px" },
     { label: "Video KYC", width: "100px" },
 
-    { label: "Approval Note", width: "140px" },
+    { label: "Approval Note", width: "140px" }, 
     { label: "Enquiry Source", width: "100px" },
     { label: "Bank Verification Report", width: "140px" },
     { label: "Bank Fraud Report", width: "100px" },
@@ -92,7 +88,7 @@ const SanctionTable = ({
     { label: "Action", width: "140px" },
     
     { label: "Appraisal Report", width: "120px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
   ];
  
@@ -130,7 +126,6 @@ const SanctionTable = ({
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
                   onChequeModalOpen={onChequeModalOpen}
                   onCourierModalOpen={onCourierModalOpen}
                   onCourierPickedModalOpen={onCourierPickedModalOpen}
@@ -139,10 +134,7 @@ const SanctionTable = ({
                   onChangeStatusClick={onChangeStatusClick}
                   onRemarksClick={onRemarksClick}
                   onRefundPDCClick={onRefundPDCClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
                   onStatusClick={onStatusClick}
-                  onReplaceKYCClick={onReplaceKYCClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                 />

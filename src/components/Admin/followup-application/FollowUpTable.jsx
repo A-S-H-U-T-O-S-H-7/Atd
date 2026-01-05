@@ -5,17 +5,13 @@ import FollowUpRow from "./FollowUpRow";
 
 const FollowUpTable = ({ 
   paginatedApplications, 
-  filteredApplications,
+  filteredApplications, 
   currentPage,
   totalPages,
   itemsPerPage,
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
-  onReplaceKYCClick,
   fileLoading,
   loadingFileName,
   onStatusUpdate,
@@ -56,14 +52,16 @@ const FollowUpTable = ({
     { label: "ID Proof", width: "90px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
+    { label: "Second Bank Statement", width: "60px" },
     { label: "Bank Verification Report", width: "140px" },
+    { label: "Bank Fraud Report", width: "100px" },
     { label: "Social Score Report", width: "120px" },
     { label: "Cibil Score Report", width: "120px" },
     { label: "Approval Note", width: "110px" },
     { label: "Status", width: "120px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "120px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
     { label: "BlackList", width: "120px" },
   ];
@@ -102,10 +100,6 @@ const FollowUpTable = ({
                   index={index}
                   isDark={isDark}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick={onReplaceKYCClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
                   onStatusUpdate={onStatusUpdate}

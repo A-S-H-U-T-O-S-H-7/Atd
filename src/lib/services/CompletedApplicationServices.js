@@ -165,6 +165,7 @@ export const formatCompletedApplicationForUI = (application) => {
     activateDate: application.activateDate,
     isBlacklisted: application.blacklist === 1,
     blacklistDate: application.blacklistdate,
+
     hasPhoto: !!application.selfie,
     hasPanCard: !!application.pan_proof,
     hasAddressProof: !!application.address_proof,
@@ -176,6 +177,9 @@ export const formatCompletedApplicationForUI = (application) => {
     hasBankVerificationReport: !!application.bank_verif_report,
     hasSocialScoreReport: !!application.social_score_report,
     hasCibilScoreReport: !!application.cibil_score_report,
+    hasSecondBankStatement: !!application.second_bank_statement,
+    hasBankFraudReport: !!application.bank_fraud_report,
+
     photoFileName: application.selfie,
     panCardFileName: application.pan_proof,
     addressProofFileName: application.address_proof,
@@ -187,6 +191,9 @@ export const formatCompletedApplicationForUI = (application) => {
     bankVerificationFileName: application.bank_verif_report,
     socialScoreFileName: application.social_score_report,
     cibilScoreFileName: application.cibil_score_report,
+    secondBankStatementFileName: application.second_bank_statement,
+    bankFraudReportFileName: application.bank_fraud_report,
+
     approvalNote: application.approval_note,
     status: getStatusName(application.loan_status),
     loanStatus: getStatusName(application.loan_status),
@@ -219,7 +226,7 @@ export const statusService = {
     const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
     
     return response;
-    
+     
   } catch (error) {
   
     throw error;
@@ -256,6 +263,7 @@ export const fileService = {
 
     const folderMappings = {
       'bank_statement': 'bank-statement',
+      'second_bank_statement': 'bank-statement',
       'aadhar_proof': 'idproof', 
       'address_proof': 'address',
       'pan_proof': 'pan',
@@ -264,6 +272,7 @@ export const fileService = {
       'second_salary_slip': 'second_salaryslip', 
       'third_salary_slip': 'third_salaryslip',
       'bank_verif_report': 'reports',
+      'bank_fraud_report': 'reports',
       'social_score_report': 'reports',
       'cibil_score_report': 'reports',
     };

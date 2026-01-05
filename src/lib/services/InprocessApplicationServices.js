@@ -1,6 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { ref, getDownloadURL } from "firebase/storage";
+import { ref, getDownloadURL } from "firebase/storage"; 
 import { storage } from '@/lib/firebase';
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
@@ -104,6 +104,8 @@ export const formatInProgressApplicationForUI = (application) => {
     hasCibilScoreReport: !!application.cibil_score_report,
     hasPdc: !!application.pdc_file,
     hasAgreement: !!application.agreement_file,
+    hasSecondBankStatement: !!application.second_bank_statement,
+    hasBankFraudReport: !!application.bank_fraud_report,
 
     // Document file names
     photoFileName: application.selfie,
@@ -119,6 +121,8 @@ export const formatInProgressApplicationForUI = (application) => {
     cibilScoreFileName: application.cibil_score_report,
     pdcFileName: application.pdc_file,
     agreementFileName: application.agreement_file,
+    secondBankStatementFileName: application.second_bank_statement,
+    bankFraudReportFileName: application.bank_fraud_report,
 
     // Status and approval information - USE IMPORTED FUNCTION
     approvalNote: application.approval_note,
@@ -171,6 +175,7 @@ export const fileService = {
 
     const folderMappings = {
       'bank_statement': 'bank-statement',
+      'second_bank_statement': 'bank-statement',
       'aadhar_proof': 'idproof', 
       'address_proof': 'address',
       'pan_proof': 'pan',
@@ -179,6 +184,7 @@ export const fileService = {
       'second_salary_slip': 'second_salaryslip', 
       'third_salary_slip': 'third_salaryslip',
       'bank_verif_report': 'reports',
+      'bank_fraud_report': 'reports',
       'social_score_report': 'reports',
       'cibil_score_report': 'reports',
       'pdc_file': 'agreement',

@@ -32,21 +32,22 @@ export const eligibilityAPI = {
 
 // Format eligibility data from API response for UI
 export const formatEligibilityForUI = (eligibilityData) => {
-    const data = eligibilityData.data;
+    const data = eligibilityData.data || {};
+    
     return {
-        id: data.id,
-        crnNo: data.crnno,
-        name: data.name,
-        grossSalary: data.gross_salary,
-        netSalary: data.net_salary,
+        id: data.id || '',
+        crnNo: data.crnno || '',
+        name: data.name || '',
+        grossSalary: data.gross_salary || 0,  
+        netSalary: data.net_salary || 0,
         totalExitingEMI: data.emi_amount || 0,
-        balance: data.balance,
-        min20PercentOfBalance: data.minBalance,
-        max30PercentOfBalance: data.maxBalance,
+        balance: data.balance || 0,
+        min20PercentOfBalance: data.minBalance || 0,
+        max30PercentOfBalance: data.maxBalance || 0,
         maximumLimit: data.max_limit || '',
         finalRecommended: data.final_report || '',
-        createdAt: data.created_at,
-        updatedAt: data.updated_at
+        createdAt: data.created_at || '',
+        updatedAt: data.updated_at || ''
     };
 };
 

@@ -12,7 +12,6 @@ const CreditApprovalTable = ({
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
@@ -20,9 +19,6 @@ const CreditApprovalTable = ({
   onDisburseEmandateModalOpen,
   onChangeStatusClick,
   onRefundPDCClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
-  onReplaceKYCClick,
   fileLoading,
   loadingFileName,
   // NEW: Bank verification and disburse approval handlers
@@ -93,7 +89,7 @@ const CreditApprovalTable = ({
     // { label: "Change Status", width: "200px" },
     { label: "Action", width: "140px" },
     { label: "Appraisal Report", width: "160px" },
-    { label: "Eligibility", width: "120px" },
+    { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
   ];
  

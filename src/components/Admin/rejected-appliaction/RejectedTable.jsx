@@ -5,16 +5,13 @@ import RejectedRow from "./RejectedRow";
 
 const RejectedTable = ({ 
   paginatedApplications, 
-  filteredApplications,
+  filteredApplications, 
   currentPage,
   totalPages,
   itemsPerPage,
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
   fileLoading,
   loadingFileName,
   onRestoreApplication
@@ -49,6 +46,8 @@ const RejectedTable = ({
     { label: "ID Proof", width: "100px" },
     { label: "Salary Proof", width: "120px" },
     { label: "Bank Statement", width: "130px" },
+    { label: "Second Bank Statement", width: "60px" },
+    { label: "Bank Fraud Report", width: "100px" },
     { label: "Remark", width: "130px" },
     { label: "Status", width: "100px" },
     { label: "User By", width: "130px" },
@@ -92,9 +91,6 @@ const RejectedTable = ({
   index={index}
   isDark={isDark}
   onFileView={onFileView}
-  onActionClick={onActionClick}
-  onLoanEligibilityClick={onLoanEligibilityClick}  
-  onCheckClick={onCheckClick}
   fileLoading={fileLoading}
   loadingFileName={loadingFileName}
   onRestoreApplication={onRestoreApplication}

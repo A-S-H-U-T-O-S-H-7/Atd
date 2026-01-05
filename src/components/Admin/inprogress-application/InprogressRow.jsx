@@ -9,7 +9,7 @@ import BankStatementDocument from "../documents/BankStatementDocument";
 import BankVerificationDocument from "../documents/BankVerificationDocument";
 import SocialScoreDocument from "../documents/SocialScoreDocument";
 import CibilScoreDocument from "../documents/CibilScoreDocument";
-import PDCDocument from "../documents/PDCDocument";
+import PDCDocument from "../documents/PDCDocument"; 
 import AgreementDocument from "../documents/AgreementDocument";
 import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
@@ -19,16 +19,14 @@ import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 import { useAdminAuthStore } from "@/lib/store/authAdminStore";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 
 const InProgressRow = ({
   application,
   index,
   isDark,
-  onLoanEligibilityClick,
-  onCheckClick,
-  onReplaceKYCClick,
   onCall,
-  onActionClick,
   onFileView,
   fileLoading,
   loadingFileName,
@@ -300,6 +298,17 @@ const InProgressRow = ({
           loadingFileName={loadingFileName}
         />
       </td>
+      {/*second Bank Statement */}
+      <td className={cellStyle}>
+      <SecondBankStatementDocument
+      fileName={application.secondBankStatementFileName}
+      hasDoc={application.hasSecondBankStatement}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+    </td>
 
       {/* Bank Verification Report */}
       <td className={cellStyle}>
@@ -311,6 +320,18 @@ const InProgressRow = ({
           loadingFileName={loadingFileName}
         />
       </td>
+
+      {/* Bank Fraud Report */}
+      <td className={cellStyle}>
+      <BankFraudReportDocument
+            fileName={application.bankFraudReportFileName}
+            hasDoc={application.hasBankFraudReport}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+        </td>
 
       {/* Social Score Report */}
       <td className={cellStyle}>
@@ -407,7 +428,6 @@ const InProgressRow = ({
   <ActionButton
     enquiry={application}
     isDark={isDark}
-    onVerifyClick={onActionClick} 
     className="w-full flex justify-center"
   />
 </td>
@@ -418,7 +438,6 @@ const InProgressRow = ({
     enquiry={application}
     isDark={isDark}
     onFileView={onFileView}
-    onCheckClick={onCheckClick}
     className="w-full flex justify-center"
   />
 </td>
@@ -428,7 +447,6 @@ const InProgressRow = ({
   <EligibilityButton
     enquiry={application}
     isDark={isDark}
-    onLoanEligibilityClick={onLoanEligibilityClick}
     className="w-full flex justify-center"
   />
 </td>
@@ -438,7 +456,6 @@ const InProgressRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
-    onReplaceKYCClick={onReplaceKYCClick}
   />
 </td>
     </tr>

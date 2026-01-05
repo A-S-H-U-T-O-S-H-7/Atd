@@ -25,7 +25,6 @@ const ManageApplicationTable = ({
   isDark,
   onPageChange,
   onFileView,
-  onActionClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
@@ -34,9 +33,6 @@ const ManageApplicationTable = ({
   onChangeStatusClick,
   onRemarksClick,
   onRefundPDCClick,
-  onLoanEligibilityClick,  
-  onCheckClick, 
-  onReplaceKYCClick, 
   onDocumentStatusClick,
   fileLoading,
   loadingFileName,
@@ -139,7 +135,7 @@ const ManageApplicationTable = ({
       { label: "NOC", width: "120px" },
       { label: "Refund PDC", width: "120px" },
       { label: "Appraisal Report", width: "120px" },
-      { label: "Eligibility", width: "120px" },
+      { label: "Eligibility", width: "60px" },
       { label: "Replace KYC", width: "120px" },
       { label: "Settled", width: "150px" },
     ]
@@ -472,7 +468,6 @@ const ManageApplicationTable = ({
                   isDark={isDark}
                   visibleHeaders={getVisibleHeaders()}
                   onFileView={onFileView}
-                  onActionClick={onActionClick}
                   onChequeModalOpen={onChequeModalOpen}
                   onCourierModalOpen={onCourierModalOpen}
                   onCourierPickedModalOpen={onCourierPickedModalOpen}
@@ -481,9 +476,6 @@ const ManageApplicationTable = ({
                   onChangeStatusClick={onChangeStatusClick}
                   onRemarksClick={onRemarksClick}
                   onRefundPDCClick={onRefundPDCClick}
-                  onLoanEligibilityClick={onLoanEligibilityClick}  
-                  onCheckClick={onCheckClick}
-                  onReplaceKYCClick = {onReplaceKYCClick}
                   onDocumentStatusClick={onDocumentStatusClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}

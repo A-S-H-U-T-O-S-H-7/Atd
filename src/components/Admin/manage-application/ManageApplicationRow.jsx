@@ -35,8 +35,6 @@ const ApplicationRow = ({
   index,
   isDark,
   visibleHeaders,
-  onLoanEligibilityClick,
-  onCheckClick,
   onChequeModalOpen,
   onCourierModalOpen,
   onCourierPickedModalOpen,
@@ -45,9 +43,7 @@ const ApplicationRow = ({
   onChangeStatusClick,
   onRemarksClick,
   onRefundPDCClick,
-  onReplaceKYCClick,
   onCall,
-  onActionClick,
   onDocumentStatusClick,
   onFileView,
   fileLoading,
@@ -92,16 +88,16 @@ const ApplicationRow = ({
     if (isLoanClosed) {
       // Deep orange for closed loans in light mode, lighter in dark mode
       if (isDark) {
-        return `${baseClasses} bg-gradient-to-r from-orange-900/40 via-orange-800/30 to-orange-900/40 border-orange-700/30 hover:bg-gradient-to-r hover:from-orange-900/50 hover:via-orange-800/40 hover:to-orange-900/50 shadow-orange-900/10`;
+        return `${baseClasses} bg-gradient-to-r from-orange-500/40 via-orange-600/30 to-orange-700/40 border-orange-700/30 hover:bg-gradient-to-r hover:from-orange-900/50 hover:via-orange-800/40 hover:to-orange-900/50 shadow-orange-900/10`;
       } else {
-        return `${baseClasses} bg-gradient-to-r from-orange-100 via-orange-50 to-orange-100 border-orange-300 hover:bg-gradient-to-r hover:from-orange-200 hover:via-orange-100 hover:to-orange-200 shadow-orange-100`;
+        return `${baseClasses} bg-gradient-to-r from-orange-200 via-orange-100 to-orange-200 border-orange-300 hover:bg-gradient-to-r hover:from-orange-200 hover:via-orange-100 hover:to-orange-200 shadow-orange-100`;
       }
     } else if (isRenewalLoan) {
       // Blue shade for renewal loans (status 18) - using blue-900/10 in light, blue-900/20 in dark
       if (isDark) {
         return `${baseClasses} bg-gradient-to-r from-blue-900/20 via-blue-900/15 to-blue-900/20 border-blue-800/30 hover:bg-gradient-to-r hover:from-blue-900/25 hover:via-blue-900/20 hover:to-blue-900/25 shadow-blue-900/10`;
       } else {
-        return `${baseClasses} bg-gradient-to-r from-blue-50 via-blue-50/80 to-blue-50 border-blue-200 hover:bg-gradient-to-r hover:from-blue-100 hover:via-blue-50 hover:to-blue-100 shadow-blue-100`;
+        return `${baseClasses} bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200 border-blue-200 hover:bg-gradient-to-r hover:from-blue-100 hover:via-blue-50 hover:to-blue-100 shadow-blue-100`;
       }
     } else {
       // Normal row styling
@@ -234,18 +230,34 @@ const ApplicationRow = ({
     </div>
   );
 },
-      "Loan No.": () => (
-    <button
-      onClick={() => router.push(`/crm/statement-of-account?id=${application.id}`)}
-      className={`text-sm underline cursor-pointer transition-colors duration-200 ${
-        isDark
-          ? "text-emerald-400 hover:text-emerald-300"
-          : "text-emerald-600 hover:text-emerald-800"
-      }`}
-    >
-      {application.loanNo}
-    </button>
-  ),
+     "Loan No.": () => {
+  
+  const handleClick = () => {
+    if (application.dueDate && application.dueDate !== 'N/A' && application.dueDate !== null) {
+      router.push(`/crm/statement-of-account?id=${application.id}`);
+    } else {
+    }
+  };
+  
+  const isClickable = application.dueDate && application.dueDate !== 'N/A' && application.dueDate !== "";
+  
+  return (
+    <div>
+      <button
+        onClick={handleClick}
+        className={`text-sm ${isClickable ? 'underline cursor-pointer' : 'cursor-default'} transition-colors duration-200 ${
+          isClickable 
+            ? (isDark ? "text-emerald-400 hover:text-emerald-300" : "text-emerald-600 hover:text-emerald-800")
+            : (isDark ? "text-gray-400" : "text-gray-500")
+        }`}
+        disabled={!isClickable}
+      >
+        {application.loanNo}
+      </button>
+      
+    </div>
+  );
+},
       "CRN No.": () => (
         <CRNLink 
           crnNo={application.crnNo} 
@@ -909,7 +921,6 @@ const ApplicationRow = ({
   <ActionButton
     enquiry={application}
     isDark={isDark}
-    onVerifyClick={onActionClick} 
     className="w-full flex justify-center"
   />
 ),
@@ -1109,7 +1120,6 @@ const ApplicationRow = ({
     enquiry={application}
     isDark={isDark}
     onFileView={onFileView}
-    onCheckClick={onCheckClick}
     className="w-full flex justify-center"
   />
 ),
@@ -1118,7 +1128,6 @@ const ApplicationRow = ({
   <EligibilityButton
     enquiry={application}
     isDark={isDark}
-    onLoanEligibilityClick={onLoanEligibilityClick}
     className="w-full flex justify-center"
   />
 ),
@@ -1127,7 +1136,6 @@ const ApplicationRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
-    onReplaceKYCClick={onReplaceKYCClick}
   />
 ),
       "Settled": () => {

@@ -61,20 +61,33 @@ const OverdueApplicantListRow = ({
 
       {/* Loan No */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={() => router.push(`/crm/statement-of-account?id=${applicant.application_id}`)}
-          className={`flex items-center space-x-2 text-sm underline cursor-pointer transition-colors duration-200 ${
-            isDark
-              ? "text-emerald-400 hover:text-emerald-300"
-              : "text-emerald-600 hover:text-emerald-800"
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span className="font-semibold">
-            {applicant.loanNo}
-          </span>
-        </button>
-      </td>
+  <button
+    onClick={() => {
+      if (applicant.dueDate && applicant.dueDate !== 'N/A' && applicant.dueDate !== null ) {
+        router.push(`/crm/statement-of-account?id=${applicant.application_id}`);
+      }
+    }}
+    className={`flex items-center space-x-2 text-sm transition-colors duration-200 ${
+      applicant.dueDate && applicant.dueDate !== 'N/A'
+        ? 'underline cursor-pointer'
+        : 'no-underline cursor-default'
+    } ${
+      applicant.dueDate && applicant.dueDate !== 'N/A'
+        ? (isDark
+            ? "text-emerald-400 hover:text-emerald-300"
+            : "text-emerald-600 hover:text-emerald-800")
+        : (isDark
+            ? "text-gray-400"
+            : "text-gray-500")
+    }`}
+    disabled={!(applicant.dueDate && applicant.dueDate !== 'N/A')}
+  >
+    <CreditCard className="w-4 h-4" />
+    <span className="font-semibold">
+      {applicant.loanNo}
+    </span>
+  </button>
+</td>
 
       {/* Due Date */}
       <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>

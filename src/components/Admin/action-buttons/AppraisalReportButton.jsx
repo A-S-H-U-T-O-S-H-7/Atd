@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from "react";
+import Link from "next/link";
 import { AppraisalPDF } from "@/lib/services/AllEnquiriesServices";
 import PermissionWrapper from "../PermissionWrapper";
 
@@ -7,7 +8,6 @@ const AppraisalReportButton = ({
   enquiry, 
   isDark, 
   onFileView,
-  onCheckClick,
   loading = false,
   disabled = false,
   className = ""
@@ -18,8 +18,11 @@ const AppraisalReportButton = ({
   const isFinalStage = enquiry?.isFinalStage || false;
   const finalReportFile = enquiry?.finalReportFile || "";
   const applicationId = enquiry?.id;
+  const href = `/crm/appraisal-report/${applicationId}`;
 
-  const handlePdfView = async () => {
+  const handlePdfView = async (e) => {
+    e.preventDefault(); // Prevent Link navigation
+    
     if (!applicationId) {
       alert("No application ID found");
       return;
@@ -64,13 +67,23 @@ const AppraisalReportButton = ({
     }
   };
 
-  const handleClick = () => {
-    if (!disabled && !loading && !isDownloading && enquiry) {
-      if (finalReportStatus === "Recommended") {
-        handlePdfView();
-      } else if (!isFinalStage) {
-        onCheckClick?.(enquiry);
-      }
+  const handleClick = (e) => {
+    // Check if Ctrl/Cmd/Shift is pressed (new tab)
+    const isNewTabClick = e.ctrlKey || e.metaKey || e.shiftKey;
+    
+    // Save to localStorage for both normal and new tab clicks
+    localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
+    
+    // If it's a "Recommended" PDF view, handle specially
+    if (finalReportStatus === "Recommended") {
+      e.preventDefault();
+      handlePdfView(e);
+      return;
+    }
+    
+    // Only prevent if disabled/loading for normal clicks
+    if (!isNewTabClick && (disabled || loading || isDownloading)) {
+      e.preventDefault();
     }
   };
 
@@ -93,7 +106,7 @@ const AppraisalReportButton = ({
   if (finalReportStatus === "Recommended") {
     const buttonContent = (
       <button
-        onClick={handleClick}
+        onClick={handlePdfView}
         disabled={disabled || loading || isDownloading}
         className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 ${
           disabled || loading || isDownloading
@@ -112,12 +125,15 @@ const AppraisalReportButton = ({
     );
   }
 
+  // Normal "Check" button with Link wrapper
   const buttonContent = (
-    <button
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
       onClick={handleClick}
-      disabled={disabled || loading}
-      className={`px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border ${
-        disabled || loading
+      className={`inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border ${
+        disabled || loading || isDownloading
           ? "opacity-50 cursor-not-allowed"
           : "cursor-pointer hover:scale-105"
       } ${
@@ -126,8 +142,8 @@ const AppraisalReportButton = ({
           : "bg-pink-100 border-pink-300 text-pink-700 hover:bg-pink-200"
       } ${className}`}
     >
-      {loading ? "Processing..." : "Check"}
-    </button>
+      {loading ? "Processing..." : isDownloading ? "Opening..." : "Check"}
+    </Link>
   );
 
   return (

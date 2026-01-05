@@ -1,40 +1,42 @@
 'use client';
 import React from "react";
+import Link from "next/link";
 import PermissionWrapper from "../PermissionWrapper";
 
 const ReplaceKYCButton = ({ 
   application, 
   isDark, 
-  onReplaceKYCClick,
   loading = false,
   disabled = false,
   className = ""
 }) => {
-  const handleClick = () => {
-    if (!disabled && !loading && onReplaceKYCClick && application) {
-      onReplaceKYCClick(application);
-    }
-  };
 
-  const buttonContent = (
-    <button
-      onClick={handleClick}
-      disabled={disabled || loading}
-      className={`px-3 py-1 cursor-pointer rounded text-xs font-medium transition-colors duration-200 ${
-        isDark
-          ? "bg-purple-900/50 border hover:bg-purple-800 text-purple-300"
-          : "bg-purple-100 border hover:bg-purple-200 text-purple-700"
-      } ${className} ${
-        disabled || loading ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-    >
-      Replace KYC
-    </button>
-  );
+  if (!application) return null;
+
+  const href = `/crm/replace-kyc/${application.id}`;
 
   return (
-    <PermissionWrapper permissionKey="replace_kyc" tooltipText="No permission to replace KYC">
-      {buttonContent}
+    <PermissionWrapper
+      permissionKey="replace_kyc"
+      tooltipText="No permission to replace KYC"
+    >
+      <Link
+        href={href}
+        onClick={(e) => {
+          if (disabled || loading) {
+            e.preventDefault(); 
+          }
+        }}
+        className={`inline-block px-3 py-1 rounded text-xs font-medium transition-colors duration-200 border ${
+          isDark
+            ? "bg-purple-900/50 border-purple-700 text-purple-300 hover:bg-purple-800"
+            : "bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
+        } ${className} ${
+          disabled || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        }`}
+      >
+        {loading ? "Processing..." : "Replace KYC"}
+      </Link>
     </PermissionWrapper>
   );
 };

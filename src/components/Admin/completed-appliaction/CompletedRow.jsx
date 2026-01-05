@@ -17,15 +17,13 @@ import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import BlacklistButton from "../action-buttons/BlacklistButton";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
+import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 
 const CompletedRow = ({
   application,
   index,
   isDark,
-  onLoanEligibilityClick,
-  onCheckClick,
-  onReplaceKYCClick,
-  onActionClick,
   onFileView,
   fileLoading,
   loadingFileName,
@@ -386,6 +384,17 @@ const CompletedRow = ({
           loadingFileName={loadingFileName}
         />
       </td>
+      {/*second Bank Statement */}
+      <td className={cellStyle}>
+      <SecondBankStatementDocument
+      fileName={application.secondBankStatementFileName}
+      hasDoc={application.hasSecondBankStatement}
+      onFileView={onFileView}
+      fileLoading={fileLoading}
+      loadingFileName={loadingFileName}
+      isDark={isDark}
+    />
+    </td>
 
       {/* Bank Verification Report */}
       <td className={cellStyle}>
@@ -396,7 +405,19 @@ const CompletedRow = ({
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
         />
-      </td>
+      </td> 
+       {/* Bank Fraud Report */}
+      <td className={cellStyle}>
+      <BankFraudReportDocument
+            fileName={application.bankFraudReportFileName}
+            hasDoc={application.hasBankFraudReport}
+            onFileView={onFileView}
+            fileLoading={fileLoading}
+            loadingFileName={loadingFileName}
+            isDark={isDark}
+          />
+        </td>
+      
 
       {/* Social Score Report */}
       <td className={cellStyle}>
@@ -447,7 +468,6 @@ const CompletedRow = ({
           <ActionButton
             enquiry={applicationWithDefaults}
             isDark={isDark}
-            onVerifyClick={onActionClick}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -461,7 +481,6 @@ const CompletedRow = ({
             enquiry={applicationWithDefaults}
             isDark={isDark}
             onFileView={onFileView}
-            onCheckClick={onCheckClick}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -474,7 +493,6 @@ const CompletedRow = ({
           <EligibilityButton
             enquiry={applicationWithDefaults}
             isDark={isDark}
-            onLoanEligibilityClick={onLoanEligibilityClick}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -486,7 +504,6 @@ const CompletedRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
-    onReplaceKYCClick={onReplaceKYCClick}
   />
 </td>
 
