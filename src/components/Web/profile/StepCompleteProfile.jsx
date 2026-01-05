@@ -159,7 +159,7 @@ export default function StepCompleteProfile({
         
         <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">
           {/* Testing Section - Remove in production */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <h1 className="text-2xl font-bold text-slate-800 mb-4">Loan Status For Testing</h1>
             <div className="flex flex-wrap gap-2">
               {statusOptions.map(status => (
@@ -176,7 +176,7 @@ export default function StepCompleteProfile({
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
