@@ -104,7 +104,6 @@ if (dateRange.end) {
   params.to_approved_date = `${dateRange.end} 23:59:59`;
 }
 
-    console.log('API Params:', params);
     return params;
   };
 
