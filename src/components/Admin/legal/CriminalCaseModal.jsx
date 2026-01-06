@@ -8,7 +8,7 @@ const CreateCriminalCaseModal = ({ isOpen, onClose, legal, isDark }) => {
     boardResolutionDate: legal?.boardResolution || '',
     loanAgreementDate: legal?.loanAgreement || '',
     loanApplicationDate: legal?.loanApplication || '',
-    partnerName: '',
+    legalNoticeSentDate: '',
     courtName: '',
     courtAdvocate: '',
     authorisedRepresentative: '',
@@ -32,14 +32,6 @@ const CreateCriminalCaseModal = ({ isOpen, onClose, legal, isDark }) => {
   if (!isOpen) return null;
 
   // Dropdown options
-  const partnerOptions = [
-    "Select Company",
-    "ABC Legal Partners",
-    "XYZ Law Associates",
-    "Legal Solutions Inc",
-    "Justice Partners LLP"
-  ];
-
   const courtOptions = [
     "Select Court",
     "District Court Delhi",
@@ -101,44 +93,47 @@ const CreateCriminalCaseModal = ({ isOpen, onClose, legal, isDark }) => {
         {/* Form - Scrollable */}
         <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
-            {/* Criminal Complaint No */}
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Criminal Complaint No.:
-              </label>
-              <input
-                type="text"
-                value={formData.criminalComplaintNo}
-                onChange={(e) => handleInputChange('criminalComplaintNo', e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                } focus:outline-none`}
-                placeholder="Enter complaint number"
-              />
-            </div>
+            {/* Criminal Complaint No and Police Station in same row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Criminal Complaint No */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Criminal Complaint No.:
+                </label>
+                <input
+                  type="text"
+                  value={formData.criminalComplaintNo}
+                  onChange={(e) => handleInputChange('criminalComplaintNo', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  } focus:outline-none`}
+                  placeholder="Enter complaint number"
+                />
+              </div>
 
-            {/* Police Station */}
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Police Station:
-              </label>
-              <input
-                type="text"
-                value={formData.policeStation}
-                onChange={(e) => handleInputChange('policeStation', e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                } focus:outline-none`}
-                placeholder="Enter police station"
-              />
+              {/* Police Station */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Police Station:
+                </label>
+                <input
+                  type="text"
+                  value={formData.policeStation}
+                  onChange={(e) => handleInputChange('policeStation', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  } focus:outline-none`}
+                  placeholder="Enter police station"
+                />
+              </div>
             </div>
 
             {/* Date Fields Row */}
@@ -182,56 +177,49 @@ const CreateCriminalCaseModal = ({ isOpen, onClose, legal, isDark }) => {
               </div>
             </div>
 
-            {/* Loan Application Date */}
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Loan Application Date:
-              </label>
-              <input
-                type="date"
-                value={formData.loanApplicationDate}
-                onChange={(e) => handleInputChange('loanApplicationDate', e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                } focus:outline-none`}
-              />
-            </div>
-
-            {/* Dropdown Fields Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Partner Name */}
+            {/* Loan Application Date and Legal Notice Sent Date in same row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Loan Application Date */}
               <div>
                 <label className={`block text-sm font-medium mb-2 ${
                   isDark ? "text-gray-300" : "text-gray-700"
                 }`}>
-                  Partner Name:
+                  Loan Application Date:
                 </label>
-                <select
-                  value={formData.partnerName}
-                  onChange={(e) => handleInputChange('partnerName', e.target.value)}
+                <input
+                  type="date"
+                  value={formData.loanApplicationDate}
+                  onChange={(e) => handleInputChange('loanApplicationDate', e.target.value)}
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                     isDark 
                       ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                       : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   } focus:outline-none`}
-                >
-                  {partnerOptions.map((option, index) => (
-                    <option 
-                      key={index} 
-                      value={index === 0 ? '' : option}
-                      disabled={index === 0}
-                      className={isDark ? "bg-gray-700" : "bg-white"}
-                    >
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
+              {/* Legal Notice Sent Date */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Legal Notice Sent Date:
+                </label>
+                <input
+                  type="date"
+                  value={formData.legalNoticeSentDate}
+                  onChange={(e) => handleInputChange('legalNoticeSentDate', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  } focus:outline-none`}
+                />
+              </div>
+            </div>
+
+            {/* Dropdown Fields Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Court Name */}
               <div>
                 <label className={`block text-sm font-medium mb-2 ${
@@ -291,43 +279,46 @@ const CreateCriminalCaseModal = ({ isOpen, onClose, legal, isDark }) => {
               </div>
             </div>
 
-            {/* Authorised Representative */}
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Authorised Representative:
-              </label>
-              <input
-                type="text"
-                value={formData.authorisedRepresentative}
-                onChange={(e) => handleInputChange('authorisedRepresentative', e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                } focus:outline-none`}
-                placeholder="Authorised Representative"
-              />
-            </div>
+            {/* Authorised Representative and Petition Date in same row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Authorised Representative */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Authorised Representative:
+                </label>
+                <input
+                  type="text"
+                  value={formData.authorisedRepresentative}
+                  onChange={(e) => handleInputChange('authorisedRepresentative', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  } focus:outline-none`}
+                  placeholder="Authorised Representative"
+                />
+              </div>
 
-            {/* Date */}
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${
-                isDark ? "text-gray-300" : "text-gray-700"
-              }`}>
-                Date:
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                  isDark 
-                    ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                    : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                } focus:outline-none`}
-              />
+              {/* Petition Date */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  Petition Date:
+                </label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                    isDark 
+                      ? "bg-gray-700 border-gray-600 text-gray-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  } focus:outline-none`}
+                />
+              </div>
             </div>
           </form>
         </div>

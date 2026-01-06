@@ -42,14 +42,14 @@ const LegalTable = ({
                 {/* Medium */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "100px" }}>
+                }`} style={{ minWidth: "80px" }}>
                   Medium
                 </th>
                 
                 {/* Customer Details */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "150px" }}>
+                }`} style={{ minWidth: "220px" }}>
                   Customer Details
                 </th>
                 
@@ -60,58 +60,60 @@ const LegalTable = ({
                   Address
                 </th>
                 
-                {/* Financial Details */}
-                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
-                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "350px" }}>
-                  Financial Details (Cheque Breakup)
-                </th>
+                
                 
                 {/* Loan Details */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "200px" }}>
+                }`} style={{ minWidth: "320px" }}>
                   Loan Details
                 </th>
                 
                 {/* Bank Information - Split into 2 columns */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "200px" }}>
+                }`} style={{ minWidth: "120px" }}>
                   ATD Bank Details
                 </th>
                 
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "250px" }}>
+                }`} style={{ minWidth: "230px" }}>
                   Customer Bank Details
                 </th>
                 
                 {/* Cheque Details */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "120px" }}>
+                }`} style={{ minWidth: "220px" }}>
                   Cheque Details
                 </th>
-                
+
+                {/* Financial Details */}
+                <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
+                  isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
+                }`} style={{ minWidth: "170px" }}>
+                  Financial Details (Cheque Breakup)
+                </th>
+
                 {/* Cheque Return Details */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "300px" }}>
+                }`} style={{ minWidth: "280px" }}>
                   Cheque Return Details
                 </th>
                 
                 {/* Important Dates */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "220px" }}>
+                }`} style={{ minWidth: "260px" }}>
                   Important Dates
                 </th>
                 
                 {/* Legal Notice Status - Updated heading */}
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
-                }`} style={{ minWidth: "200px" }}>
+                }`} style={{ minWidth: "250px" }}>
                   Legal Notice Status
                 </th>
                 

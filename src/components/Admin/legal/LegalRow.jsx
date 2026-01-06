@@ -19,7 +19,8 @@ import {
   XCircle,
   ExternalLink,
   Smartphone,
-  Landmark
+  Landmark,
+  Percent,
 } from "lucide-react";
 
 const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowCriminalStatus, onShowAddress, onEdit }) => {
@@ -199,7 +200,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Medium Column - NEW */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "120px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "80px" }}>
         <div className="flex flex-col items-center justify-center space-y-2">
           {getMediumIcon(legal.medium)}
           <span className={`text-sm font-bold ${getMediumTextColor(legal.medium)}`}>
@@ -209,7 +210,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Customer Information - Restored to original font styles */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "220px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <User className={`w-4 h-4 ${commonClasses.icon.blue}`} />
@@ -278,119 +279,91 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
         </div>
       </td>
 
-      {/* Financial Information */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center space-x-2">
-              <CreditCard className={`w-4 h-4 ${commonClasses.icon.green}`} />
-              <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
-                Principal: ₹{legal.principal?.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                ROI: {legal.roi}%
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Interest: ₹{legal.interest?.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Penal Interest: ₹{legal.penalInterest?.toLocaleString()}
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Penalty: ₹{legal.penalty?.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Bounce Charge: ₹{legal.bounceCharge?.toLocaleString()}
-              </span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center space-x-2">
-              <CreditCard className={`w-4 h-4 ${commonClasses.icon.purple}`} />
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Processing: ₹{legal.processingFee?.toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                GST: ₹{legal.gst?.toLocaleString()}
-              </span>
-            </div>
-          </div>
-          <div className={`flex items-center space-x-2 p-2 rounded-lg ${isDark ? "bg-emerald-900/30 border border-emerald-700/50" : "bg-emerald-50 border border-emerald-200"}`}>
-            <span className={`text-sm font-bold ${isDark ? "text-emerald-300" : "text-emerald-700"}`}>
-              Total (PF+GST): ₹{legal.totalPfGst?.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2 mt-2">
-            <span className={`text-sm font-medium ${isDark ? "text-red-300" : "text-red-600"}`}>
-              Total: ₹{legal.totalAmount?.toLocaleString()}
-            </span>
-          </div>
-        </div>
-      </td>
+      
 
       {/* Loan Details */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "200px" }}>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <CreditCard className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
-              Approved: ₹{legal.principal?.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <CalendarDays className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Tenure: {legal.tenure} days
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Banknote className={`w-4 h-4 ${commonClasses.icon.green}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Disbursed: ₹{legal.disbursementAmount?.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Approved: {legal.approvedDate}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Clock className={`w-4 h-4 ${commonClasses.icon.orange}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Due Date: {legal.dueDate || 'N/A'}
-            </span>
-          </div>
-          {legal.closeDate && legal.closeDate !== 'N/A' && (
-            <div className="flex items-center space-x-2">
-              <Calendar className={`w-4 h-4 ${commonClasses.icon.red}`} />
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Closed: {legal.closeDate}
-              </span>
-            </div>
-          )}
-        </div>
-      </td>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "320px" }}>
+  <div className="space-y-3">
+    {/* Row 1: Approved Amount & Approved Date */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <span className={`text-sm font-medium ${commonClasses.fieldLabel}`}>Approved:</span>
+        <span className={`text-sm font-medium ${commonClasses.specialValue('amount')}`}>
+          ₹{legal.principal?.toLocaleString()}
+        </span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className={`text-sm font-medium ${commonClasses.fieldLabel}`}>Aprv. Date:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          {legal.approvedDate || 'N/A'}
+        </span>
+      </div>
+    </div>
+
+    {/* Row 2: Tenure & ROI */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>Tenure:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          {legal.tenure || 'N/A'} days
+        </span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>ROI:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          {legal.roi || 'N/A'}%
+        </span>
+      </div>
+    </div>
+
+    {/* Row 3: Disbursed & Due Date */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>Disbursed:</span>
+        <span className={`text-sm font-medium ${commonClasses.specialValue('amount')}`}>
+          ₹{legal.disbursementAmount?.toLocaleString() || '0'}
+        </span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>Due Date:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          {legal.dueDate || 'N/A'}
+        </span>
+      </div>
+    </div>
+
+    {/* Row 4: Processing Fee & GST */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>Processing Fee:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          ₹{legal.processingFee?.toLocaleString() || '0'}
+        </span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className={`text-xs font-medium ${commonClasses.fieldLabel}`}>GST:</span>
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          ₹{legal.gst?.toLocaleString() || '0'}
+        </span>
+      </div>
+    </div>
+
+    {/* Row 5: Total (PF+GST) - Full width */}
+    <div className={`pt-2 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}>
+      <div className="flex items-center justify-between">
+        <span className={`text-xs font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
+          Total (PF+GST):
+        </span>
+        <span className={`text-sm font-bold ${isDark ? "text-emerald-300" : "text-emerald-700"}`}>
+          ₹{legal.totalPfGst?.toLocaleString() || '0'}
+        </span>
+      </div>
+    </div>
+  </div>
+</td>
 
       {/* ATD Bank Details */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "200px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Building2 className={`w-4 h-4 ${commonClasses.icon.blue}`} />
@@ -417,7 +390,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Customer Bank Details */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "200px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Building2 className={`w-4 h-4 ${commonClasses.icon.green}`} />
@@ -449,7 +422,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Cheque Details */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "220px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
@@ -495,8 +468,56 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
         </div>
       </td>
 
+      {/* Financial Information */}
+<td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "170px" }}>
+  <div className="space-y-2">
+    {/* Principal */}
+    <div className="flex items-center space-x-2">
+      <CreditCard className={`w-4 h-4 ${commonClasses.icon.green}`} />
+      <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
+        Principal: ₹{legal.principal?.toLocaleString()}
+      </span>
+    </div>
+    
+    {/* Interest - stacked below */}
+    <div className="flex items-center space-x-2">
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Interest: ₹{legal.interest?.toLocaleString()}
+      </span>
+    </div>
+    
+    {/* Penal Interest - stacked below */}
+    <div className="flex items-center space-x-2">
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Penal Interest: ₹{legal.penalInterest?.toLocaleString()}
+      </span>
+    </div>
+    
+    {/* Penalty - stacked below */}
+    <div className="flex items-center space-x-2">
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Penalty: ₹{legal.penalty?.toLocaleString()}
+      </span>
+    </div>
+    
+    {/* Bounce Charge - stacked below */}
+    <div className="flex items-center space-x-2">
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Bounce Charge: ₹{legal.bounceCharge?.toLocaleString()}
+      </span>
+    </div>
+    
+    {/* Total - with top margin */}
+    <div className="flex items-center space-x-2 pt-1 mt-1 border-t border-gray-200 dark:border-gray-700">
+      <span className={`text-sm font-medium ${isDark ? "text-red-300" : "text-red-600"}`}>
+        Total: ₹{legal.totalAmount?.toLocaleString()}
+      </span>
+    </div>
+  </div>
+</td>
+
       {/* Cheque Return Details */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "280px" }}>
         <div className="space-y-2">
           {isChequeBounced ? (
             <>
@@ -569,7 +590,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Important Dates */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "260px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Calendar className={`w-4 h-4 ${commonClasses.icon.blue}`} />
@@ -611,7 +632,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Legal Notice Status */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "300px" }}>
+      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
         <div className="space-y-2">
           <div className="flex items-center space-x-2 mb-2">
             {legal.deliveryStatus?.toLowerCase() === 'delivered' ? (
@@ -756,7 +777,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
                 : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200"
             }`}
           >
-            Arbitration Notice
+            Create Arbitration Notice
           </button>
           <button
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -765,7 +786,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
                 : "bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-200"
             }`}
           >
-            Arbitration Criminal
+            Create Arbitration Criminal
           </button>
         </div>
       </td>
