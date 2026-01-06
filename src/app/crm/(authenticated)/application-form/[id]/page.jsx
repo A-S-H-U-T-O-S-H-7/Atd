@@ -117,7 +117,6 @@ export default function VerifyPage() {
   }, [enquiryId]);
 
   const handleBack = () => {
-    // Clean up localStorage when going back
     localStorage.removeItem('selectedEnquiry');
     router.back();
   };

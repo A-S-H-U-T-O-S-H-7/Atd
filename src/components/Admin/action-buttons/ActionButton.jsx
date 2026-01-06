@@ -34,7 +34,6 @@ const ActionButton = ({
           // ALWAYS save to localStorage for normal clicks
           localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
           
-          // Only prevent if disabled/loading for normal clicks
           if (disabled || loading) {
             e.preventDefault(); 
           }

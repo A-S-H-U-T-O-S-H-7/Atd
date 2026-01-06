@@ -195,13 +195,19 @@ const TicketDetailsModal = ({
   };
 
   // Handle file view - open in new tab
-  const handleFileView = (fileUrl) => {
-    if (fileUrl) {
-      window.open(`https://api.atdmoney.in/storage/${fileUrl}`, '_blank');
-    }
-  };
+const handleFileView = (fileUrl) => {
+  if (!fileUrl) return;
+  
+  let finalUrl = fileUrl;
+  
+  if (fileUrl.includes('api.atdmoney.in')) {
+  } else {
+    finalUrl = `https://api.atdmoney.in/storage/${fileUrl.replace(/^\//, '')}`;
+  }
+  
+  window.open(finalUrl, '_blank');
+};
 
-  // Handle message submit - FIXED: No success toast needed
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -663,20 +669,22 @@ const TicketDetailsModal = ({
                           <p className="text-sm whitespace-pre-wrap">{msg.message || msg.reply}</p>
                           
                           {msg.attachment && (
-                            <div className="mt-3">
-                              <button
-                                onClick={() => handleFileView(msg.attachment)}
-                                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                                  isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'
-                                }`}
-                              >
-                                <FileText className="w-4 h-4" />
-                                <span className="text-sm">
-                                  {msg.attachment.split('/').pop()}
-                                </span>
-                              </button>
-                            </div>
-                          )}
+  <div className="mt-3">
+    <button
+      onClick={() => handleFileView(msg.attachment)}
+      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+        isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'
+      }`}
+    >
+      <FileText className="w-4 h-4" />
+      <span className="text-sm truncate max-w-[150px]">
+        {typeof msg.attachment === 'string' 
+          ? msg.attachment.split('/').pop() 
+          : msg.attachment.name || 'Attachment'}
+      </span>
+    </button>
+  </div>
+)}
                         </div>
                         
                         <div className="flex items-center gap-2 mt-2">

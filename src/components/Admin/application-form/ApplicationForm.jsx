@@ -13,7 +13,7 @@ import { useThemeStore } from '@/lib/store/useThemeStore';
 import { applicationAPI, formatApplicationForAPI, formatApplicationForUI } from '@/lib/services/ApplicationFormServices';
 import { applicationValidationSchema } from '@/lib/schema/applicationFormValidation';
 
-const ApplicationForm = ({ enquiry, onBack }) => {
+const ApplicationForm = ({ enquiry, onBack }) => { 
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [loading, setLoading] = useState(false);
