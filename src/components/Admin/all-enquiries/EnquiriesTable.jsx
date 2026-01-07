@@ -17,7 +17,7 @@ const EnquiriesTable = ({
   onLoanEligibilityClick,
   onVerifyClick,
   onCheckClick,
-  
+  onBlacklist,
   
 }) => {
   // Common header style
@@ -27,6 +27,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
 
   const tableHeaders = [
     { label: "SR. No.", width: "80px" },
+    { label: "Status", width: "160px" },
     { label: "Enquiry Source", width: "80px" },
     { label: "CRN No", width: "80px" },
     // { label: "Account ID", width: "140px" },
@@ -58,10 +59,10 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
     { label: "Social Score Report", width: "120px" },
     { label: "Cibil Score Report", width: "120px" },
     { label: "Approval Note", width: "140px" },
-    { label: "Status", width: "160px" },
     { label: "Action", width: "80px" },
     { label: "Appraisal Report", width: "140px" },
-    { label: "Eligibility", width: "100px" }
+    { label: "Eligibility", width: "100px" },
+    { label: "BlackList", width: "120px" }
   ];
 
   return (
@@ -103,6 +104,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                   onLoanEligibilityClick={onLoanEligibilityClick}
                   onVerifyClick={onVerifyClick}
                   onCheckClick={onCheckClick}
+                  onBlacklist ={onBlacklist}
                  
                 />
               ))}

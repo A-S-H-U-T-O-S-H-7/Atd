@@ -90,6 +90,7 @@ const SanctionTable = ({
     { label: "Appraisal Report", width: "120px" },
     { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
+    { label: "BlackList", width: "120px" },
   ];
  
   return (
@@ -137,6 +138,7 @@ const SanctionTable = ({
                   onStatusClick={onStatusClick}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
+                  onBlacklist={onBlacklist}
                 />
               ))}
             </tbody>

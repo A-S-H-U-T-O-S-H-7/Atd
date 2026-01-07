@@ -34,7 +34,6 @@ const CompletedTable = ({
 
 
     { label: "CRN No.", width: "80px" },
-    // { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "100px" },
 
     { label: "Complete Date", width: "100px" },
@@ -72,12 +71,11 @@ const CompletedTable = ({
     { label: "Cibil Score Report", width: "120px" },
     { label: "Approval Note", width: "140px" },
     
-    { label: "Status", width: "100px" },
+    { label: "Status", width: "100px" }, 
     { label: "Action", width: "90px" },
     { label: "Appraisal Report", width: "120px" },
     { label: "Eligibility", width: "60px" },
     { label: "Replace KYC", width: "120px" },
-    // { label: "Link", width: "160px" },
     { label: "BlackList", width: "120px" },
 
   ];

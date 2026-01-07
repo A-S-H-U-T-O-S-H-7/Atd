@@ -203,6 +203,11 @@ export const formatEnquiryForUI = (enquiry) => {
     mailCounter: enquiry.mail_counter,
     mailerDate: enquiry.mailer_date,
 
+    blacklist: enquiry.blacklist,
+  isBlacklisted: enquiry.blacklist === 1,
+  blacklistDate: enquiry.blacklistdate,
+
+
     // Timestamps
     createdAt: enquiry.created_at,
     updatedAt: enquiry.updated_at,

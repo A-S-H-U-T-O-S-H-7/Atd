@@ -297,7 +297,7 @@ const CompletedApplication = () => {
   };
 
   // Handle blacklist
-  const handleBlacklist = async (applicationId) => {
+  const handleBlacklist = async (userId) => {
     try {
       const result = await Swal.fire({
         title: 'Blacklist Application?',
@@ -314,7 +314,7 @@ const CompletedApplication = () => {
 
       if (!result.isConfirmed) return;
 
-      await statusService.blacklist(applicationId);
+      await statusService.blacklist(userId);
       
       await Swal.fire({
         title: 'Application Blacklisted!',
@@ -557,7 +557,7 @@ const handleActivateAccount = async (applicationId) => {
           onPageChange={setCurrentPage}
           loading={loading}
           onFileView={handleFileView}
-          fileLoading={fileLoading}
+          fileLoading={fileLoading} 
           loadingFileName={loadingFileName}
           onStatusUpdate={handleStatusUpdate}
           onBlacklist={handleBlacklist}

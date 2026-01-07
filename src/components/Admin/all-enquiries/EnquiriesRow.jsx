@@ -1,5 +1,5 @@
 import React from "react";
-import {Calendar,Clock} from "lucide-react";
+import {Calendar,Clock,Ban} from "lucide-react";
 import PhotoDocument from "../documents/PhotoDocument";
 import PanCardDocument from "../documents/PanCardDocument";
 import AddressProofDocument from "../documents/AddressProofDocument";
@@ -14,6 +14,7 @@ import AppraisalReportButton from "../action-buttons/AppraisalReportButton";
 import EligibilityButton from "../action-buttons/EligibilityButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import BlacklistButton from "../action-buttons/BlacklistButton";
 
 const EnquiriesRow = ({
   enquiry,
@@ -23,8 +24,12 @@ const EnquiriesRow = ({
   onLoanEligibilityClick,
   onVerifyClick,
   onCheckClick,
+  onBlacklist 
 
 }) => {
+
+    const isBlacklisted = enquiry.isBlacklisted === true || enquiry.blacklist === 1;
+
   // Common cell styles
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";
@@ -99,20 +104,38 @@ const EnquiriesRow = ({
 
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
+  className={`border-b transition-all duration-200 hover:shadow-lg ${
+    isBlacklisted 
+      ? `${
+          isDark 
+            ? "bg-red-950/20 border-l-4 border-l-red-500" 
+            : "bg-red-100 border-l-4 border-l-red-500"
+        }`
+      : isDark
           ? "border-emerald-700 hover:bg-gray-700/50"
           : "border-emerald-300 hover:bg-emerald-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
-      }`}
-    >
+  } ${
+    !isBlacklisted && index % 2 === 0
+      ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+      : ""
+  }`}
+>
       {/* SR No */}
+<td className={cellStyle}>
+  <div className="flex items-center justify-center space-x-1">
+    {isBlacklisted && (
+      <Ban className={`w-5 h-5 ${isDark ? "text-red-500" : "text-red-600"}`} />
+    )}
+    <span className={`font-medium ${textPrimary}`}>
+      {enquiry.srNo}
+    </span>
+  </div>
+</td>
+
+      {/* Status */}
       <td className={cellStyle}>
-        <span className={`font-medium ${textPrimary}`}>
-          {enquiry.srNo}
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(enquiry.status)}`}>
+          {enquiry.status}
         </span>
       </td>
 
@@ -379,12 +402,7 @@ const EnquiriesRow = ({
         </span>
       </td>
 
-      {/* Status */}
-      <td className={cellStyle}>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(enquiry.status)}`}>
-          {enquiry.status}
-        </span>
-      </td>
+      
 
       {/* Action */}
       <td className={cellStyle}>
@@ -407,14 +425,28 @@ const EnquiriesRow = ({
   />
 </td>
 
-      {/* Eligibility - Last column, no border-r */}
-      <td className={cellBase}>
+      {/* Eligibility */}
+      <td className={cellStyle}>
         <EligibilityButton 
           enquiry={enquiry}
           isDark={isDark}
           onLoanEligibilityClick={onLoanEligibilityClick}
         />
       </td>
+
+      {/* BlackList */}
+<td className={cellBase}> 
+  <BlacklistButton
+    userId={enquiry.user_Id || enquiry.user_id}
+    application={enquiry}
+    isDark={isDark}
+    onSuccess={() => {
+      if (onBlacklist) {
+        onBlacklist(enquiry);
+      }
+    }}
+  />
+</td>
     </tr>
   );
 };

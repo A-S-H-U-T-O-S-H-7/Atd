@@ -16,7 +16,8 @@ const FollowUpTable = ({
   loadingFileName,
   onStatusUpdate,
     onActivateAccount,
-  onOpenStatusModal 
+  onOpenStatusModal,
+  onBlacklist, 
 }) => {
 
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
@@ -105,6 +106,7 @@ const FollowUpTable = ({
                   onStatusUpdate={onStatusUpdate}
                   onActivateAccount={onActivateAccount}
                   onOpenStatusModal={onOpenStatusModal} 
+                  onBlacklist = {onBlacklist}
                 />
               ))}
             </tbody>

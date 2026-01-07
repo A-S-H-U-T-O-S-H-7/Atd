@@ -110,6 +110,70 @@ const AllEnquiries = () => {
     }
   };
 
+  // Handle blacklist
+const handleBlacklist = async (enquiry) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Blacklist Enquiry?',
+      text: `Are you sure you want to blacklist ${enquiry.name} (${enquiry.crnNo})? This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Blacklist!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        try {
+          // Use the statusService from AllEnquiriesServices
+          await statusService.blacklist(enquiry.user_Id || enquiry.user_id);
+          return true;
+        } catch (error) {
+          Swal.showValidationMessage(`Blacklist failed: ${error.response?.data?.message || error.message}`);
+          return false;
+        }
+      }
+    });
+
+    if (result.isConfirmed) {
+      await Swal.fire({
+        title: 'Enquiry Blacklisted!',
+        text: `${enquiry.name} has been blacklisted successfully.`,
+        icon: 'success',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+
+      // Refresh enquiries to show updated status
+      await fetchEnquiries();
+      
+      toast.success(`User ${enquiry.name} blacklisted successfully!`, {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#fef2f2',
+          color: isDark ? '#f9fafb' : '#991b1b',
+          border: isDark ? '1px solid #374151' : '1px solid #fecaca',
+        },
+        icon: '🚫',
+      });
+    }
+  } catch (error) {
+    console.error("Blacklist error:", error);
+    await Swal.fire({
+      title: 'Blacklist Failed!',
+      text: error.response?.data?.message || 'Failed to blacklist enquiry. Please try again.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
+
   // Load data on component mount and when filters change
   useEffect(() => {
     fetchEnquiries();
@@ -525,6 +589,7 @@ const AllEnquiries = () => {
           loading={loading}
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
+          onBlacklist={handleBlacklist}
         />
       </div>
     </div>

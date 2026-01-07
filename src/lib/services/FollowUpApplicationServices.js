@@ -116,7 +116,7 @@ export const formatFollowUpApplicationForUI = (application) => {
     hasPanCard: !!application.pan_proof,
     hasAddressProof: !!application.address_proof,
     hasIdProof: !!application.aadhar_proof,
-    hasSalaryProof: !!application.salary_slip,
+    hasSalaryProof: !!application.salary_slip, 
     hasSecondSalaryProof: !!application.second_salary_slip,
     hasThirdSalaryProof: !!application.third_salary_slip,
     hasBankStatement: !!application.bank_statement,
@@ -187,9 +187,15 @@ export const followUpService = {
     }
   },
 
-  blacklist: async (userId, options = {}) => {
-    return await blacklistService.blacklistApplication(userId, options);
+  blacklist: async (userId) => {
+    try {
+      const response = await api.put(`/crm/application/black-list/${userId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
+
 
   activateAccount: async (applicationId) => {
     try {

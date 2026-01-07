@@ -52,9 +52,9 @@ export const completedApplicationAPI = {
 },
 
   // Blacklist application
-  blacklistApplication: async (applicationId) => {
+  blacklistApplication: async (userId) => {
     try {
-      const response = await api.put(`/crm/application/black-list/${applicationId}`);
+      const response = await api.put(`/crm/application/black-list/${userId}`);
       return response;
     } catch (error) {
       throw error;

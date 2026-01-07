@@ -512,7 +512,7 @@ const CompletedRow = ({
         <BlacklistButton
           userId={application.userId}
           application={application}
-          isDark={isDark}
+          isDark={isDark} 
         />
       </td>
     </tr>

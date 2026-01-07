@@ -484,7 +484,48 @@ const buildApiParams = () => {
     }
   };
 
-  
+  const handleBlacklist = async (application) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Blacklist Application?',
+      text: 'This will blacklist the user. This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Blacklist!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Use userId from the application
+    await sanctionService.blacklistApplication(application.userId);
+    
+    await Swal.fire({
+      title: 'Application Blacklisted!',
+      text: 'Application has been blacklisted successfully.',
+      icon: 'success',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+
+    fetchApplications();
+  } catch (error) {
+    console.error("Blacklist error:", error);
+    await Swal.fire({
+      title: 'Blacklist Failed!',
+      text: error.response?.data?.message || 'Failed to blacklist application. Please try again.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  }
+};
 
   // Handle file view
   const handleFileView = async (fileName, documentCategory) => {
@@ -692,6 +733,7 @@ const buildApiParams = () => {
           fileLoading={fileLoading}
           loadingFileName={loadingFileName}
           onStatusClick={handleStatusModalOpen}
+          onBlacklist={handleBlacklist}
         />
       </div>
 

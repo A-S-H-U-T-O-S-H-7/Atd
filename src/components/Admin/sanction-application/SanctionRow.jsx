@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Calendar, Mail, Edit, CheckCircle, X, Edit2, Loader2 } from "lucide-react";
+import { Calendar, Mail, Edit, CheckCircle, X, Edit2, Loader2, Ban } from "lucide-react";
 import Swal from 'sweetalert2';
 import { sanctionApplicationAPI } from "@/lib/services/SanctionApplicationServices";
 import { useAdminAuthStore } from '@/lib/store/authAdminStore';
@@ -29,6 +29,7 @@ import toast from "react-hot-toast";
 import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 import BankFraudReportDocument from "../documents/BankFraudReportDocument";
 import SecondBankStatementDocument from "../documents/SecondBankStatementDocument";
+import BlacklistButton from "../action-buttons/BlacklistButton";
 
 const SanctionRow = ({
   application,
@@ -43,11 +44,13 @@ const SanctionRow = ({
   onStatusClick,
   onFileView,
   fileLoading,
-  loadingFileName
+  loadingFileName,
+  onBlacklist
 }) => {
     const { hasPermission } = useAdminAuthStore();
     const [isSendingMail, setIsSendingMail] = useState(false);
 
+  const isBlacklisted = application.blacklist === 1 || application.isBlacklisted === true;
 
   const handleChequeClick = () => {
     onChequeModalOpen(application, application.chequeNo || "");
@@ -168,22 +171,33 @@ const SanctionRow = ({
 
   return (
     <tr
-      className={`border-b transition-all duration-200 hover:shadow-lg ${
-        isDark
+  className={`border-b transition-all duration-200 hover:shadow-lg ${
+    isBlacklisted 
+      ? `${
+          isDark 
+            ? "bg-red-950/20 border-l-4 border-l-red-500" 
+            : "bg-red-100 border-l-4 border-l-red-500"
+        }`
+      : isDark
           ? "border-emerald-700 hover:bg-gray-700/50"
           : "border-emerald-300 hover:bg-emerald-50/50"
-      } ${
-        index % 2 === 0
-          ? isDark ? "bg-gray-700/30" : "bg-gray-50"
-          : ""
-      }`}
-    >
+  } ${
+    !isBlacklisted && index % 2 === 0
+      ? isDark ? "bg-gray-700/30" : "bg-gray-50"
+      : ""
+  }`}
+>
       {/* SR No */}
-      <td className={cellStyle}>
-        <span className={`font-medium ${textPrimary}`}>
-          {application.srNo}
-        </span>
-      </td>
+<td className={cellStyle}>
+  <div className="flex items-center justify-center space-x-1">
+    {isBlacklisted && (
+      <Ban className={`w-5 h-5 ${isDark ? "text-red-500" : "text-red-600"}`} />
+    )}
+    <span className={`font-medium ${textPrimary}`}>
+      {application.srNo}
+    </span>
+  </div>
+</td>
 
       {/* Call */}
        <td className={cellStyle}>
@@ -1094,11 +1108,20 @@ const SanctionRow = ({
 
       {/* Replace KYC */}
       <td className={cellStyle}>
-  <ReplaceKYCButton
-    application={application}
-    isDark={isDark}
-  />
-</td>
+      <ReplaceKYCButton
+       application={application}
+      isDark={isDark}
+      />
+     </td>
+
+     {/* BlackList */}
+      <td className={cellStyle}>
+        <BlacklistButton
+          userId={application.userId}
+          application={application}
+          isDark={isDark} 
+        />
+      </td>
     </tr>
   );
 };

@@ -141,6 +141,9 @@ export const formatSanctionApplicationForUI = (application) => {
     originalDocuments: application.original_documents === "Yes" ? "Yes" : "No", 
     receivedDisburse: application.emandateverification === 1 || application.emandateverification === "1" ? "Yes" : "No",
     emandateVerificationRaw: application.emandateverification,
+    blacklist: application.blacklist,
+     isBlacklisted: application.blacklist === 1,
+     blacklistDate: application.blacklistdate,
 
     // Raw values for validation logic
     sendToCourierRaw: application.send_courier,
@@ -240,6 +243,15 @@ export const sanctionService = {
       }
       
       const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, payload);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  blacklistApplication: async (userId) => {
+    try {
+      const response = await api.put(`/crm/application/black-list/${userId}`);
       return response;
     } catch (error) {
       throw error;
