@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense, useCallback, useRef } from "react
 import { ArrowLeft, Download, Loader2 } from "lucide-react";
 import SoaDetails from "./SoaDetails";
 import SoaTable from "./SoaTable";
-import { exportToExcel } from "@/components/utils/exportutil";
+import { exportSoaToExcel } from "@/components/utils/exportsoautil";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { soaAPI, formatSoaDataForUI } from "@/lib/services/SoaService";
@@ -137,91 +137,39 @@ const handleExport = async () => {
   const toastId = toast.loading('Preparing export...');
 
   try {
-    // Prepare export data
-    const exportData = [];
-    
-    // 1. Add title and summary section
-    exportData.push(['STATEMENT OF ACCOUNT']);
-    exportData.push([]);
-    
-    // 2. Add customer information
-    exportData.push(['Customer Information']);
-    exportData.push(['Loan Number', soaData.loan_no]);
-    exportData.push(['CRN Number', soaData.crnno]);
-    exportData.push(['Customer Name', soaData.fullname]);
-    exportData.push(['Application ID', applicationId]);
-    exportData.push([]);
-    
-    // 3. Add loan details
-    exportData.push(['Loan Details']);
-    exportData.push(['Sanction Date', soaData.sanction_date]);
-    exportData.push(['Sanction Amount', soaData.sanction_amount]);
-    exportData.push(['Tenure', soaData.tenure]);
-    exportData.push(['ROI', soaData.roi]);
-    exportData.push(['Process Fee', soaData.process_fee]);
-    exportData.push(['GST', soaData.gst]);
-    exportData.push(['Disburse Date', soaData.disburse_date]);
-    exportData.push(['Disburse Amount', soaData.disburse_amount]);
-    exportData.push(['Transaction Date', soaData.transaction_date]);
-    exportData.push(['Due Date', soaData.due_date]);
-    exportData.push(['Ledger Balance', soaData.ledger_balance]);
-    if (soaData.closed_date) {
-      exportData.push(['Closed Date', soaData.closed_date]);
-    }
-    exportData.push([]);
-    
-    // 4. Add transaction history header
-    exportData.push(['Transaction History']);
-    
-    // 5. Add table headers
-    const headers = [
-      'SN',
-      'Date',
-      'Normal Interest Charged',
-      'Penal Interest Charged',
-      'Penality Charged',
-      'Collection Received',
-      'Principle Adjusted',
-      'Normal Interest Adjusted',
-      'Penal Interest Adjusted',
-      'Penalty Adjusted',
-      'Principle After Adjusted',
-      'Normal Interest After Adjusted',
-      'Penal Interest After Adjusted',
-      'Penalty After Adjusted',
-      'Total Outstanding Amount'
-    ];
-    exportData.push(headers);
-    
-    // 6. Add all transaction data
-    allDetails.forEach(item => {
-      exportData.push([
-        item.sn,
-        item.date,
-        item.normal_interest_charged,
-        item.penal_interest_charged,
-        item.penality_charged,
-        item.collection_received,
-        item.principle_adjusted,
-        item.normal_interest_adjusted,
-        item.penal_interest_adjusted,
-        item.penalty_adjusted,
-        item.principle_after_adjusted,
-        item.normal_interest_after_adjusted,
-        item.penal_interest_after_adjusted,
-        item.penalty_after_adjusted,
-        item.total_outstanding_amount
-      ]);
-    });
-    
-    // 7. Add footer with export date
-    exportData.push([]);
-    exportData.push(['Exported on', new Date().toLocaleDateString('en-IN')]);
-    
-    // 8. Export to Excel
-    exportToExcel(exportData, `SOA_${soaData.loan_no}_${soaData.fullname}_${new Date().toISOString().split('T')[0]}`);
-    
-    // Update toast to success
+    const transactionData = allDetails.map(item => [
+      item.sn,
+      item.date,
+      item.normal_interest_charged,
+      item.penal_interest_charged,
+      item.penality_charged,
+      item.collection_received,
+      item.principle_adjusted,
+      item.normal_interest_adjusted,
+      item.penal_interest_adjusted,
+      item.penalty_adjusted,
+      item.principle_after_adjusted,
+      item.normal_interest_after_adjusted,
+      item.penal_interest_after_adjusted,
+      item.penalty_after_adjusted,
+      item.total_outstanding_amount
+    ]);
+
+    const customerInfo = {
+      fullname: soaData.fullname,
+      loan_no: soaData.loan_no,
+      crnno: soaData.crnno,
+      sanction_amount: soaData.sanction_amount,
+      disburse_amount: soaData.disburse_amount,
+      ledger_balance: soaData.ledger_balance
+    };
+
+    exportSoaToExcel(
+      transactionData,
+      `SOA_${soaData.loan_no}_${soaData.fullname}_${new Date().toISOString().split('T')[0]}`,
+      customerInfo
+    );
+
     toast.success('Statement of Account exported successfully!', {
       id: toastId,
       duration: 3000,
@@ -229,10 +177,8 @@ const handleExport = async () => {
     
   } catch (err) {
     console.error('Export error:', err);
-    
-    // Update toast to error
+    toast.dismiss(toastId);
     toast.error('Failed to export data. Please try again.', {
-      id: toastId,
       duration: 3000,
     });
   }

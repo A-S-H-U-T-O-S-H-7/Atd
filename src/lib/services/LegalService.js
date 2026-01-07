@@ -1,6 +1,5 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { AlertCircle, CheckCircle, Clock } from "lucide-react";
 
 export const legalService = {
   getLegalCases: async (params = {}) => {
@@ -18,7 +17,6 @@ export const legalService = {
     }
   },
 
-  // Export legal cases
   exportLegalCases: async (params = {}) => {
     try {
       const response = await api.get("/crm/legal/export", { params });
@@ -28,9 +26,6 @@ export const legalService = {
     }
   },
 
-
-
-  // Create criminal case
   createCriminalCase: async (legalId, caseData) => {
     try {
       const response = await api.post(`/crm/legal/${legalId}/criminal-case`, caseData);
@@ -60,7 +55,22 @@ export const legalService = {
     }
   },
 
-  // Update legal case
+  createArbitrationNotice: async (legalId, noticeData) => {
+    try {
+      const response = await api.put(
+        `/crm/legal/arbitration-notice/${legalId}`,
+        noticeData,
+        { responseType: 'blob' } 
+      );
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message || "Network error"
+      };
+    }
+  },
+
   updateLegalCase: async (legalId, updateData) => {
     try {
       const response = await api.put(`/crm/legal/${legalId}`, updateData);
@@ -70,7 +80,6 @@ export const legalService = {
     }
   },
 
-  // Get addresses for a legal case
   getAddresses: async (chequeId) => {
     try {
       const response = await api.get(`/crm/legal/addresses/${chequeId}`);
@@ -80,7 +89,6 @@ export const legalService = {
     }
   },
 
-  // Add address to a legal case
   addAddress: async (chequeId, addressData) => {
     try {
       const response = await api.put(`/crm/legal/address/add/${chequeId}`, addressData);
@@ -90,7 +98,6 @@ export const legalService = {
     }
   },
 
-  // Update address
   updateAddress: async (addressId, addressData) => {
     try {
       const response = await api.put(`/crm/legal/address/update/${addressId}`, addressData);
@@ -100,7 +107,6 @@ export const legalService = {
     }
   },
 
-  // Get hearings for a criminal case
   getHearings: async (chequeId) => {
     try {
       const response = await api.get(`/crm/legal/case/hearings/${chequeId}`);
@@ -110,7 +116,6 @@ export const legalService = {
     }
   },
 
-  // Add hearing to a criminal case (FormData version)
   addHearing: async (chequeId, formData) => {
     try {
       const response = await api.post(`/crm/legal/case/hearing/add/${chequeId}`, formData, {
@@ -125,7 +130,6 @@ export const legalService = {
     }
   },
 
-  // Update hearing (FormData version)
   updateHearing: async (hearingId, formData) => {
     try {
       const response = await api.post(`/crm/legal/case/hearing/update/${hearingId}`, formData, {
@@ -140,15 +144,14 @@ export const legalService = {
     }
   },
 
-  // Get advocates list
-getAdvocates: async () => {
-  try {
-    const response = await api.get("/crm/legal/advocate");
-    return response;
-  } catch (error) {
-    throw error;
-  }
-},
+  getAdvocates: async () => {
+    try {
+      const response = await api.get("/crm/legal/advocate");
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 // Format legal case data for UI
@@ -163,16 +166,14 @@ export const formatLegalCaseForUI = (legalCase) => {
   const customerBank = bank.customer_bank || {};
   const companyBank = bank.company_bank || {};
 
-  // Format date function for consistent date formatting
+  // Format date function
   const formatDateString = (dateString) => {
     if (!dateString || dateString === 'N/A' || dateString === null || dateString === 'null') return 'N/A';
     
     try {
-      // Handle different date formats
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString.split(' ')[0]; 
       
-      // Format as dd-mm-yyyy
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -183,9 +184,9 @@ export const formatLegalCaseForUI = (legalCase) => {
   };
 
   // Calculate derived values
-   const approvedAmount = parseFloat(financial.approved_amount) || 0;
+  const approvedAmount = parseFloat(financial.approved_amount) || 0;
   const principal = parseFloat(cheque.principal_amount) || 0;
-    const processingFee = parseFloat(financial.process_fee) || 0;
+  const processingFee = parseFloat(financial.process_fee) || 0;
   const gst = parseFloat(financial.gst) || 0;
   const interest = parseFloat(cheque.interest) || 0;
   const penalInterest = parseFloat(cheque.penal_interest) || 0;
@@ -194,8 +195,6 @@ export const formatLegalCaseForUI = (legalCase) => {
   const chequeAmount = parseFloat(cheque.deposit_amount) || 0;
   
   const totalPfGst = processingFee + gst;
-  
-  // Calculate total amount (Principal + Interest + Penal Interest + Penalty)
   const totalAmount = principal + interest + penalInterest + penalty;
 
   // Combine addresses for display
@@ -226,7 +225,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     loanId: customer.loan_no || 'N/A',
     crnNo: customer.crnno || 'N/A',
     
-    // Address Details - Combined for display
+    // Address Details
     addresses: addresses,
     permanentAddress: address.permanent_address || 'N/A',
     currentAddress: address.current_address || 'N/A',
@@ -267,7 +266,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     chequeAmount: chequeAmount,
     depositDate: formatDateString(cheque.deposit_date),
     
-    // Important Dates - All formatted as dd-mm-yyyy
+    // Important Dates
     approvedDate: formatDateString(dates.approved_date),
     approvedAmount: approvedAmount,
     transactionDate: formatDateString(dates.transaction_date),
@@ -299,7 +298,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     policeStation: legalStatus.police_station || 'N/A',
     bounceReason: legalStatus.reason_bounce || cheque.reason_bounce || 'N/A',
     remarkWithCaseDetails: legalStatus.remark_with_case_details || 'N/A',
-    criminalCaseStatus: legalStatus.criminal_case_status || 'Pending', // NEW field
+    criminalCaseStatus: legalStatus.criminal_case_status || 'Pending',
     
     // Calculated totals
     totalAmount: totalAmount,
@@ -379,5 +378,5 @@ export const hearingStatusService = {
         return <Clock className="w-4 h-4 text-gray-600" />;
     }
   }
+  
 };
-
