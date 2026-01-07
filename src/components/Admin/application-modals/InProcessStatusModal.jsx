@@ -69,66 +69,92 @@ const InProcessStatusModal = ({
   }, [isOpen, loading]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  if (!selectedStatus) {
+    toast.error('Please select a status.', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: '#f9fafb',
+      }
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
     
-    if (!selectedStatus) {
-      toast.error('Please select a status.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
-        }
-      });
-      return;
-    }
+    const updateData = {
+      status: selectedStatus,
+      documentsReceived,
+      bankVerified,
+      selectedBank,
+      remark
+    };
+    
+    await onStatusUpdate(application.id, updateData);
+    
+    toast.success('Application status has been updated successfully.', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#10b981',
+        secondary: '#f9fafb',
+      }
+    });
 
-    try {
-      setLoading(true);
+    handleClose();
+  } catch (error) {
+    console.error("Status update error:", error);
+    
+    // Extract error message from server response
+    let errorMessage = 'Failed to update status. Please try again.';
+    
+    if (error.response) {
+      const errorData = error.response; 
       
-      const updateData = {
-        status: selectedStatus,
-        documentsReceived,
-        bankVerified,
-        selectedBank,
-        remark
-      };
-      
-      await onStatusUpdate(application.id, updateData);
-      
-      toast.success('Application status has been updated successfully.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#10b981',
-          secondary: '#f9fafb',
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+        const firstError = Object.values(errorData.errors)[0];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          errorMessage = firstError[0];
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
         }
-      });
-
-      handleClose();
-    } catch (error) {
-      console.error("Status update error:", error);
-      toast.error('Failed to update status. Please try again.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
-        }
-      });
-    } finally {
-      setLoading(false);
+      }
+    } else if (error.request) {
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      errorMessage = error.message || errorMessage;
     }
-  };
+    
+    toast.error(errorMessage, {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: '#f9fafb',
+      },
+      duration: 4000
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleClose = () => {
     if (!loading) {

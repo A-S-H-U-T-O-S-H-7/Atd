@@ -169,61 +169,103 @@ export const formatSanctionApplicationForUI = (application) => {
 
 export const sanctionService = {
   updateChequeNumber: async (applicationId, chequeNo) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/update-check/${applicationId}`, { 
-        cheque_no: chequeNo 
-      });
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const response = await api.put(`/crm/application/sanction/update-check/${applicationId}`, { 
+      cheque_no: chequeNo 
+    });
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to update cheque number");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
+    throw error;
+  }
+},
 
   updateSendToCourier: async (applicationId, courierDate) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/send-courier/${applicationId}`, {
-        courier_date: courierDate
-      });
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const response = await api.put(`/crm/application/sanction/send-courier/${applicationId}`, {
+      courier_date: courierDate
+    });
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to schedule courier");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
+    throw error;
+  }
+},
 
   updateCourierPicked: async (applicationId, isPicked, pickedDate = null) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/courier-picked/${applicationId}`, {
-        courier_picked: isPicked ? 1 : 0,
-        picked_date: isPicked ? pickedDate : null
-      });
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const response = await api.put(`/crm/application/sanction/courier-picked/${applicationId}`, {
+      courier_picked: isPicked ? 1 : 0,
+      picked_date: isPicked ? pickedDate : null
+    });
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to update courier status");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
+    throw error;
+  }
+},
+
 
   updateOriginalDocuments: async (applicationId, isReceived, receivedDate = null) => {
-    try {
-      const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, {
-        original_documents: isReceived ? "Yes" : "No",
-        received_date: isReceived ? receivedDate : null
-      });
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const response = await api.put(`/crm/application/sanction/document-status/${applicationId}`, {
+      original_documents: isReceived ? "Yes" : "No",
+      received_date: isReceived ? receivedDate : null
+    });
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to update documents status");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
+    throw error;
+  }
+},
 
-  updateEmandateStatus: async (applicationId, emandateStatus) => {
+ updateEmandateStatus: async (applicationId, emandateStatus) => {
   try {
     const response = await api.put(`/crm/application/sanction/enach-status/${applicationId}`, {
       emandateverification: emandateStatus === "Yes" ? 1 : 0
     });
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to update e-mandate status");
+    }
+    
     return response;
   } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
     throw error;
   }
 },
+
 
   updateStatusChange: async (applicationId, updateData) => {
     try {
@@ -250,26 +292,47 @@ export const sanctionService = {
   },
 
   blacklistApplication: async (userId) => {
-    try {
-      const response = await api.put(`/crm/application/black-list/${userId}`);
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const response = await api.put(`/crm/application/black-list/${userId}`);
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Failed to blacklist application");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    }
+    throw error;
+  }},
 
   updateLoanStatus: async (applicationId, status, remark = "") => {
-    try {
-      const statusData = {
-        status: getStatusId(status),
-        remark: remark
-      };
-      const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
-      return response;
-    } catch (error) {
-      throw error;
+  try {
+    const statusData = {
+      status: getStatusId(status),
+      remark: remark
+    };
+    
+    const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Status update failed");
+    }
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    } else if (error.response?.error) {
+      throw new Error(error.response.error);
+    } else if (error.message) {
+      throw error; 
+    } else {
+      throw new Error("Failed to update application status");
     }
   }
+}
 };
 
 export const fileService = {

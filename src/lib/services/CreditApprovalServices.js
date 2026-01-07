@@ -67,7 +67,7 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
     userId: application.user_id,
-    user_id: application.user_id,
+    user_id: application.user_id, 
 
     // Date and time information
     enquiryDate: enquiryDate.toLocaleDateString('en-GB'),
@@ -289,18 +289,32 @@ export const creditApprovalService = {
   }
 },
 
-  updateLoanStatus: async (applicationId, status, remark = "") => {
-    try {
-      const statusData = {
-        status: getStatusId(status),
-        remark: remark
-      };
-      const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
-      return response;
-    } catch (error) {
-      throw error;
+ updateLoanStatus: async (applicationId, status, remark = "") => {
+  try {
+    const statusData = {
+      status: getStatusId(status),
+      remark: remark
+    };
+    
+    const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Status update failed");
     }
-  },
+    
+    return response;
+  } catch (error) {
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    } else if (error.response?.error) {
+      throw new Error(error.response.error);
+    } else if (error.message) {
+      throw error; 
+    } else {
+      throw new Error("Failed to update application status");
+    }
+  }
+},
 
   updateStatusChange: async (applicationId, updateData) => {
   try {

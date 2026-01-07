@@ -105,7 +105,7 @@ export const formatInProgressApplicationForUI = (application) => {
     hasPdc: !!application.pdc_file,
     hasAgreement: !!application.agreement_file,
     hasSecondBankStatement: !!application.second_bank_statement,
-    hasBankFraudReport: !!application.bank_fraud_report,
+    hasBankFraudReport: !!application.bank_fraud_report, 
 
     // Document file names
     photoFileName: application.selfie,
@@ -149,19 +149,35 @@ export const formatInProgressApplicationForUI = (application) => {
 
 // Status update utility
 export const inProgressService = {
-  updateStatus: async (applicationId, updateData) => {
+  
+ updateStatus: async (applicationId, updateData) => {
     try {
       const statusData = {
-        status: getStatusId(updateData.status), // USE IMPORTED FUNCTION
+        status: getStatusId(updateData.status),
         remark: updateData.remark,
         documents_received: updateData.documentsReceived,
         bank_verified: updateData.bankVerified,
         selected_bank: updateData.selectedBank
       };
+      
       const response = await inProgressApplicationAPI.updateApplicationStatus(applicationId, statusData);
+      
+      if (response && response.success === false) {
+        throw new Error(response.message || "Status update failed");
+      }
+      
       return response;
     } catch (error) {
-      throw error;
+      
+      if (error.response?.message) {
+        throw new Error(error.response.message);
+      } else if (error.response?.error) {
+        throw new Error(error.response.error);
+      } else if (error.message) {
+        throw error;
+      } else {
+        throw new Error("Failed to update application status");
+      }
     }
   }
 };

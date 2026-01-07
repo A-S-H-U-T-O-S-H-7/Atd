@@ -40,7 +40,7 @@ const DisbursementModal = ({
         accountNo: application.customerAccount || application.customerAcNo || "",
         ifscCode: application.customerIfsc || application.customerAcIfsc || ""
       });
-    }
+    } 
   }, [isOpen, application]);
 
   // Outside click, escape key, and scroll lock functionality
@@ -71,43 +71,69 @@ const DisbursementModal = ({
   }, [isOpen, loading]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  try {
+    setLoading(true);
     
-    try {
-      setLoading(true);
-      
-      await onDisbursementSubmit(application.id, formData);
-      
-      toast.success('Disbursement processed successfully!', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#10b981',
-          secondary: '#f9fafb',
-        }
-      });
+    await onDisbursementSubmit(application.id, formData);
+    
+    toast.success('Disbursement processed successfully!', {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#10b981',
+        secondary: '#f9fafb',
+      }
+    });
 
-      handleClose();
-    } catch (error) {
-      console.error("Disbursement error:", error);
-      toast.error('Failed to process disbursement. Please try again.', {
-        style: {
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-          border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
-        },
-        iconTheme: {
-          primary: '#ef4444',
-          secondary: '#f9fafb',
+    handleClose();
+  } catch (error) {
+    console.error("Disbursement error:", error);
+    
+    // Extract error message from server response
+    let errorMessage = 'Failed to process disbursement. Please try again.';
+    
+    if (error.response) {
+      const errorData = error.response;
+      
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+        const firstError = Object.values(errorData.errors)[0];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          errorMessage = firstError[0];
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
         }
-      });
-    } finally {
-      setLoading(false);
+      }
+    } else if (error.request) {
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      errorMessage = error.message || errorMessage;
     }
-  };
+    
+    toast.error(errorMessage, {
+      style: {
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+        border: isDark ? "1px solid #374151" : "1px solid #e5e7eb"
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: '#f9fafb',
+      },
+      duration: 4000
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleClose = () => {
     if (!loading) {

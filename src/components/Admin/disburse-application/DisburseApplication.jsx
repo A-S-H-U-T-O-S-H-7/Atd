@@ -403,7 +403,7 @@ const DisburseApplication = () => {
     );
   }
 
-  return (
+  return ( 
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
     }`}>

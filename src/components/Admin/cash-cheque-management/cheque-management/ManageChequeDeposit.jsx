@@ -258,41 +258,89 @@ const ManageChequeDepositPage = () => {
     loadEditData();
   }, [isEdit, editId]);
 
-  useEffect(() => {
-    const fetchLoanDetails = async () => {
-      if (isEdit) return;
-      
-      if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
-        setIsFetchingLoan(true);
-        try {
-          const response = await ChequeService.getLoanDetails(formik.values.loanNo);
+ useEffect(() => {
+  const fetchLoanDetails = async () => {
+    if (isEdit) return;
+    
+    if (formik.values.loanNo && formik.values.loanNo.length >= 9 && !loanFetched) {
+      setIsFetchingLoan(true);
+      try {
+        const response = await ChequeService.getLoanDetails(formik.values.loanNo);
+        
+        if (response.status && response.data) {
+          const loanDetails = formatLoanDetails(response.data);
           
-          if (response.status && response.data) {
-            const loanDetails = formatLoanDetails(response.data);
-            
-            formik.setValues(prev => ({
-              ...prev,
-              ...loanDetails,
-              name: response.data.customer_name || "",
-              fatherName: response.data.fathername || "",
-              applicationId: response.data.application_id || "",
-            }));
-            
-            setLoanData(response.data);
-            setLoanFetched(true);
-          }
-        } catch (error) {
-          console.error("Error fetching loan details:", error);
+          formik.setValues(prev => ({
+            ...prev,
+            ...loanDetails,
+            name: response.data.customer_name || "",
+            fatherName: response.data.fathername || "",
+            applicationId: response.data.application_id || "",
+          }));
+          
+          setLoanData(response.data);
+          setLoanFetched(true);
+          toast.success("Loan details loaded successfully!");
+        } else if (!response.status && response.message) {
+          // Show error toast with the message from backend
+          toast.error(response.message);
+          
+          // Clear the loan fields if loan is not valid
+          formik.setValues(prev => ({
+            ...prev,
+            name: "",
+            fatherName: "",
+            applicationId: "",
+            principalAmount: "",
+            interest: "",
+            penalInterest: "",
+            penalty: "",
+          }));
+          
+          setLoanData(null);
           setLoanFetched(false);
-        } finally {
-          setIsFetchingLoan(false);
         }
+      } catch (error) {
+        console.error("Error fetching loan details:", error);
+        setLoanFetched(false);
+        
+        // Handle different error formats
+        if (error.response?.data) {
+          const errorData = error.response.data;
+          if (errorData.message) {
+            toast.error(errorData.message);
+          } else if (errorData.status === false && errorData.message) {
+            toast.error(errorData.message);
+          } else {
+            toast.error("Failed to fetch loan details");
+          }
+        } else if (error.message) {
+          toast.error(error.message);
+        } else {
+          toast.error("Failed to fetch loan details");
+        }
+        
+        // Clear the loan fields on error
+        formik.setValues(prev => ({
+          ...prev,
+          name: "",
+          fatherName: "",
+          applicationId: "",
+          principalAmount: "",
+          interest: "",
+          penalInterest: "",
+          penalty: "",
+        }));
+        setLoanData(null);
+      } finally {
+        setIsFetchingLoan(false);
       }
-    };
+    }
+  };
 
-    const timerId = setTimeout(fetchLoanDetails, 800);
-    return () => clearTimeout(timerId);
-  }, [formik.values.loanNo, loanFetched, isEdit]);
+  const timerId = setTimeout(fetchLoanDetails, 800);
+  return () => clearTimeout(timerId);
+}, [formik.values.loanNo, loanFetched, isEdit]);
 
   useEffect(() => {
     setLoanFetched(false);

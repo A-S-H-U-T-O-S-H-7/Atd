@@ -424,7 +424,7 @@ const handleEdit = (legal) => {
       <AddressModal
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
-        legal={selectedLegal}
+        legal={selectedLegal} 
         isDark={isDark}
         onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
       />

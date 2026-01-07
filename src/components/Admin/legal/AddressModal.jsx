@@ -14,7 +14,6 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
 
   // New address form state
   const [newAddress, setNewAddress] = useState({
-    advocate_id: "",
     types: "Legal Notice",
     address: "",
     posted_date: "",
@@ -119,7 +118,6 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
 
   const resetForm = () => {
     setNewAddress({
-      advocate_id: "",
       types: "Legal Notice",
       address: "",
       posted_date: "",
@@ -134,7 +132,6 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
   const handleEditAddress = (address) => {
     setEditingAddress(address);
     setNewAddress({
-      advocate_id: address.advocate_id || "",
       types: address.types || "Legal Notice",
       address: address.address || "",
       posted_date: address.posted_date?.split('T')[0] || "",
@@ -365,30 +362,7 @@ const AddressModal = ({ isOpen, onClose, legal, isDark, onSuccess }) => {
                   
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className={`block text-xs font-medium mb-1 ${
-                          isDark ? "text-gray-300" : "text-gray-600"
-                        }`}>
-                          Advocate ID
-                        </label>
-                        <input
-                          type="number"
-                          value={newAddress.advocate_id}
-                          onChange={(e) => !isLoading && setNewAddress({
-                            ...newAddress,
-                            advocate_id: e.target.value
-                          })}
-                          disabled={isLoading}
-                          className={`w-full px-3 py-2 text-xs rounded border ${
-                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                          } ${
-                            isDark
-                              ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-                          }`}
-                          placeholder="Advocate ID"
-                        />
-                      </div>
+                      
 
                       <div>
                         <label className={`block text-xs font-medium mb-1 ${

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AdvancedSearchBar from "../AdvanceSearchBar";
 import DateFilter from "../DateFilter";
 import { exportToExcel } from "@/components/utils/exportutil";
-import CreditApprovalTable from "./CreditApprovalTable";
+import CreditApprovalTable from "./CreditApprovalTable"; 
 import ChequeModal from "../application-modals/ChequeSubmit";
 import SendToCourierModal from "../application-modals/SendToCourierModal";
 import CourierPickedModal from "../application-modals/CourierPickedModal";

@@ -91,7 +91,31 @@ const handleSubmit = async (e) => {
   } catch (error) {
     console.error("Status update error:", error);
     
-    toast.error(error.message || 'Failed to update status. Please try again.', {
+    // Extract error message from server response
+    let errorMessage = 'Failed to update status. Please try again.';
+    
+    if (error.response) {
+      const errorData = error.response;
+      
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.errors && Object.keys(errorData.errors).length > 0) {
+        const firstError = Object.values(errorData.errors)[0];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          errorMessage = firstError[0];
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
+        }
+      }
+    } else if (error.request) {
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+    
+    toast.error(errorMessage, {
       style: {
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
@@ -100,7 +124,8 @@ const handleSubmit = async (e) => {
       iconTheme: {
         primary: '#ef4444',
         secondary: '#f9fafb',
-      }
+      },
+      duration: 4000 
     });
   } finally {
     setLoading(false);

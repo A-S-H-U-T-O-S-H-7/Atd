@@ -206,7 +206,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
           <span className={`text-sm font-bold ${getMediumTextColor(legal.medium)}`}>
             {legal.medium || 'N/A'}
           </span>
-        </div>
+        </div> 
       </td>
 
       {/* Customer Information - Restored to original font styles */}
@@ -289,7 +289,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       <div className="flex items-center space-x-2">
         <span className={`text-sm font-medium ${commonClasses.fieldLabel}`}>Approved:</span>
         <span className={`text-sm font-medium ${commonClasses.specialValue('amount')}`}>
-          ₹{legal.principal?.toLocaleString()}
+          ₹{legal.approvedAmount?.toLocaleString()}
         </span>
       </div>
       <div className="flex items-center space-x-2">

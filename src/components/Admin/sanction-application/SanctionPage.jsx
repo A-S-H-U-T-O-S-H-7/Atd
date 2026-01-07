@@ -268,14 +268,15 @@ const buildApiParams = () => {
   };
 
   const handleStatusUpdate = async (applicationId, status, remark) => {
-    try {
-      await sanctionService.updateLoanStatus(applicationId, status, remark);
-      fetchApplications();
-    } catch (error) {
-      toast.error('Failed to update loan status');
-      throw error;
-    }
-  };
+  try {
+    await sanctionService.updateLoanStatus(applicationId, status, remark);
+    fetchApplications();
+  } catch (error) {
+    console.error("Status update error:", error);
+    
+    throw error; 
+  }
+};
 
   const handleStatusModalOpen = (application) => {
     setCurrentStatusApplication(application);
@@ -730,7 +731,7 @@ const buildApiParams = () => {
           onChangeStatusClick={handleChangeStatusModalOpen}
           onRefundPDCClick={handleRefundPDCModalOpen}
           onFileView={handleFileView}
-          fileLoading={fileLoading}
+          fileLoading={fileLoading} 
           loadingFileName={loadingFileName}
           onStatusClick={handleStatusModalOpen}
           onBlacklist={handleBlacklist}

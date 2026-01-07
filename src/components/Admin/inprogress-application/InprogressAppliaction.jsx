@@ -9,7 +9,7 @@ import InProgressTable from "./InprogressTable";
 import InProcessStatusModal from "../application-modals/InProcessStatusModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
-  inProgressApplicationAPI,
+  inProgressApplicationAPI, 
   formatInProgressApplicationForUI,
   fileService,
   inProgressService 

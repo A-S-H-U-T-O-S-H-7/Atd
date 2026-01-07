@@ -183,8 +183,9 @@ export const formatLegalCaseForUI = (legalCase) => {
   };
 
   // Calculate derived values
-  const principal = parseFloat(financial.approved_amount) || 0;
-  const processingFee = parseFloat(financial.process_fee) || 0;
+   const approvedAmount = parseFloat(financial.approved_amount) || 0;
+  const principal = parseFloat(cheque.principal_amount) || 0;
+    const processingFee = parseFloat(financial.process_fee) || 0;
   const gst = parseFloat(financial.gst) || 0;
   const interest = parseFloat(cheque.interest) || 0;
   const penalInterest = parseFloat(cheque.penal_interest) || 0;
@@ -220,7 +221,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     customerName: customer.customer_name || 'N/A',
     fatherHusbandName: customer.customer_fathername || 'N/A',
     mobileNo: customer.customer_phone || 'N/A',
-    email: customer.customer_email || 'N/A',
+    email: customer.customer_email || 'N/A', 
     gender: customer.customer_gender || 'N/A',
     loanId: customer.loan_no || 'N/A',
     crnNo: customer.crnno || 'N/A',
@@ -240,7 +241,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     penalty: penalty,
     processingFee: processingFee,
     gst: gst,
-    totalPfGst: totalPfGst, // Calculated as processingFee + gst
+    totalPfGst: totalPfGst, 
     disbursementAmount: parseFloat(financial.disburse_amount) || 0,
     bounceCharge: bounceCharge,
     emiCollection: parseFloat(financial.emi_collection) || 0,
@@ -268,6 +269,7 @@ export const formatLegalCaseForUI = (legalCase) => {
     
     // Important Dates - All formatted as dd-mm-yyyy
     approvedDate: formatDateString(dates.approved_date),
+    approvedAmount: approvedAmount,
     transactionDate: formatDateString(dates.transaction_date),
     dueDate: formatDateString(dates.duedate),
     lastCollectionDate: formatDateString(dates.last_collection_date),

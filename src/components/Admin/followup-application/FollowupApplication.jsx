@@ -136,14 +136,15 @@ const FollowUpApplication = () => {
 
   // Handle Status Update
   const handleStatusUpdate = async (applicationId, status, remark = "") => {
-    try {
-      await followUpService.updateStatus(applicationId, status, remark);
-      fetchApplications();
-    } catch (error) {
-      console.error("Status update error:", error);
-      throw error; 
-    }
-  };
+  try {
+    await followUpService.updateStatus(applicationId, status, remark);
+    fetchApplications();
+  } catch (error) {
+    console.error("Status update error:", error);
+    
+    throw error; 
+  }
+};
 
   // Open Status Modal
   const handleOpenStatusModal = (application) => {

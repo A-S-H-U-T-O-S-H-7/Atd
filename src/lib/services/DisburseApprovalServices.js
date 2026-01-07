@@ -79,7 +79,7 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     accountId: application.accountId,
     loanNo: application.loan_no || `LN${application.application_id}`,
     userId: application.user_id,
-    user_id: application.user_id,
+    user_id: application.user_id, 
 
 
     // Date and time information
@@ -286,23 +286,34 @@ export const disburseApprovalService = {
 submitDisbursement: async (applicationId, formData) => {
   try {
     const payload = {
-      loan_status: 9, // Disbursed status
+      loan_status: 9, 
       disburse_amount: parseFloat(formData.disburseAmount),
       disburse_date: formData.disbursementDate,
-      // Include all required bank details from the form data
       customer_bank: formData.bankName,
       customer_branch: formData.branchName,
       customer_account: formData.accountNo,
       customer_ifsc: formData.ifscCode
     };
     
-    console.log('🔄 Disbursement Payload:', payload);
     
     const response = await api.put(`/crm/disbursement/disburse/${applicationId}`, payload);
+    
+    if (response && response.success === false) {
+      throw new Error(response.message || "Disbursement failed");
+    }
+    
     return response;
   } catch (error) {
-    console.error('❌ Disbursement API Error:', error);
-    throw error;
+    
+    if (error.response?.message) {
+      throw new Error(error.response.message);
+    } else if (error.response?.error) {
+      throw new Error(error.response.error);
+    } else if (error.message) {
+      throw error; 
+    } else {
+      throw new Error("Failed to process disbursement");
+    }
   }
 },
 

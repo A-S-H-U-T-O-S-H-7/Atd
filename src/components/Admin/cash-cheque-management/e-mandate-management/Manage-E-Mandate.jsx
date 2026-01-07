@@ -118,13 +118,10 @@ const ManageEmandatePage = () => {
     fatherName: Yup.string().required("Father name is required"),
     relation: Yup.string().required("Relation is required"),
     chequePresented: Yup.string().required("Cheque type is required"),
-    chequeNo: Yup.string()
-      .required("Cheque number is required")
-      .matches(/^\d{6}$/, "Cheque number must be exactly 6 digits"),
     principalAmount: positiveNumber("Principal amount must be positive"),
-    chequeAmount: positiveNumber("Cheque amount is required and must be positive").required("Cheque amount is required"),
-    chequeDate: Yup.date().required("Cheque date is required"),
-    chequeDepositDate: Yup.date().required("Cheque deposit date is required"),
+    chequeAmount: positiveNumber("E-mandate amount is required and must be positive").required("Cheque amount is required"),
+    chequeDate: Yup.date().required("E-mandate date is required"),
+    chequeDepositDate: Yup.date().required("E-mandate deposit date is required"),
     interest: positiveNumber("Interest must be positive"),
     penalInterest: positiveNumber("Penal interest must be positive"),
     penalty: positiveNumber("Penalty must be positive"),
