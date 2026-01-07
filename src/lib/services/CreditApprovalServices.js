@@ -10,7 +10,7 @@ export const creditApprovalAPI = {
     try {
       const response = await api.get("/crm/application/verification", { params });
       return response;
-    } catch (error) { 
+    } catch (error) {  
       throw error;
     }
   },
@@ -74,7 +74,7 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     enquiryTime: enquiryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
     updatedDate: updatedDate.toLocaleDateString('en-GB'),
     updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-    approvedDate: enquiryDate.toLocaleDateString('en-GB'),
+    approvedDate: application.approved_date ? new Date(application.approved_date).toLocaleDateString('en-GB') : 'N/A',    disburseDate: application.disburse_date || 'N/A',
 
     // Personal information
     name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
