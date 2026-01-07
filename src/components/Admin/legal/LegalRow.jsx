@@ -23,7 +23,7 @@ import {
   Percent,
 } from "lucide-react";
 
-const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowCriminalStatus, onShowAddress, onEdit }) => {
+const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowCriminalStatus, onArbitrationCriminal,onArbitrationNotice, onShowAddress, onEdit }) => {
   
   // Common CSS classes for better optimization
   const commonClasses = {
@@ -771,23 +771,25 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
             Criminal Case (138)
           </button>
           <button
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              isDark
-                ? "bg-amber-900/50 hover:bg-amber-800 text-amber-300 border border-amber-700"
-                : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200"
-            }`}
-          >
-            Create Arbitration Notice
-          </button>
+      onClick={() => onArbitrationNotice && onArbitrationNotice(legal)}
+      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+        isDark
+          ? "bg-amber-900/50 hover:bg-amber-800 text-amber-300 border border-amber-700"
+          : "bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200"
+      }`}
+    >
+      Create Arbitration Notice
+    </button>
           <button
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-              isDark
-                ? "bg-pink-900/50 hover:bg-pink-800 text-pink-300 border border-pink-700"
-                : "bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-200"
-            }`}
-          >
-            Create Arbitration Criminal
-          </button>
+      onClick={() => onArbitrationCriminal && onArbitrationCriminal(legal)}
+      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+        isDark
+          ? "bg-pink-900/50 hover:bg-pink-800 text-pink-300 border border-pink-700"
+          : "bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-200"
+      }`}
+    >
+      Create Arbitration Criminal
+    </button>
         </div>
       </td>
     </tr>

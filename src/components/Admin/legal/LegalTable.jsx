@@ -14,6 +14,8 @@ const LegalTable = ({
   onCreateNotice, 
   onShowAddress,   
   onCriminalCase,
+  onArbitrationNotice,
+  onArbitrationCriminal,
   onShowCriminalStatus,
   onEdit ,
   isLoading = false
@@ -155,7 +157,9 @@ const LegalTable = ({
                     onCriminalCase={onCriminalCase}
                     onShowAddress={onShowAddress}
                     onShowCriminalStatus ={onShowCriminalStatus}
-                    onEdit={onEdit }
+                    onArbitrationNotice = {onArbitrationNotice}
+                    onArbitrationCriminal = {onArbitrationCriminal} 
+                     onEdit={onEdit }
                   />
                 ))
               )}

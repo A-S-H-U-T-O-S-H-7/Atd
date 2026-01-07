@@ -11,6 +11,8 @@ import AddressModal from "./AddressModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { legalService, formatLegalCaseForUI } from "@/lib/services/LegalService";
 import CriminalStatusModal from "./CriminalStatusModal";
+import CreateArbitrationNoticeModal from "./CreateArbitrationNoticeModal";
+import CreateArbitrationCriminalModal from "./CreateArbitrationCriminalModal";
 
 // Main Legal Management Component 
 const LegalPage = () => {
@@ -26,6 +28,8 @@ const LegalPage = () => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); 
   const [selectedLegal, setSelectedLegal] = useState(null);
   const [isCriminalStatusModalOpen, setIsCriminalStatusModalOpen] = useState(false);
+  const [isArbitrationNoticeModalOpen, setIsArbitrationNoticeModalOpen] = useState(false);
+  const [isArbitrationCriminalModalOpen, setIsArbitrationCriminalModalOpen] = useState(false);
 
   
   const [legals, setLegals] = useState([]);
@@ -117,10 +121,22 @@ const handleEdit = (legal) => {
     setIsCriminalCaseModalOpen(true);
   };
 
+  const handleArbitrationNotice = (legal) => {
+  setSelectedLegal(legal);
+  setIsArbitrationNoticeModalOpen(true);
+};
+
+const handleArbitrationCriminal = (legal) => {
+  setSelectedLegal(legal);
+  setIsArbitrationCriminalModalOpen(true);
+};
+
   const handleShowAddress = (legal) => {
     setSelectedLegal(legal);
     setIsAddressModalOpen(true);
   };
+
+
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -401,6 +417,8 @@ const handleEdit = (legal) => {
           onCriminalCase={handleCriminalCase}
           onShowAddress={handleShowAddress}
           onShowCriminalStatus={handleShowCriminalStatus}
+          onArbitrationNotice={handleArbitrationNotice}
+          onArbitrationCriminal={handleArbitrationCriminal}
           onEdit={handleEdit} 
           isLoading={isLoading}
         />
@@ -432,6 +450,22 @@ const handleEdit = (legal) => {
       <CriminalStatusModal
   isOpen={isCriminalStatusModalOpen}
   onClose={() => setIsCriminalStatusModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+  onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
+/>
+
+<CreateArbitrationNoticeModal
+  isOpen={isArbitrationNoticeModalOpen}
+  onClose={() => setIsArbitrationNoticeModalOpen(false)}
+  legal={selectedLegal}
+  isDark={isDark}
+  onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
+/>
+
+<CreateArbitrationCriminalModal
+  isOpen={isArbitrationCriminalModalOpen}
+  onClose={() => setIsArbitrationCriminalModalOpen(false)}
   legal={selectedLegal}
   isDark={isDark}
   onSuccess={() => fetchLegalCases(currentPage, searchTerm)}
