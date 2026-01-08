@@ -4,10 +4,16 @@ import { X, CreditCard } from 'lucide-react';
 
 const LOAN_STATUS_MAP = {
   2: 'applied',
+  4: 'applied',
   3: 'rejected',
   5: 'inprogress',
+
   6: 'sanctioned',
-  9: 'disbursed',
+  7: 'sanctioned',
+  8: 'sanctioned',
+  9: 'sanctioned',
+
+  10: 'disbursed',
   11: 'disbursed',
   12: 'disbursed',
   13: 'closed'
