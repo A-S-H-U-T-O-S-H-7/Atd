@@ -42,11 +42,13 @@ export default function StepCompleteProfile({
   // Loan status mapping
   const LOAN_STATUS = {
     APPLIED: 2,
+    APPLIED: 4,
     REJECTED: 3,
     SANCTIONED: 6,
     SANCTIONED: 7, 
     SANCTIONED: 8,
-    DISBURSED: 9,
+    SANCTIONED: 9,
+    DISBURSED: 10,
     DISBURSED: 11,
     DISBURSED: 12,
     CLOSED: 13,
@@ -187,6 +189,7 @@ export default function StepCompleteProfile({
                 loanStatus={currentStatus} 
                 onApplyNewLoan={handleApplyNewLoan}
                 onPayNow={handlePayNow} 
+                user={user} 
               /> 
               {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">

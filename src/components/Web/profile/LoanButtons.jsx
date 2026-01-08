@@ -1,7 +1,6 @@
-// components/LoanButtons.jsx
 import { Info } from 'lucide-react';
 
-const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow }) => {
+const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow,user }) => {
   const getLoanStatusLabel = (statusCode) => {
     switch (parseInt(statusCode)) {
       case 2: return 'applied';
@@ -20,7 +19,8 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow }) => {
 
   const statusLabel = getLoanStatusLabel(loanStatus);
   const isPayNowEnabled = statusLabel === 'disbursed';
-  const isNewLoanEnabled = statusLabel === 'closed';
+  const isNewLoanEnabled = statusLabel === 'closed' || 
+    (statusLabel === 'rejected' && user?.last_activity_days > 30);
 
   // Tooltip component
   const Tooltip = ({ children, text, show }) => (
@@ -72,25 +72,29 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow }) => {
       
       {/* Apply For New Loan Button */}
       <Tooltip 
-        text={!isNewLoanEnabled ? "New loan applications are available only after current loan closure" : ""}
-        show={!isNewLoanEnabled}
-      >
-        <button 
-          onClick={handleApplyNewLoan}
-          className={`flex-1 px-2 md:px-6 py-2 md:py-3 font-semibold rounded-md md:rounded-xl shadow-lg transition-all duration-200 ease-out border ${
-            isNewLoanEnabled
-              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:-translate-y-0.5 hover:from-blue-600 hover:to-purple-700 border-blue-400/20 cursor-pointer'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300 opacity-60'
-          }`}
-          disabled={!isNewLoanEnabled}
-        >
-          <div className="flex items-center justify-center space-x-2">
-            <span>Apply For New Loan</span>
-            {!isNewLoanEnabled && <Info className="w-4 h-4" />}
-          </div>
-        </button>
-      </Tooltip>
+  text={!isNewLoanEnabled ? 
+    (statusLabel === 'rejected' ? 
+      "New loan applications available 30 days after rejection" : 
+      "New loan applications are available only after current loan closure") 
+    : ""}
+  show={!isNewLoanEnabled}
+>
+  <button 
+    onClick={handleApplyNewLoan}
+    className={`flex-1 px-2 md:px-6 py-2 md:py-3 font-semibold rounded-md md:rounded-xl shadow-lg transition-all duration-200 ease-out border ${
+      isNewLoanEnabled
+        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:-translate-y-0.5 hover:from-blue-600 hover:to-purple-700 border-blue-400/20 cursor-pointer'
+        : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300 opacity-60'
+    }`}
+    disabled={!isNewLoanEnabled}
+  >
+    <div className="flex items-center justify-center space-x-2">
+      <span>Apply For New Loan</span>
+      {!isNewLoanEnabled && <Info className="w-4 h-4" />}
     </div>
+  </button>
+</Tooltip>
+    </div> 
   );
 };
 
