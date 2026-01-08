@@ -41,38 +41,45 @@ export default function StepCompleteProfile({
 
   // Loan status mapping
   const LOAN_STATUS = {
-    APPLIED: 2,
-    APPLIED: 4,
-    REJECTED: 3,
-    SANCTIONED: 6,
-    SANCTIONED: 7, 
-    SANCTIONED: 8,
-    SANCTIONED: 9,
-    DISBURSED: 10,
-    DISBURSED: 11,
-    DISBURSED: 12,
-    CLOSED: 13,
-    IN_PROCESS: 5
-  };
+  APPLIED: 2,
+  APPLICATION_ACCEPTED: 4,
+  REJECTED: 3,
+  SANCTIONED: 6,
+  SANCTIONED_REVIEW: 7,
+  SANCTIONED_PENDING: 8,
+  SANCTIONED_APPROVED: 9,
+  DISBURSED_INITIATED: 10,
+  DISBURSED_PROCESSING: 11,
+  DISBURSED_COMPLETED: 12,
+  CLOSED: 13,
+  IN_PROCESS: 5
+};
 
   const getLoanStatusLabel = (statusCode) => {
-    switch (parseInt(statusCode)) {
-      case LOAN_STATUS.APPLIED:
-        return 'applied';
-      case LOAN_STATUS.REJECTED:
-        return 'rejected';
-      case LOAN_STATUS.SANCTIONED:
-        return 'sanctioned';
-      case LOAN_STATUS.DISBURSED:
-        return 'disbursed';
-      case LOAN_STATUS.CLOSED:
-        return 'closed';
-      case LOAN_STATUS.IN_PROCESS:
-        return 'inprogress';
-      default:
-        return 'applied';
-    }
-  };
+  switch (parseInt(statusCode)) {
+    case LOAN_STATUS.APPLIED:
+      return 'applied';
+    case LOAN_STATUS.APPLICATION_ACCEPTED:
+      return 'accepted';
+    case LOAN_STATUS.REJECTED:
+      return 'rejected';
+    case LOAN_STATUS.SANCTIONED:
+    case LOAN_STATUS.SANCTIONED_REVIEW:
+    case LOAN_STATUS.SANCTIONED_PENDING:
+    case LOAN_STATUS.SANCTIONED_APPROVED:
+      return 'sanctioned';
+    case LOAN_STATUS.DISBURSED_INITIATED:
+    case LOAN_STATUS.DISBURSED_PROCESSING:
+    case LOAN_STATUS.DISBURSED_COMPLETED:
+      return 'disbursed';
+    case LOAN_STATUS.CLOSED:
+      return 'closed';
+    case LOAN_STATUS.IN_PROCESS:
+      return 'inprogress';
+    default:
+      return 'applied';
+  }
+};
 
   // Get loan status from user object
   const userLoanStatus = user?.loan_status || LOAN_STATUS.APPLIED;
@@ -80,7 +87,7 @@ export default function StepCompleteProfile({
 
   // Status options for testing
   const statusOptions = [
-    { value: LOAN_STATUS.APPLIED, label: 'Applied Successfully' },
+    { value: LOAN_STATUS.APPLIED, label: 'Applied Successfully' }, 
     { value: LOAN_STATUS.IN_PROCESS, label: 'In Progress' },
     { value: LOAN_STATUS.SANCTIONED, label: 'Sanctioned' },
     { value: LOAN_STATUS.REJECTED, label: 'Rejected' },
@@ -162,7 +169,7 @@ export default function StepCompleteProfile({
         
         <div className="pt-28 px-3 md:px-8 lg:px-12 py-6 relative z-10">
           {/* Testing Section - Remove in production */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <h1 className="text-2xl font-bold text-slate-800 mb-4">Loan Status For Testing</h1>
             <div className="flex flex-wrap gap-2">
               {statusOptions.map(status => (
@@ -179,7 +186,7 @@ export default function StepCompleteProfile({
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

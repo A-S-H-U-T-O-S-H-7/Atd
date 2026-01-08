@@ -5,7 +5,7 @@ import EMandate from "./EMandate";
 import DigitalLoanAgreement from "./DigitalLoanAgreement";
 
 const VerificationComponent = ({ loanStatus = 2, user }) => {
-  const currentLoanStatus = parseInt(loanStatus);
+  const currentLoanStatus = parseInt(loanStatus); 
   
   const isSanctioned = currentLoanStatus === 6;
   
