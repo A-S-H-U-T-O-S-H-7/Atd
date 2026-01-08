@@ -92,37 +92,41 @@ export const ticketAPI = {
 export const formatTicketForUI = (ticket) => {
   if (!ticket) return null;
 
+  const ticketData = ticket.ticket || ticket;
+  
+  const attachments = ticket.document_urls || ticketData.documents || [];
+
   const getFileName = (url) => {
     if (!url) return '';
     return url.split('/').pop() || 'file';
   };
 
   return {
-    id: ticket.id,
-    ticketId: ticket.token || `TKT-${ticket.id}`,
-    subject: ticket.subject || '',
-    description: ticket.description || '',
-    priority: ticket.priority || 'medium',
-    type: ticket.type || 'issue',
-    category: ticket.category || 'other',
-    status: ticket.status || 'Pending',
+    id: ticketData.id,
+    ticketId: ticketData.token || `TKT-${ticketData.id}`,
+    subject: ticketData.subject || '',
+    description: ticketData.description || '',
+    priority: ticketData.priority || 'medium',
+    type: ticketData.type || 'issue',
+    category: ticketData.category || 'other',
+    status: ticketData.status || 'Pending',
     createdBy: {
-      id: ticket.admin?.id,
-      name: ticket.admin?.username || ticket.created_by || 'Unknown',
-      email: null
+      id: ticketData.admin?.id,
+      name: ticketData.admin?.username || ticketData.admin?.name || 'Unknown',
+      email: ticketData.admin?.email || null
     },
-    assignedTo: ticket.assigned_to ? {
-      id: ticket.assigned_to.id,
-      name: ticket.assigned_to.username || 'Unassigned',
-      email: ticket.assigned_to.email || null
+    assignedTo: ticketData.assigned_to ? {
+      id: ticketData.assigned_to.id,
+      name: ticketData.assigned_to.username || ticketData.assigned_to.name || 'Unassigned',
+      email: ticketData.assigned_to.email || null
     } : null,
-    createdAt: ticket.created_at,
-    updatedAt: ticket.updated_at,
-    messages: ticket.replies || [],
-    messageCount: ticket.replies?.length || 0,
-    createdDate: formatDate(ticket.created_at),
-    attachments: ticket.documents || [],
-    admin: ticket.admin
+    createdAt: ticketData.created_at,
+    updatedAt: ticketData.updated_at,
+    messages: ticket.replies || ticketData.replies || [], 
+    messageCount: (ticket.replies || ticketData.replies || []).length,
+    createdDate: formatDate(ticketData.created_at),
+    attachments: attachments,
+    admin: ticketData.admin
   };
 };
 

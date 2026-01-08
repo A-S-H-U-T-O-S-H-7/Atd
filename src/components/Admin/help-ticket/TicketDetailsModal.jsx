@@ -198,14 +198,12 @@ const TicketDetailsModal = ({
 const handleFileView = (fileUrl) => {
   if (!fileUrl) return;
   
-  let finalUrl = fileUrl;
-  
-  if (fileUrl.includes('api.atdmoney.in')) {
+  if (fileUrl.startsWith('http')) {
+    window.open(fileUrl, '_blank');
   } else {
-    finalUrl = `https://api.atdmoney.in/storage/${fileUrl.replace(/^\//, '')}`;
+    const finalUrl = `https://api.atdmoney.in/storage/${fileUrl.replace(/^\//, '')}`;
+    window.open(finalUrl, '_blank');
   }
-  
-  window.open(finalUrl, '_blank');
 };
 
   const handleSubmit = async (e) => {
@@ -596,14 +594,14 @@ const handleFileView = (fileUrl) => {
                     {ticket.attachments && ticket.attachments.length > 0 && (
                       <div>
                         <label className={`text-xs font-medium ${
-                          isDark ? 'text-gray-400' : 'text-gray-600'
+                          isDark ? 'text-gray-300' : 'text-gray-600'
                         }`}>
                           Attachments ({ticket.attachments.length})
                         </label>
                         <div className="mt-2 space-y-2">
                           {ticket.attachments.map((file, index) => (
                             <div key={index} className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
-                              isDark ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
+                              isDark ? 'bg-gray-700/50 text-gray-200 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
                             }`}>
                               <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4" />

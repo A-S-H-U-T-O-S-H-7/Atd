@@ -25,6 +25,7 @@ const SanctionTable = ({
   fileLoading,
   loadingFileName,
   onStatusClick,
+  onBlacklist
 }) => {
 
     const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${

@@ -60,7 +60,7 @@ export const completedApplicationAPI = {
       throw error;
     }
   },
-
+ 
   // Activate account 
   sendActivationEmail: async (applicationId) => {
     try {

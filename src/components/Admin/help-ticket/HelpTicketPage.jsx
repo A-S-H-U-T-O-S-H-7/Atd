@@ -90,17 +90,17 @@ const HelpTicketPage = () => {
   };
 
   const handleViewTicket = async (ticket) => {
-    try {
-      const response = await ticketAPI.getTicketById(ticket.id); 
-      if (response.success) {
-        const formattedTicket = formatTicketForUI(response.data);
-        setSelectedTicket(formattedTicket);
-      }
-    } catch (err) {
-      console.error("Error fetching ticket details:", err);
-      toast.error("Failed to load ticket details");
+  try {
+    const response = await ticketAPI.getTicketById(ticket.id); 
+    if (response.success) {
+      const formattedTicket = formatTicketForUI(response.data);
+      setSelectedTicket(formattedTicket);
     }
-  };
+  } catch (err) {
+    console.error("Error fetching ticket details:", err);
+    toast.error("Failed to load ticket details");
+  }
+};
 
   const handleUpdateStatus = async (ticketId, status) => {
     try {
