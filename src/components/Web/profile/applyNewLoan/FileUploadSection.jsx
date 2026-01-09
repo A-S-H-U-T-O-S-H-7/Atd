@@ -3,13 +3,14 @@ import { Upload, FileText, CheckCircle, AlertCircle, X, Zap, Clock } from 'lucid
 import imageCompression from 'browser-image-compression';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from '@/lib/firebase';
+import { TokenManager } from '@/utils/tokenManager';
 
-const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
+const FileUploadSection = ({ userId, onDocumentsUpdate, onDocumentIdsUpdate, disabled }) => {
   const [uploadStatus, setUploadStatus] = useState({
-    salarySlip1: { uploading: false, uploaded: false, error: null, filename: null },
-    salarySlip2: { uploading: false, uploaded: false, error: null, filename: null },
-    salarySlip3: { uploading: false, uploaded: false, error: null, filename: null },
-    bankStatement: { uploading: false, uploaded: false, error: null, filename: null }
+    salarySlip1: { uploading: false, uploaded: false, error: null, filename: null, documentId: null },
+    salarySlip2: { uploading: false, uploaded: false, error: null, filename: null, documentId: null },
+    salarySlip3: { uploading: false, uploaded: false, error: null, filename: null, documentId: null },
+    bankStatement: { uploading: false, uploaded: false, error: null, filename: null, documentId: null }
   });
   const [uploadQueue, setUploadQueue] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -20,25 +21,25 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
       label: 'Latest Salary Slip', 
       accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
       maxSize: 3,
-      bucket: 'salary_slip_1'
+      uploadType: 'firstsalaryslip'
     },
     salarySlip2: { 
       label: '2nd Salary Slip', 
       accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
       maxSize: 3,
-      bucket: 'salary_slip_2'
+      uploadType: 'secondsalaryslip'
     },
     salarySlip3: { 
       label: '3rd Salary Slip', 
       accept: 'image/jpeg,image/jpg,image/png,application/pdf', 
       maxSize: 3,
-      bucket: 'salary_slip_3'
+      uploadType: 'thirdsalaryslip'
     },
     bankStatement: { 
       label: 'Bank Statement', 
       accept: 'application/pdf',
       maxSize: 5,
-      bucket: 'bank_statement'
+      uploadType: 'statement'
     }
   };
 
@@ -49,14 +50,24 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
   }, [uploadQueue, isUploading]);
 
   useEffect(() => {
+    // Update parent component with filenames
     const uploadedDocs = {};
+    const documentIds = {};
+    
     Object.keys(uploadStatus).forEach(key => {
       if (uploadStatus[key].uploaded && uploadStatus[key].filename) {
         uploadedDocs[key] = uploadStatus[key].filename;
+        if (uploadStatus[key].documentId) {
+          documentIds[key] = uploadStatus[key].documentId;
+        }
       }
     });
+    
     onDocumentsUpdate(uploadedDocs);
-  }, [uploadStatus, onDocumentsUpdate]);
+    if (onDocumentIdsUpdate) {
+      onDocumentIdsUpdate(documentIds);
+    }
+  }, [uploadStatus, onDocumentsUpdate, onDocumentIdsUpdate]);
 
   const processNextUpload = async () => {
     if (uploadQueue.length === 0 || isUploading) return;
@@ -125,16 +136,63 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
     return { valid: true };
   };
 
-  const uploadFileToFirebase = async (file, fieldName) => {
-    const config = fileConfig[fieldName];
-    const randomFileName = generateRandomFileName(file.name);
+  const uploadToBackendAPI = async (filename, uploadType) => {
+    const tokenData = TokenManager.getToken();
+    if (!tokenData?.token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch('https://api.atdmoney.in/api/user/uploads', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${tokenData.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        upload: uploadType,
+        filename: filename
+      })
+    });
+
+    const result = await response.json();
     
-    const storageRef = ref(storage, `loan_application/${userId}/${config.bucket}/${randomFileName}`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    
-    return { success: true, filename: randomFileName, downloadURL };
+    if (!result.success) {
+      throw new Error(result.message || 'Upload to server failed');
+    }
+
+    return result.data; 
   };
+
+  const uploadFileToFirebase = async (file, fieldName) => {
+  const config = fileConfig[fieldName];
+  const randomFileName = generateRandomFileName(file.name);
+  
+  const firebasePathMapping = {
+    salarySlip1: 'first_salaryslip',
+    salarySlip2: 'second_salaryslip',
+    salarySlip3: 'third_salaryslip',
+    bankStatement: 'reports'  
+  };
+  
+  // Get the correct Firebase folder from the mapping
+  const firebaseFolder = firebasePathMapping[fieldName];
+  
+  // Upload to Firebase with the correct path
+  const storageRef = ref(storage, `${firebaseFolder}/${randomFileName}`);
+  await uploadBytes(storageRef, file);
+  const downloadURL = await getDownloadURL(storageRef);
+  
+  // Then upload metadata to backend API
+  const backendResult = await uploadToBackendAPI(randomFileName, config.uploadType);
+  
+  return { 
+    success: true, 
+    filename: randomFileName, 
+    downloadURL,
+    documentId: backendResult.document_id
+  };
+};
 
   const handleSingleUpload = async (file, fieldName) => {
     const config = fileConfig[fieldName];
@@ -169,17 +227,19 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
           uploaded: true, 
           error: null,
           filename: result.filename,
+          documentId: result.documentId,
           downloadURL: result.downloadURL
         }
       }));
     } catch (error) {
+      console.error('Upload error:', error);
       setUploadStatus(prev => ({
         ...prev,
         [fieldName]: { 
           ...prev[fieldName], 
           uploading: false, 
           uploaded: false, 
-          error: 'Upload failed'
+          error: error.message || 'Upload failed'
         }
       }));
     }
@@ -216,7 +276,13 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, disabled }) => {
   const handleRemoveFile = (fieldName) => {
     setUploadStatus(prev => ({
       ...prev,
-      [fieldName]: { uploading: false, uploaded: false, error: null, filename: null }
+      [fieldName]: { 
+        uploading: false, 
+        uploaded: false, 
+        error: null, 
+        filename: null,
+        documentId: null 
+      }
     }));
   };
 

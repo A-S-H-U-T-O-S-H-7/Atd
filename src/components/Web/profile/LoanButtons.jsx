@@ -6,8 +6,8 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow,user }) => {
       case 2: return 'applied';
       case 3: return 'rejected';
       case 6: return 'sanctioned';
+      case 10: return 'sanctioned';
 
-      case 10: return 'disbursed';
       case 11: return 'disbursed';
       case 12: return 'disbursed';
 

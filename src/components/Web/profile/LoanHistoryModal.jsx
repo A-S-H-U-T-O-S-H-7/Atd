@@ -12,8 +12,8 @@ const LOAN_STATUS_MAP = {
   7: 'sanctioned',
   8: 'sanctioned',
   9: 'sanctioned',
-
-  10: 'disbursed',
+  10: 'sanctioned',
+  
   11: 'disbursed',
   12: 'disbursed',
   13: 'closed'

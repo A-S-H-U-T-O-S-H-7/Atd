@@ -49,6 +49,7 @@ export default function StepCompleteProfile({
   SANCTIONED_PENDING: 8,
   SANCTIONED_APPROVED: 9,
   DISBURSED_INITIATED: 10,
+
   DISBURSED_PROCESSING: 11,
   DISBURSED_COMPLETED: 12,
   CLOSED: 13,
@@ -61,17 +62,21 @@ export default function StepCompleteProfile({
       return 'applied';
     case LOAN_STATUS.APPLICATION_ACCEPTED:
       return 'accepted';
+
     case LOAN_STATUS.REJECTED:
       return 'rejected';
+
     case LOAN_STATUS.SANCTIONED:
     case LOAN_STATUS.SANCTIONED_REVIEW:
     case LOAN_STATUS.SANCTIONED_PENDING:
     case LOAN_STATUS.SANCTIONED_APPROVED:
-      return 'sanctioned';
     case LOAN_STATUS.DISBURSED_INITIATED:
+    return 'sanctioned';
+
     case LOAN_STATUS.DISBURSED_PROCESSING:
     case LOAN_STATUS.DISBURSED_COMPLETED:
       return 'disbursed';
+      
     case LOAN_STATUS.CLOSED:
       return 'closed';
     case LOAN_STATUS.IN_PROCESS:

@@ -10,6 +10,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [documents, setDocuments] = useState({});
+  const [documentIds, setDocumentIds] = useState({}); 
 
   const tenureOptions = [
     { value: 10, label: '10 Days' },
@@ -55,6 +56,53 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
     setErrors({});
 
     try {
+      // Prepare documents array for API
+      const documentArray = [];
+      
+      // Map document types to API format
+      if (documentIds.salarySlip1) {
+        documentArray.push({
+          upload: 'firstsalaryslip',
+          filename: documents.salarySlip1, 
+          document_id: documentIds.salarySlip1
+        });
+      }
+      
+      if (documentIds.salarySlip2) {
+        documentArray.push({
+          upload: 'secondsalaryslip',
+          filename: documents.salarySlip2,
+          document_id: documentIds.salarySlip2
+        });
+      }
+      
+      if (documentIds.salarySlip3) {
+        documentArray.push({
+          upload: 'thirdsalaryslip',
+          filename: documents.salarySlip3,
+          document_id: documentIds.salarySlip3
+        });
+      }
+      
+      if (documentIds.bankStatement) {
+        documentArray.push({
+          upload: 'statement',
+          filename: documents.bankStatement,
+          document_id: documentIds.bankStatement
+        });
+      }
+
+      const requestBody = {
+        "loan_amount": parseInt(loanAmount),
+        "tenure": parseInt(tenure),
+        "enquiry_type": "Desktop",
+      };
+
+      // Add documents if any exist
+      if (documentArray.length > 0) {
+        requestBody.documents = documentArray;
+      }
+
       const response = await fetch(`https://api.atdmoney.in/api/user/apply/loan/${userId}`, {
         method: "PUT",
         headers: {
@@ -62,12 +110,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
           "Authorization": `Bearer ${tokenData.token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          "loan_amount": parseInt(loanAmount),
-          "tenure": parseInt(tenure),
-          "enquiry_type": "Desktop",
-          "documents": documents
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const result = await response.json();
@@ -98,6 +141,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
     setLoanAmount('');
     setTenure('');
     setDocuments({});
+    setDocumentIds({});
     setErrors({});
     setSuccess(false);
     setIsSubmitting(false);
@@ -158,7 +202,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              {/* Loan Amount Input  */}
+              {/* Loan Amount Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-700">
                   Loan Amount <span className="text-red-500">*</span>
@@ -197,7 +241,7 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
                 </div>
               </div>
 
-              {/* Tenure Dropdown  */}
+              {/* Tenure Dropdown */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-gray-700">
                   Tenure <span className="text-red-500">*</span>
@@ -235,10 +279,11 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
               </div>
               </div>
 
-              {/* File Upload Section - Kept as separate component */}
+              {/* File Upload Section  */}
               <FileUploadSection
                 userId={userId}
                 onDocumentsUpdate={setDocuments}
+                onDocumentIdsUpdate={setDocumentIds} 
                 disabled={isSubmitting}
               />
 
