@@ -14,6 +14,26 @@ export const legalService = {
       return response;
     } catch (error) {
       throw error;
+    } 
+  },
+
+  // Get courts list
+  getCourts: async () => {
+    try {
+      const response = await api.get("/crm/legal/court");
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get authorised representatives
+  getAuthorisedRepresentatives: async () => {
+    try {
+      const response = await api.get("/crm/legal/authorised");
+      return response;
+    } catch (error) {
+      throw error;
     }
   },
 
@@ -26,14 +46,61 @@ export const legalService = {
     }
   },
 
-  createCriminalCase: async (legalId, caseData) => {
-    try {
-      const response = await api.post(`/crm/legal/${legalId}/criminal-case`, caseData);
-      return response;
-    } catch (error) {
-      throw error;
+  // Create criminal case
+createCriminalCase: async (legalId, caseData) => {
+  try {
+    const response = await api.put(
+      `/crm/legal/create-crminal-case/${legalId}`,
+      caseData
+    );
+    
+    if (typeof response === 'string' && response.includes('<html')) {
+      return {
+        success: true,
+        data: new Blob([response], { type: 'application/msword' })
+      };
     }
-  },
+    
+    // Handle unexpected response format
+    return {
+      success: false,
+      message: 'Unexpected response format'
+    };
+    
+  } catch (error) {
+    console.error('Create criminal case error:', error);
+    
+    if (error.response?.data && typeof error.response.data === 'string' && 
+        error.response.data.includes('<html')) {
+      return {
+        success: true,
+        data: new Blob([error.response.data], { type: 'application/msword' })
+      };
+    }
+    
+    throw new Error(error.response?.data?.message || 'Failed to create criminal case');
+  }
+},
+
+  // Create arbitration criminal case
+createArbitrationCriminalCase: async (legalId, caseData) => {
+  try {
+    const response = await api.put(
+      `/crm/legal/arbitration-crminal/${legalId}`,
+      caseData
+    );
+    
+    if (typeof response === 'string' && response.includes('<html')) {
+      return response; 
+    }
+    
+    return response;
+    
+  } catch (error) {
+    console.error('Create arbitration criminal case error:', error);
+    throw new Error(error.response?.data?.message || 'Failed to create arbitration criminal case');
+  }
+},
 
   createLegalNotice: async (legalId, noticeData) => {
     try {
