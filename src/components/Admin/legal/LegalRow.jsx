@@ -34,7 +34,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
     
     // Value styles
     valueText: isDark 
-      ? "text-sm text-gray-300" 
+      ? "text-sm text-gray-300"  
       : "text-sm text-gray-600",
     
     // Important value styles (for amounts, IDs, etc)

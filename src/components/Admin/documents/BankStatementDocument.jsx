@@ -43,7 +43,6 @@ const BankStatementDocument = ({ fileName, hasDoc, onFileView }) => {
       
       
       
-      // Call the original onFileView if provided (for tracking/analytics)
       if (typeof onFileView === 'function') {
         onFileView(fileName, documentCategory);
       }

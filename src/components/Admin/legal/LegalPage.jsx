@@ -7,7 +7,7 @@ import { exportToExcel } from "@/components/utils/exportutil";
 import { useRouter } from "next/navigation";
 import CreateNoticeModal from "./CreateNoticeModal";
 import CreateCriminalCaseModal from "./CriminalCaseModal";
-import AddressModal from "./AddressModal"; 
+import AddressModal from "./address/AddressModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { legalService, formatLegalCaseForUI } from "@/lib/services/LegalService";
 import CriminalStatusModal from "./CriminalStatusModal";
