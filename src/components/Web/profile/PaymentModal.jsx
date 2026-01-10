@@ -319,16 +319,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                       <span className="font-semibold text-gray-800">NEFT Transfer</span>
                       <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">No Charges</span>
                     </div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
-                      <h4 className="font-medium text-gray-700 mb-2">Bank Details:</h4>
-                      <div className="text-sm space-y-1.5 text-gray-600">
-                        <p><span className="font-medium">Name:</span> ATD FINANCIAL SERVICES PVT LTD</p>
-                        <p><span className="font-medium">Account No.:</span> 025305005395</p>
-                        <p><span className="font-medium">IFSC Code:</span> ICIC0000253</p>
-                        <p><span className="font-medium">Bank:</span> ICICI BANK</p>
-                        <p><span className="font-medium">Branch:</span> SECTOR-61 NOIDA</p>
-                      </div>
-                    </div>
+                   
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Bank:</label>
                       <select 

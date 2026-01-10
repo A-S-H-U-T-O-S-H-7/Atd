@@ -39,14 +39,19 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         disabled: 'border-blue-200 bg-blue-200 text-blue-400 cursor-not-allowed',
         completed: 'border-green-400 bg-green-500 text-white'
       },
-      green: {
-        enabled: 'border-green-400 bg-green-500 hover:bg-green-600 text-white',
-        disabled: 'border-green-200 bg-green-200 text-green-400 cursor-not-allowed',
+      orange: {
+        enabled: 'border-orange-400 bg-orange-500 hover:bg-orange-600 text-white',
+        disabled: 'border-orange-200 bg-orange-200 text-orange-400 cursor-not-allowed',
         completed: 'border-green-400 bg-green-500 text-white'
       },
       purple: {
         enabled: 'border-purple-400 bg-purple-500 hover:bg-purple-600 text-white',
         disabled: 'border-purple-200 bg-purple-200 text-purple-400 cursor-not-allowed',
+        completed: 'border-green-400 bg-green-500 text-white'
+      },
+      green: {
+        enabled: 'border-green-400 bg-green-500 hover:bg-green-600 text-white',
+        disabled: 'border-green-200 bg-green-200 text-green-400 cursor-not-allowed',
         completed: 'border-green-400 bg-green-500 text-white'
       }
     };
@@ -54,7 +59,7 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
     if (completed) {
       return (
         <button 
-          className={`border-2 text-xs sm:text-sm md:text-base font-medium md:font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow-md w-full sm:w-auto flex items-center justify-center space-x-1 ${colors[colorScheme].completed}`}
+          className={`border-2 text-xs sm:text-sm md:text-base font-medium md:font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow-md w-full sm:w-auto flex items-center justify-center space-x-1 ${colors.green.completed}`}
           disabled
         >
           <span>✅ Completed</span>
@@ -88,21 +93,26 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         disabled: 'border-blue-100 bg-blue-50 text-blue-300',
         completed: 'border-green-300 bg-green-100 text-green-600'
       },
-      green: {
-        enabled: 'border-green-300 bg-green-100 text-green-600',
-        disabled: 'border-green-100 bg-green-50 text-green-300',
+      orange: {
+        enabled: 'border-pink-300 bg-pink-100 text-pink-600',
+        disabled: 'border-pink-100 bg-pink-50 text-pink-300',
         completed: 'border-green-300 bg-green-100 text-green-600'
       },
       purple: {
         enabled: 'border-purple-300 bg-purple-100 text-purple-600',
         disabled: 'border-purple-100 bg-purple-50 text-purple-300',
         completed: 'border-green-300 bg-green-100 text-green-600'
+      },
+      green: {
+        enabled: 'border-green-300 bg-green-100 text-green-600',
+        disabled: 'border-green-100 bg-green-50 text-green-300',
+        completed: 'border-green-300 bg-green-100 text-green-600'
       }
     };
 
     if (completed) {
       return (
-        <div className={`rounded-full font-semibold border-2 flex flex-col justify-center items-center text-center w-20 h-20 md:w-24 md:h-24 shadow-md ${colors[colorScheme].completed}`}>
+        <div className={`rounded-full font-semibold border-2 flex flex-col justify-center items-center text-center w-20 h-20 md:w-24 md:h-24 shadow-md ${colors.green.completed}`}>
           <span className="text-2xl">✅</span>
           <p className={`text-xs md:text-sm font-semibold md:font-bold text-green-800`}>
             {title}
@@ -118,8 +128,8 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         <Icon className={`text-base md:text-2xl transition-all duration-300`} />
         <p className={`text-xs md:text-sm font-semibold md:font-bold transition-all duration-300 ${
           enabled 
-            ? (colorScheme === 'blue' ? 'text-blue-800' : colorScheme === 'green' ? 'text-green-800' : 'text-purple-800') 
-            : (colorScheme === 'blue' ? 'text-blue-400' : colorScheme === 'green' ? 'text-green-400' : 'text-purple-400')
+            ? (colorScheme === 'blue' ? 'text-blue-800' : colorScheme === 'orange' ? 'text-orange-800' : colorScheme === 'purple' ? 'text-purple-800' : 'text-green-800') 
+            : (colorScheme === 'blue' ? 'text-blue-400' : colorScheme === 'orange' ? 'text-orange-400' : colorScheme === 'purple' ? 'text-purple-400' : 'text-green-400')
         }`}>
           {title}
         </p>
@@ -143,7 +153,7 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
           <p className="text-sm text-green-700 font-medium text-center">
             ✅ 🎉 Congratulations! Your loan has been sanctioned. Please complete the formalities via the following steps:<br/> 
             <span className="font-semibold text-blue-500">Video Verification</span>, 
-            <span className="font-semibold text-green-500">E-Mandate</span>, and 
+            <span className="font-semibold text-pink-500">E-Mandate</span>, and 
             <span className="font-semibold text-purple-500">Digital loan agreement</span>.
           </p>
         </div>
