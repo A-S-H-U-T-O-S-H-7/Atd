@@ -39,9 +39,9 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         disabled: 'border-blue-200 bg-blue-200 text-blue-400 cursor-not-allowed',
         completed: 'border-green-400 bg-green-500 text-white'
       },
-      orange: {
-        enabled: 'border-orange-400 bg-orange-500 hover:bg-orange-600 text-white',
-        disabled: 'border-orange-200 bg-orange-200 text-orange-400 cursor-not-allowed',
+      pink: {
+        enabled: 'border-pink-400 bg-pink-500 hover:bg-pink-600 text-white',
+        disabled: 'border-pink-200 bg-pink-200 text-pink-400 cursor-not-allowed',
         completed: 'border-green-400 bg-green-500 text-white'
       },
       purple: {
@@ -73,8 +73,8 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
           onClick={onClick}
           className={`border-2 text-xs sm:text-sm md:text-base font-medium md:font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 shadow-md transition-all duration-300 w-full sm:w-auto flex items-center justify-center space-x-1 ${
             enabled && !isLoading
-              ? `${colors[colorScheme].enabled} hover:shadow-lg hover:scale-105` 
-              : colors[colorScheme].disabled
+              ? `${colors[colorScheme]?.enabled || colors.blue.enabled} hover:shadow-lg hover:scale-105` 
+              : colors[colorScheme]?.disabled || colors.blue.disabled
           }`}
           disabled={!enabled || isLoading}
         >
@@ -93,7 +93,7 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
         disabled: 'border-blue-100 bg-blue-50 text-blue-300',
         completed: 'border-green-300 bg-green-100 text-green-600'
       },
-      orange: {
+      pink: {
         enabled: 'border-pink-300 bg-pink-100 text-pink-600',
         disabled: 'border-pink-100 bg-pink-50 text-pink-300',
         completed: 'border-green-300 bg-green-100 text-green-600'
@@ -121,15 +121,17 @@ const VerificationComponent = ({ loanStatus = 2, user }) => {
       );
     }
 
+    const schemeColors = colors[colorScheme] || colors.blue;
+    
     return (
       <div className={`rounded-full font-semibold border-2 flex flex-col justify-center items-center text-center w-20 h-20 md:w-24 md:h-24 shadow-md transition-all duration-300 ${
-        enabled ? colors[colorScheme].enabled : colors[colorScheme].disabled
+        enabled ? schemeColors.enabled : schemeColors.disabled
       }`}>
         <Icon className={`text-base md:text-2xl transition-all duration-300`} />
         <p className={`text-xs md:text-sm font-semibold md:font-bold transition-all duration-300 ${
           enabled 
-            ? (colorScheme === 'blue' ? 'text-blue-800' : colorScheme === 'orange' ? 'text-orange-800' : colorScheme === 'purple' ? 'text-purple-800' : 'text-green-800') 
-            : (colorScheme === 'blue' ? 'text-blue-400' : colorScheme === 'orange' ? 'text-orange-400' : colorScheme === 'purple' ? 'text-purple-400' : 'text-green-400')
+            ? (colorScheme === 'blue' ? 'text-blue-800' : colorScheme === 'pink' ? 'text-pink-800' : colorScheme === 'purple' ? 'text-purple-800' : 'text-green-800') 
+            : (colorScheme === 'blue' ? 'text-blue-400' : colorScheme === 'pink' ? 'text-pink-400' : colorScheme === 'purple' ? 'text-purple-400' : 'text-green-400')
         }`}>
           {title}
         </p>

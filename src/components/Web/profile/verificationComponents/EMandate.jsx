@@ -71,12 +71,12 @@ const EMandate = ({ enabled, completed, VerificationIcon, VerificationButton, us
           icon={FaVideo}
           title="E-Mandate"
           enabled={enabled && !!applicationId}
-          colorScheme="orange"  // Changed from green to orange
+          colorScheme="pink"  
         />
         <VerificationButton
           enabled={enabled && !!applicationId}
           tooltipText={!applicationId ? "Application ID not available" : "Complete E-Mandate process"}
-          colorScheme="orange"  // Changed from green to orange
+          colorScheme="pink"  
           onClick={handleEMandateClick}
           isLoading={isLoading}
         >

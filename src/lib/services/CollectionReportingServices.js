@@ -49,7 +49,7 @@ export const formatCollectionDataForUI = (collection) => {
     name: collection.fullname || 'N/A',
     adminFee: parseFloat(collection.admin_fee) || 0,
     gst: parseFloat(collection.gst) || 0,
-    sanctionAmount: parseFloat(collection.sanction_amount) || 0,
+    sanctionAmount: parseFloat(collection.approved_amount) || 0,
     disburseDate: formatDate(collection.disburse_date),
     transactionDate: formatDate(collection.transaction_date),
     dueDate: formatDate(collection.due_date),

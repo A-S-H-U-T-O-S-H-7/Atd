@@ -79,7 +79,9 @@ const LoanApplicationModal = ({ isOpen, onClose, onSuccess, userId }) => {
         onSuccess();
         resetForm();
         onClose();
-      }, 2000);
+        window.location.reload();
+  }, 2000);
+      
     } else {
       if (result.message && result.message.includes('not authenticated')) {
         setErrors({ submit: 'Session expired. Please log in again.' });

@@ -163,7 +163,7 @@ const CollectionPage = () => {
         item.gst,
         item.sanctionAmount,
         item.disburseDate,
-        item.transactionDate,
+        item.transactionDate, 
         item.dueDate,
         item.interest,
         item.penalty,

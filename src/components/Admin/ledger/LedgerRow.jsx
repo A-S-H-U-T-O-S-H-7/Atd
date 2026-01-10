@@ -102,7 +102,7 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
   
   // Settle button conditions
   const isAlreadySettled = item.settled === 1;
-  const isSettleEnabled = item.passed_days > 3 && !isAlreadySettled;
+  const isSettleEnabled = item.passed_days > 3 && !isAlreadySettled && balance > 0;
   
   // Permission checks
   const hasAdjustmentPermission = hasPermission('adjustment');
