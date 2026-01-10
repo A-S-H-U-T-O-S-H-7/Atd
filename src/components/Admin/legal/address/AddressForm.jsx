@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { FileText } from "lucide-react";
 
 const AddressForm = ({ 
   newAddress, 
@@ -14,6 +13,13 @@ const AddressForm = ({
   setEditingAddress, 
   resetForm 
 }) => {
+  const handleStatusChange = (status) => {
+    setNewAddress({
+      ...newAddress,
+      status: status
+    });
+  };
+
   return (
     <div className={`mb-4 p-3.5 rounded-lg border ${
       isDark
@@ -62,10 +68,7 @@ const AddressForm = ({
             </label>
             <select
               value={newAddress.status}
-              onChange={(e) => !isLoading && setNewAddress({
-                ...newAddress,
-                status: e.target.value
-              })}
+              onChange={(e) => handleStatusChange(e.target.value)}
               disabled={isLoading}
               className={`w-full px-3 py-2 text-xs rounded border ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
@@ -109,7 +112,7 @@ const AddressForm = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className={`block text-xs font-medium mb-1 ${
               isDark ? "text-gray-300" : "text-gray-600"
@@ -134,53 +137,101 @@ const AddressForm = ({
             />
           </div>
 
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${
-              isDark ? "text-gray-300" : "text-gray-600"
-            }`}>
-              Delivered Date
-            </label>
-            <input
-              type="date"
-              value={newAddress.delivered_date}
-              onChange={(e) => !isLoading && setNewAddress({
-                ...newAddress,
-                delivered_date: e.target.value
-              })}
-              disabled={isLoading}
-              className={`w-full px-3 py-2 text-xs rounded border ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              } ${
-                isDark
-                  ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-                  : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-              }`}
-            />
-          </div>
+          {/* Conditionally show Delivered Date when status is "Delivered" */}
+          {newAddress.status === "Delivered" && (
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${
+                isDark ? "text-green-300" : "text-green-600"
+              }`}>
+                Delivered Date *
+              </label>
+              <input
+                type="date"
+                value={newAddress.delivered_date}
+                onChange={(e) => !isLoading && setNewAddress({
+                  ...newAddress,
+                  delivered_date: e.target.value
+                })}
+                disabled={isLoading}
+                className={`w-full px-3 py-2 text-xs rounded border ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
+                  isDark
+                    ? "bg-gray-800 border-green-700 text-gray-100 focus:border-green-500 focus:ring-1 focus:ring-green-500/30"
+                    : "bg-white border-green-300 text-gray-900 focus:border-green-500 focus:ring-1 focus:ring-green-500/30"
+                }`}
+              />
+            </div>
+          )}
 
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${
-              isDark ? "text-gray-300" : "text-gray-600"
-            }`}>
-              Return Date
-            </label>
-            <input
-              type="date"
-              value={newAddress.return_date}
-              onChange={(e) => !isLoading && setNewAddress({
-                ...newAddress,
-                return_date: e.target.value
-              })}
-              disabled={isLoading}
-              className={`w-full px-3 py-2 text-xs rounded border ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              } ${
-                isDark
-                  ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-                  : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
-              }`}
-            />
-          </div>
+          {/* Conditionally show Return Date when status is "Returned" */}
+          {newAddress.status === "Returned" && (
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${
+                isDark ? "text-amber-300" : "text-amber-600"
+              }`}>
+                Return Date *
+              </label>
+              <input
+                type="date"
+                value={newAddress.return_date}
+                onChange={(e) => !isLoading && setNewAddress({
+                  ...newAddress,
+                  return_date: e.target.value
+                })}
+                disabled={isLoading}
+                className={`w-full px-3 py-2 text-xs rounded border ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                } ${
+                  isDark
+                    ? "bg-gray-800 border-amber-700 text-gray-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+                    : "bg-white border-amber-300 text-gray-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+                }`}
+              />
+            </div>
+          )}
+
+          {/* Show Delivered Date when editing and delivered_date exists (even if status changed) */}
+          {editingAddress && editingAddress.delivered_date && newAddress.status !== "Delivered" && newAddress.status !== "Returned" && (
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}>
+                Delivered Date (Previous)
+              </label>
+              <input
+                type="text"
+                value={editingAddress.delivered_date?.split('T')[0] || ''}
+                disabled
+                className={`w-full px-3 py-2 text-xs rounded border ${
+                  isDark
+                    ? "bg-gray-800/50 border-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              />
+            </div>
+          )}
+
+          {/* Show Return Date when editing and return_date exists (even if status changed) */}
+          {editingAddress && editingAddress.return_date && newAddress.status !== "Returned" && newAddress.status !== "Delivered" && (
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}>
+                Return Date (Previous)
+              </label>
+              <input
+                type="text"
+                value={editingAddress.return_date?.split('T')[0] || ''}
+                disabled
+                className={`w-full px-3 py-2 text-xs rounded border ${
+                  isDark
+                    ? "bg-gray-800/50 border-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -234,6 +285,10 @@ const AddressForm = ({
             />
           </div>
         </div>
+
+        
+
+        
       </div>
 
       <div className="flex justify-end space-x-2 mt-3">
@@ -256,9 +311,17 @@ const AddressForm = ({
         </button>
         <button
           onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
-          disabled={isLoading || !newAddress.address.trim()}
+          disabled={
+            isLoading || 
+            !newAddress.address.trim() ||
+            (newAddress.status === "Delivered" && !newAddress.delivered_date) ||
+            (newAddress.status === "Returned" && !newAddress.return_date)
+          }
           className={`px-3 py-1.5 text-xs rounded text-white transition-all ${
-            isLoading || !newAddress.address.trim()
+            isLoading || 
+            !newAddress.address.trim() ||
+            (newAddress.status === "Delivered" && !newAddress.delivered_date) ||
+            (newAddress.status === "Returned" && !newAddress.return_date)
               ? "opacity-50 cursor-not-allowed"
               : ""
           } ${
