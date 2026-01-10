@@ -25,9 +25,7 @@ import {
 
 const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShowCriminalStatus, onArbitrationCriminal,onArbitrationNotice, onShowAddress, onEdit }) => {
   
-  // Common CSS classes for better optimization
   const commonClasses = {
-    // Field/Label styles
     fieldLabel: isDark 
       ? "text-xs text-gray-400" 
       : "text-xs text-gray-500",
@@ -729,14 +727,14 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Actions */}
-      <td className="px-2 py-4" style={{ minWidth: "350px" }}>
+      <td className="px-2 py-4" style={{ minWidth: "450px" }}>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => onEdit(legal)} 
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300 border border-blue-700"
-                : "bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200"
+                : "bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-600"
             }`}
           >
             Edit
@@ -745,11 +743,22 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
               isDark
                 ? "bg-red-900/50 hover:bg-red-800 text-red-300 border border-red-700"
-                : "bg-red-100 hover:bg-red-200 text-red-700 border border-red-200"
+                : "bg-red-100 hover:bg-red-200 text-red-700 border border-red-600"
             }`}
           >
             Send Notice
           </button>
+
+          <button
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              isDark
+                ? "bg-cyan-900/50 hover:bg-cyan-800 text-cyan-300 border border-cyan-700"
+                : "bg-cyan-100 hover:bg-cyan-200 text-cyan-700 border border-cyan-600"
+            }`}
+          >
+            Send Arbitration Notice
+          </button>
+
           <button
             onClick={() => onCreateNotice(legal)}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -790,6 +799,8 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
     >
       Create Arbitration Criminal
     </button>
+
+    
         </div>
       </td>
     </tr>

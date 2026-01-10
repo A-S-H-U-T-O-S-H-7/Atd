@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { EmandateService,formatLoanDetails, formatDepositDataForAPI } from "@/lib/services/E-mandateService";
+import { EmandateService, formatLoanDetails, formatDepositDataForAPI } from "@/lib/services/E-mandateService";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
@@ -131,7 +131,6 @@ const ManageEmandatePage = () => {
     initialValues: {
       loanNo: "",
       name: "",
-      applicationId: "",
       fatherName: "",
       relation: "",
       chequePresented: "Repayment Cheque",
@@ -255,6 +254,7 @@ const ManageEmandatePage = () => {
         try {
           const response = await EmandateService.getLoanDetails(formik.values.loanNo);
           
+          // MATCHING CHEQUE COMPONENT LOGIC
           if (response.status && response.data) {
             const loanDetails = formatLoanDetails(response.data);
             
@@ -268,10 +268,76 @@ const ManageEmandatePage = () => {
             
             setLoanData(response.data);
             setLoanFetched(true);
+            toast.success("Loan details loaded successfully!");
+          } else if (!response.status && response.message) {
+            // Show error toast with the message from backend
+            toast.error(response.message);
+            
+            // Clear the loan fields if loan is not valid
+            formik.setValues(prev => ({
+              ...prev,
+              name: "",
+              fatherName: "",
+              applicationId: "",
+              principalAmount: "",
+              interest: "",
+              penalInterest: "",
+              penalty: "",
+              // Also clear bank details
+              companyBankName: "",
+              companyBankBranch: "",
+              companyBankAC: "",
+              companyBankIFSC: "",
+              customerBankName: "",
+              customerBankBranch: "",
+              customerBankAC: "",
+              customerBankIFSC: "",
+            }));
+            
+            setLoanData(null);
+            setLoanFetched(false);
           }
         } catch (error) {
           console.error("Error fetching loan details:", error);
           setLoanFetched(false);
+          
+          // Handle different error formats - MATCHING CHEQUE PAGE
+          if (error.response?.data) {
+            const errorData = error.response.data;
+            if (errorData.message) {
+              toast.error(errorData.message);
+            } else if (errorData.status === false && errorData.message) {
+              toast.error(errorData.message);
+            } else {
+              toast.error("Failed to fetch loan details");
+            }
+          } else if (error.message) {
+            toast.error(error.message);
+          } else {
+            toast.error("Failed to fetch loan details");
+          }
+          
+          // Clear the loan fields on error
+          formik.setValues(prev => ({
+            ...prev,
+            name: "",
+            fatherName: "",
+            applicationId: "",
+            principalAmount: "",
+            interest: "",
+            penalInterest: "",
+            penalty: "",
+            // Also clear bank details
+            companyBankName: "",
+            companyBankBranch: "",
+            companyBankAC: "",
+            companyBankIFSC: "",
+            customerBankName: "",
+            customerBankBranch: "",
+            customerBankAC: "",
+            customerBankIFSC: "",
+          }));
+          setLoanData(null);
         } finally {
           setIsFetchingLoan(false);
         }
@@ -283,7 +349,32 @@ const ManageEmandatePage = () => {
   }, [formik.values.loanNo, loanFetched, isEdit]);
 
   useEffect(() => {
-    setLoanFetched(false);
+    // Reset loanFetched when loan number changes (matches cheque component logic)
+    if (formik.values.loanNo && formik.values.loanNo.length >= 9) {
+      setLoanFetched(false);
+    } else {
+      // Clear fields when loan number is empty or too short
+      formik.setValues(prev => ({
+        ...prev,
+        name: "",
+        fatherName: "",
+        applicationId: "",
+        principalAmount: "",
+        interest: "",
+        penalInterest: "",
+        penalty: "",
+        companyBankName: "",
+        companyBankBranch: "",
+        companyBankAC: "",
+        companyBankIFSC: "",
+        customerBankName: "",
+        customerBankBranch: "",
+        customerBankAC: "",
+        customerBankIFSC: "",
+      }));
+      setLoanData(null);
+      setLoanFetched(false);
+    }
   }, [formik.values.loanNo]);
 
   const handleBankChange = async (e) => {
@@ -436,8 +527,8 @@ const ManageEmandatePage = () => {
   };
 
   const handleCancel = () => {
-  router.back();
-};
+    router.back();
+  };
 
   const renderField = (name, label, type = "text", placeholder = "", colSpan = 1, disabled = false) => {
     const isNumberField = type === "number";
@@ -823,71 +914,70 @@ const ManageEmandatePage = () => {
                   </div>
 
                   <div>
-                    
                     <div className="space-y-4">
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-    {/* Bank/NPCP/Modline */}
-    {renderField("chequeReturnMemoDate", "Bank/NPCP/Modline", "date", "", 1, isStatusReceived)}
-    
-    {/* Reason of Bounce */}
-    <div>
-      <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-        Reason of Bounce
-      </label>
-      <select
-        name="reasonOfBounce"
-        value={formik.values.reasonOfBounce}
-        onChange={(e) => {
-          formik.handleChange(e);
-          setShowOtherReason(e.target.value === "Other");
-        }}
-        onBlur={formik.handleBlur}
-        disabled={isStatusReceived}
-        className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
-          formik.touched.reasonOfBounce && formik.errors.reasonOfBounce ? "border-red-500" : ""
-        }`}
-      >
-        <option value="">----SELECT REASON----</option>
-        {bounceReasonOptions.map(option => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-      {formik.touched.reasonOfBounce && formik.errors.reasonOfBounce && (
-        <div className="text-red-500 text-xs mt-1">{formik.errors.reasonOfBounce}</div>
-      )}
-    </div>
-    
-    {/* Other Reason (conditional) */}
-    <div>
-      {showOtherReason && (
-        <>
-          <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-            Specify Other Reason
-          </label>
-          <textarea
-            name="otherReason"
-            value={formik.values.otherReason}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            rows={2}
-            disabled={isStatusReceived}
-            className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
-              isDark
-                ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
-                : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
-            } disabled:opacity-50 disabled:cursor-not-allowed ${
-              formik.touched.otherReason && formik.errors.otherReason ? "border-red-500" : ""
-            }`}
-            placeholder="Please specify the bounce reason..."
-          />
-          {formik.touched.otherReason && formik.errors.otherReason && (
-            <div className="text-red-500 text-xs mt-1">{formik.errors.otherReason}</div>
-          )}
-        </>
-      )}
-    </div>
-  </div>
-</div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Bank/NPCP/Modline */}
+                        {renderField("chequeReturnMemoDate", "Bank/NPCP/Modline", "date", "", 1, isStatusReceived)}
+                        
+                        {/* Reason of Bounce */}
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+                            Reason of Bounce
+                          </label>
+                          <select
+                            name="reasonOfBounce"
+                            value={formik.values.reasonOfBounce}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+                              setShowOtherReason(e.target.value === "Other");
+                            }}
+                            onBlur={formik.handleBlur}
+                            disabled={isStatusReceived}
+                            className={`${inputClasses} disabled:opacity-50 disabled:cursor-not-allowed ${
+                              formik.touched.reasonOfBounce && formik.errors.reasonOfBounce ? "border-red-500" : ""
+                            }`}
+                          >
+                            <option value="">----SELECT REASON----</option>
+                            {bounceReasonOptions.map(option => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                          {formik.touched.reasonOfBounce && formik.errors.reasonOfBounce && (
+                            <div className="text-red-500 text-xs mt-1">{formik.errors.reasonOfBounce}</div>
+                          )}
+                        </div>
+                        
+                        {/* Other Reason (conditional) */}
+                        <div>
+                          {showOtherReason && (
+                            <>
+                              <label className={`block text-sm font-medium mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+                                Specify Other Reason
+                              </label>
+                              <textarea
+                                name="otherReason"
+                                value={formik.values.otherReason}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                rows={2}
+                                disabled={isStatusReceived}
+                                className={`w-full px-4 py-2 rounded-xl border-2 transition-all duration-200 resize-none focus:ring-4 focus:ring-emerald-500/20 focus:outline-none ${
+                                  isDark
+                                    ? "bg-gray-700 border-emerald-600/50 text-white hover:border-emerald-500 focus:border-emerald-400"
+                                    : "bg-white border-emerald-300 text-gray-900 hover:border-emerald-400 focus:border-emerald-500"
+                                } disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  formik.touched.otherReason && formik.errors.otherReason ? "border-red-500" : ""
+                                }`}
+                                placeholder="Please specify the bounce reason..."
+                              />
+                              {formik.touched.otherReason && formik.errors.otherReason && (
+                                <div className="text-red-500 text-xs mt-1">{formik.errors.otherReason}</div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}

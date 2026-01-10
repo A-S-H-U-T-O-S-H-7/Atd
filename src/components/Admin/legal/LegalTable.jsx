@@ -129,7 +129,7 @@ const LegalTable = ({
                 {/* Actions */}
                 <th className={`px-2 py-5 text-left text-sm font-bold ${
                   isDark ? "text-gray-100" : "text-gray-700"
-                }`} style={{ minWidth: "300px" }}>
+                }`} style={{ minWidth: "450px" }}>
                   Actions
                 </th>
               </tr>
