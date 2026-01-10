@@ -176,7 +176,7 @@ const FileUploadSection = ({ userId, onDocumentsUpdate, onDocumentIdsUpdate, dis
       salarySlip1: 'first_salaryslip',
       salarySlip2: 'second_salaryslip',
       salarySlip3: 'third_salaryslip',
-      bankStatement: 'reports'
+      bankStatement: 'bank-statement'
     };
     
     const storagePath = `${firebasePathMapping[fieldName]}/${randomFileName}`;

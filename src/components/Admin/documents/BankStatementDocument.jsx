@@ -13,7 +13,7 @@ const BankStatementDocument = ({ fileName, hasDoc, onFileView }) => {
       setIsLoading(true);
       
       // Define folder mapping
-      const folderMappings = {
+      const folderMappings = { 
         'bank_statement': 'bank-statement',
         'aadhar_proof': 'idproof', 
         'address_proof': 'address',
