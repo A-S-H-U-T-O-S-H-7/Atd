@@ -183,6 +183,14 @@ const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDow
     </span>
   </button>
 </td>
+<td className={cellStyle}>
+        <div className="flex items-center justify-center space-x-2">
+          <Calendar className={iconAccent} />
+          <span className={`text-sm font-medium ${textSecondary}`}>
+            {item.transactionDate || 'N/A'}
+          </span>
+        </div>
+      </td>
 
       <td className={cellStyle}>
         <div className="flex items-center justify-center space-x-2">

@@ -31,7 +31,7 @@ const LedgerTable = ({
           : "bg-white border-emerald-300 shadow-emerald-500/10"
       }`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-max" style={{ minWidth: "1400px" }}>
+          <table className="w-full min-w-max" style={{ minWidth: "800px" }}>
             <thead className={`border-b-2 ${
               isDark
                 ? "bg-gradient-to-r from-gray-900 to-gray-800 border-emerald-600/50"
@@ -47,7 +47,10 @@ const LedgerTable = ({
                 <th className={headerStyle} style={{ minWidth: "130px" }}>
                   Loan No.
                 </th>
-                <th className={headerStyle} style={{ minWidth: "190px" }}>
+                <th className={headerStyle} style={{ minWidth: "140px" }}>
+                  Transaction Date
+                </th>
+                <th className={headerStyle} style={{ minWidth: "140px" }}>
                   Due Date
                 </th>
                 <th className={headerStyle} style={{ minWidth: "210px" }}>
