@@ -425,7 +425,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
           <div className="flex items-center space-x-2">
             <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
             <span className={`text-sm font-medium ${commonClasses.specialValue('important')}`}>
-              Cheque: {legal.chequeNo}
+              Cheque / E-Mandate: {legal.chequeNo}
             </span>
           </div>
           <div className="flex items-center space-x-2">

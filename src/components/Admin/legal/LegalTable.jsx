@@ -88,7 +88,7 @@ const LegalTable = ({
                 <th className={`px-2 py-5 text-left text-sm font-bold border-r ${
                   isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                 }`} style={{ minWidth: "220px" }}>
-                  Cheque Details
+                  Cheque / E-mandate Details
                 </th>
 
                 {/* Financial Details */}
