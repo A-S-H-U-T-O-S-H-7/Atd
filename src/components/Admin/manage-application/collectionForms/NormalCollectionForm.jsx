@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 
 const NormalCollectionForm = ({ 
   isOpen,
-  onClose,
+  onClose, 
   application,
   onCollectionSubmit,
   isDark
