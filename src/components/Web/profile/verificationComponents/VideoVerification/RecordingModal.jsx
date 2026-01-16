@@ -13,12 +13,39 @@ const RecordingModal = ({
   const controlsRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(err => {
-        console.error('Video play failed:', err);
-      });
-    }
+    let isMounted = true;
+    let playPromise;
+
+    const setupVideo = async () => {
+      if (!videoRef.current || !stream || !isMounted) return;
+
+      try {
+        videoRef.current.srcObject = stream;
+        
+        // Use promise to handle play request properly
+        playPromise = videoRef.current.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              if (isMounted) {
+                console.log('Video playback started successfully');
+              }
+            })
+            .catch(error => {
+              if (isMounted) {
+                if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
+                  console.error('Video play failed:', error);
+                }
+              }
+            });
+        }
+      } catch (err) {
+        console.error('Video setup error:', err);
+      }
+    };
+
+    setupVideo();
 
     // Handle mobile safe areas
     const updateSafeArea = () => {
@@ -30,7 +57,25 @@ const RecordingModal = ({
     updateSafeArea();
     window.addEventListener('resize', updateSafeArea);
 
+    // Cleanup function
     return () => {
+      isMounted = false;
+      
+      // Abort any pending play request
+      if (playPromise) {
+        playPromise.catch(() => {}); 
+      }
+      
+      // Clean up video element
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+          videoRef.current.srcObject = null;
+          videoRef.current.load();
+        } catch (error) {
+        }
+      }
+      
       window.removeEventListener('resize', updateSafeArea);
     };
   }, [stream]);
@@ -71,7 +116,7 @@ const RecordingModal = ({
 
       {/* Controls */}
       <div ref={controlsRef} className="recording-controls p-3 md:p-4 bg-black/50 backdrop-blur-sm shrink-0">
-        <div className="flex  justify-between gap-3 max-w-md mx-auto">
+        <div className="flex justify-between gap-3 max-w-md mx-auto">
           <button
             onClick={onStopRecording}
             className="stop-button w-full py-2 md:py-3 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3"

@@ -7,7 +7,7 @@ import axios from 'axios';
 import RecordingModal from './RecordingModal';
 import ConfirmationModal from './ConfirmationModal';
 import OptionsModal from './OptionsModal';
-import { showToast, cleanupStream, generateFilename } from '@/utils/videoUtils';
+import { showToast, cleanupStream, generateFilename, getSupportedMimeType } from '@/utils/videoUtils';
 
 const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationButton, user }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,14 +24,174 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
   const chunksRef = useRef([]);
   const timerIntervalRef = useRef(null);
   const startTimeRef = useRef(null);
-  const recordingMimeTypeRef = useRef('');
 
-  // Add CSS animations (same as your original useEffect)
+  // Add CSS animations
   useEffect(() => {
     const style = document.createElement('style');
     style.id = 'video-verification-styles';
     style.textContent = `
-      /* Your existing CSS styles here */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      .animate-scaleIn {
+        animation: scaleIn 0.3s ease-out;
+      }
+      
+      @media (max-width: 640px) {
+        .custom-toast {
+          left: 4px;
+          right: 4px;
+          top: 4px;
+          width: calc(100% - 8px);
+          max-width: none;
+        }
+        
+        .video-modal video {
+          height: 75vh !important;
+          width: 100vw !important;
+          max-height: 75vh !important;
+          max-width: 100vw !important;
+          object-fit: cover !important;
+        }
+        
+        .video-container {
+          height: 75vh !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        .recording-controls {
+          padding: 12px !important;
+          padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+          min-height: auto !important;
+        }
+        
+        .recording-controls button {
+          min-height: 44px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        
+        .stop-button {
+          padding: 14px !important;
+          font-size: 16px !important;
+          height: auto !important;
+          line-height: 1.2 !important;
+        }
+        
+        .cancel-button {
+          font-size: 14px !important;
+          padding: 10px !important;
+          height: auto !important;
+        }
+        
+        .options-modal {
+          max-height: 85vh !important;
+          overflow-y: auto !important;
+        }
+        
+        .options-content {
+          padding: 16px !important;
+        }
+      }
+      
+      @media (max-width: 640px) and (orientation: landscape) {
+        .video-modal video {
+          height: 85vh !important;
+          width: 100vw !important;
+        }
+        
+        .video-container {
+          height: 85vh !important;
+        }
+        
+        .recording-header {
+          padding: 8px !important;
+        }
+        
+        .recording-controls {
+          padding: 8px !important;
+          padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        }
+      }
+      
+      @media (min-width: 641px) and (max-width: 1024px) {
+        .video-modal video {
+          height: 70vh !important;
+          width: 90vw !important;
+          max-height: 70vh !important;
+          max-width: 90vw !important;
+        }
+        
+        .video-container {
+          height: 70vh !important;
+          max-width: 90vw !important;
+          margin: 0 auto !important;
+        }
+      }
+      
+      @media (min-width: 1025px) {
+        .video-modal video {
+          height: 65vh !important;
+          width: 70vw !important;
+          max-height: 65vh !important;
+          max-width: 70vw !important;
+        }
+        
+        .video-container {
+          height: 65vh !important;
+          max-width: 70vw !important;
+          margin: 0 auto !important;
+        }
+      }
+      
+      @media (min-width: 1440px) {
+        .video-modal video {
+          height: 60vh !important;
+          width: 60vw !important;
+        }
+        
+        .video-container {
+          height: 60vh !important;
+          max-width: 60vw !important;
+        }
+      }
+      
+      .video-modal {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        background: #000;
+      }
+      
+      .video-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #000;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      @supports (padding: max(0px)) {
+        .recording-controls {
+          padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+        }
+      }
     `;
     
     if (typeof document !== 'undefined' && !document.getElementById('video-verification-styles')) {
@@ -42,6 +202,13 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       if (style.parentNode) {
         document.head.removeChild(style);
       }
+    };
+  }, []);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      cleanupRecording();
     };
   }, []);
 
@@ -89,7 +256,6 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       
-      // Start recording process
       startRecordingProcess(stream);
       
     } catch (error) {
@@ -112,32 +278,26 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     chunksRef.current = [];
     startTimeRef.current = Date.now();
 
-    // Try supported mime types
-    const mimeTypes = [
-      'video/webm;codecs=vp9,opus',
-      'video/webm;codecs=vp8,opus',
-      'video/webm',
-      'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
-    ];
+    // Get best MIME type for current device
+    const mimeType = getSupportedMimeType();
 
     let mediaRecorder;
-    for (const mimeType of mimeTypes) {
-      if (MediaRecorder.isTypeSupported(mimeType)) {
-        try {
-          mediaRecorder = new MediaRecorder(stream, { 
-            mimeType,
-            audioBitsPerSecond: 128000,
-            videoBitsPerSecond: 2500000
-          });
-          recordingMimeTypeRef.current = mimeType;
-          break;
-        } catch (e) {
-          continue;
-        }
+    
+    try {
+      if (mimeType) {
+        mediaRecorder = new MediaRecorder(stream, { 
+          mimeType,
+          audioBitsPerSecond: 128000,
+          videoBitsPerSecond: 2500000
+        });
+      } else {
+        mediaRecorder = new MediaRecorder(stream, {
+          audioBitsPerSecond: 128000,
+          videoBitsPerSecond: 2500000
+        });
       }
-    }
-
-    if (!mediaRecorder) {
+    } catch (error) {
+      console.log('Error with MIME type, using default:', error);
       mediaRecorder = new MediaRecorder(stream);
     }
 
@@ -160,10 +320,17 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       }
 
       const blob = new Blob(chunksRef.current, { 
-        type: mediaRecorder.mimeType || 'video/webm' 
+        type: mediaRecorder.mimeType || 'video/mp4'
       });
       
-      const filename = generateFilename(null, user, true, recordingMimeTypeRef.current);
+      const filename = generateFilename(null, user, true, mediaRecorder.mimeType);
+      
+      console.log('Recorded video:', {
+        filename,
+        mimeType: mediaRecorder.mimeType,
+        size: blob.size,
+        duration: `${duration}s`
+      });
       
       setRecordedVideo(blob);
       setRecordedFilename(filename);
@@ -180,25 +347,21 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       cleanupRecording();
     };
 
-    // Start recording
     mediaRecorder.start(1000);
     showToast('Recording started', 'success');
 
-    // Start timer
     timerIntervalRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const minutes = Math.floor(elapsed / 60);
       const seconds = elapsed % 60;
       setTimer(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
 
-      // Auto-stop at 90 seconds
       if (elapsed >= 90) {
         mediaRecorder.stop();
-        showToast('Recording stopped automatically', 'info');
+        showToast('Recording stopped automatically (90 sec limit)', 'info');
       }
     }, 1000);
     
-    // Prevent body scroll
     document.body.style.overflow = 'hidden';
   };
 
@@ -219,9 +382,16 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
   };
 
   const cleanupRecording = () => {
+    clearInterval(timerIntervalRef.current);
     cleanupStream(streamRef);
     setIsRecording(false);
     document.body.style.overflow = '';
+    
+    // Clean up media recorder
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    mediaRecorderRef.current = null;
   };
 
   const handleGalleryClick = () => {
@@ -237,17 +407,8 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file
-    const validTypes = [
-      'video/mp4', 
-      'video/webm', 
-      'video/ogg', 
-      'video/quicktime',
-      'video/x-matroska',
-      'video/avi'
-    ];
-    
-    const maxSize = 100 * 1024 * 1024; // 100MB
+    const validTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska', 'video/avi'];
+    const maxSize = 100 * 1024 * 1024;
 
     if (!validTypes.includes(file.type)) {
       showToast('Please select MP4, WebM, MOV, AVI, or OGG video file', 'error');
@@ -294,7 +455,6 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
     setShowConfirmation(false);
     showToast('Video discarded', 'info');
     
-    // Re-open camera
     setTimeout(() => {
       handleCameraClick();
     }, 500);
@@ -355,19 +515,16 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
 
   const processAndUploadVideo = async (file, filename) => {
     try {
-      // Upload to Firebase
       const uploadResult = await uploadToFirebase(file, filename);
       
       if (!uploadResult.success) {
         throw new Error(uploadResult.error);
       }
       
-      // Update database
       await updateVideoInAPI(filename);
       
       showToast('✅ Video verification completed successfully!', 'success');
       
-      // Refresh after delay
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -404,7 +561,6 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         </VerificationButton>
       </div>
 
-      {/* Options Modal */}
       {showOptions && (
         <OptionsModal
           onCameraClick={handleCameraClick}
@@ -413,18 +569,16 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
         />
       )}
 
-      {/* Recording Modal */}
       {isRecording && streamRef.current && (
         <RecordingModal
           stream={streamRef.current}
           onStopRecording={handleStopRecording}
           onCancelRecording={handleCancelRecording}
           timer={timer}
-          userName={user?.fname || 'your name'}
+          userName={`${user?.fname || ''} ${user?.lname || ''}`.trim() || 'your name'}
         />
       )}
 
-      {/* Confirmation Modal */}
       {showConfirmation && (
         <ConfirmationModal
           filename={recordedFilename}
