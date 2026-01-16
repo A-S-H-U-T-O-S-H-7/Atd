@@ -3,7 +3,7 @@ import { AlertCircle, Mic } from 'lucide-react';
 
 const ContentCard = ({ userName = "your name" }) => {
   return (
-    <div className="content-card bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 md:p-5 mb-3 md:mb-4 mx-3 md:mx-4 mt-2">
+    <div className="content-card bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-1 md:p-5 mb-1 md:mb-4 mx-3 md:mx-4 mt-2">
       <div className="flex items-start gap-3">
         
         <div className="flex-1">
@@ -14,7 +14,7 @@ const ContentCard = ({ userName = "your name" }) => {
             <p className="text-gray-700">
               <span className="font-medium text-red-600">Note:</span> Please show your original PAN Card and Aadhaar Card at the time of video recording (front & back both) and read the below mentioned content:
             </p>
-            <div className="bg-white p-3 md:p-4 rounded-lg border border-blue-100">
+            <div className="bg-white p-1 md:p-2 rounded-lg border border-blue-100">
               <div className="flex items-start gap-2">
                 <Mic className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
                 <p className="text-gray-800 text-sm font-medium italic">
