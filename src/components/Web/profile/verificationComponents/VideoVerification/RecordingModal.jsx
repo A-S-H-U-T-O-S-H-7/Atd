@@ -71,10 +71,10 @@ const RecordingModal = ({
 
       {/* Controls */}
       <div ref={controlsRef} className="recording-controls p-3 md:p-4 bg-black/50 backdrop-blur-sm shrink-0">
-        <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
+        <div className="flex  justify-between gap-3 max-w-md mx-auto">
           <button
             onClick={onStopRecording}
-            className="stop-button w-full py-3 md:py-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3"
+            className="stop-button w-full py-2 md:py-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3"
           >
             <Square className="w-5 h-5" fill="currentColor" />
             <span>Stop Recording</span>

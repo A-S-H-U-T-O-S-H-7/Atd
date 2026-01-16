@@ -7,7 +7,7 @@ const ContentCard = ({ userName = "your name" }) => {
       <div className="flex items-start gap-3">
         
         <div className="flex-1">
-          <h3 className="text-base md:text-lg font-semibold text-gray-800 pt-2 mb-2">
+          <h3 className="text-base md:text-lg font-semibold text-gray-800 pt-4 mb-2">
             Important Instructions
           </h3>
           <div className="space-y-2 text-xs md:text-base">
