@@ -1,6 +1,6 @@
 "use client"
 import { useState } from 'react';
-import { ChevronRight, Shield, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { ChevronRight, Shield, DollarSign, CheckCircle, Clock, IndianRupee } from 'lucide-react';
 
 export default function PersonalFinanceComponent() {
   const [hoveredFeature, setHoveredFeature] = useState(null);
