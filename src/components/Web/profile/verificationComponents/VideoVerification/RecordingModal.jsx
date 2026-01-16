@@ -66,7 +66,6 @@ const RecordingModal = ({
         controlsRef.current.style.paddingBottom = '20px';
       }
 
-      // Ensure controls are above browser UI
       controlsRef.current.style.zIndex = '10000';
       
       // On mobile, add extra margin when URL bar is visible (in portrait)
