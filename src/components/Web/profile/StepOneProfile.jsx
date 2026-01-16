@@ -2,7 +2,7 @@
 
 import { User, Phone, Mail, CreditCard, Building2, IndianRupee, Users, CheckCircle, Zap, Clock, FileText, Copy, Gift, Banknote } from 'lucide-react';
 import Header from './Header';
-import UserFooter from './UserFooter';
+import Footer from '../Footer';
 import CreditScoreSection from './CreditScore';
 import { TokenManager } from '@/utils/tokenManager';
 
@@ -273,7 +273,7 @@ export default function StepOneProfile({ user, router, logout }) {
         </div>
       </div>
     </div>
-    <UserFooter />
+    <Footer />
     </div>
   );
 }

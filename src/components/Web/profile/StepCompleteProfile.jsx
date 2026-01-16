@@ -11,7 +11,7 @@ import BackgroundElements from './BackgroundElements';
 import ReviewSection from './ReviewSection';
 import AppDownloadSection from './AppDownloadSection';
 import ProtectedRoute from './ProtectRoute';
-import UserFooter from './UserFooter';
+import Footer from '../Footer';
 import VerificationComponent from './verificationComponents/VerificationComponent';
 import ProfileLoadingOverlay from './LoadingProfile';
 import LoanStatusTracker from './LoanProgressTracker';
@@ -250,7 +250,7 @@ export default function StepCompleteProfile({
           <AppDownloadSection />
         </div>
 
-        <UserFooter />
+        <Footer/>
 
         {/* Congratulations Modal */}
         <CongratulationsModal

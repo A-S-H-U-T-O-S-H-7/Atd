@@ -4,7 +4,7 @@
 import { User, Phone, Mail, CreditCard, Building2, IndianRupee, Users, CheckCircle, Zap, Clock, FileText, Copy, Gift, TrendingUp, Target, Award, UserCheck, Briefcase, FileCheck, Landmark, Upload, UserPlus, Shield } from 'lucide-react';
 import Header from './Header';
 import ProtectedRoute from './ProtectRoute';
-import UserFooter from './UserFooter';
+import Footer from '../Footer';
 import CreditScoreSection from './CreditScore';
 import { TokenManager } from '@/utils/tokenManager';
 
@@ -408,7 +408,7 @@ export default function StepInProgressProfile({ user, router, userStep, logout }
           </div>
         </div>
 
-        <UserFooter />
+        <Footer />
       </div>
     </ProtectedRoute>
   );

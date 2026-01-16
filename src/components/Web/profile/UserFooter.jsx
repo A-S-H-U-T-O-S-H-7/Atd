@@ -5,13 +5,13 @@ import { IoLogoGooglePlaystore } from "react-icons/io5";
 import { Phone, Mail } from "lucide-react";
 import Link from "next/link";
 
-function UserFooter() {
+function Footer() {
   return (
     <footer className="w-full">
       {/* Main Footer Section */}
-      <div className="bg-blue-950 text-gray-300">
+      <div className="bg-gradient-to-b from-slate-900 to-blue-950 text-gray-300">
         <div className="container mx-auto px-4 py-12 md:py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
             {/* Brand and Description */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
@@ -43,104 +43,87 @@ function UserFooter() {
             </div>
 
             {/* Quick links */}
-                        <div className="space-y-4">
-                          <h4 className="text-lg font-semibold text-white relative pb-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-16 after:bg-teal-500">
-                            Quick Links
-                          </h4>
-                          <ul className="space-y-3">
-                            <li>
-                              <Link
-                                href="/aboutus"
-                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
-                              >
-                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
-                                About Us
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                href="/contactus"
-                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
-                              >
-                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
-                                Contact Us
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                href="/faqs"
-                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
-                              >
-                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
-                                FAQs
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                href="/blogs"
-                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
-                              >
-                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
-                                Blogs
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                href="/reviews"
-                                className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
-                              >
-                                <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
-                                Reviews
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-
-            {/* Quick contact */}
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-white relative pb-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-16 after:bg-teal-500">
-                Quick Contact
+                Quick Links
               </h4>
-              <div className="space-y-3">
-                <a
-                  href="tel:01204348458"
-                  className="flex items-center gap-3 group"
-                >
-                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
-                    <Phone className="h-4 w-4 text-teal-400" />
-                  </div>
-                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
-                    01204348458
-                  </span>
-                </a>
-                <a
-                  href="tel:+919999589229"
-                  className="flex items-center gap-3 group"
-                >
-                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
-                    <Phone className="h-4 w-4 text-teal-400" />
-                  </div>
-                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
-                    +91 9999589229
-                  </span>
-                </a>
-                <a
-                  href="mailto:info@atdmoney.com"
-                  className="flex items-center gap-3 group"
-                >
-                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
-                    <Mail className="h-4 w-4 text-teal-400" />
-                  </div>
-                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
-                    info@atdmoney.com
-                  </span>
-                </a>
-                
-              </div>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/aboutus"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contactus"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/faqs"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    FAQs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/blogs"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    Blogs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/reviews"
+                    className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
+                  >
+                    <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
+                    Reviews
+                  </Link>
+                </li>
+              </ul>
             </div>
 
             {/* Download Apps */}
-            <div className="space-y-4">    
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white relative pb-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-16 after:bg-teal-500">
+                Download App
+              </h4>
+
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/download/app-store"
+                  className="flex items-center bg-slate-800 gap-3 text-white hover:bg-slate-700 border border-slate-700 hover:border-teal-400 transition-all duration-300 w-full px-4 py-2.5 rounded-lg"
+                >
+                  <GrAppleAppStore className="text-xl text-teal-400" />
+                  <div className="flex flex-col">
+                    <span className="text-xs">Download on the</span>
+                    <span className="font-medium">App Store</span>
+                  </div>
+                </Link>
+                <Link
+                  href="https://atdmoney.com/app-release.apk"
+                  className="flex items-center bg-slate-800 gap-3 text-white hover:bg-slate-700 border border-slate-700 hover:border-teal-400 transition-all duration-300 w-full px-4 py-2.5 rounded-lg"
+                >
+                  <IoLogoGooglePlaystore className="text-xl text-teal-400" />
+                  <div className="flex flex-col">
+                    <span className="text-xs">Get it on</span>
+                    <span className="font-medium">Google Play</span>
+                  </div>
+                </Link>
+              </div>
 
               <div className="mt-6">
                 <p className="text-sm font-medium mb-3 text-gray-300">
@@ -194,7 +177,53 @@ function UserFooter() {
               </div>
             </div>
 
-            
+            {/* Quick contact */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-white relative pb-2 after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-16 after:bg-teal-500">
+                Quick Contact
+              </h4>
+              <div className="space-y-3">
+                <a
+                  href="tel:01204348458"
+                  className="flex items-center gap-3 group"
+                >
+                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
+                    <Phone className="h-4 w-4 text-teal-400" />
+                  </div>
+                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
+                    01204348458
+                  </span>
+                </a>
+                <a
+                  href="tel:+919999589229"
+                  className="flex items-center gap-3 group"
+                >
+                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
+                    <Phone className="h-4 w-4 text-teal-400" />
+                  </div>
+                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
+                    +91 9999589229
+                  </span>
+                </a>
+                <a
+                  href="mailto:info@atdmoney.com"
+                  className="flex items-center gap-3 group"
+                >
+                  <div className="bg-slate-800 p-2 rounded-full group-hover:bg-teal-900 transition-colors duration-300">
+                    <Mail className="h-4 w-4 text-teal-400" />
+                  </div>
+                  <span className="text-gray-400 group-hover:text-teal-300 transition-colors duration-300">
+                    info@atdmoney.com
+                  </span>
+                </a>
+                <Link href="/user_signup">
+                <div className="px-4 text-black w-30 font-semibold rounded-md py-2 border bg-teal-500">
+                  Apply Now
+                </div>
+                </Link>
+                
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -203,7 +232,7 @@ function UserFooter() {
       <div className="bg-slate-950 text-gray-400">
         <div className="container mx-auto">
           {/* Policy Links */}
-          <div className="flex items-center justify-center gap-44 py-4 px-4 border-b border-slate-800 text-sm">
+          <div className="flex flex-wrap justify-center md:justify-between gap-4 py-4 px-4 border-b border-slate-800 text-sm">
             <Link
               href="/privacypolicy"
               className="hover:text-teal-300 transition-colors duration-300"
@@ -253,4 +282,4 @@ function UserFooter() {
   );
 }
 
-export default UserFooter;
+export default Footer;
