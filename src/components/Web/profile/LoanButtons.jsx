@@ -8,7 +8,6 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow, user }) => {
   const getLoanStatusLabel = (statusCode) => {
     switch (parseInt(statusCode)) {
       case 2: return 'applied';
-      case 4: return 'applied';
 
       case 3: return 'rejected';
 

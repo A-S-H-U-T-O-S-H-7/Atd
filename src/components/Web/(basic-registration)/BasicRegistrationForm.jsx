@@ -343,7 +343,7 @@ const BasicRegistrationForm = ({ onNext, onError, userData, onBack }) => {
           const isFormReady = isValid && values.agreeToTerms && isEmailVerified && allFieldsFilled && !hasApiErrors;
           
           return (
-            <Form className="p-6 md:p-8 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-emerald-300/20 rounded-3xl">
+            <Form className="py-5 px-3 md:p-8 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl shadow-emerald-300/20 rounded-3xl">
               <div className="text-center mb-6">
                 <img src="/atdlogo.png" alt="Logo" className="mx-auto w-16 h-16 mb-3 shadow-md rounded-xl bg-white p-2" />
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome to ATD Money</h1>

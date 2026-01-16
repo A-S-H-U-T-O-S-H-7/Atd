@@ -16,7 +16,7 @@ export default function PersonalFinanceComponent() {
       id: 2,
       number: "2",
       title: "Our rates are often lower than the banks",
-      icon: <DollarSign className="text-white" size={20} />
+      icon: <IndianRupee  className="text-white" size={20} />
     },
     {
       id: 3,
@@ -40,7 +40,7 @@ export default function PersonalFinanceComponent() {
           <h3 className="text-xl md:text-2xl font-light mb-6 text-yellow-300">
             Personal finance that fits you
           </h3>
-          <h2 className="text-3xl md:text-5xl font-bold mb-8 leading-tight">
+          <h2 className="text-2xl md:text-5xl font-bold mb-4 md:mb-8 leading-tight">
             We've built a secure & personalized experience
           </h2>
           

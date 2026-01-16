@@ -162,7 +162,7 @@ export default function PrivacyPolicy() {
   ];
 
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="  py-10 px-4 md:px-10">
+      <div className=" py-4  md:py-8 px-4 md:px-10">
         <header className="mb-12 text-center">
           <div className="flex justify-end mb-4">
   {/* Back button - top right */}
@@ -179,10 +179,10 @@ export default function PrivacyPolicy() {
               <BiSolidLock className="text-white w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-5xl font-bold text-gray-900 mb-2">
             Privacy Policy
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             ATD Money is devoted to shielding the private and financial
             details submitted by our customers and would make the best effort
             to defend such info and details from unconstitutional use.

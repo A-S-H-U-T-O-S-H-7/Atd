@@ -217,7 +217,7 @@ export default function TermsOfUse() {
 
   return (
     <div className="bg-gradient-to-br from-teal-50 to-teal-100">
-      <div className=" mx-auto px-10 py-10 sm:px-6 lg:px-8">
+      <div className=" mx-auto py-4 md:py-6 px-6 lg:px-8">
         <header className="mb-12 text-center">
            <div className="flex justify-end my-4">
             {/* Back button - top right */}
@@ -265,7 +265,7 @@ export default function TermsOfUse() {
 
         {/* Accordion Sections */}
         {sections.map((section) => (
-          <div key={section.id} className="bg-white rounded-xl shadow-xl overflow-hidden mb-10">
+          <div key={section.id} className="bg-white rounded-xl shadow-xl overflow-hidden mb-4 md:mb-8">
             <div className="accordion-item">
               <button
                 onClick={() => toggleSection(section.id)}

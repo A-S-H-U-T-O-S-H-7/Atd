@@ -13,8 +13,8 @@ export default function CancellationRefundPolicy() {
   };
 
   return <div className=" bg-gradient-to-br from-teal-50 to-emerald-50">
-      <div className="max-w-8xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
-        <header className="mb-12 text-center">
+      <div className="max-w-8xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <header className="mb-8 text-center">
           <div className="flex justify-end my-4">
             {/* Back button - top right */}
             <button onClick={() => router.back()} className="flex items-center cursor-pointer gap-2 bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg shadow-md transition-colors duration-200 font-medium">
@@ -29,10 +29,10 @@ export default function CancellationRefundPolicy() {
               </svg>
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-5xl font-bold text-gray-900 mb-2">
             Cancellation & Refund Policy
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className=" text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             At ATD Money we value our customers and are committed to providing
             best services.
           </p>
@@ -126,7 +126,7 @@ export default function CancellationRefundPolicy() {
             <div className="space-y-6">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                  <div className="flex items-center justify-center h-8 w-8 md:h-12 md:w-12 rounded-md bg-teal-500 text-white">
                     <span className="text-xl font-bold">1</span>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export default function CancellationRefundPolicy() {
 
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                  <div className="flex items-center justify-center h-8 w-8 md:h-12 md:w-12 rounded-md bg-teal-500 text-white">
                     <span className="text-xl font-bold">2</span>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function CancellationRefundPolicy() {
 
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                  <div className="flex items-center justify-center h-8 w-8 md:h-12 md:w-12 rounded-md bg-teal-500 text-white">
                     <span className="text-xl font-bold">3</span>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function CancellationRefundPolicy() {
 
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-md bg-teal-500 text-white">
+                  <div className="flex items-center justify-center h-8 w-8 md:h-12 md:w-12 rounded-md bg-teal-500 text-white">
                     <span className="text-xl font-bold">4</span>
                   </div>
                 </div>

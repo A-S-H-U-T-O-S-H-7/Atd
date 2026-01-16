@@ -74,10 +74,10 @@ export default function ContactForm() {
     try {
       // Prepare the request payload according to API specification
       const requestPayload = {
-        provider_id: 1, // Fixed value as per API spec
+        provider_id: 1, 
         name: formData.name,
         email: formData.email,
-        mobile: parseInt(formData.phone), // Convert to number as per API spec
+        mobile: parseInt(formData.phone), 
         message: formData.message
       };
 
@@ -149,7 +149,7 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="w-full md:w-3/5 p-6 sm:p-8 lg:p-10 bg-gray-50 relative">
+    <div className="w-full md:w-3/5 px-4 py-6 sm:py-8 sm:px-4  lg:p-10 bg-gray-50 relative">
       
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-30 z-0 overflow-hidden">

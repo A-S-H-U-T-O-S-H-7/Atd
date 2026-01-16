@@ -63,7 +63,7 @@ export default function ContactInfo() {
       }
   ];
 
-  return <div className="w-full md:w-2/5 p-6 sm:p-8 lg:p-10 bg-white relative">
+  return <div className="w-full md:w-2/5 py-6 px-4 sm:p-8 lg:p-10 bg-white relative">
     
       {/* Decorative elements */}
       <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-blue-50 z-0" />
@@ -166,7 +166,7 @@ export default function ContactInfo() {
           <h3 className="text-base sm:text-lg font-heading font-semibold text-gray-700 mb-4">
             Follow Us
           </h3>
-          <div className="flex flex-wrap space-x-4 sm:space-x-5">
+          <div className="flex flex-wrap space-x-4 space-y-2 sm:space-x-5">
             {socialLinks.map(({ Icon, color, bgColor, link }, index) =>
               <a
                 key={index}

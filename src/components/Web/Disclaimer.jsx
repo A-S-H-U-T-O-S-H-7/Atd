@@ -11,7 +11,7 @@ export default function Disclaimer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-      <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 pb-10 pt-6 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-amber-600 rounded-full flex items-center justify-center">
