@@ -51,7 +51,7 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-md bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[80vh] overflow-hidden">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-blue-500 to-teal-600 px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white">Loan History Details</h2>
@@ -80,6 +80,10 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Disbursed Amount</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Applied Date</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Due Date</th>
+                    <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Due Amount</th>
+                    <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">OverDue Amount</th>
+
+
                     <th className="text-left p-4 font-semibold text-blue-800">Status</th>
                   </tr>
                 </thead>
@@ -106,6 +110,12 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
                       </td>
                       <td className="p-4 border-r border-blue-100 text-slate-600">
                         {formatDate(loan.applied_date)}
+                      </td>
+                      <td className="p-4 border-r border-blue-100 text-slate-600">
+                        {formatDate(loan.duedate)}
+                      </td>
+                      <td className="p-4 border-r border-blue-100 text-slate-600">
+                        {formatDate(loan.duedate)}
                       </td>
                       <td className="p-4 border-r border-blue-100 text-slate-600">
                         {formatDate(loan.duedate)}
