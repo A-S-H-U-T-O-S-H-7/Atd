@@ -235,8 +235,8 @@ export default function TermsOfUse() {
               <FaFileAlt className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">Terms of Use</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-2">Terms of Use</h1>
+          <p className=" text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             Please read these terms carefully before using the ATD Money website.
           </p>
         </header>

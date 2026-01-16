@@ -20,8 +20,8 @@ export default function Disclaimer() {
               </svg>
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">Disclaimer</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-2">Disclaimer</h1>
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             Important regulatory information regarding ATD Money and the Reserve Bank of India.
           </p>
         </header>
@@ -52,8 +52,8 @@ export default function Disclaimer() {
               </button>
               
               {expanded && (
-                <div className="px-6 py-5 sm:px-8 bg-gray-50 text-gray-700 prose prose-amber max-w-none">
-                  <div className="p-6 bg-amber-50 rounded-lg border border-amber-200 mb-6">
+                <div className=" px-2 py-3 md:px-6 md:py-5  bg-gray-50 text-gray-700 prose prose-amber max-w-none">
+                  <div className="p-2 md:p-6 bg-amber-50 rounded-lg border border-amber-200 mb-6">
                     <p className="text-lg italic text-gray-800 font-medium leading-relaxed">
                       "Reserve Bank of India does not accept any responsibility or guarantee about the present position as to the financial soundness of the Company or the correctness of any of the statements or representations made or opinions expressed by the Company and for discharge of liability by the Company. Neither is there any provision in law to keep, nor does the Company keep any part of the deposits with the Reserve Bank of India and by issuing the Certificate of Registration to the Company, the Reserve Bank neither accepts any responsibility nor guarantee for the payment of the deposit amount of any depositor."
                     </p>

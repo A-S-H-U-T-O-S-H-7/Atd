@@ -179,7 +179,7 @@ export default function PrivacyPolicy() {
               <BiSolidLock className="text-white w-8 h-8" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-5xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-2">
             Privacy Policy
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
