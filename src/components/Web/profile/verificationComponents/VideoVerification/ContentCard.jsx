@@ -10,24 +10,19 @@ const ContentCard = ({ userName = "your name" }) => {
           <h3 className="text-base md:text-lg font-semibold text-gray-800 pt-2 mb-2">
             Important Instructions
           </h3>
-          <div className="space-y-2 text-sm md:text-base">
+          <div className="space-y-2 text-xs md:text-base">
             <p className="text-gray-700">
               <span className="font-medium text-red-600">Note:</span> Please show your original PAN Card and Aadhaar Card at the time of video recording (front & back both) and read the below mentioned content:
             </p>
             <div className="bg-white p-3 md:p-4 rounded-lg border border-blue-100">
               <div className="flex items-start gap-2">
                 <Mic className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
-                <p className="text-gray-800 font-medium italic">
+                <p className="text-gray-800 text-sm font-medium italic">
                   "I am <span className="text-blue-600 font-bold">{userName}</span> I have applied for a loan from ATD Money. I read and agreed with the terms and conditions. Requesting you to process further."
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 pt-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <p className="text-green-700 font-medium text-sm">
-                Please read this content clearly in your video
-              </p>
-            </div>
+            
           </div>
         </div>
       </div>
