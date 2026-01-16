@@ -11,7 +11,7 @@ const NormalCollectionForm = ({
   isOpen,
   onClose, 
   application,
-  onCollectionSubmit,
+  onCollectionSubmit, 
   isDark
 }) => {
   const [collectionData, setCollectionData] = useState(null);
@@ -21,14 +21,34 @@ const NormalCollectionForm = ({
   const [selectedBankDetails, setSelectedBankDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
+const getFormattedDateForInput = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
+
   // Validation Schema
-  const validationSchema = Yup.object({
-    collectionDate: Yup.string()
-      .required('Collection date is required')
-      .test('is-valid-date', 'Please select a valid date', value => {
-        if (!value) return false;
-        return new Date(value) <= new Date();
-      }),
+  const validationSchema = Yup.object({  
+  collectionDate: Yup.string()
+  .required('Collection date is required')
+  .test('is-valid-range', `Date must be between ${getFormattedDateForInput(application?.disburseDateTime)} and today`, function(value) {
+    if (!value) return false;
+    
+    const collectionDate = new Date(value);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    
+    const disburseDate = application?.disburseDateTime 
+      ? new Date(application.disburseDateTime)
+      : null;
+    
+    if (disburseDate) {
+      disburseDate.setHours(0, 0, 0, 0);
+      return collectionDate >= disburseDate && collectionDate <= today;
+    }
+    
+    return collectionDate <= today;
+  }),
     collectionAmount: Yup.number()
       .typeError('Collection amount must be a number')
       .min(0.01, 'Collection amount must be greater than 0')
@@ -303,6 +323,8 @@ const NormalCollectionForm = ({
     return `${day}-${month}-${year}`;
   };
 
+ 
+
   const formatCurrency = (amount) => {
     const num = parseFloat(amount || 0);
     return `${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -310,7 +332,7 @@ const NormalCollectionForm = ({
 
   // Helper function to render form field with error
   const renderField = (name, label, type = "text", options = {}) => {
-    const { isReadOnly = false, isRequired = true, showError = true, placeholder = "", customClass = "" } = options;
+    const { isReadOnly = false, isRequired = true, showError = true, placeholder = "", customClass = "", min, max } = options;
     const error = formik.touched[name] && formik.errors[name];
     const value = formik.values[name];
 
@@ -349,40 +371,40 @@ const NormalCollectionForm = ({
     }
 
     return (
-      <div>
-        <label className={`block text-sm font-medium mb-2 ${
-          isDark ? "text-gray-300" : "text-gray-700"
-        }`}>
-          {label} {isRequired && <span className="text-red-500">*</span>}
-        </label>
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={handleFormikChange}
-          onBlur={formik.handleBlur}
-          readOnly={isReadOnly}
-          disabled={options.disabled || false}
-          placeholder={placeholder}
-          className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
-            isDark 
-              ? isReadOnly || options.disabled
-                ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
-                : "bg-gray-600 border-gray-500 text-white placeholder-gray-400"
-              : isReadOnly || options.disabled
-                ? "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
-                : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-          } ${error ? 'border-red-500' : ''} ${customClass}`}
-          step={type === "number" ? "0.01" : undefined}
-          min={type === "number" ? "0" : undefined}
-          max={name === "collectionDate" ? new Date().toISOString().split('T')[0] : undefined}
-          required={isRequired}
-        />
-        {showError && error && (
-          <div className="text-red-500 text-xs mt-1">{error}</div>
-        )}
-      </div>
-    );
+  <div>
+    <label className={`block text-sm font-medium mb-2 ${
+      isDark ? "text-gray-300" : "text-gray-700"
+    }`}>
+      {label} {isRequired && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={handleFormikChange}
+      onBlur={formik.handleBlur}
+      readOnly={isReadOnly}
+      disabled={options.disabled || false}
+      placeholder={placeholder}
+      className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all ${
+        isDark 
+          ? isReadOnly || options.disabled
+            ? "bg-gray-600/50 border-gray-600 text-gray-200 cursor-not-allowed" 
+            : "bg-gray-600 border-gray-500 text-white placeholder-gray-400"
+          : isReadOnly || options.disabled
+            ? "bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed"
+            : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+      } ${error ? 'border-red-500' : ''} ${customClass}`}
+      step={type === "number" ? "0.01" : undefined}
+      min={min !== undefined ? min : (type === "number" ? "0" : undefined)}  // Fixed this line
+      max={max !== undefined ? max : (name === "collectionDate" ? new Date().toISOString().split('T')[0] : undefined)}  // Fixed this line
+      required={isRequired}
+    />
+    {showError && error && (
+      <div className="text-red-500 text-xs mt-1">{error}</div>
+    )}
+  </div>
+);
   };
 
   // Get data from collectionData (API response) instead of applicationData
@@ -511,7 +533,10 @@ const NormalCollectionForm = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Collection Date */}
-              {renderField('collectionDate', 'Collection Date', 'date')}
+              {renderField('collectionDate', 'Collection Date', 'date', {
+              min: application?.disburseDateTime ? new Date(application.disburseDateTime).toISOString().split('T')[0] : undefined,
+              max: new Date().toISOString().split('T')[0]
+                })}
 
               {/* Principal Amount */}
               <div>

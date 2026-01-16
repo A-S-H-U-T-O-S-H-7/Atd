@@ -170,6 +170,8 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
     }
     return isDark ? "text-yellow-400 font-semibold" : "text-yellow-600 font-semibold";
   };
+
+ 
   
   const hasBounceDetails = legal.bounceDate && 
                           legal.bounceDate !== 'N/A' && 
@@ -630,57 +632,127 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
       </td>
 
       {/* Legal Notice Status */}
-      <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 mb-2">
-            {legal.deliveryStatus?.toLowerCase() === 'delivered' ? (
-              <CheckCircle className={`w-5 h-5 ${commonClasses.icon.green}`} />
-            ) : (
-              <AlertCircle className={`w-5 h-5 ${commonClasses.icon.orange}`} />
-            )}
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getDeliveryStatusColor(legal.deliveryStatus)}`}>
-              {legal.deliveryStatus || 'N/A'}
-            </span>
-          </div>
+<td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
+  <div className="space-y-2">
+    <div className="flex items-center space-x-2 mb-2">
+      {legal.deliveryStatus?.toLowerCase() === 'delivered' ? (
+        <CheckCircle className={`w-5 h-5 ${commonClasses.icon.green}`} />
+      ) : (
+        <AlertCircle className={`w-5 h-5 ${commonClasses.icon.orange}`} />
+      )}
+      <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getDeliveryStatusColor(legal.deliveryStatus)}`}>
+        {legal.deliveryStatus || 'N/A'}
+      </span>
+    </div>
+    
+    {/* Notice Date */}
+    <div className="flex items-center space-x-2">
+      <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Notice Date: {legal.noticeDate}
+      </span>
+    </div>
+    
+    {/* SPEED POST - Show only the latest entry sorted by date */}
+    <div className="space-y-1">
+      {legal.addresses && legal.addresses.length > 0 ? (
+        (() => {
+          // Sort addresses by date to get the latest
+          const sortedAddresses = [...legal.addresses].sort((a, b) => {
+            const dateA = new Date(a.posted_date || 0);
+            const dateB = new Date(b.posted_date || 0);
+            return dateB - dateA; 
+          });
           
-          <div className="flex items-center space-x-2">
-            <FileText className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Notice Date: {legal.noticeDate}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Mail className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Speed Post: {legal.legalNoticeSpeedPostDate}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Speed Post Received: {legal.speedpostReceivedDate}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Reply Received: {legal.replyReceivedDate}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
-            <span className={`text-sm ${commonClasses.valueText}`}>
-              Case Filed: {legal.caseFilledDate}
-            </span>
-          </div>
-          {legal.remarkWithCaseDetails && legal.remarkWithCaseDetails !== 'N/A' && (
-            <div className="mt-2">
-              <span className={`text-sm ${commonClasses.valueText}`}>
-                Remarks: {legal.remarkWithCaseDetails}
-              </span>
+          const latestAddress = sortedAddresses[0];
+          
+          return (
+            <div className="flex flex-col space-y-1 pl-6 border-l border-gray-300 dark:border-gray-600 ml-2">
+              {/* Show posted date */}
+              <div className="flex items-center space-x-2">
+                <Mail className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+                <span className={`text-sm ${commonClasses.valueText}`}>
+                  Speed Post: {latestAddress.posted_date || 'No date'}
+                </span>
+              </div>
+              
+              {/* Show delivered date if it has a value */}
+              {latestAddress.delivered_date && latestAddress.delivered_date !== 'N/A' && (
+                <div className="flex items-center space-x-2 ml-4">
+                  <CheckCircle className={`w-4 h-4 ${commonClasses.icon.green}`} />
+                  <span className={`text-sm ${commonClasses.valueText}`}>
+                    Received: {latestAddress.delivered_date}
+                  </span>
+                </div>
+              )}
+              
+              {/* Show tracking number if it exists */}
+              <div className="ml-4">
+                {latestAddress.tracking_no && latestAddress.tracking_no !== 'N/A' && (
+                  <span className={`text-xs ${commonClasses.fieldLabel}`}>
+                    Track: {latestAddress.tracking_no}
+                  </span>
+                )}
+              </div>
+              
+              {/* Show address status */}
+              <div className="ml-4">
+                {latestAddress.status && latestAddress.status !== 'N/A' && (
+                  <span className={`text-xs px-2 py-0.5 rounded inline-block ${
+                    latestAddress.status.toLowerCase() === 'delivered' 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                      : latestAddress.status.toLowerCase() === 'posted'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  }`}>
+                    {latestAddress.status}
+                  </span>
+                )}
+              </div>
+              
+              {/* Show count of other addresses */}
+              {legal.addresses.length > 1 && (
+                <div className="mt-1 ml-4">
+                  <span className={`text-xs ${commonClasses.fieldLabel}`}>
+                    +{legal.addresses.length - 1} more record{legal.addresses.length - 1 !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+          );
+        })()
+      ) : (
+        <div className="flex items-center space-x-2">
+          <Mail className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+          <span className={`text-sm ${commonClasses.valueText}`}>
+            No speed post records
+          </span>
         </div>
-      </td>
+      )}
+    </div>
+    
+    {/* Other existing fields */}
+    <div className="flex items-center space-x-2">
+      <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Reply Received: {legal.replyReceivedDate}
+      </span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <Scale className={`w-4 h-4 ${commonClasses.icon.blue}`} />
+      <span className={`text-sm ${commonClasses.valueText}`}>
+        Case Filed: {legal.caseFilledDate}
+      </span>
+    </div>
+    {legal.remarkWithCaseDetails && legal.remarkWithCaseDetails !== 'N/A' && (
+      <div className="mt-2">
+        <span className={`text-sm ${commonClasses.valueText}`}>
+          Remarks: {legal.remarkWithCaseDetails}
+        </span>
+      </div>
+    )}
+  </div>
+</td>
 
       {/* Criminal Case Status */}
       <td className={`px-2 py-4 ${commonClasses.cellBorder}`} style={{ minWidth: "250px" }}>
@@ -724,7 +796,7 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
             <span>Show Criminal Status</span>
           </button>
         </div>
-      </td>
+      </td> 
 
       {/* Actions */}
       <td className="px-2 py-4" style={{ minWidth: "450px" }}>

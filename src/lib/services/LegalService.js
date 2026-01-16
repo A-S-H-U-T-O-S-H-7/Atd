@@ -13,7 +13,7 @@ export const legalService = {
       });
       return response;
     } catch (error) {
-      throw error;
+      throw error; 
     } 
   },
 
@@ -222,6 +222,7 @@ createArbitrationCriminalCase: async (legalId, caseData) => {
 };
 
 // Format legal case data for UI
+// Format legal case data for UI
 export const formatLegalCaseForUI = (legalCase) => {
   const customer = legalCase.customer_details || {};
   const address = legalCase.customer_address || {};
@@ -232,23 +233,58 @@ export const formatLegalCaseForUI = (legalCase) => {
   const legalStatus = legalCase.legal_status || {};
   const customerBank = bank.customer_bank || {};
   const companyBank = bank.company_bank || {};
+  
+  // Get raw addresses array from response
+  const rawAddresses = legalCase.addresses || [];
 
-  // Format date function
-  const formatDateString = (dateString) => {
+  // Enhanced format date function with time option
+  const formatDateString = (dateString, includeTime = false) => {
     if (!dateString || dateString === 'N/A' || dateString === null || dateString === 'null') return 'N/A';
     
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return dateString.split(' ')[0]; 
+      if (isNaN(date.getTime())) {
+        // Try to extract just the date part if it's a datetime string
+        const dateOnly = dateString.split('T')[0];
+        if (dateOnly) {
+          return dateOnly.split('-').reverse().join('-'); // Convert YYYY-MM-DD to DD-MM-YYYY
+        }
+        return dateString;
+      }
       
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
+      
+      // Include time for address dates (speed post)
+      if (includeTime) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        // Only show time if it's not midnight
+        if (hours !== '00' || minutes !== '00') {
+          return `${day}-${month}-${year} ${hours}:${minutes}`;
+        }
+      }
+      
       return `${day}-${month}-${year}`;
     } catch (error) {
-      return dateString.split(' ')[0] || 'N/A';
+      console.error('Error formatting date:', dateString, error);
+      return dateString;
     }
   };
+
+  // Format addresses for speed post display
+  const formattedAddresses = rawAddresses.map((addr, index) => ({
+    id: addr.id || index + 1,
+    cheque_id: addr.cheque_id || 'N/A',
+    address: addr.address || 'N/A',
+    // Format posted_date WITH time
+    posted_date: addr.posted_date ? formatDateString(addr.posted_date, true) : 'N/A',
+    // Format delivered_date WITH time
+    delivered_date: addr.delivered_date ? formatDateString(addr.delivered_date, true) : 'N/A',
+    tracking_no: addr.tracking_no || 'N/A',
+    status: addr.status || 'N/A'
+  }));
 
   // Calculate derived values
   const approvedAmount = parseFloat(financial.approved_amount) || 0;
@@ -264,16 +300,16 @@ export const formatLegalCaseForUI = (legalCase) => {
   const totalPfGst = processingFee + gst;
   const totalAmount = principal + interest + penalInterest + penalty;
 
-  // Combine addresses for display
-  const addresses = [];
+  // Combine addresses for display (for address column)
+  const displayAddresses = [];
   if (address.permanent_address && address.permanent_address !== 'N/A') {
-    addresses.push({ type: "Permanent", address: address.permanent_address });
+    displayAddresses.push({ type: "Permanent", address: address.permanent_address });
   }
   if (address.current_address && address.current_address !== 'N/A') {
-    addresses.push({ type: "Current", address: address.current_address });
+    displayAddresses.push({ type: "Current", address: address.current_address });
   }
   if (address.company_address && address.company_address !== 'N/A') {
-    addresses.push({ type: "Company", address: address.company_address });
+    displayAddresses.push({ type: "Company", address: address.company_address });
   }
 
   return {
@@ -293,7 +329,8 @@ export const formatLegalCaseForUI = (legalCase) => {
     crnNo: customer.crnno || 'N/A',
     
     // Address Details
-    addresses: addresses,
+    addresses: formattedAddresses, 
+    displayAddresses: displayAddresses, 
     permanentAddress: address.permanent_address || 'N/A',
     currentAddress: address.current_address || 'N/A',
     companyAddress: address.company_address || 'N/A',

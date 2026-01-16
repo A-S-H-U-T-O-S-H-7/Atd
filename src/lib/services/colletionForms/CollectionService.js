@@ -47,7 +47,7 @@ export const collectionService = {
         penal_interest_before: parseFloat(formData.penalInterestBefore || 0),
         penal_interest_after: parseFloat(formData.penalInterestAfter || 0),
         penalty_before: parseFloat(formData.penaltyBefore || 0),
-        penalty_after: parseFloat(formData.penaltyAfter || 0),
+        penalty_after: parseFloat(formData.penaltyAfter || 0), 
         bounce_charge: parseFloat(formData.bounceCharge || 0),
         total_due_amount: parseFloat(formData.totalDueAmount || 0),
         collection_bank_name: formData.bankId ? parseInt(formData.bankId) : null,
