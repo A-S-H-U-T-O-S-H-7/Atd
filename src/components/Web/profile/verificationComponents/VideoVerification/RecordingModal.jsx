@@ -74,7 +74,7 @@ const RecordingModal = ({
         <div className="flex  justify-between gap-3 max-w-md mx-auto">
           <button
             onClick={onStopRecording}
-            className="stop-button w-full py-2 md:py-4 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3"
+            className="stop-button w-full py-2 md:py-3 bg-red-600 hover:bg-red-700 active:scale-95 text-white rounded-xl font-semibold shadow-lg transition-all flex items-center justify-center gap-3"
           >
             <Square className="w-5 h-5" fill="currentColor" />
             <span>Stop Recording</span>
