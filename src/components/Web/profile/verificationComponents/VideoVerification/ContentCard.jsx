@@ -12,7 +12,7 @@ const ContentCard = ({ userName = "your name" }) => {
           </h3>
           <div className="space-y-2 text-xs md:text-base">
             <p className="text-gray-700">
-              <span className="font-medium text-red-600">Note:</span> Please show your original PAN Card and Aadhaar Card at the time of video recording (front & back both) and read the below mentioned content:
+              <span className="font-bold text-red-600">Note:</span> Please show your original PAN Card and Aadhaar Card at the time of video recording (front & back both) and read the below mentioned content:
             </p>
             <div className="bg-white p-1 md:p-2 rounded-lg border border-blue-100">
               <div className="flex items-start gap-2">
