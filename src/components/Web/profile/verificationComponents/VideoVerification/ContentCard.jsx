@@ -3,11 +3,11 @@ import { AlertCircle, Mic } from 'lucide-react';
 
 const ContentCard = ({ userName = "your name" }) => {
   return (
-    <div className="content-card bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200  p-2 md:p-5  mt-2">
+    <div className="content-card bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200  p-2 md:p-5  ">
       <div className="flex items-start gap-3">
         
         <div className="flex-1">
-          <h3 className="text-base md:text-lg font-semibold text-gray-800 pt-5 mb-2">
+          <h3 className="text-base md:text-lg font-semibold text-gray-800 pt-1 mb-2">
             Important Instructions
           </h3>
           <div className="space-y-2 text-xs md:text-base">
