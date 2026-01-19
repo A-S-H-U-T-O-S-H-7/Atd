@@ -42,11 +42,7 @@ const AddressProofDocument = ({ fileName, hasDoc, onFileView }) => {
       const fileRef = ref(storage, filePath);
       const url = await getDownloadURL(fileRef);
       
-      // Open in new tab
-      // const newWindow = window.open(url, '_blank');
-      // if (!newWindow) {
-      //   alert('Popup blocked! Please allow popups for this site.');
-      // }
+      
 
       // Call the original onFileView if provided (for tracking/analytics)
       if (typeof onFileView === 'function') {
