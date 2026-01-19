@@ -7,6 +7,9 @@ import { storage } from '@/lib/firebase';
 import { ArrowLeft, Download, FileText, Maximize2, Minimize2, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+export const dynamic = 'force-dynamic';
+
+
 // Cache for already loaded URLs to prevent re-fetching
 const urlCache = new Map();
 
