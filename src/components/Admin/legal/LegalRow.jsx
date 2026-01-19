@@ -696,19 +696,22 @@ const LegalRow = ({ legal, index, isDark, onCreateNotice, onCriminalCase, onShow
               </div>
               
               {/* Show address status */}
-              <div className="ml-4">
-                {latestAddress.status && latestAddress.status !== 'N/A' && (
-                  <span className={`text-xs px-2 py-0.5 rounded inline-block ${
-                    latestAddress.status.toLowerCase() === 'delivered' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
-                      : latestAddress.status.toLowerCase() === 'posted'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                  }`}>
-                    {latestAddress.status}
-                  </span>
-                )}
-              </div>
+<div className="ml-4">
+  {latestAddress.status && latestAddress.status !== 'N/A' && (
+    <button
+      onClick={() => onShowAddress(legal)}
+      className={`text-xs px-2 py-0.5 rounded inline-block cursor-pointer transition-all duration-200 hover:scale-105 ${
+        latestAddress.status.toLowerCase() === 'delivered' 
+          ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/70 hover:shadow-sm'
+          : latestAddress.status.toLowerCase() === 'posted'
+          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/70 hover:shadow-sm'
+          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:shadow-sm'
+      }`}
+    >
+      {latestAddress.status}
+    </button>
+  )}
+</div>
               
               {/* Show count of other addresses */}
               {legal.addresses.length > 1 && (

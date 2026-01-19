@@ -1,10 +1,5 @@
-const API_BASE_URL = 'https://api.atdmoney.in/api';
+const API_BASE_URL = 'http://live.atdmoney.com/api';
 
-/**
- * Fetch loan history for authenticated user
- * @param {string} token - Authentication token
- * @returns {Promise<Object>} Response object with success flag and loans array
- */
 export const fetchLoanHistory = async (token) => {
   if (!token) {
     throw new Error('Authentication token is required');

@@ -7,13 +7,11 @@ const LOAN_STATUS_MAP = {
   4: 'applied',
   3: 'rejected',
   5: 'inprogress',
-
   6: 'sanctioned',
   7: 'sanctioned',
   8: 'sanctioned',
   9: 'sanctioned',
   10: 'sanctioned',
-  
   11: 'disbursed',
   12: 'disbursed',
   13: 'closed'
@@ -49,9 +47,25 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
     return STATUS_STYLES[status] || STATUS_STYLES.applied;
   };
 
+  // Helper function to format currency with proper styling
+  const formatCurrency = (amount, isOverdue = false) => {
+    if (amount === null || amount === undefined) return '0';
+    
+    const formattedAmount = `₹${parseFloat(amount).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+    
+    return (
+      <span className={`font-semibold ${isOverdue ? 'text-red-600' : 'text-green-600'}`}>
+        {formattedAmount}
+      </span>
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-md bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[80vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[80vh] overflow-hidden">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-blue-500 to-teal-600 px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white">Loan History Details</h2>
@@ -79,11 +93,10 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Approved Amount</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Disbursed Amount</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Applied Date</th>
+                    <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Tenure</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Due Date</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">Due Amount</th>
                     <th className="text-left p-4 font-semibold text-blue-800 border-r border-blue-200">OverDue Amount</th>
-
-
                     <th className="text-left p-4 font-semibold text-blue-800">Status</th>
                   </tr>
                 </thead>
@@ -100,25 +113,34 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
                       </td>
                       <td className="p-4 border-r border-blue-100">
                         <span className="font-semibold text-slate-800">
-                          {loan.approved_amount ? `₹${loan.approved_amount}` : 'Pending'}
+                          {loan.approved_amount ? `₹${parseFloat(loan.approved_amount).toLocaleString('en-IN')}` : 'Pending'}
                         </span>
                       </td>
                       <td className="p-4 border-r border-blue-100">
                         <span className="font-semibold text-slate-800">
-                          {loan.disburse_amount ? `₹${loan.disburse_amount}` : 'Pending'}
+                          {loan.disburse_amount ? `₹${parseFloat(loan.disburse_amount).toLocaleString('en-IN')}` : 'Pending'}
                         </span>
                       </td>
                       <td className="p-4 border-r border-blue-100 text-slate-600">
                         {formatDate(loan.applied_date)}
                       </td>
                       <td className="p-4 border-r border-blue-100 text-slate-600">
-                        {formatDate(loan.duedate)}
+                        {formatDate(loan.applied_date)}
                       </td>
-                      <td className="p-4 border-r border-blue-100 text-slate-600">
-                        {formatDate(loan.duedate)}
+                      <td className="p-4 border-r border-blue-100">
+                        {formatDate(loan.duedate) !== 'N/A' ? (
+                          <span className="text-slate-600">{formatDate(loan.duedate)}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">
+                            Disburse Date + Tenure
+                          </span>
+                        )}
                       </td>
-                      <td className="p-4 border-r border-blue-100 text-slate-600">
-                        {formatDate(loan.duedate)}
+                      <td className="p-4 border-r border-blue-100">
+                        {formatCurrency(loan.due_amount, false)}
+                      </td>
+                      <td className="p-4 border-r border-blue-100">
+                        {formatCurrency(loan.overdue_amount, true)}
                       </td>
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(loan.loan_status)}`}>

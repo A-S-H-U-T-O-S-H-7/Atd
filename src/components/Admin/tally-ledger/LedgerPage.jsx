@@ -119,7 +119,7 @@ const handleExport = async () => {
     showCancelButton: true,
     confirmButtonColor: '#10b981',
     cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Export CSV',
+    confirmButtonText: 'Export XLSX',
     cancelButtonText: 'Cancel',
     background: isDark ? "#1f2937" : "#ffffff",
     color: isDark ? "#f9fafb" : "#111827",
@@ -130,22 +130,105 @@ const handleExport = async () => {
   try {
     setExporting(true);
     
+    // Import XLSX library dynamically
+    const XLSX = await import('xlsx');
+    
+    // Prepare data for XLSX
+    const exportData = ledgerData.map(item => ({
+      'SN': item.sn,
+      'Loan No.': item.loanNo || 'N/A',
+      'Disburse Date': item.disburseDate || '',
+      'Due Date': item.dueDate || '',
+      'Name': item.name || 'N/A',
+      'CRN No': item.crnno || 'N/A',
+      'Address': item.address || 'N/A',
+      'Phone No.': item.phoneNo || 'N/A',
+      'Email': item.email || 'N/A',
+      'Balance': item.balance || 0
+    }));
+    
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    
+    // Auto-size columns
+    const maxWidth = 50;
+    const colWidths = [];
+    
+    // Get header keys
+    const headers = Object.keys(exportData[0] || {});
+    
+    // Calculate column widths based on content
+    headers.forEach((header, colIndex) => {
+      // Start with header length
+      let maxLength = header.length;
+      
+      // Check data in each row
+      exportData.forEach(row => {
+        const cellValue = row[header];
+        const cellLength = cellValue ? String(cellValue).length : 0;
+        if (cellLength > maxLength) {
+          maxLength = cellLength;
+        }
+      });
+      
+      // Cap the width
+      colWidths.push({ wch: Math.min(maxLength + 2, maxWidth) });
+    });
+    
+    worksheet['!cols'] = colWidths;
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tally Ledger');
+    
+    // Generate filename with date
+    const today = new Date().toISOString().split('T')[0];
+    const filename = `tally-ledger-${today}.xlsx`;
+    
+    // Download the file
+    XLSX.writeFile(workbook, filename);
+    
+    toast.success('Tally ledger data exported successfully!', {
+      position: "top-right",
+      autoClose: 3000,
+    });
+    
+  } catch (err) {
+    console.error("Export error:", err);
+    
+    // Fallback to CSV if XLSX fails
+    if (err.message?.includes("xlsx")) {
+      await exportAsCSV();
+    } else {
+      Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      });
+    }
+  } finally {
+    setExporting(false);
+  }
+};
+
+// Fallback CSV export function
+const exportAsCSV = async () => {
+  try {
     // Prepare headers
     const headers = [
       'SN', 'Loan No.', 'Disburse Date', 'Due Date', 'Name', 
       'CRN No', 'Address', 'Phone No.', 'Email', 'Balance'
     ];
     
-    // Prepare data rows with SMART CSV escaping
+    // Prepare data rows
     const dataRows = ledgerData.map(item => {
-      
-      
       const escapeCSV = (value) => {
         if (value === null || value === undefined) return '';
         
         const strValue = String(value);
-        
-        // Check if needs quoting
         const needsQuotes = strValue.includes(',') || 
                            strValue.includes('"') || 
                            strValue.includes('\n') || 
@@ -194,28 +277,15 @@ const handleExport = async () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else {
-      // For older browsers
-      window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+      
+      toast.success('Exported as CSV (XLSX failed)', {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
-    
-    toast.success('Tally ledger data exported successfully!', {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    
-  } catch (err) {
-    console.error("Export error:", err);
-    Swal.fire({
-      title: 'Export Failed!',
-      text: 'Failed to export data. Please try again.',
-      icon: 'error',
-      confirmButtonColor: '#ef4444',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-  } finally {
-    setExporting(false);
+  } catch (csvErr) {
+    console.error("CSV export error:", csvErr);
+    throw csvErr;
   }
 };
 

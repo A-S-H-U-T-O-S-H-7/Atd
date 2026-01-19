@@ -7,7 +7,7 @@ const TransactionDetailsModal = ({
   isOpen, 
   onClose, 
   onSubmit, 
-  isDark, 
+  isDark,  
   disbursementData 
 }) => {
   const [formData, setFormData] = useState({
