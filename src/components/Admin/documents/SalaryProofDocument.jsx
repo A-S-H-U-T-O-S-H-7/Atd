@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { FileText, Loader } from "lucide-react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from '@/lib/firebase';
+import React from "react";
+import { FileText, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 const SalaryProofDocument = ({ 
   fileName, 
@@ -10,111 +9,101 @@ const SalaryProofDocument = ({
   hasSecondDoc,
   thirdFileName,
   hasThirdDoc,
-  onFileView
+  isDark,
+  applicationId,
+  className = "",
+  size = "default"  // small, default, large
 }) => {
-  const [loadingFile, setLoadingFile] = useState(null);
-
-  const handleFileClick = async (file, slipType) => {
-    if (!file) return;
-
-    try {
-      setLoadingFile(file);
-      
-      const folderMappings = {
-        'salary_slip': 'first_salaryslip',
-        'second_salary_slip': 'second_salaryslip', 
-        'third_salary_slip': 'third_salaryslip',
-      };
-
-      const folder = folderMappings[slipType];
-      
-      if (!folder) {
-        console.error('No folder mapping found for:', slipType);
-        alert('Document type not configured');
-        return;
-      }
-      
-      const filePath = `${folder}/${file}`;
-      const fileRef = ref(storage, filePath);
-      const url = await getDownloadURL(fileRef);
-      
-      // const newWindow = window.open(url, '_blank');
-      // if (!newWindow) {
-      //   alert('Popup blocked! Please allow popups for this site.');
-      // }
-
-      if (typeof onFileView === 'function') {
-        onFileView(file, slipType);
-      }
-
-    } catch (error) {
-      console.error("Failed to load salary slip:", error);
-      alert(`Failed to load salary slip: ${file}. Please check if file exists.`);
-    } finally {
-      setLoadingFile(null);
-    }
-  };
-
   const documents = [
     { 
       file: fileName, 
       hasDoc, 
       title: "First Salary Slip", 
       index: 1,
-      slipType: 'salary_slip'
+      type: 'salary_slip'
     },
     { 
       file: secondFileName, 
       hasDoc: hasSecondDoc, 
       title: "Second Salary Slip", 
       index: 2,
-      slipType: 'second_salary_slip'
+      type: 'second_salary_slip'
     },
     { 
       file: thirdFileName, 
       hasDoc: hasThirdDoc, 
       title: "Third Salary Slip", 
       index: 3,
-      slipType: 'third_salary_slip'
+      type: 'third_salary_slip'
     }
   ].filter(doc => doc.hasDoc && doc.file);
 
   if (documents.length === 0) {
     return (
-      <div className="p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed" title="Salary Proof Missing">
+      <div 
+        className={`p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed ${className}`}
+        title="Salary Proof Missing"
+      >
         <FileText size={18} className="flex-shrink-0" />
         <span className="text-xs ml-1">✗</span>
       </div>
     );
   }
 
+  // Size configurations - using DEFAULT as base
+  const sizeConfig = {
+    small: {
+      padding: "p-1",
+      iconSize: 14,
+      externalLinkSize: 6,
+      numberMargin: "ml-0.5",
+      numberSize: "text-xs"
+    },
+    default: {  // THIS IS DEFAULT
+      padding: "p-2",
+      iconSize: 18,
+      externalLinkSize: 10,
+      numberMargin: "ml-1",
+      numberSize: "text-sm"
+    },
+    large: {
+      padding: "p-3",
+      iconSize: 22,
+      externalLinkSize: 12,
+      numberMargin: "ml-1.5",
+      numberSize: "text-base"
+    }
+  };
+
+  const config = sizeConfig[size] || sizeConfig.default;
+
   return (
-    <div className="flex space-x-1 justify-center">
-      {documents.map((doc, index) => {
-        const isLoading = loadingFile === doc.file;
-        return (
-          <button
-            key={index}
-            onClick={() => handleFileClick(doc.file, doc.slipType)}
-            disabled={isLoading}
-            className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
-              isLoading 
-                ? 'bg-gray-300 text-gray-500 cursor-wait' 
-                : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
-            }`}
-            title={isLoading ? "Loading..." : `View ${doc.title}`}
-          >
-            {isLoading ? (
-              <Loader size={18} className="flex-shrink-0 animate-spin" />
-            ) : (
-              <>
-                <FileText size={18} className="flex-shrink-0" />
-                <span className="text-xs ml-1 font-medium">{doc.index}</span>
-              </>
-            )}
-          </button>
-        );
-      })}
+    <div className={`flex space-x-2 justify-center ${className}`}>
+      {documents.map((doc, index) => (
+        <Link
+          key={index}
+          href={`/documents/view?file=${encodeURIComponent(doc.file)}&type=${doc.type}${applicationId ? `&appId=${applicationId}` : ''}`}
+          target="_blank"
+          className={`${config.padding} rounded-lg transition-colors cursor-pointer flex items-center justify-center group relative ${
+            isDark
+              ? 'bg-blue-900/50 hover:bg-blue-800/50 text-blue-300'
+              : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+          }`}
+          title={`View ${doc.title}`}
+        >
+          <FileText 
+            size={config.iconSize} 
+            className="flex-shrink-0" 
+          />
+          <span className={`${config.numberMargin} ${config.numberSize} font-medium`}>
+            {doc.index}
+          </span>
+          <ExternalLink 
+            size={config.externalLinkSize} 
+            className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+          />
+        </Link>
+      ))}
     </div>
   );
 };

@@ -1,99 +1,59 @@
-import React, { useState } from "react";
-import { FileText, X, Loader } from "lucide-react";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from '@/lib/firebase';
+import React from "react";
+import { FileText, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 const AgreementDocument = ({
   fileName,
   hasDoc,
-  onFileView,
-  fileLoading,
-  loadingFileName,
-  isDark
+  isDark,
+  applicationId,
+  className = "",
+  size = "default"
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleClick = async () => {
-    if (!fileName || !hasDoc) return;
-
-    try {
-      setIsLoading(true);
-      
-      // Define folder mapping locally
-      const folderMappings = {
-        'address_proof': 'address',
-        'bank_statement': 'bank-statement',
-        'aadhar_proof': 'idproof', 
-        'pan_proof': 'pan',
-        'selfie': 'photo',
-        'salary_slip': 'first_salaryslip',
-        'second_salary_slip': 'second_salaryslip', 
-        'third_salary_slip': 'third_salaryslip',
-        'bank_verif_report': 'reports',
-        'social_score_report': 'reports',
-        'cibil_score_report': 'reports',
-        'pdc': 'pdc',
-        'nach_form': 'nach-form',
-        'agreement': 'agreement', 
-      };
-
-      // Determine document category from component context
-      const documentCategory = 'agreement';
-      const folder = folderMappings[documentCategory];
-      
-      if (!folder) {
-        console.error('No folder mapping found for:', documentCategory);
-        alert('Document type not configured');
-        return;
-      }
-      
-      // Construct file path and get download URL
-      const filePath = `${folder}/${fileName}`;
-      const fileRef = ref(storage, filePath);
-      const url = await getDownloadURL(fileRef);
-      
-      // Open in new tab
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Popup blocked! Please allow popups for this site.');
-      }
-
-      
-
-    } catch (error) {
-      console.error("Failed to load file:", error);
-      alert(`Failed to load file: ${fileName}. Please check if file exists.`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (hasDoc && fileName) {
+  if (!hasDoc || !fileName) {
     return (
-      <button
-        onClick={handleClick}
-        disabled={isLoading}
-        className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center ${
-          isLoading 
-            ? 'bg-gray-300 text-gray-500 cursor-wait' 
-            : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
-        }`}
-        title={isLoading ? "Loading..." : "View Agreement"}
+      <div 
+        className={`p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed ${className}`}
+        title={`Agreement Missing: ${fileName || 'No file'}`}
       >
-        {isLoading ? (
-          <Loader size={18} className="flex-shrink-0 animate-spin" />
-        ) : (
-          <FileText size={18} className="flex-shrink-0" />
-        )}
-      </button>
+        <FileText size={size === "small" ? 16 : size === "large" ? 20 : 18} className="flex-shrink-0" />
+        <span className="text-xs ml-1">✗</span>
+      </div>
     );
   }
 
+  const sizeClasses = {
+    small: "p-1.5",
+    default: "p-2",
+    large: "p-3"
+  };
+
+  const iconSizes = {
+    small: 16,
+    default: 18,
+    large: 20
+  };
+
   return (
-    <div className="p-2 rounded-lg bg-red-100 text-red-600 flex items-center justify-center cursor-not-allowed" title="Agreement Missing">
-      <FileText size={18} className="flex-shrink-0" />
-      <span className="text-xs ml-1">✗</span>
-    </div>
+    <Link
+      href={`/documents/view?file=${encodeURIComponent(fileName)}&type=agreement${applicationId ? `&appId=${applicationId}` : ''}`}
+      target="_blank"
+      className={`${sizeClasses[size]} rounded-lg transition-colors cursor-pointer flex items-center justify-center group relative ${
+        isDark
+          ? 'bg-blue-900/50 hover:bg-blue-800/50 text-blue-300'
+          : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+      } ${className}`}
+      title={`View Agreement`}
+    >
+      <FileText 
+        size={iconSizes[size]} 
+        className="flex-shrink-0" 
+      />
+      <ExternalLink 
+        size={size === "small" ? 8 : 10} 
+        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+      />
+    </Link>
   );
 };
 

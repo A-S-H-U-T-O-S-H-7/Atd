@@ -16,7 +16,7 @@ const DOCUMENT_FIELDS_MAPPING = {
   bankStatement2: 'second_bank_statement',
   bankVerificationReport: 'bank_verif_report',
   bankFraudAnalysisReport: 'bank_fraud_report',
-  camSheet: 'cam_sheet',
+  camSheet: 'cam_sheet', 
   socialScoreReport: 'social_score_report',
   cibilScoreReport: 'cibil_score_report',
   nachForm: 'nach_form',
