@@ -17,7 +17,6 @@ const ReviewSection = ({ user }) => {
     const tokenData = TokenManager.getToken();
     setTokenInfo(tokenData);
     
-    // Since we don't have GET API, we can check localStorage for previous review
     const checkLocalReview = () => {
       try {
         const savedReview = localStorage.getItem(`user_review_${user?.user_id}`);

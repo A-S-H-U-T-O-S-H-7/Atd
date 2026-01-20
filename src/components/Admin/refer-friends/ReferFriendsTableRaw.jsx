@@ -8,7 +8,7 @@ const ReferFriendsTableRow = ({ referral, index, startIndex, isDark }) => {
           ? "hover:bg-gradient-to-r hover:from-gray-700/50 hover:to-emerald-900/20"
           : "hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/50"
       } ${
-        index % 2 === 0
+        index % 2 === 0 
           ? isDark 
             ? "bg-gray-700/80" 
             : "bg-gray-50"

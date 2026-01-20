@@ -30,6 +30,7 @@ const RejectedTable = ({
     { label: "Account ID", width: "140px" },
     { label: "Enquiry Date", width: "140px" },
     { label: "Complete Date", width: "140px" },
+    { label: "Rejected Date", width: "140px" },
     { label: "Name", width: "180px" },
     { label: "Permanent Address", width: "200px" },
     { label: "State", width: "100px" },

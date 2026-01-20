@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import AdvancedSearchBar from "../AdvanceSearchBar";
-import { exportToExcel } from "@/components/utils/exportutil";
 import ClientHistoryTable from "./ClientHistoryTable";
 import ClientViewModal from "./ClientViewModal";
 import { useRouter } from "next/navigation";
@@ -18,7 +17,6 @@ const ClientHistoryPage = () => {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   
   const [searchField, setSearchField] = useState("");
@@ -266,76 +264,7 @@ const fetchClientHistories = async () => {
     setCurrentPage(1);
   };
 
-  // Export to Excel
-  const handleExportToExcel = async () => {
-    const result = await Swal.fire({
-      title: 'Export Client History?',
-      text: 'This will export all client history records.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#10b981',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, Export!',
-      cancelButtonText: 'Cancel',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setExporting(true);
-      
-      const exportParams = { ...buildApiParams() };
-      delete exportParams.per_page;
-      delete exportParams.page;
-      
-      const response = await clientService.exportClientHistories(exportParams);
-      
-      if (response.success) {
-        const headers = [
-          'Sr. No.', 'Name', 'Father Name', 'CRN No.', 'Account ID', 
-          'Phone', 'Email', 'Date'
-        ];
-
-        const dataRows = response.clients.map((client, index) => [
-          index + 1,
-          client.fullname,
-          client.fathername,
-          client.crnno,
-          client.accountId,
-          client.phone,
-          client.email || 'N/A',
-          "2025-07-10"
-        ]);
-
-        const exportData = [headers, ...dataRows];
-        exportToExcel(exportData, `client_history_${new Date().toISOString().split('T')[0]}`);
-        
-        await Swal.fire({
-          title: 'Export Successful!',
-          text: 'Client history has been exported to Excel successfully.',
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-        });
-      } else {
-        throw new Error("Failed to export data");
-      }
-    } catch (err) {
-      await Swal.fire({
-        title: 'Export Failed!',
-        text: 'Failed to export data. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-    } finally {
-      setExporting(false);
-    }
-  };
+  
 
   // Filter data for display
   const filteredClientData = clientHistoryData.filter(item => {
@@ -412,18 +341,7 @@ const fetchClientHistories = async () => {
       <span className="text-xs sm:text-sm">Refresh</span>
     </button>
     
-    <button
-      onClick={handleExportToExcel}
-      disabled={exporting || clientHistoryData.length === 0}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-green-600 hover:bg-green-700 text-white"
-          : "bg-green-500 hover:bg-green-600 text-white"
-      } ${exporting || clientHistoryData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
-    </button>
+   
   </div>
 </div>
 

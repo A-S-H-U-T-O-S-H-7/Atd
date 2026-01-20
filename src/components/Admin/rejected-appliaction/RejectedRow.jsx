@@ -57,7 +57,6 @@ const RejectedRow = ({
   // CRITICAL FIX: Create application object with ALL required properties for button components
   const applicationForButtons = {
     ...application,
-    // Ensure all required properties exist for button components
     id: application.id,
     name: application.name,
     showActionButton: application.showActionButton !== false,
@@ -68,7 +67,7 @@ const RejectedRow = ({
     isFinalStage: application.isFinalStage || false,
     finalReportStatus: application.finalReportStatus || null,
     hasAppraisalReport: application.hasAppraisalReport || false,
-    totl_final_report: application.finalReportStatus, // Some components might use this
+    totl_final_report: application.finalReportStatus, 
     
     // Properties required by ActionButton
     verify: application.verifyStatus || 0,
@@ -143,6 +142,7 @@ const RejectedRow = ({
         </span>
       </td>
 
+{/* enquiry Date */}
       <td className={cellStyle}>
   <div className="flex items-center space-x-2">
     <Calendar className={iconAccent} />
@@ -158,6 +158,17 @@ const RejectedRow = ({
     <Calendar className={iconAccent} />
     <span className={`text-sm font-medium ${textSecondary}`}>
       {application.completeDate}
+    </span>
+  </div>
+</td>
+
+{/* Rejected Date */}
+<td className={cellStyle}>
+  <div className="flex items-center space-x-2">
+    <Calendar className={iconAccent} />
+    <span className={`text-sm font-medium ${textSecondary}`}>
+      {application.rejectedDate}
+
     </span>
   </div>
 </td>

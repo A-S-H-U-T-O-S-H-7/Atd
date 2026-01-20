@@ -45,7 +45,7 @@ export const rejectedApplicationAPI = {
 export const formatRejectedApplicationForUI = (application) => {
   const enquiryDate = application.enquiry_date ? new Date(application.enquiry_date) : null;
   const completeDate = application.complete_date ? new Date(application.complete_date) : null;
-  const rejectedDate = application.created_at ? new Date(application.created_at) : null;
+  const rejectedDate = application.last_modify_date ? new Date(application.last_modify_date) : null;
 
   const permanentAddress = application.address || 
     `${application.house_no || ''}, ${application.city || ''}, ${application.state || ''} - ${application.pincode || ''}`.trim();
