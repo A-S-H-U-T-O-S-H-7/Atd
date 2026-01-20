@@ -250,12 +250,12 @@ const ReviewSection = ({ user }) => {
                 : "Your review helps us improve our services. Click stars to rate, comments are optional."}
           </p>
           {tokenInfo?.type === 'admin_view' && (
-            <p className="text-xs text-orange-600 mt-1">
+            <p className="text-xs text-orange-600 ">
               Login as user to submit a review
             </p>
           )}
           {previousReviewExists && !tokenInfo?.type === 'admin_view' && (
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-xs text-blue-600 ">
               Note: Updating will replace your previous review
             </p>
           )}
