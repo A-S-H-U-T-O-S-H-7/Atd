@@ -13,7 +13,7 @@ export default function LoanInformation({ user }) {
 
   const fetchLoanHistoryData = async () => {
   setIsLoading(true);
-  setError(null);
+  setError(null); 
   
   try {
     let token = localStorage.getItem('user_auth_token') || 

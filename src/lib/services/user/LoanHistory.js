@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://live.atdmoney.com/api';
+const API_BASE_URL = 'https://live.atdmoney.com/api';
 
 export const fetchLoanHistory = async (token) => {
   if (!token) {
