@@ -29,5 +29,5 @@ export const getStatusId = (statusName) => {
   const status = Object.values(APPLICATION_STATUS).find(s => 
     s.name.toLowerCase() === statusName.toLowerCase()
   );
-  return status ? status.id : 1; // Default to Pending
+  return status ? status.id : 1; 
 };

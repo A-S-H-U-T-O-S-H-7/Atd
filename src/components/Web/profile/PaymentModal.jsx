@@ -30,13 +30,11 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   useEffect(() => {
     if (isOpen) {
       isOpeningRef.current = true;
-      
       const timer = setTimeout(() => {
         isOpeningRef.current = false;
       }, 500);
       
       fetchPaymentDetails();
-      
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -73,10 +71,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   };
 
   const handleClose = () => {
-    if (isOpeningRef.current) {
-      console.log('Modal close blocked - still opening');
-      return;
-    }
+    if (isOpeningRef.current) return;
     onClose();
   };
 
@@ -96,18 +91,20 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
       renewal_gst = 0
     } = details;
 
-    return (
-      (principal_amount || 0) +
-      (normal_interest_before || 0) +
-      (normal_interest_after || 0) +
-      (penal_interest_before || 0) +
-      (penal_interest_after || 0) +
-      (penalty_before || 0) +
-      (penalty_after || 0) +
-      (bounce_amount || 0) +
-      (renewal || 0) +
-      (renewal_gst || 0)
+    const total = (
+      Number(principal_amount || 0) +
+      Number(normal_interest_before || 0) +
+      Number(normal_interest_after || 0) +
+      Number(penal_interest_before || 0) +
+      Number(penal_interest_after || 0) +
+      Number(penalty_before || 0) +
+      Number(penalty_after || 0) +
+      Number(bounce_amount || 0) +
+      Number(renewal || 0) +
+      Number(renewal_gst || 0)
     );
+
+    return isNaN(total) ? 0 : total;
   };
 
   const handleCustomAmountChange = (e) => {
@@ -225,7 +222,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               <h3 className="text-3xl font-bold text-gray-800 mb-3">Payment Successful! 🎉</h3>
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
                 <p className="text-lg font-semibold text-green-800">
-                  ₹{parseFloat(customAmount).toFixed(2)}
+                  ₹{(parseFloat(customAmount) || 0).toFixed(2)}
                 </p>
                 <p className="text-gray-600 text-sm mt-1">Payment completed</p>
               </div>
@@ -286,12 +283,28 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     });
   };
 
+  const formatCurrency = (amount) => {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount)) return '₹0.00';
+    return `₹${numAmount.toFixed(2)}`;
+  };
+
+  const getFormattedAmounts = () => {
+    return {
+      totalOutstanding: formatCurrency(totalOutstanding),
+      paymentAmount: formatCurrency(paymentAmount),
+      gatewayCharges: formatCurrency(gatewayCharges),
+      payableAmount: formatCurrency(payableAmount)
+    };
+  };
+
+  const amounts = getFormattedAmounts();
+
   return (
     <>
       <PaymentStatusScreen />
       <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
         <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative z-[100000]">
-          {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 z-10 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white">Payment Details</h2>
@@ -311,7 +324,6 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
           )}
 
           <div className="p-5 space-y-5">
-            {/* Payment Information - Compact Grid */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-3 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -338,18 +350,16 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               </div>
             </div>
 
-            {/* Total Outstanding - Highlighted */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-100/50 p-4 rounded-xl border-2 border-indigo-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-indigo-600" />
                   <span className="text-sm text-indigo-700 font-medium">Total Outstanding Amount</span>
                 </div>
-                <span className="text-xl font-bold text-indigo-900">₹{totalOutstanding.toFixed(2)}</span>
+                <span className="text-xl font-bold text-indigo-900">{amounts.totalOutstanding}</span>
               </div>
             </div>
 
-            {/* Amount Breakdown - Compact */}
             <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 border border-slate-200 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-4 h-4 text-slate-600" />
@@ -359,54 +369,61 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                 {paymentDetails?.principal_amount > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Principal Amount</span>
-                    <span className="font-semibold text-gray-800">₹{paymentDetails.principal_amount.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">{formatCurrency(paymentDetails.principal_amount)}</span>
                   </div>
                 )}
                 {(paymentDetails?.normal_interest_before > 0 || paymentDetails?.normal_interest_after > 0) && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Normal Interest</span>
-                    <span className="font-semibold text-gray-800">₹{(paymentDetails.normal_interest_before + paymentDetails.normal_interest_after).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency((paymentDetails.normal_interest_before || 0) + (paymentDetails.normal_interest_after || 0))}
+                    </span>
                   </div>
                 )}
                 {(paymentDetails?.penal_interest_before > 0 || paymentDetails?.penal_interest_after > 0) && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Penal Interest</span>
-                    <span className="font-semibold text-gray-800">₹{(paymentDetails.penal_interest_before + paymentDetails.penal_interest_after).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency((paymentDetails.penal_interest_before || 0) + (paymentDetails.penal_interest_after || 0))}
+                    </span>
                   </div>
                 )}
                 {(paymentDetails?.penalty_before > 0 || paymentDetails?.penalty_after > 0) && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Penalty</span>
-                    <span className="font-semibold text-gray-800">₹{(paymentDetails.penalty_before + paymentDetails.penalty_after).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency((paymentDetails.penalty_before || 0) + (paymentDetails.penalty_after || 0))}
+                    </span>
                   </div>
                 )}
                 {paymentDetails?.bounce_amount > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Bounce Charges</span>
-                    <span className="font-semibold text-gray-800">₹{paymentDetails.bounce_amount.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">{formatCurrency(paymentDetails.bounce_amount)}</span>
                   </div>
                 )}
                 {paymentDetails?.renewal > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Renewal + GST</span>
-                    <span className="font-semibold text-gray-800">₹{(paymentDetails.renewal + paymentDetails.renewal_gst).toFixed(2)}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatCurrency((paymentDetails.renewal || 0) + (paymentDetails.renewal_gst || 0))}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between items-center pt-2 border-t border-slate-300">
                   <span className="font-semibold text-gray-700">Total Outstanding</span>
-                  <span className="font-bold text-blue-600">₹{totalOutstanding.toFixed(2)}</span>
+                  <span className="font-bold text-blue-600">{amounts.totalOutstanding}</span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Amount Input - Enhanced */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <label className="block text-sm font-semibold text-gray-700">
                   Enter Payment Amount
                 </label>
                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  Max: ₹{totalOutstanding.toFixed(2)}
+                  Max: {amounts.totalOutstanding}
                 </span>
               </div>
               <div className="relative">
@@ -440,7 +457,6 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               </div>
             </div>
 
-            {/* Payment Method Selection - Compact */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-800">Payment Method</h3>
               
@@ -511,36 +527,34 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               </div>
             </div>
 
-            {/* Payment Summary - Premium Design */}
             <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 rounded-xl p-4 border-2 border-blue-200 shadow-sm">
               <h4 className="font-bold text-sm text-gray-800 mb-3">Payment Summary</h4>
               <div className="space-y-2.5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-600">Payment Amount</span>
-                  <span className="font-semibold text-sm text-gray-800">₹{paymentAmount.toFixed(2)}</span>
+                  <span className="font-semibold text-sm text-gray-800">{amounts.paymentAmount}</span>
                 </div>
                 {paymentMethod === 'cashfree' && gatewayCharges > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-600">Gateway Charges (2%)</span>
-                    <span className="font-semibold text-sm text-amber-600">+ ₹{gatewayCharges.toFixed(2)}</span>
+                    <span className="font-semibold text-sm text-amber-600">+ {formatCurrency(gatewayCharges)}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center border-t-2 border-blue-300 pt-2.5">
                   <span className="text-sm text-gray-800 font-bold">Total Payable</span>
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">₹{payableAmount.toFixed(2)}</span>
+                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{amounts.payableAmount}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-5 py-4 rounded-b-2xl">
             <button 
               onClick={handlePayment} 
               disabled={loading || (paymentMethod === 'neft' && !selectedBank) || paymentAmount <= 0} 
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : `Pay ₹{payableAmount.toFixed(2)}`}
+              {loading ? 'Processing...' : `Pay ${amounts.payableAmount}`}
             </button>
             {paymentMethod === 'neft' && (
               <p className="text-center text-xs text-gray-500 mt-2">Share transaction details with support after transfer</p>

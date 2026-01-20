@@ -62,5 +62,5 @@ export const TokenManager = {
   isAdminView: () => {
     if (typeof window === 'undefined') return false;
     return !!sessionStorage.getItem(TOKEN_KEYS.ADMIN_VIEW);
-  }
+  } 
 };

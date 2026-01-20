@@ -63,7 +63,7 @@ export const AdminAuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (token) {
-        await fetch('https://api.atdmoney.in/api/crm/logout', {
+        await fetch('https://live.atdmoney.com/api/crm/logout', {
           method: 'GET',
           headers: {
             'Accept': 'application/json',

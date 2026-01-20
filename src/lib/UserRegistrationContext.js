@@ -164,7 +164,7 @@ export const UserContextProvider = ({ children }) => {
           Accept: "application/json",
           Authorization: `Bearer ${authToken}`
         }
-      }
+      } 
     );
 
       if (response.ok) {

@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: "https://api.atdmoney.in/api",
+  baseURL: "https://live.atdmoney.com/api",
   timeout: 10000,
   headers: {
     Accept: "application/json"
@@ -68,7 +68,7 @@ api.interceptors.response.use(
 
         // Try to refresh the token
         const refreshResponse = await axios.get(
-          "https://api.atdmoney.in/api/crm/refresh",
+          "https://live.atdmoney.com/crm/refresh",
           {
             headers: {
               Accept: "application/json",

@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_ATD_API}/api/user/me`,
+        `${process.env.NEXT_PUBLIC_ATD_API}/api/user/me`, 
         {
           headers: {
             Accept: "application/json",

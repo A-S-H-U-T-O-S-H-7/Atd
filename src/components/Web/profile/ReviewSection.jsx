@@ -7,7 +7,7 @@ const ReviewSection = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleStarClick = (starIndex) => {
-    setRating(starIndex + 1);
+    setRating(starIndex + 1); 
   };
 
   const handleSubmit = () => {
