@@ -45,7 +45,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://live.atdmoney.com/api/user/cashfree/initiate/${applicationId}`,
+        `https://live.atdmoney.com/api/user/cashfree/initiate/${applicationId}`,
         { method: 'GET', headers: getAuthHeaders() }
       );
 
