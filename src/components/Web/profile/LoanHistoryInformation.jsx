@@ -15,7 +15,7 @@ export default function LoanInformation({ user }) {
   setIsLoading(true);
   setError(null); 
   
-  try {
+  try { 
     let token = localStorage.getItem('user_auth_token') || 
                 sessionStorage.getItem('admin_view_token');
     

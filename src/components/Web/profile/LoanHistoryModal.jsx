@@ -24,7 +24,7 @@ const STATUS_STYLES = {
   rejected: 'bg-red-100 text-red-700',
   inprogress: 'bg-orange-100 text-orange-700',
   applied: 'bg-gray-100 text-gray-700'
-};
+}; 
 
 export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoading }) {
   if (!isOpen) return null;
@@ -125,7 +125,7 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
                         {formatDate(loan.applied_date)}
                       </td>
                       <td className="p-4 border-r border-blue-100 text-slate-600">
-                        {formatDate(loan.applied_date)}
+                        {loan.tenure} days
                       </td>
                       <td className="p-4 border-r border-blue-100">
                         {formatDate(loan.duedate) !== 'N/A' ? (

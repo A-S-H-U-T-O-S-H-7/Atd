@@ -206,7 +206,7 @@ export default function StepCompleteProfile({
               /> 
               {/* ReviewSection - Only visible on lg screens and above */}
               <div className="hidden lg:block">
-                <ReviewSection />
+                <ReviewSection user={user} />
               </div>
             </div>
             
@@ -244,10 +244,10 @@ export default function StepCompleteProfile({
         {/* ReviewSection - Only visible on screens smaller than lg */}
         <div className='px-4 md:px-8 pb-5'>
           <div className="block pb-5 lg:hidden">
-            <ReviewSection />
+            <ReviewSection user={user} />
           </div>
 
-          <AppDownloadSection />
+          <AppDownloadSection /> 
         </div>
 
         <Footer/>
