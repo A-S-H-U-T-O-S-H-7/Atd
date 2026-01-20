@@ -13,22 +13,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   const [customAmount, setCustomAmount] = useState('');
   const { cashfree, initiatePayment } = useCashfree();
   const modalRef = useRef(null);
-  const [modalMounted, setModalMounted] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setModalMounted(true);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    } else {
-      setModalMounted(false);
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+  const isOpeningRef = useRef(false);
 
   const getAuthHeaders = () => {
     const tokenData = TokenManager.getToken();
@@ -44,24 +29,17 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setModalMounted(true);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    } else {
-      setModalMounted(false);
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (isOpen && modalMounted) {
+      isOpeningRef.current = true;
+      
+      const timer = setTimeout(() => {
+        isOpeningRef.current = false;
+      }, 500);
+      
       fetchPaymentDetails();
+      
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, modalMounted]);
+  }, [isOpen]);
 
   const fetchPaymentDetails = async () => {
     try {
@@ -92,6 +70,14 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    if (isOpeningRef.current) {
+      console.log('Modal close blocked - still opening');
+      return;
+    }
+    onClose();
   };
 
   const calculateTotalOutstanding = (details) => {
@@ -303,13 +289,13 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   return (
     <>
       <PaymentStatusScreen />
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[9999]">
-        <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
+        <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative z-[100000]">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 z-10 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white">Payment Details</h2>
-              <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors" disabled={loading}>
+              <button onClick={handleClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors" disabled={loading}>
                 <X className="w-5 h-5 text-white" />
               </button>
             </div>
@@ -554,7 +540,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               disabled={loading || (paymentMethod === 'neft' && !selectedBank) || paymentAmount <= 0} 
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : `Pay ₹${payableAmount.toFixed(2)}`}
+              {loading ? 'Processing...' : `Pay ₹{payableAmount.toFixed(2)}`}
             </button>
             {paymentMethod === 'neft' && (
               <p className="text-center text-xs text-gray-500 mt-2">Share transaction details with support after transfer</p>
