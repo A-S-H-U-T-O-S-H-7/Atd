@@ -8,7 +8,7 @@ const BankLoanModal = ({ isOpen, onClose, user }) => {
 
   return (
     <div className="fixed inset-0 mt-20 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-xl">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-xl">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-3">
           <div className="flex justify-between items-center">
