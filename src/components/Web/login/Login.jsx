@@ -85,7 +85,7 @@ function MobileLogin() {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
-                },
+                }, 
                 body: JSON.stringify({ 
                     provider: 1,
                     mobile: parseInt(values.phoneNumber)
@@ -93,7 +93,6 @@ function MobileLogin() {
             });
 
             const result = await response.json();
-            console.log('Send OTP Result:', result);
 
             if (result.success) {
                 setPhoneData({ ...phoneData, phoneNumber: values.phoneNumber });
@@ -131,7 +130,6 @@ function MobileLogin() {
             });
 
             const result = await response.json();
-            console.log('Verify OTP Result:', result);
 
             if (result.success) {
                 // Extract user data and token from response
