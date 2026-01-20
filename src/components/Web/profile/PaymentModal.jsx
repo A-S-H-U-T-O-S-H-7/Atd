@@ -151,7 +151,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
       };
 
       const orderResponse = await fetch(
-        'http://live.atdmoney.com/api/user/cashfree/create-order',
+        'https://live.atdmoney.com/api/user/cashfree/create-order',
         {
           method: 'POST',
           headers: getAuthHeaders(),
