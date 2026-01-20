@@ -61,7 +61,7 @@ export default function LoanHistoryModal({ isOpen, onClose, loanHistory, isLoadi
         {formattedAmount}
       </span>
     );
-  };
+  }; 
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-md bg-opacity-50 z-50 flex items-center justify-center p-4">

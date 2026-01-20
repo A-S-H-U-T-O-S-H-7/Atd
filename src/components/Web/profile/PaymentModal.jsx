@@ -272,8 +272,8 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   return (
     <>
       <PaymentStatusScreen />
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[9999]">
-        <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+  <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 z-10 rounded-t-2xl">
             <div className="flex items-center justify-between">
@@ -310,7 +310,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                   <span className="text-xs text-amber-700 font-medium">Due Date</span>
                 </div>
                 <p className="font-semibold text-sm text-gray-800">{formatDate(paymentDetails?.due_date)}</p>
-              </div>
+              </div> 
 
               <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-3 rounded-lg border border-green-200">
                 <div className="flex items-center gap-1.5 mb-1">
