@@ -87,8 +87,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
       penalty_before = 0,
       penalty_after = 0,
       bounce_amount = 0,
-      renewal = 0,
-      renewal_gst = 0
+      
     } = details;
 
     const total = (
@@ -99,9 +98,8 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
       Number(penal_interest_after || 0) +
       Number(penalty_before || 0) +
       Number(penalty_after || 0) +
-      Number(bounce_amount || 0) +
-      Number(renewal || 0) +
-      Number(renewal_gst || 0)
+      Number(bounce_amount || 0) 
+      
     );
 
     return isNaN(total) ? 0 : total;
@@ -323,17 +321,17 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
             </div>
           )}
 
-          <div className="p-5 space-y-5">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-3 rounded-lg border border-blue-200">
+          <div className=" p-2 md:p-5 space-y-3 md:space-y-5">
+            <div className="grid grid-cols-3 gap-1 md:gap-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-1 md:p-3 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Calendar className="w-3.5 h-3.5 text-blue-600" />
                   <span className="text-xs text-blue-700 font-medium">Disburse Date</span>
                 </div>
-                <p className="font-semibold text-sm text-gray-800">{formatDate(paymentDetails?.disburse_date)}</p>
+                <p className="font-semibold text-sm text-gray-800">{formatDate(paymentDetails?.transaction_date)}</p>
               </div>
 
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-3 rounded-lg border border-amber-200">
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 p-1 md:p-3 rounded-lg border border-amber-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock className="w-3.5 h-3.5 text-amber-600" />
                   <span className="text-xs text-amber-700 font-medium">Due Date</span>
@@ -341,16 +339,16 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                 <p className="font-semibold text-sm text-gray-800">{formatDate(paymentDetails?.due_date)}</p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-3 rounded-lg border border-green-200">
+              <div className="bg-gradient-to-br from-green-50 to-green-100/50 p-1 md:p-3 rounded-lg border border-green-200">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-xs text-green-700 font-medium">Last Collection</span>
+                  <span className="text-xs text-green-700 font-medium">Last Payment</span>
                 </div>
                 <p className="font-semibold text-sm text-gray-800">{formatDate(paymentDetails?.last_collection_date)}</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-100/50 p-4 rounded-xl border-2 border-indigo-200">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-100/50 p-2 md:p-4 rounded-lg md:rounded-xl border-2 border-indigo-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-indigo-600" />
@@ -360,7 +358,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 border border-slate-200 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100/50 border border-slate-200 rounded-lg md:rounded-xl p-2 md:p-4">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-4 h-4 text-slate-600" />
                 <h4 className="font-semibold text-sm text-gray-800">Amount Breakdown</h4>
@@ -402,14 +400,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                     <span className="font-semibold text-gray-800">{formatCurrency(paymentDetails.bounce_amount)}</span>
                   </div>
                 )}
-                {paymentDetails?.renewal > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Renewal + GST</span>
-                    <span className="font-semibold text-gray-800">
-                      {formatCurrency((paymentDetails.renewal || 0) + (paymentDetails.renewal_gst || 0))}
-                    </span>
-                  </div>
-                )}
+                
                 <div className="flex justify-between items-center pt-2 border-t border-slate-300">
                   <span className="font-semibold text-gray-700">Total Outstanding</span>
                   <span className="font-bold text-blue-600">{amounts.totalOutstanding}</span>
