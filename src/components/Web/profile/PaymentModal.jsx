@@ -13,6 +13,22 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   const [customAmount, setCustomAmount] = useState('');
   const { cashfree, initiatePayment } = useCashfree();
   const modalRef = useRef(null);
+  const [modalMounted, setModalMounted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setModalMounted(true);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      setModalMounted(false);
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const getAuthHeaders = () => {
     const tokenData = TokenManager.getToken();
@@ -28,9 +44,24 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
 
   useEffect(() => {
     if (isOpen) {
+      setModalMounted(true);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      setModalMounted(false);
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && modalMounted) {
       fetchPaymentDetails();
     }
-  }, [isOpen]);
+  }, [isOpen, modalMounted]);
 
   const fetchPaymentDetails = async () => {
     try {
@@ -272,20 +303,8 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   return (
     <>
       <PaymentStatusScreen />
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[9999]"
-        onClick={(e) => {
-          // Only close if clicking the backdrop itself, not the modal content
-          if (e.target === e.currentTarget && !loading) {
-            onClose();
-          }
-        }}
-      >
-        <div 
-          ref={modalRef} 
-          className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[9999]">
+        <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 z-10 rounded-t-2xl">
             <div className="flex items-center justify-between">

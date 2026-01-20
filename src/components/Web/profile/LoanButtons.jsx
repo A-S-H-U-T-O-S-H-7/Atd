@@ -43,27 +43,21 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow, user }) => {
   );
 
   // Handle Pay Now click with proper event handling
-  const handlePayNowClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handlePayNowClick = () => {
     if (isPayNowEnabled && onPayNow) {
       onPayNow();
     }
   };
 
   // Handle Apply New Loan click
-  const handleApplyNewLoanClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleApplyNewLoanClick = () => {
     if (onApplyNewLoan) {
       onApplyNewLoan();
     }
   };
 
   // Handle Upload Documents click
-  const handleUploadDocsClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleUploadDocsClick = () => {
     setShowUploadModal(true);
   };
 
@@ -77,14 +71,12 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow, user }) => {
         >
           <button 
             onClick={handlePayNowClick}
-            onTouchEnd={handlePayNowClick}
             className={`flex-1 px-2 md:px-6 py-2 md:py-2 font-semibold rounded-md md:rounded-xl shadow-lg transition-all duration-200 ease-out border ${
               isPayNowEnabled
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl transform hover:-translate-y-0.5 hover:from-emerald-600 hover:to-teal-700 border-emerald-400/20 cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300 opacity-60'
             }`}
             disabled={!isPayNowEnabled}
-            type="button"
           >
             <div className="flex items-center justify-center space-x-2">
               <span>Pay Now</span>
@@ -101,9 +93,7 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow, user }) => {
           >
             <button 
               onClick={handleApplyNewLoanClick}
-              onTouchEnd={handleApplyNewLoanClick}
               className="flex-1 px-2 md:px-6 py-2  font-semibold rounded-md md:rounded-xl shadow-lg transition-all duration-200 ease-out border bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-xl transform hover:-translate-y-0.5 hover:from-blue-600 hover:to-purple-700 border-blue-400/20 cursor-pointer"
-              type="button"
             >
               <div className="flex items-center justify-center space-x-2">
                 <span>Apply For New Loan</span>
@@ -120,9 +110,7 @@ const LoanButtons = ({ loanStatus = 2, onApplyNewLoan, onPayNow, user }) => {
           >
             <button 
               onClick={handleUploadDocsClick}
-              onTouchEnd={handleUploadDocsClick}
               className="flex-1 px-2 md:px-6 py-2  font-semibold rounded-md md:rounded-xl shadow-lg transition-all duration-200 ease-out border bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:shadow-xl transform hover:-translate-y-0.5 hover:from-orange-600 hover:to-amber-700 border-orange-400/20 cursor-pointer"
-              type="button"
             >
               <div className="flex items-center justify-center space-x-2">
                 <span>Upload Docs</span>
