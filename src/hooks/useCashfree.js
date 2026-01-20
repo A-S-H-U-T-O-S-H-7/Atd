@@ -8,7 +8,7 @@ export const useCashfree = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const initializeCashfree = async () => {
+    const initializeCashfree = async () => { 
       try {
         // Check if we're in browser environment
         if (typeof window === 'undefined') {
@@ -44,7 +44,6 @@ export const useCashfree = () => {
     };
 
     try {
-      // Use the correct Cashfree method based on your version
       // Method 1: For newer versions that return a Promise
       if (typeof cashfree.checkout === 'function') {
         const result = await cashfree.checkout(checkoutOptions);

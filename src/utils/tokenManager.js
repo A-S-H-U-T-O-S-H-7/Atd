@@ -2,7 +2,7 @@ const TOKEN_KEYS = {
   USER: 'user_auth_token',
   ADMIN_VIEW: 'admin_view_token',
   USER_DATA: 'user_data',
-  ADMIN_VIEW_DATA: 'admin_view_data'
+  ADMIN_VIEW_DATA: 'admin_view_data' 
 };
 
 export const TokenManager = {

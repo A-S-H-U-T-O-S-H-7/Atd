@@ -33,7 +33,7 @@ export default function StepCompleteProfile({
   showCongratulationsModal, 
   setShowCongratulationsModal,
   showProfileLoading,
-  setShowProfileLoading 
+  setShowProfileLoading  
 }) {
 
     const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
@@ -97,7 +97,7 @@ export default function StepCompleteProfile({
     { value: LOAN_STATUS.IN_PROCESS, label: 'In Progress' },
     { value: LOAN_STATUS.SANCTIONED, label: 'Sanctioned' },
     { value: LOAN_STATUS.REJECTED, label: 'Rejected' },
-    { value: LOAN_STATUS.DISBURSED, label: 'Disbursed' },
+    { value: LOAN_STATUS.DISBURSED_PROCESSING, label: 'Disbursed' },
     { value: LOAN_STATUS.CLOSED, label: 'Closed' }
   ];
 
