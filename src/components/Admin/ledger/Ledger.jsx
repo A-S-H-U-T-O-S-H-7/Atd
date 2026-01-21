@@ -12,7 +12,7 @@ import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService,settleService,renewalService} from "@/lib/services/LedgerServices";
 import Swal from 'sweetalert2';
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"; 
 
 const LedgerPage = () => {
   const { theme } = useThemeStore();
@@ -114,80 +114,184 @@ const LedgerPage = () => {
   }, [searchField, searchTerm, dateRange]);
 
   const handleExport = async () => {
-    if (ledgerData.length === 0) {
-      Swal.fire({
-        title: 'No Data to Export',
-        text: 'There is no ledger data to export.',
-        icon: 'warning',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: 'Export Ledger Data?',
-      text: 'This will export all ledger data with current filters.',
-      icon: 'question',
-      showCancelButton: true,
+  if (ledgerData.length === 0) {
+    Swal.fire({
+      title: 'No Data to Export',
+      text: 'There is no ledger data to export.',
+      icon: 'warning',
       confirmButtonColor: '#10b981',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Export CSV',
-      cancelButtonText: 'Cancel',
       background: isDark ? "#1f2937" : "#ffffff",
       color: isDark ? "#f9fafb" : "#111827",
     });
+    return;
+  }
 
-    if (!result.isConfirmed) return;
+  const result = await Swal.fire({
+    title: 'Export Ledger Data?',
+    text: 'This will export all ledger data with current filters.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Export Excel',
+    cancelButtonText: 'Cancel',
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
 
-    try {
-      setExporting(true);
-      
+  if (!result.isConfirmed) return;
+
+  try {
+    setExporting(true);
+    
+    // Get ALL data from server using export API (not just current page)
+    const exportParams = buildApiParams();
+    // Remove pagination for export to get all data
+    delete exportParams.per_page;
+    delete exportParams.page;
+    
+    const response = await ledgerAPI.getLedgerExport(exportParams);
+    
+    if (response && response.success && response.ledgers) {
+      // Format the data for Excel export
       const headers = [
-        'SN', 'Loan No', 'Due Date', 'Name', 'CRN No', 
-        'Balance', 'Overdue Amount', 'Settled', 'Phone', 'Email', 'Address'
+        'SN', 'Loan No', 'CRNNo', 'Name', 'State', 'Sanction Amount', 
+        'Process Fee', 'GST', 'Transaction Date', 'Disbursed Account No', 
+        'Due Date', 'Collection Date', 'Collection Amount', 
+        'Outstanding Balance', 'Overdue Balance', 'Status', 'Closed Date'
       ];
 
-      const dataRows = ledgerData.map((item, index) => [
+      // Format status text
+      const getStatusText = (loanStatus) => {
+        if (loanStatus === 11) return 'Open';
+        if (loanStatus === 13) return 'Closed';
+        return loanStatus ? String(loanStatus) : 'N/A';
+      };
+
+      // Format date
+      const formatExportDate = (dateString) => {
+        if (!dateString || dateString === 'null') return '';
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return dateString;
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          return `${day}/${month}/${year}`;
+        } catch {
+          return dateString;
+        }
+      };
+
+      // Format currency
+      const formatCurrency = (amount) => {
+        if (!amount && amount !== 0) return '0.00';
+        const num = parseFloat(amount);
+        if (isNaN(num)) return '0.00';
+        return num.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      };
+
+      // Prepare data rows
+      const dataRows = response.ledgers.map((item, index) => [
         index + 1,
-        item.loanNo,
-        item.dueDate,
-        item.name,
-        item.crnno,
-        item.balance,
-        item.over_due,
-        item.settled ? 'Yes' : 'No',
-        item.phone,
-        item.email,
-        item.address
+        item.loan_no || 'N/A',
+        item.crnno || 'N/A',
+        item.name || 'N/A',
+        item.state || 'N/A',
+        formatCurrency(item.sanction_amount),
+        formatCurrency(item.process_fee),
+        formatCurrency(item.gst),
+        formatExportDate(item.transaction_date),
+        item.disburse_ac_no || 'N/A',
+        formatExportDate(item.duedate),
+        formatExportDate(item.last_collection_date),
+        formatCurrency(item.total_collection_amount),
+        formatCurrency(item.outstanding_balance),
+        formatCurrency(item.ourdue_balance),
+        getStatusText(item.loan_status),
+        formatExportDate(item.closed_date)
       ]);
 
+      // Combine headers and data
       const exportData = [headers, ...dataRows];
-      exportToExcel(exportData, `ledger-export-${new Date().toISOString().split('T')[0]}.csv`);
+      
+      // Export with red header background
+      exportToExcel(exportData, `ledger-report-${new Date().toISOString().split('T')[0]}.xls`, {
+        headerBgColor: '#FF0000', // Red background
+        headerTextColor: '#FFFFFF', // White text
+        boldHeaders: true,
+        freezeHeader: true
+      });
       
       await Swal.fire({
         title: 'Export Successful!',
-        text: 'Ledger data has been exported as CSV.',
+        text: `Ledger report has been exported with ${response.ledgers.length} records.`,
         icon: 'success',
         confirmButtonColor: '#10b981',
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
       });
-    } catch (err) {
-      console.error("Export error:", err);
+    } else {
+      throw new Error(response?.message || 'Failed to fetch export data');
+    }
+  } catch (err) {
+    console.error("Export error:", err);
+    
+    // Fallback to client-side export if server export fails
+    if (ledgerData.length > 0) {
+      Swal.fire({
+        title: 'Server Export Failed',
+        text: 'Exporting current page data instead...',
+        icon: 'warning',
+        confirmButtonColor: '#f59e0b',
+        background: isDark ? "#1f2937" : "#ffffff",
+        color: isDark ? "#f9fafb" : "#111827",
+      }).then(() => {
+        // Fallback to original client-side export
+        const headers = [
+          'SN', 'Loan No', 'Due Date', 'Name', 'CRN No', 
+          'Balance', 'Overdue Amount', 'Settled', 'Phone', 'Email', 'Address'
+        ];
+        
+        const dataRows = ledgerData.map((item, index) => [
+          index + 1,
+          item.loanNo,
+          item.dueDate,
+          item.name,
+          item.crnno,
+          item.balance,
+          item.over_due,
+          item.settled ? 'Yes' : 'No',
+          item.phone,
+          item.email,
+          item.address
+        ]);
+        
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, `ledger-export-fallback-${new Date().toISOString().split('T')[0]}.xls`, {
+          headerBgColor: '#FF0000',
+          headerTextColor: '#FFFFFF',
+          boldHeaders: true,
+          freezeHeader: true
+        });
+      });
+    } else {
       Swal.fire({
         title: 'Export Failed!',
-        text: 'Failed to export data. Please try again.',
+        text: err.message || 'Failed to export data. Please try again.',
         icon: 'error',
         confirmButtonColor: '#ef4444',
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
       });
-    } finally {
-      setExporting(false);
     }
-  };
+  } finally {
+    setExporting(false);
+  }
+};
 
   const handleViewTransaction = async (item) => { 
     try {
@@ -472,17 +576,17 @@ const LedgerPage = () => {
     </button>
     
     <button
-      onClick={handleExport}
-      disabled={exporting || ledgerData.length === 0}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-green-600 hover:bg-green-700 text-white"
-          : "bg-green-500 hover:bg-green-600 text-white"
-      } ${exporting || ledgerData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export CSV'}</span>
-    </button>
+  onClick={handleExport}
+  disabled={exporting}
+  className={`px-3 sm:px-4 py-2 rounded-md  font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+    isDark
+      ? "bg-green-600 hover:bg-green-700 text-white"
+      : "bg-green-500 hover:bg-green-600 text-white"
+  } ${exporting ? 'opacity-50 cursor-not-allowed' : ''}`}
+>
+  <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
+  <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
+</button>
   </div>
 </div>
 

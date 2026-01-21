@@ -24,21 +24,32 @@ export const exportToExcel = (data, filename) => {
   tableHTML += '</x:ExcelWorkbook>';
   tableHTML += '</xml>';
   tableHTML += '<![endif]-->';
-  tableHTML += '<style>td { mso-number-format:\\@; }</style>';
   tableHTML += '</head>';
   tableHTML += '<body>';
   tableHTML += '<table border="1">';
   
-  // Add rows to table
-  data.forEach(row => {
+  // Add header row with inline bgcolor attribute (works in Excel)
+  tableHTML += '<thead><tr>';
+  data[0].forEach(cell => {
+    const cellContent = cell !== null && cell !== undefined ? String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+    tableHTML += `<th bgcolor="#4472C4" style="color: white; font-weight: bold; text-align: center;">${cellContent}</th>`;
+  });
+  tableHTML += '</tr></thead>';
+  
+  // Add data rows (skip first row as it's the header)
+  tableHTML += '<tbody>';
+  data.slice(1).forEach(row => {
     tableHTML += '<tr>';
     row.forEach(cell => {
       // Escape HTML and handle special characters
       const cellContent = cell !== null && cell !== undefined ? String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-      tableHTML += `<td>${cellContent}</td>`;
+      // Check if cell is a number to avoid green triangle
+      const isNumber = !isNaN(cell) && cell !== null && cell !== undefined && cell !== '';
+      tableHTML += `<td${isNumber ? ' style="mso-number-format:0"' : ''}>${cellContent}</td>`;
     });
     tableHTML += '</tr>';
   });
+  tableHTML += '</tbody>';
   
   tableHTML += '</table>';
   tableHTML += '</body>';

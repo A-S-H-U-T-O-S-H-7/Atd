@@ -9,6 +9,15 @@ export const ledgerAPI = {
     } catch (error) {
       throw error;
     }
+  }, 
+
+  getLedgerExport: async (params = {}) => {
+    try {
+      const response = await api.get("/crm/ledger/export", { params });
+      return response;
+    } catch (error) {
+      throw error;
+    }
   },
 
   getLedgerDetails: async (applicationId) => {
