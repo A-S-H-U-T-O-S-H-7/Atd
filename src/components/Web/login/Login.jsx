@@ -112,60 +112,61 @@ function MobileLogin() {
     };
 
     const handleVerifyOTP = async (values) => {
-        try {
-            setLoader(true);
-            setErrorMessage("");
-            
-            const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/login/verify`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    provider: 1,
-                    mobile: parseInt(phoneData.phoneNumber),
-                    otp: values.phoneOtp
-                }),
+  try {
+    setLoader(true);
+    setErrorMessage("");
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_ATD_API}/api/user/login/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        provider: 1,
+        mobile: parseInt(phoneData.phoneNumber),
+        otp: values.phoneOtp
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const userData = result.user || result.data || result;
+      const token = result.token || result.access_token;
+
+      if (token && userData) {
+        TokenManager.setUserToken(token, userData);
+        
+        const loginSuccess = await login(userData, token);
+
+        if (loginSuccess) {
+          setTimeout(() => {
+            setPhoneData({ 
+              ...phoneData, 
+              isPhoneVerified: true, 
+              phoneOtp: values.phoneOtp 
             });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Extract user data and token from response
-                const userData = result.user || result.data || result;
-                const token = result.token || result.access_token;
-
-                if (token && userData) {
-                       TokenManager.setUserToken(token, userData);
-                        const loginSuccess = await login(userData, token);
-
-                    if (loginSuccess) {
-                        setPhoneData({ 
-                            ...phoneData, 
-                            isPhoneVerified: true, 
-                            phoneOtp: values.phoneOtp 
-                        });
-                        
-                        router.push('/userProfile');
-                    } else {
-                        setErrorMessage("Login failed. Please try again.");
-                        setLoader(false);
-                    }
-                } else {
-                    setErrorMessage("Invalid response from server. Please try again.");
-                    setLoader(false);
-                }
-            } else {
-                setErrorMessage(result?.message || "Invalid OTP");
-                setLoader(false);
-            }
-        } catch (error) {
-            console.error('Verify OTP Error:', error);
-            setErrorMessage("Network error. Please try again.");
-            setLoader(false);
+            router.push('/userProfile');
+          }, 100);
+        } else {
+          setErrorMessage("Login failed. Please try again.");
+          setLoader(false);
         }
-    };
+      } else {
+        setErrorMessage("Invalid response from server. Please try again.");
+        setLoader(false);
+      }
+    } else {
+      setErrorMessage(result?.message || "Invalid OTP");
+      setLoader(false);
+    }
+  } catch (error) {
+    console.error('Verify OTP Error:', error);
+    setErrorMessage("Network error. Please try again.");
+    setLoader(false);
+  }
+};
 
     const handleResendOTP = async () => {
         if (!canResend) return;

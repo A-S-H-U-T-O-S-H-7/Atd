@@ -8,6 +8,7 @@ import LedgerTable from "./LedgerTable";
 import TallyTransactionDetails from "../TallyTransactionDetails";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { tallyLedgerAPI, formatTallyLedgerDataForUI, adjustmentService, pdfService } from "@/lib/services/TallyLedgerServices";
+import { exportDataToExcel, formatLedgerDataForExport, generateExportFilename } from "@/components/utils/tallyledgerExport";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
 
@@ -99,195 +100,40 @@ const LedgerPage = () => {
     }
   };
 
-const handleExport = async () => {
-  if (ledgerData.length === 0) {
-    Swal.fire({
-      title: 'No Data to Export',
-      text: 'There is no ledger data to export.',
-      icon: 'warning',
-      confirmButtonColor: '#10b981',
-      background: isDark ? "#1f2937" : "#ffffff",
-      color: isDark ? "#f9fafb" : "#111827",
-    });
-    return;
-  }
-
-  const result = await Swal.fire({
-    title: 'Export Tally Ledger Data?',
-    text: 'This will export all tally ledger data with current filters.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#10b981',
-    cancelButtonColor: '#6b7280',
-    confirmButtonText: 'Export XLSX',
-    cancelButtonText: 'Cancel',
-    background: isDark ? "#1f2937" : "#ffffff",
-    color: isDark ? "#f9fafb" : "#111827",
-  });
-
-  if (!result.isConfirmed) return;
-
-  try {
-    setExporting(true);
-    
-    // Import XLSX library dynamically
-    const XLSX = await import('xlsx');
-    
-    // Prepare data for XLSX
-    const exportData = ledgerData.map(item => ({
-      'SN': item.sn,
-      'Loan No.': item.loanNo || 'N/A',
-      'Disburse Date': item.disburseDate || '',
-      'Due Date': item.dueDate || '',
-      'Name': item.name || 'N/A',
-      'CRN No': item.crnno || 'N/A',
-      'Address': item.address || 'N/A',
-      'Phone No.': item.phoneNo || 'N/A',
-      'Email': item.email || 'N/A',
-      'Balance': item.balance || 0
-    }));
-    
-    // Create worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    
-    // Auto-size columns
-    const maxWidth = 50;
-    const colWidths = [];
-    
-    // Get header keys
-    const headers = Object.keys(exportData[0] || {});
-    
-    // Calculate column widths based on content
-    headers.forEach((header, colIndex) => {
-      // Start with header length
-      let maxLength = header.length;
-      
-      // Check data in each row
-      exportData.forEach(row => {
-        const cellValue = row[header];
-        const cellLength = cellValue ? String(cellValue).length : 0;
-        if (cellLength > maxLength) {
-          maxLength = cellLength;
-        }
-      });
-      
-      // Cap the width
-      colWidths.push({ wch: Math.min(maxLength + 2, maxWidth) });
-    });
-    
-    worksheet['!cols'] = colWidths;
-    
-    // Create workbook
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tally Ledger');
-    
-    // Generate filename with date
-    const today = new Date().toISOString().split('T')[0];
-    const filename = `tally-ledger-${today}.xlsx`;
-    
-    // Download the file
-    XLSX.writeFile(workbook, filename);
-    
-    toast.success('Tally ledger data exported successfully!', {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    
-  } catch (err) {
-    console.error("Export error:", err);
-    
-    // Fallback to CSV if XLSX fails
-    if (err.message?.includes("xlsx")) {
-      await exportAsCSV();
-    } else {
+  const handleExport = async () => {
+    if (ledgerData.length === 0) {
       Swal.fire({
-        title: 'Export Failed!',
-        text: 'Failed to export data. Please try again.',
-        icon: 'error',
-        confirmButtonColor: '#ef4444',
+        title: 'No Data to Export',
+        text: 'There is no ledger data to export.',
+        icon: 'warning',
+        confirmButtonColor: '#10b981',
         background: isDark ? "#1f2937" : "#ffffff",
         color: isDark ? "#f9fafb" : "#111827",
       });
+      return;
     }
-  } finally {
-    setExporting(false);
-  }
-};
 
-// Fallback CSV export function
-const exportAsCSV = async () => {
-  try {
-    // Prepare headers
-    const headers = [
-      'SN', 'Loan No.', 'Disburse Date', 'Due Date', 'Name', 
-      'CRN No', 'Address', 'Phone No.', 'Email', 'Balance'
-    ];
+    setExporting(true);
     
-    // Prepare data rows
-    const dataRows = ledgerData.map(item => {
-      const escapeCSV = (value) => {
-        if (value === null || value === undefined) return '';
-        
-        const strValue = String(value);
-        const needsQuotes = strValue.includes(',') || 
-                           strValue.includes('"') || 
-                           strValue.includes('\n') || 
-                           strValue.includes('\r');
-        
-        if (needsQuotes) {
-          return `"${strValue.replace(/"/g, '""')}"`;
-        }
-        
-        return strValue;
-      };
+    try {
+      // Format ledger data for export
+      const exportData = formatLedgerDataForExport(ledgerData);
       
-      return [
-        item.sn,
-        escapeCSV(item.loanNo || 'N/A'),
-        escapeCSV(item.disburseDate),
-        escapeCSV(item.dueDate),
-        escapeCSV(item.name || 'N/A'),
-        escapeCSV(item.crnno || 'N/A'),
-        escapeCSV(item.address || 'N/A'),
-        escapeCSV(item.phoneNo || 'N/A'),
-        escapeCSV(item.email || 'N/A'),
-        item.balance || 0  
-      ];
-    });
-    
-    // Create CSV content
-    const csvContent = [
-      headers.join(','),
-      ...dataRows.map(row => row.join(','))
-    ].join('\n');
-    
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    // Download
-    const today = new Date().toISOString().split('T')[0];
-    const filename = `tally-ledger-${today}.csv`;
-    
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Generate filename
+      const filename = generateExportFilename('tally-ledger');
       
-      toast.success('Exported as CSV (XLSX failed)', {
-        position: "top-right",
-        autoClose: 3000,
+      // Use reusable export function
+      await exportDataToExcel(exportData, filename, isDark, {
+        title: 'Export Tally Ledger Data?',
+        message: 'This will export all tally ledger data with current filters.'
       });
+      
+    } catch (error) {
+      console.error("Export error:", error);
+    } finally {
+      setExporting(false);
     }
-  } catch (csvErr) {
-    console.error("CSV export error:", csvErr);
-    throw csvErr;
-  }
-};
+  };
 
   const handleViewTransaction = async (item) => { 
     try {
@@ -303,43 +149,43 @@ const exportAsCSV = async () => {
   };
 
   const handleBalanceUpdate = async (updateData) => {
-  try {
-    if (!selectedTransactionData?.application_id) {
-      toast.error('Application ID not found', {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
+    try {
+      if (!selectedTransactionData?.application_id) {
+        toast.error('Application ID not found', {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        return;
+      }
 
-    const result = await adjustmentService.submitAdjustment(
-      selectedTransactionData.application_id,
-      updateData
-    );
-    
-    if (result.success) {
-      toast.success(result.message || 'Adjustment has been submitted successfully!', {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      const result = await adjustmentService.submitAdjustment(
+        selectedTransactionData.application_id,
+        updateData
+      );
       
-      // Refresh data
-      fetchLedgerData();
-      setShowTransactionModal(false);
-    } else {
-      toast.error(result.message || 'Adjustment failed. Please try again.', {
+      if (result.success) {
+        toast.success(result.message || 'Adjustment has been submitted successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        
+        // Refresh data
+        fetchLedgerData();
+        setShowTransactionModal(false);
+      } else {
+        toast.error(result.message || 'Adjustment failed. Please try again.', {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Adjustment error:", error);
+      toast.error(error.message || 'Failed to submit adjustment. Please try again.', {
         position: "top-right",
         autoClose: 3000,
       });
     }
-  } catch (error) {
-    console.error("Adjustment error:", error);
-    toast.error(error.message || 'Failed to submit adjustment. Please try again.', {
-      position: "top-right",
-      autoClose: 3000,
-    });
-  }
-};
+  };
 
   const handleAdvancedSearch = ({ field, term }) => {
     if (!field || !term.trim()) {
@@ -429,54 +275,54 @@ const exportAsCSV = async () => {
       <div className="p-0 md:p-4">
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-  <div className="flex items-center gap-3 sm:gap-4">
-    <button 
-      onClick={() => router.back()}
-      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
-        isDark
-          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-      }`}
-    >
-      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
-        isDark ? "text-emerald-400" : "text-emerald-600"
-      }`} />
-    </button>
-    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
-      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-    } bg-clip-text text-transparent`}>
-      Tally Ledger ({totalCount})
-    </h1>
-  </div>
-  
-  <div className="flex gap-2 w-full sm:w-auto">
-    <button
-      onClick={() => fetchLedgerData()}
-      disabled={loading}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-gray-700 hover:bg-gray-600 text-white"
-          : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-      } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">Refresh</span>
-    </button>
-    
-    <button
-      onClick={handleExport}
-      disabled={exporting || ledgerData.length === 0}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-green-600 hover:bg-green-700 text-white"
-          : "bg-green-500 hover:bg-green-600 text-white"
-      } ${exporting || ledgerData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export CSV'}</span>
-    </button>
-  </div>
-</div>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button 
+                onClick={() => router.back()}
+                className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
+                <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  isDark ? "text-emerald-400" : "text-emerald-600"
+                }`} />
+              </button>
+              <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+              } bg-clip-text text-transparent`}>
+                Tally Ledger ({totalCount})
+              </h1>
+            </div>
+            
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => fetchLedgerData()}
+                disabled={loading}
+                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="text-xs sm:text-sm">Refresh</span>
+              </button>
+              
+              <button
+                onClick={handleExport}
+                disabled={exporting || ledgerData.length === 0}
+                className={`px-3 sm:px-4 py-2 rounded-lg l font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+                  isDark
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                } ${exporting || ledgerData.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Download className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${exporting ? 'animate-spin' : ''}`} />
+                <span className="text-xs sm:text-sm">{exporting ? 'Exporting...' : 'Export'}</span>
+              </button>
+            </div>
+          </div>
 
           {/* Date Filter - Using your reusable component */}
           <div className="mb-6">

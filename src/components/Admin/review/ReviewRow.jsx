@@ -180,14 +180,16 @@ const ReviewRow = ({ review, index, onStatusClick, isDark }) => {
       </td>
 
       {/* Date */}
-      <td className={`px-6 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <div className={`flex items-center space-x-2 text-sm font-medium`}>
-          <div className={`p-1.5 rounded-lg ${isDark ? "bg-emerald-900/50" : "bg-emerald-100"}`}>
-            <Calendar className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-          </div>
-          <span>{review.date}</span>
-        </div>
-      </td>
+<td className={`px-6 py-3 ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+  <div className={`flex items-center space-x-2 text-sm font-medium`}>
+    <div className={`p-1.5 rounded-lg ${isDark ? "bg-emerald-900/50" : "bg-emerald-100"}`}>
+      <Calendar className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+    </div>
+    <span className={`${isDark ? "text-white" : "text-gray-900"}`}>
+      {review.date}
+    </span>
+  </div>
+</td>
     </tr>
   );
 };

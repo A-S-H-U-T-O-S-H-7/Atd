@@ -10,7 +10,7 @@ import StepCompleteProfile from '@/components/Web/profile/StepCompleteProfile';
 import LoadingSpinner from '@/components/Web/profile/LoadingSpinner';
 
 export default function Profile() {
-  const router = useRouter();
+  const router = useRouter(); 
   const { user: authUser, loading: authLoading, fetchUserData, logout } = useAuth();
   
   const [user, setUser] = useState(null);

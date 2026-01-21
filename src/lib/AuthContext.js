@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         const result = await response.json();
         setUser(result.user || result.data || result);
       } else {
+        console.warn("/me API failed, clearing tokens");
         TokenManager.clearAllTokens();
         setUser(null);
       }
@@ -56,13 +57,36 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData, token) => {
     try {
+      // 1. Store token with login data (as backup)
       TokenManager.setUserToken(token, userData);
-      setUser(userData);
+      
+      // 2. Immediately fetch fresh data from /me API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_ATD_API}/api/user/me`, 
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        const freshUserData = result.user || result.data || result;
+        setUser(freshUserData);
+        console.log("User logged in with fresh /me data:", freshUserData);
+      } else {
+        console.warn("/me API failed, using login data");
+        setUser(userData);
+      }
+      
       setLoading(false);
-      console.log("User logged in successfully:", userData);
       return true;
     } catch (error) {
       console.error("Login error:", error);
+      setUser(userData);
+      setLoading(false);
       return false;
     }
   };
@@ -113,7 +137,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchUserData();
+    
+    const tokenData = TokenManager.getToken();
+    if (tokenData.token && !user) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   return (

@@ -12,7 +12,7 @@ export const TokenManager = {
       
       localStorage.setItem(TOKEN_KEYS.USER, token);
       localStorage.setItem(TOKEN_KEYS.USER_DATA, JSON.stringify(userData));
-    }
+    } 
   },
   
   // Admin viewing user profile
