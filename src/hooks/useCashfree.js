@@ -43,10 +43,11 @@ export const useCashfree = () => {
 
     // Enhanced return URL with more parameters for better detection
     const checkoutOptions = {
-      paymentSessionId,
-      returnUrl: `${window.location.origin}/payment/callback?order_id=${orderId}&source=cashfree&timestamp=${Date.now()}`,
-      redirectTarget: "_self"
-    };
+  paymentSessionId,
+  returnUrl: `${window.location.origin}/payment/callback?order_id=${orderId}`,
+  redirectTarget: "_self"
+};
+
 
     try {
       // Newer SDK versions with Promise
