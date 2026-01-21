@@ -39,6 +39,41 @@ export default function StepCompleteProfile({
     const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
+    useEffect(() => {
+  // Check for payment callback parameters
+  const searchParams = new URLSearchParams(window.location.search);
+  const paymentStatus = searchParams.get('payment');
+  const orderId = searchParams.get('order_id');
+  
+  if (paymentStatus === 'success') {
+    // Show success toast
+    toast.success('Payment completed successfully!', {
+      duration: 5000,
+      icon: '🎉'
+    });
+    
+    // Clear URL parameters without reload
+    router.replace('/profile', undefined, { shallow: true });
+    
+    // Optionally refresh user data here
+    // fetchUserData();
+    
+  } else if (paymentStatus === 'failed') {
+    toast.error('Payment failed. Please try again.', {
+      duration: 5000,
+    });
+    router.replace('/profile', undefined, { shallow: true });
+  }
+  
+  // Check for any stored payment success from callback page
+  if (orderId && localStorage.getItem(`payment_${orderId}`) === 'success') {
+    toast.success('Payment was successful!', {
+      duration: 3000,
+    });
+    localStorage.removeItem(`payment_${orderId}`);
+  }
+}, [router]);
+
   // Loan status mapping
   const LOAN_STATUS = {
   APPLIED: 2,

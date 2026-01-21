@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Info, CheckCircle, XCircle, Loader, Calendar, Banknote, Clock, AlertCircle, CreditCard, TrendingUp, Wallet } from 'lucide-react';
 import { useCashfree } from '@/hooks/useCashfree';
 import { TokenManager } from '@/utils/tokenManager';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; 
 
 const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   const [paymentMethod, setPaymentMethod] = useState('cashfree');
@@ -125,66 +125,61 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     return amount;
   };
 
-  const handleCashfreePayment = async () => {
-    if (!paymentDetails) return;
+const handleCashfreePayment = async () => {
+  if (!paymentDetails) return;
 
-    const paymentAmount = parseFloat(customAmount) || 0;
-    if (paymentAmount <= 0) return;
+  const paymentAmount = parseFloat(customAmount) || 0;
+  if (paymentAmount <= 0) return;
 
-    const maxAmount = calculateTotalOutstanding(paymentDetails);
-    if (paymentAmount > maxAmount) return;
+  const maxAmount = calculateTotalOutstanding(paymentDetails);
+  if (paymentAmount > maxAmount) return;
 
-    try {
-      setLoading(true);
-      const payableAmount = calculatePayableAmount();
+  try {
+    setLoading(true);
+    const payableAmount = calculatePayableAmount();
 
-      const orderData = {
-        id: applicationId,
-        outstanding_amount: paymentAmount,
-        payable_amount: payableAmount,
-        platform: 'Desktop'
-      };
+    const orderData = {
+      id: applicationId,
+      outstanding_amount: paymentAmount,
+      payable_amount: payableAmount,
+      platform: 'Desktop'
+    };
 
-      const orderResponse = await fetch(
-        'https://live.atdmoney.com/api/user/cashfree/create-order',
-        {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(orderData)
-        }
-      );
-
-      const orderResult = await orderResponse.json();
-
-      if (!orderResult.success) {
-        throw new Error(orderResult.message || 'Failed to create order');
+    const orderResponse = await fetch(
+      'https://live.atdmoney.com/api/user/cashfree/create-order',
+      {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(orderData)
       }
+    );
 
-      const paymentResult = await initiatePayment(
-        orderResult.payment_session_id,
-        orderResult.order_id
-      );
+    const orderResult = await orderResponse.json();
 
-      if (paymentResult.success) {
-        setPaymentStatus('processing');
-        setTimeout(() => {
-          setPaymentStatus('success');
-          setTimeout(() => {
-            onClose();
-            if (router) router.push('/profile');
-          }, 2000);
-        }, 2000);
-      } else {
-        throw new Error(paymentResult.error?.message || 'Payment failed');
-      }
-
-    } catch (error) {
-      console.error('Payment error:', error);
-      setPaymentStatus('failed');
-    } finally {
-      setLoading(false);
+    if (!orderResult.success) {
+      throw new Error(orderResult.message || 'Failed to create order');
     }
-  };
+
+    // Pass amount to initiatePayment for localStorage storage
+    const paymentResult = await initiatePayment(
+      orderResult.payment_session_id,
+      orderResult.order_id,
+      payableAmount // Pass the amount here
+    );
+
+    if (paymentResult.success) {
+      setPaymentStatus('processing');
+      // No need for timeouts - Cashfree will redirect
+    } else {
+      throw new Error(paymentResult.error?.message || 'Payment failed');
+    }
+
+  } catch (error) {
+    console.error('Payment error:', error);
+    setPaymentStatus('failed');
+    setLoading(false);
+  }
+};
 
   const handlePayment = () => {
     const paymentAmount = parseFloat(customAmount) || 0;

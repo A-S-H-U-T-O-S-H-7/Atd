@@ -10,13 +10,11 @@ export const useCashfree = () => {
   useEffect(() => {
     const initializeCashfree = async () => { 
       try {
-        // Check if we're in browser environment
         if (typeof window === 'undefined') {
           setLoading(false);
           return;
         }
 
-        // Load Cashfree SDK
         const cashfreeInstance = await load({
           mode: "production",
         });
@@ -33,18 +31,25 @@ export const useCashfree = () => {
     initializeCashfree();
   }, []);
 
-  const initiatePayment = async (paymentSessionId, orderId) => {
+  const initiatePayment = async (paymentSessionId, orderId, amount) => {
     if (!cashfree || typeof window === 'undefined') {
       throw new Error('Cashfree SDK not loaded or not in browser environment');
     }
 
+    // Store amount for callback page
+    if (amount) {
+      localStorage.setItem(`amount_${orderId}`, amount);
+    }
+
+    // Enhanced return URL with more parameters for better detection
     const checkoutOptions = {
       paymentSessionId,
-      returnUrl: `${window.location.origin}/payment/callback?order_id=${orderId}`,
+      returnUrl: `${window.location.origin}/payment/callback?order_id=${orderId}&source=cashfree&timestamp=${Date.now()}`,
+      redirectTarget: "_self"
     };
 
     try {
-      // Method 1: For newer versions that return a Promise
+      // Newer SDK versions with Promise
       if (typeof cashfree.checkout === 'function') {
         const result = await cashfree.checkout(checkoutOptions);
         
@@ -53,11 +58,15 @@ export const useCashfree = () => {
           return { success: false, error: result.error };
         }
         
+        // Store payment attempt in localStorage for fallback
+        localStorage.setItem(`payment_attempt_${orderId}`, 'initiated');
+        
         return { success: true, redirect: result?.redirect || true };
       }
       
-      // Method 2: For older versions that redirect directly
+      // Older SDK versions
       if (typeof cashfree.redirect === 'function') {
+        localStorage.setItem(`payment_attempt_${orderId}`, 'initiated');
         cashfree.redirect(checkoutOptions);
         return { success: true, redirect: true };
       }
@@ -66,6 +75,7 @@ export const useCashfree = () => {
       
     } catch (err) {
       console.error('Payment initiation failed:', err);
+      localStorage.removeItem(`payment_attempt_${orderId}`);
       return { success: false, error: err };
     }
   };
