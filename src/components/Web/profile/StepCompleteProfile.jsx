@@ -53,7 +53,7 @@ export default function StepCompleteProfile({
     });
     
     // Clear URL parameters without reload
-    router.replace('/profile', undefined, { shallow: true });
+router.replace('/userProfile', undefined, { shallow: true });
     
     // Optionally refresh user data here
     // fetchUserData();

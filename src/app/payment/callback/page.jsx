@@ -1,20 +1,18 @@
-// pages/payment/callback.js
+'use client';
+
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader, CheckCircle, XCircle, AlertCircle, Home, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
 
 const PaymentCallbackPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [orderId, setOrderId] = useState('');
 
   useEffect(() => {
-    if (!router.isReady) return;
-
     // Extract order_id from URL
-    const searchParams = new URLSearchParams(window.location.search);
     const orderIdFromUrl = searchParams.get('order_id');
     setOrderId(orderIdFromUrl || '');
 
@@ -61,7 +59,7 @@ const PaymentCallbackPage = () => {
     else {
       checkPaymentStatusFromLocalStorage(orderIdFromUrl);
     }
-  }, [router.isReady]);
+  }, [searchParams]);
 
   const handlePaymentSuccess = (orderId) => {
     setStatus('success');
@@ -163,6 +161,14 @@ const PaymentCallbackPage = () => {
     }
   };
 
+  const handleGoToProfile = () => {
+    router.push('/userProfile');
+  };
+
+  const handleTryAgain = () => {
+    router.back();
+  };
+
   const renderContent = () => {
     switch (status) {
       case 'loading':
@@ -193,10 +199,13 @@ const PaymentCallbackPage = () => {
               <p className="text-gray-600 text-sm mt-2">{message}</p>
             </div>
             <p className="text-gray-500 animate-pulse mb-4">Redirecting to profile...</p>
-            <Link href="/userProfile" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2">
+            <button 
+              onClick={handleGoToProfile}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2"
+            >
               <Home className="w-5 h-5" />
               Go to Profile Now
-            </Link>
+            </button>
           </div>
         );
 
@@ -215,14 +224,20 @@ const PaymentCallbackPage = () => {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button onClick={() => router.back()} className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2">
+              <button 
+                onClick={handleTryAgain}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2"
+              >
                 <RefreshCw className="w-5 h-5" />
                 Try Again
               </button>
-              <Link href="/userProfile" className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2">
+              <button 
+                onClick={handleGoToProfile}
+                className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2"
+              >
                 <Home className="w-5 h-5" />
                 Go to Profile
-              </Link>
+              </button>
             </div>
           </div>
         );
@@ -251,9 +266,12 @@ const PaymentCallbackPage = () => {
                 Check Status Again
               </button>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/userProfile" className="flex-1 border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={handleGoToProfile}
+                  className="flex-1 border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
                   Check Profile
-                </Link>
+                </button>
                 <a href="mailto:support@atdmoney.com" className="flex-1 border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
                   Contact Support
                 </a>
