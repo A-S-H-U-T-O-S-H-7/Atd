@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader, CheckCircle, XCircle, AlertCircle, Home, RefreshCw } from 'lucide-react';
+
+// ⚠️ CRITICAL: Force dynamic rendering, NO revalidate function
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const PaymentCallbackPage = () => {
   const router = useRouter();
@@ -12,28 +13,31 @@ const PaymentCallbackPage = () => {
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [orderId, setOrderId] = useState('');
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
+    // Only run on client side
+    if (!hasMounted || typeof window === 'undefined') return;
+
     // Extract order_id from URL
     const orderIdFromUrl = searchParams.get('order_id');
     setOrderId(orderIdFromUrl || '');
 
-    // Try to get payment status from URL parameters (Cashfree returns these)
+    // Try to get payment status from URL parameters
     const paymentStatus = searchParams.get('payment_status') || 
-                         searchParams.get('txStatus') || 
-                         searchParams.get('status');
-
-    const paymentMessage = searchParams.get('payment_message') || 
-                          searchParams.get('txMsg') || 
-                          searchParams.get('message');
-
+                         searchParams.get('txStatus');
+    
     // Check URL for success indicators
     const currentUrl = window.location.href;
     
     // Method 1: Check URL patterns for success
     if (currentUrl.includes('payment_status=SUCCESS') || 
         currentUrl.includes('txStatus=SUCCESS') ||
-        currentUrl.includes('status=SUCCESS') ||
         currentUrl.toLowerCase().includes('success')) {
       
       handlePaymentSuccess(orderIdFromUrl);
@@ -42,11 +46,10 @@ const PaymentCallbackPage = () => {
     // Method 2: Check URL patterns for failure
     else if (currentUrl.includes('payment_status=FAILED') || 
              currentUrl.includes('txStatus=FAILED') ||
-             currentUrl.includes('status=FAILED') ||
              currentUrl.toLowerCase().includes('failed') ||
              currentUrl.includes('error=')) {
       
-      handlePaymentFailure(orderIdFromUrl, paymentMessage);
+      handlePaymentFailure(orderIdFromUrl, 'Payment failed');
       
     } 
     // Method 3: Use embedded payment status
@@ -54,77 +57,67 @@ const PaymentCallbackPage = () => {
       if (paymentStatus === 'SUCCESS') {
         handlePaymentSuccess(orderIdFromUrl);
       } else {
-        handlePaymentFailure(orderIdFromUrl, paymentMessage);
+        handlePaymentFailure(orderIdFromUrl, 'Payment failed');
       }
     }
-    // Method 4: Fallback - assume pending/unknown
+    // Method 4: Fallback
     else {
       checkPaymentStatusFromLocalStorage(orderIdFromUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, hasMounted]);
 
   const handlePaymentSuccess = (orderId) => {
     setStatus('success');
     setMessage('Payment completed successfully!');
     
-    // Store in localStorage so parent page can detect it
-    if (orderId) {
+    // Store in localStorage
+    if (orderId && typeof window !== 'undefined') {
       localStorage.setItem(`payment_${orderId}`, 'success');
       localStorage.setItem(`payment_time_${orderId}`, Date.now());
     }
     
-    // Store recent payment for profile page
-    const recentPayments = JSON.parse(localStorage.getItem('recent_payments') || '[]');
-    recentPayments.unshift({
-      orderId,
-      status: 'success',
-      timestamp: Date.now(),
-      amount: localStorage.getItem(`amount_${orderId}`)
-    });
-    
-    // Keep only last 10 payments
-    localStorage.setItem('recent_payments', JSON.stringify(recentPayments.slice(0, 10)));
-    
     // Redirect after delay
     setTimeout(() => {
       router.push('/userProfile?payment=success&order_id=' + orderId);
-    }, 5000);
+    }, 3000);
   };
 
   const handlePaymentFailure = (orderId, errorMessage) => {
     setStatus('failed');
     setMessage(errorMessage || 'Payment was not successful');
     
-    if (orderId) {
+    if (orderId && typeof window !== 'undefined') {
       localStorage.setItem(`payment_${orderId}`, 'failed');
     }
     
     setTimeout(() => {
       router.push('/userProfile?payment=failed');
-    }, 5000);
+    }, 3000);
   };
 
   const checkPaymentStatusFromLocalStorage = (orderId) => {
-    // Check if we have any indication from localStorage
-    if (orderId) {
-      const storedStatus = localStorage.getItem(`payment_${orderId}`);
-      
-      if (storedStatus === 'success') {
-        handlePaymentSuccess(orderId);
-        return;
-      } else if (storedStatus === 'failed') {
-        handlePaymentFailure(orderId, 'Payment failed');
-        return;
-      }
+    if (!orderId || typeof window === 'undefined') {
+      setStatus('pending');
+      setMessage('Please check your profile for payment status');
+      setTimeout(() => {
+        router.push('/userProfile');
+      }, 5000);
+      return;
     }
     
-    // If we can't determine, show manual check screen
-    setStatus('pending');
-    setMessage('Please check your profile for payment status');
+    const storedStatus = localStorage.getItem(`payment_${orderId}`);
     
-    setTimeout(() => {
-      router.push('/userProfile');
-    }, 10000);
+    if (storedStatus === 'success') {
+      handlePaymentSuccess(orderId);
+    } else if (storedStatus === 'failed') {
+      handlePaymentFailure(orderId, 'Payment failed');
+    } else {
+      setStatus('pending');
+      setMessage('Please check your profile for payment status');
+      setTimeout(() => {
+        router.push('/userProfile');
+      }, 5000);
+    }
   };
 
   const checkPaymentManually = async () => {
@@ -133,7 +126,6 @@ const PaymentCallbackPage = () => {
     try {
       setStatus('loading');
       
-      // Try to check payment status with existing API (if available)
       const token = localStorage.getItem('user_auth_token');
       
       const response = await fetch(
@@ -287,13 +279,25 @@ const PaymentCallbackPage = () => {
     }
   };
 
+  // Show loading while mounting
+  if (!hasMounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+          <Loader className="w-16 h-16 text-blue-500 animate-spin mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Loading</h2>
+          <p className="text-gray-600">Preparing payment verification...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
         {renderContent()}
       </div>
       
-      {/* Help text */}
       <div className="mt-8 text-center text-sm text-gray-600 max-w-md">
         <p>Having issues? Contact support: support@atdmoney.com</p>
       </div>
