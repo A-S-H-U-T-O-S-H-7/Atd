@@ -723,33 +723,34 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                             )}
                             
                             {option.id === 'qr' && (
-                              <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <h4 className="text-xs font-semibold text-gray-700 mb-3">Scan QR Code to Pay</h4>
-                                <div className="bg-gray-50 p-1 rounded-lg mb-3 border border-gray-200">
-                                  <div className="w-40 h-40 mx-auto bg-white p-1 rounded-lg shadow-sm">
-                                    {/* Replace with your actual QR code image */}
-                                    <Image 
-                                      src="/atd_payment-qr.jpeg" 
-                                      alt="ATD Payment QR Code" 
-                                      className="w-full h-full object-contain"
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.parentElement.innerHTML = `
-                                          <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded">
-                                            <QrCode class="w-16 h-16 text-gray-400 mb-2" />
-                                            <span class="text-xs text-gray-500">QR Code</span>
-                                          </div>
-                                        `;
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <p className="text-xs text-gray-500 mb-2">Scan using any UPI app</p>
-                                <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
-                                  Amount to pay: {amounts.paymentAmount}
-                                </div>
-                              </div>
-                            )}
+  <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
+    <h4 className="text-xs font-semibold text-gray-700 mb-3">Scan QR Code to Pay</h4>
+    <div className="bg-gray-50 p-1 rounded-lg mb-3 border border-gray-200">
+      <div className="w-40 h-40 mx-auto bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
+        <img 
+          src="/atd_payment-qr.jpeg" 
+          alt="ATD Payment QR Code" 
+          className="w-full h-full object-contain"
+          width={160}
+          height={160}
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.parentElement.innerHTML = `
+              <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded">
+                <QrCode class="w-16 h-16 text-gray-400 mb-2" />
+                <span class="text-xs text-gray-500">QR Code</span>
+              </div>
+            `;
+          }}
+        />
+      </div>
+    </div>
+    <p className="text-xs text-gray-500 mb-2">Scan using any UPI app</p>
+    <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
+      Amount to pay: {amounts.paymentAmount}
+    </div>
+  </div>
+)}
                             
                             {option.id === 'upi' && (
                               <div className="bg-white rounded-lg p-3 border border-gray-200">
