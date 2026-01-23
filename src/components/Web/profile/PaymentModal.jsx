@@ -544,7 +544,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                 </span>
               </div>
               <div className="flex gap-2">
-                {[500, 1000, 5000, totalOutstanding].map((amount) => (
+                {[2000, 3000, 5000, totalOutstanding].map((amount) => (
                   <button
                     key={amount}
                     type="button"
