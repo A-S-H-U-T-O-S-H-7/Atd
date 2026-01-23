@@ -393,6 +393,22 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     <>
       <PaymentStatusScreen />
       <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-[99999]">
+        <style jsx>{`
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .animate-slideDown {
+            animation: slideDown 0.2s ease-out;
+          }
+        `}</style>
+        
         <div ref={modalRef} className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative z-[100000]">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 z-10 rounded-t-2xl">
@@ -533,7 +549,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                     key={amount}
                     type="button"
                     onClick={() => setCustomAmount(amount.toString())}
-                    className="flex-1 px-3 py-2 text-xs font-medium border-2 border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    className="flex-1 px-3 py-2 text-xs font-medium border-2 border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer"
                     disabled={loading}
                   >
                     {amount === totalOutstanding ? 'Full Amount' : `₹${amount}`}
@@ -560,7 +576,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                         value={option.id} 
                         checked={paymentMethod === option.id} 
                         onChange={(e) => setPaymentMethod(e.target.value)} 
-                        className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500" 
+                        className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" 
                         disabled={loading} 
                       />
                       <div className="ml-3 flex-1">
@@ -593,7 +609,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                                         type="text"
                                         value={customAmount}
                                         onChange={handleCustomAmountChange}
-                                        className="pl-10 pr-12 block w-full px-4 py-3 border-2 border-blue-200 rounded-xl text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800"
+                                        className="pl-10 pr-12 block w-full px-4 py-3 border-2 border-blue-200 rounded-xl text-lg font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 cursor-text"
                                         placeholder="Enter amount"
                                         disabled={loading}
                                       />
@@ -640,7 +656,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                                 </div>
                                 <button
                                   onClick={() => handleCopyDetails('neft')}
-                                  className={`mt-3 w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${
+                                  className={`mt-3 w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                                     copiedId === 'neft'
                                       ? 'bg-green-600 text-white hover:bg-green-700'
                                       : 'bg-green-600 text-white hover:bg-green-700'
@@ -684,7 +700,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                                 </div>
                                 <button
                                   onClick={() => handleCopyDetails('virtual')}
-                                  className={`mt-3 w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${
+                                  className={`mt-3 w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                                     copiedId === 'virtual'
                                       ? 'bg-purple-600 text-white hover:bg-purple-700'
                                       : 'bg-purple-600 text-white hover:bg-purple-700'
@@ -708,18 +724,18 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                             {option.id === 'qr' && (
                               <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                 <h4 className="text-xs font-semibold text-gray-700 mb-3">Scan QR Code to Pay</h4>
-                                <div className="bg-gray-50 p-2 rounded-lg mb-3 border border-gray-200">
-                                  <div className="w-40 h-40 mx-auto bg-white p-1 rounded-lg shadow-sm">
+                                <div className="bg-gray-50 p-4 rounded-lg mb-3 border border-gray-200">
+                                  <div className="w-40 h-40 mx-auto bg-white p-3 rounded-lg shadow-sm">
                                     {/* Replace with your actual QR code image */}
                                     <img 
-                                      src="/atd_payment_qr.jpeg" 
+                                      src="/atd_payment-qr.jpeg" 
                                       alt="ATD Payment QR Code" 
                                       className="w-full h-full object-contain"
                                       onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.parentElement.innerHTML = `
                                           <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded">
-                                            <QrCode class="w-20 h-20 text-gray-400 mb-2" />
+                                            <QrCode class="w-16 h-16 text-gray-400 mb-2" />
                                             <span class="text-xs text-gray-500">QR Code</span>
                                           </div>
                                         `;
@@ -742,7 +758,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                                     <p className="font-mono text-sm font-bold text-indigo-700">{bankDetails.upi.id}</p>
                                     <button
                                       onClick={() => handleCopyDetails('upi')}
-                                      className={`p-1.5 rounded transition-colors ${
+                                      className={`p-1.5 rounded transition-colors cursor-pointer ${
                                         copiedId === 'upi' 
                                           ? 'text-green-600 hover:text-green-700' 
                                           : 'text-indigo-500 hover:text-indigo-600'
@@ -758,7 +774,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                                 </div>
                                 <button
                                   onClick={() => handleCopyDetails('upi')}
-                                  className={`w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 ${
+                                  className={`w-full py-2.5 text-sm rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
                                     copiedId === 'upi'
                                       ? 'bg-green-600 text-white hover:bg-green-700'
                                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -817,7 +833,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
             <button 
               onClick={handlePayment} 
               disabled={loading || paymentAmount <= 0 || (paymentMethod === 'cashfree' && !customAmount)} 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -844,25 +860,5 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     </>
   );
 };
-
-// Add CSS animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-slideDown {
-    animation: slideDown 0.2s ease-out;
-  }
-`;
-document.head.appendChild(style);
 
 export default PaymentModal;
