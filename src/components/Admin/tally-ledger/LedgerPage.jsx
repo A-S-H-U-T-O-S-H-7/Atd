@@ -10,7 +10,7 @@ import { useThemeStore } from "@/lib/store/useThemeStore";
 import { tallyLedgerAPI, formatTallyLedgerDataForUI, adjustmentService, pdfService } from "@/lib/services/TallyLedgerServices";
 import { exportDataToExcel, formatLedgerDataForExport, generateExportFilename } from "@/components/utils/tallyledgerExport";
 import Swal from 'sweetalert2';
-import toast from "react-hot-toast";
+import toast from "react-hot-toast"; 
 
 const LedgerPage = () => {
   const { theme } = useThemeStore();
@@ -130,6 +130,10 @@ const LedgerPage = () => {
       
     } catch (error) {
       console.error("Export error:", error);
+      toast.error("Failed to export data. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } finally {
       setExporting(false);
     }

@@ -2,7 +2,7 @@ import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 
 
-export const exportToExcel = async (data, baseFilename, isDark, options = {}) => {
+export const exportDataToExcel = async (data, baseFilename, isDark, options = {}) => {
   const {
     title = 'Export Data',
     message = 'This will export the data to Excel format.',
@@ -39,18 +39,37 @@ export const exportToExcel = async (data, baseFilename, isDark, options = {}) =>
   if (!result.isConfirmed) return false;
 
   try {
-    // Prepare filename with .xls extension
-    let filename = baseFilename || `export-${new Date().toISOString().split('T')[0]}`;
+    let filename = baseFilename;
     if (!filename.toLowerCase().endsWith('.xls') && !filename.toLowerCase().endsWith('.xlsx')) {
       filename += '.xls';
     }
 
     // Prepare headers
-    const headers = prepareHeaders(data, columnMapping);
-    
+    let headers = [];
+    if (columnMapping) {
+      headers = Object.values(columnMapping);
+    } else if (data.length > 0) {
+      headers = Object.keys(data[0]).map(key => 
+        key
+          .split(/(?=[A-Z])/)
+          .join(' ')
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase())
+          .trim()
+      );
+    }
+
     // Prepare rows
-    const rows = prepareRows(data, columnMapping);
-    
+    const rows = data.map(item => {
+      const row = [];
+      const keys = columnMapping ? Object.keys(columnMapping) : Object.keys(data[0]);
+      keys.forEach(key => {
+        const value = item[key] !== undefined ? item[key] : '';
+        row.push(value);
+      });
+      return row;
+    });
+
     // Generate Excel HTML
     const excelHTML = generateExcelHTML(headers, rows);
     
@@ -58,7 +77,7 @@ export const exportToExcel = async (data, baseFilename, isDark, options = {}) =>
     downloadExcelFile(excelHTML, filename);
     
     // Show success toast
-    toast.success('ledger data exported successfully!', {
+    toast.success('Data exported successfully!', {
       position: "top-right",
       autoClose: 3000,
     });
@@ -81,46 +100,41 @@ export const exportToExcel = async (data, baseFilename, isDark, options = {}) =>
 };
 
 /**
- * Prepare headers from data or column mapping
+ * Format ledger data specifically for Tally Ledger export
  */
-const prepareHeaders = (data, columnMapping) => {
-  if (columnMapping) {
-    return Object.values(columnMapping);
-  }
+export const formatLedgerDataForExport = (ledgerData) => {
+  if (!ledgerData || !Array.isArray(ledgerData)) return [];
   
-  if (data.length === 0) return [];
-  
-  return Object.keys(data[0]).map(key => 
-    key
-      .split(/(?=[A-Z])/)
-      .join(' ')
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
-      .trim()
-  );
+  return ledgerData.map((item, index) => ({
+    'SN': index + 1,
+    'Loan No.': item.loanNo || 'N/A',
+    'Disburse Date': item.disburseDate || '',
+    'Due Date': item.dueDate || '',
+    'Name': item.name || 'N/A',
+    'CRN No': item.crnno || 'N/A',
+    'Address': item.address || 'N/A',
+    'Phone No.': item.phoneNo || 'N/A',
+    'Email': item.email || 'N/A',
+    'Balance': item.balance || 0,
+    'Principal Due': item.principalDue || 0,
+    'Interest Due': item.interestDue || 0,
+    'Penalty Due': item.penaltyDue || 0,
+    'Total Due': item.totalDue || 0
+  }));
 };
 
 /**
- * Prepare rows from data
+ * Generate filename with date
  */
-const prepareRows = (data, columnMapping) => {
-  if (data.length === 0) return [];
-  
-  const keys = columnMapping ? Object.keys(columnMapping) : Object.keys(data[0]);
-  
-  return data.map(item => {
-    return keys.map(key => {
-      const value = item[key];
-      return value !== undefined && value !== null ? value : '';
-    });
-  });
+export const generateExportFilename = (prefix = 'tally-ledger') => {
+  const today = new Date().toISOString().split('T')[0];
+  return `${prefix}-${today}`;
 };
 
 /**
- * Generate Excel-compatible HTML
+ * Helper: Generate Excel-compatible HTML
  */
 const generateExcelHTML = (headers, rows) => {
-  // Start HTML with Excel namespaces
   let html = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office"
           xmlns:x="urn:schemas-microsoft-com:office:excel"
@@ -189,7 +203,7 @@ const generateExcelHTML = (headers, rows) => {
 };
 
 /**
- * Escape HTML special characters
+ * Helper: Escape HTML special characters
  */
 const escapeHTML = (value) => {
   if (value === null || value === undefined) return '';
@@ -203,7 +217,7 @@ const escapeHTML = (value) => {
 };
 
 /**
- * Create and trigger file download
+ * Helper: Create and trigger file download
  */
 const downloadExcelFile = (htmlContent, filename) => {
   const blob = new Blob([htmlContent], { 
@@ -223,53 +237,4 @@ const downloadExcelFile = (htmlContent, filename) => {
   
   // Clean up URL after download
   setTimeout(() => URL.revokeObjectURL(url), 100);
-};
-
-/**
- * Format ledger data for export
- */
-export const formatLedgerDataForExport = (ledgerData) => {
-  return ledgerData.map((item, index) => ({
-    'SN': index + 1,
-    'Loan No.': item.loanNo || 'N/A',
-    'Disburse Date': item.disburseDate || '',
-    'Due Date': item.dueDate || '',
-    'Name': item.name || 'N/A',
-    'CRN No': item.crnno || 'N/A',
-    'Address': item.address || 'N/A',
-    'Phone No.': item.phoneNo || 'N/A',
-    'Email': item.email || 'N/A',
-    'Balance': item.balance || 0,
-    'Principal Due': item.principalDue || 0,
-    'Interest Due': item.interestDue || 0,
-    'Penalty Due': item.penaltyDue || 0,
-    'Total Due': item.totalDue || 0
-  }));
-};
-
-/**
- * Generate export filename with date
- */
-export const generateExportFilename = (prefix = 'export') => {
-  const date = new Date().toISOString().split('T')[0];
-  return `${prefix}-${date}`;
-};
-
-
-export const quickExportToExcel = (data, filename = 'export.xls', columnMapping = null) => {
-  if (!data || data.length === 0) {
-    console.warn('No data to export');
-    return false;
-  }
-  
-  try {
-    const headers = prepareHeaders(data, columnMapping);
-    const rows = prepareRows(data, columnMapping);
-    const excelHTML = generateExcelHTML(headers, rows);
-    downloadExcelFile(excelHTML, filename);
-    return true;
-  } catch (error) {
-    console.error('Quick export failed:', error);
-    return false;
-  }
 };
