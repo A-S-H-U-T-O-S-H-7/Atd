@@ -3,6 +3,7 @@ import { X, Info, CheckCircle, XCircle, Loader, Calendar, Banknote, Clock, Alert
 import { useCashfree } from '@/hooks/useCashfree';
 import { TokenManager } from '@/utils/tokenManager';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
   const [paymentMethod, setPaymentMethod] = useState('cashfree');
