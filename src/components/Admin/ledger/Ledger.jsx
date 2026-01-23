@@ -220,20 +220,13 @@ const LedgerPage = () => {
       
       // Export with red header background
       exportToExcel(exportData, `ledger-report-${new Date().toISOString().split('T')[0]}.xls`, {
-        headerBgColor: '#FF0000', // Red background
-        headerTextColor: '#FFFFFF', // White text
+        headerBgColor: '#FF0000', 
+        headerTextColor: '#FFFFFF', 
         boldHeaders: true,
         freezeHeader: true
       });
       
-      await Swal.fire({
-        title: 'Export Successful!',
-        text: `Ledger report has been exported with ${response.ledgers.length} records.`,
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+      toast.success('Ledger Report exported successfully!');
     } else {
       throw new Error(response?.message || 'Failed to fetch export data');
     }

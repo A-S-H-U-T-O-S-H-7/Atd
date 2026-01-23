@@ -1,7 +1,8 @@
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 
-export const exportDataToExcel = async (data, baseFilename, isDark, options = {}) => {
+
+export const exportToExcel = async (data, baseFilename, isDark, options = {}) => {
   const {
     title = 'Export Data',
     message = 'This will export the data to Excel format.',
@@ -38,115 +39,26 @@ export const exportDataToExcel = async (data, baseFilename, isDark, options = {}
   if (!result.isConfirmed) return false;
 
   try {
-    // Ensure filename has .xls extension
-    let filename = baseFilename;
+    // Prepare filename with .xls extension
+    let filename = baseFilename || `export-${new Date().toISOString().split('T')[0]}`;
     if (!filename.toLowerCase().endsWith('.xls') && !filename.toLowerCase().endsWith('.xlsx')) {
       filename += '.xls';
     }
 
-    // Prepare headers from first object or use custom mapping
-    let headers = [];
-    if (columnMapping) {
-      headers = Object.values(columnMapping);
-    } else if (data.length > 0) {
-      headers = Object.keys(data[0]).map(key => 
-        key.split(/(?=[A-Z])/).join(' ') 
-          .replace(/([A-Z])/g, ' $1')
-          .replace(/^./, str => str.toUpperCase())
-      );
-    }
-
+    // Prepare headers
+    const headers = prepareHeaders(data, columnMapping);
+    
     // Prepare rows
-    const rows = data.map(item => {
-      const row = [];
-      const keys = columnMapping ? Object.keys(columnMapping) : Object.keys(data[0]);
-      keys.forEach(key => {
-        const value = item[key] !== undefined ? item[key] : '';
-        row.push(value);
-      });
-      return row;
-    });
-
-    // Create HTML table structure for Excel
-    let tableHTML = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ';
-    tableHTML += 'xmlns:x="urn:schemas-microsoft-com:office:excel" ';
-    tableHTML += 'xmlns="http://www.w3.org/TR/REC-html40">';
-    tableHTML += '<head>';
-    tableHTML += '<meta charset="UTF-8">';
-    tableHTML += '<style>';
-    tableHTML += 'th { background-color: #4472C4; color: white; font-weight: bold; text-align: center; padding: 8px; }';
-    tableHTML += 'td { padding: 5px; border: 1px solid #ddd; }';
-    tableHTML += 'table { border-collapse: collapse; width: 100%; }';
-    tableHTML += '</style>';
-    tableHTML += '<!--[if gte mso 9]>';
-    tableHTML += '<xml>';
-    tableHTML += '<x:ExcelWorkbook>';
-    tableHTML += '<x:ExcelWorksheets>';
-    tableHTML += '<x:ExcelWorksheet>';
-    tableHTML += '<x:Name>Sheet1</x:Name>';
-    tableHTML += '<x:WorksheetOptions>';
-    tableHTML += '<x:DisplayGridlines/>';
-    tableHTML += '</x:WorksheetOptions>';
-    tableHTML += '</x:ExcelWorksheet>';
-    tableHTML += '</x:ExcelWorksheets>';
-    tableHTML += '</x:ExcelWorkbook>';
-    tableHTML += '</xml>';
-    tableHTML += '<![endif]-->';
-    tableHTML += '</head>';
-    tableHTML += '<body>';
-    tableHTML += '<table border="1">';
+    const rows = prepareRows(data, columnMapping);
     
-    // Add header row with inline bgcolor attribute (works in Excel)
-    tableHTML += '<thead><tr>';
-    headers.forEach(header => {
-      const cellContent = header !== null && header !== undefined ? 
-        String(header).replace(/&/g, '&amp;')
-                     .replace(/</g, '&lt;')
-                     .replace(/>/g, '&gt;') : '';
-      tableHTML += `<th bgcolor="#4472C4" style="color: white; font-weight: bold; text-align: center;">${cellContent}</th>`;
-    });
-    tableHTML += '</tr></thead>';
+    // Generate Excel HTML
+    const excelHTML = generateExcelHTML(headers, rows);
     
-    // Add data rows
-    tableHTML += '<tbody>';
-    rows.forEach(row => {
-      tableHTML += '<tr>';
-      row.forEach(cell => {
-        const cellValue = cell !== null && cell !== undefined ? cell : '';
-        const cellContent = String(cellValue).replace(/&/g, '&amp;')
-                                           .replace(/</g, '&lt;')
-                                           .replace(/>/g, '&gt;');
-        const isNumber = !isNaN(cellValue) && cellValue !== '' && 
-                        !isNaN(parseFloat(cellValue)) && 
-                        !String(cellValue).includes(',');
-        tableHTML += `<td${isNumber ? ' style="mso-number-format:0"' : ''}>${cellContent}</td>`;
-      });
-      tableHTML += '</tr>';
-    });
-    tableHTML += '</tbody>';
+    // Create and download file
+    downloadExcelFile(excelHTML, filename);
     
-    tableHTML += '</table>';
-    tableHTML += '</body>';
-    tableHTML += '</html>';
-    
-    // Create blob and download
-    const blob = new Blob([tableHTML], { 
-      type: 'application/vnd.ms-excel' 
-    });
-    
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Clean up
-    setTimeout(() => URL.revokeObjectURL(url), 100);
-    
-    toast.success('Data exported successfully!', {
+    // Show success toast
+    toast.success('ledger data exported successfully!', {
       position: "top-right",
       autoClose: 3000,
     });
@@ -168,9 +80,157 @@ export const exportDataToExcel = async (data, baseFilename, isDark, options = {}
   }
 };
 
+/**
+ * Prepare headers from data or column mapping
+ */
+const prepareHeaders = (data, columnMapping) => {
+  if (columnMapping) {
+    return Object.values(columnMapping);
+  }
+  
+  if (data.length === 0) return [];
+  
+  return Object.keys(data[0]).map(key => 
+    key
+      .split(/(?=[A-Z])/)
+      .join(' ')
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim()
+  );
+};
+
+/**
+ * Prepare rows from data
+ */
+const prepareRows = (data, columnMapping) => {
+  if (data.length === 0) return [];
+  
+  const keys = columnMapping ? Object.keys(columnMapping) : Object.keys(data[0]);
+  
+  return data.map(item => {
+    return keys.map(key => {
+      const value = item[key];
+      return value !== undefined && value !== null ? value : '';
+    });
+  });
+};
+
+/**
+ * Generate Excel-compatible HTML
+ */
+const generateExcelHTML = (headers, rows) => {
+  // Start HTML with Excel namespaces
+  let html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        th { background-color: #4472C4; color: white; font-weight: bold; text-align: center; padding: 8px; }
+        td { padding: 5px; border: 1px solid #ddd; }
+        table { border-collapse: collapse; width: 100%; }
+      </style>
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Sheet1</x:Name>
+              <x:WorksheetOptions>
+                <x:DisplayGridlines/>
+              </x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+    </head>
+    <body>
+      <table border="1">
+        <thead>
+          <tr>
+  `;
+  
+  // Add headers
+  headers.forEach(header => {
+    const escapedHeader = escapeHTML(header);
+    html += `<th bgcolor="#4472C4" style="color: white; font-weight: bold; text-align: center;">${escapedHeader}</th>`;
+  });
+  
+  html += `
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  // Add data rows
+  rows.forEach(row => {
+    html += '<tr>';
+    row.forEach(cell => {
+      const escapedCell = escapeHTML(cell);
+      const isNumber = !isNaN(cell) && cell !== '' && !isNaN(parseFloat(cell)) && !String(cell).includes(',');
+      const numberStyle = isNumber ? ' style="mso-number-format:0"' : '';
+      html += `<td${numberStyle}>${escapedCell}</td>`;
+    });
+    html += '</tr>';
+  });
+  
+  // Close HTML
+  html += `
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+  
+  return html;
+};
+
+/**
+ * Escape HTML special characters
+ */
+const escapeHTML = (value) => {
+  if (value === null || value === undefined) return '';
+  
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+/**
+ * Create and trigger file download
+ */
+const downloadExcelFile = (htmlContent, filename) => {
+  const blob = new Blob([htmlContent], { 
+    type: 'application/vnd.ms-excel' 
+  });
+  
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up URL after download
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
+/**
+ * Format ledger data for export
+ */
 export const formatLedgerDataForExport = (ledgerData) => {
-  return ledgerData.map(item => ({
-    'SN': item.sn || '',
+  return ledgerData.map((item, index) => ({
+    'SN': index + 1,
     'Loan No.': item.loanNo || 'N/A',
     'Disburse Date': item.disburseDate || '',
     'Due Date': item.dueDate || '',
@@ -187,140 +247,29 @@ export const formatLedgerDataForExport = (ledgerData) => {
   }));
 };
 
-export const generateExportFilename = (prefix = 'data') => {
-  const today = new Date().toISOString().split('T')[0];
-  return `${prefix}-${today}`;
+/**
+ * Generate export filename with date
+ */
+export const generateExportFilename = (prefix = 'export') => {
+  const date = new Date().toISOString().split('T')[0];
+  return `${prefix}-${date}`;
 };
 
-export const exportToExcel = (data, filename) => {
-  // Ensure the filename has .xls extension
-  if (!filename.toLowerCase().endsWith('.xls') && !filename.toLowerCase().endsWith('.xlsx')) {
-    filename += '.xls';
+
+export const quickExportToExcel = (data, filename = 'export.xls', columnMapping = null) => {
+  if (!data || data.length === 0) {
+    console.warn('No data to export');
+    return false;
   }
   
-  // Create HTML table structure that Excel can recognize
-  let tableHTML = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ';
-  tableHTML += 'xmlns:x="urn:schemas-microsoft-com:office:excel" ';
-  tableHTML += 'xmlns="http://www.w3.org/TR/REC-html40">';
-  tableHTML += '<head>';
-  tableHTML += '<meta charset="UTF-8">';
-  tableHTML += '<!--[if gte mso 9]>';
-  tableHTML += '<xml>';
-  tableHTML += '<x:ExcelWorkbook>';
-  tableHTML += '<x:ExcelWorksheets>';
-  tableHTML += '<x:ExcelWorksheet>';
-  tableHTML += '<x:Name>Sheet1</x:Name>';
-  tableHTML += '<x:WorksheetOptions>';
-  tableHTML += '<x:DisplayGridlines/>';
-  tableHTML += '</x:WorksheetOptions>';
-  tableHTML += '</x:ExcelWorksheet>';
-  tableHTML += '</x:ExcelWorksheets>';
-  tableHTML += '</x:ExcelWorkbook>';
-  tableHTML += '</xml>';
-  tableHTML += '<![endif]-->';
-  tableHTML += '</head>';
-  tableHTML += '<body>';
-  tableHTML += '<table border="1">';
-  
-  // Add header row with inline bgcolor attribute (works in Excel)
-  tableHTML += '<thead><tr>';
-  data[0].forEach(cell => {
-    const cellContent = cell !== null && cell !== undefined ? String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-    tableHTML += `<th bgcolor="#4472C4" style="color: white; font-weight: bold; text-align: center;">${cellContent}</th>`;
-  });
-  tableHTML += '</tr></thead>';
-  
-  // Add data rows (skip first row as it's the header)
-  tableHTML += '<tbody>';
-  data.slice(1).forEach(row => {
-    tableHTML += '<tr>';
-    row.forEach(cell => {
-      // Escape HTML and handle special characters
-      const cellContent = cell !== null && cell !== undefined ? String(cell).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-      const isNumber = !isNaN(cell) && cell !== null && cell !== undefined && cell !== '';
-      tableHTML += `<td${isNumber ? ' style="mso-number-format:0"' : ''}>${cellContent}</td>`;
-    });
-    tableHTML += '</tr>';
-  });
-  tableHTML += '</tbody>';
-  
-  tableHTML += '</table>';
-  tableHTML += '</body>';
-  tableHTML += '</html>';
-  
-  // Create blob with Excel MIME type
-  const blob = new Blob([tableHTML], { 
-    type: 'application/vnd.ms-excel' 
-  });
-  
-  // Create download link
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Clean up
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-};
-
-
-export const exportToCSV = async (data, filename) => {
   try {
-    if (data.length === 0) return;
-    
-    // Prepare headers
-    const headers = Object.keys(data[0] || {});
-    
-    // Prepare data rows
-    const csvRows = data.map(item => {
-      return headers.map(header => {
-        const value = item[header];
-        
-        if (value === null || value === undefined) return '';
-        
-        const strValue = String(value);
-        const needsQuotes = strValue.includes(',') || 
-                           strValue.includes('"') || 
-                           strValue.includes('\n') || 
-                           strValue.includes('\r');
-        
-        if (needsQuotes) {
-          return `"${strValue.replace(/"/g, '""')}"`;
-        }
-        
-        return strValue;
-      });
-    });
-    
-    // Create CSV content
-    const csvContent = [
-      headers.join(','),
-      ...csvRows.map(row => row.join(','))
-    ].join('\n');
-    
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    // Download
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename.endsWith('.csv') ? filename : `${filename}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-    
+    const headers = prepareHeaders(data, columnMapping);
+    const rows = prepareRows(data, columnMapping);
+    const excelHTML = generateExcelHTML(headers, rows);
+    downloadExcelFile(excelHTML, filename);
     return true;
   } catch (error) {
-    console.error("CSV export error:", error);
-    throw error;
+    console.error('Quick export failed:', error);
+    return false;
   }
 };

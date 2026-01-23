@@ -344,4 +344,4 @@ const createExcelTable = (data) => {
   </html>`;
   
   return tableHTML;
-};
+}; 

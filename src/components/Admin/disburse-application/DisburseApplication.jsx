@@ -334,14 +334,8 @@ const DisburseApplication = () => {
         const exportData = [headers, ...dataRows];
         exportToExcel(exportData, `disburse_applications_${new Date().toISOString().split('T')[0]}`);
         
-        await Swal.fire({
-          title: 'Export Successful!',
-          text: 'Applications have been exported to Excel successfully.',
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          background: isDark ? "#1f2937" : "#ffffff",
-          color: isDark ? "#f9fafb" : "#111827",
-        });
+        toast.success('Applications exported successfully!');
+
       } else {
         throw new Error("Failed to export data");
       }

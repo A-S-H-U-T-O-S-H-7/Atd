@@ -238,14 +238,7 @@ const DisbursementPage = () => {
       const exportData = [headers, ...dataRows];
       exportToExcel(exportData, `disbursements_${new Date().toISOString().split("T")[0]}`);
 
-      await Swal.fire({
-        title: "Export Successful!",
-        text: `Exported ${dataRows.length} records.`,
-        icon: "success",
-        confirmButtonColor: "#10b981",
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+      toast.success('Disbursement datas exported successfully!');
     } catch (err) {
       await Swal.fire({
         title: "Export Failed!",

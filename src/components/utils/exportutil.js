@@ -1,5 +1,4 @@
 export const exportToExcel = (data, filename) => {
-  // Ensure the filename has .xls extension
   if (!filename.toLowerCase().endsWith('.xls') && !filename.toLowerCase().endsWith('.xlsx')) {
     filename += '.xls';
   }

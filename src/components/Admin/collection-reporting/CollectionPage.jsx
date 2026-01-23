@@ -180,14 +180,7 @@ const CollectionPage = () => {
       const exportData = [headers, ...dataRows];
       exportToExcel(exportData, `collection-export-${new Date().toISOString().split('T')[0]}.csv`);
       
-      await Swal.fire({
-        title: 'Export Successful!',
-        text: 'Collection data has been exported as CSV.',
-        icon: 'success',
-        confirmButtonColor: '#10b981',
-        background: isDark ? "#1f2937" : "#ffffff",
-        color: isDark ? "#f9fafb" : "#111827",
-      });
+      toast.success('Collections exported successfully!');
     } catch (err) {
       console.error("Export error:", err);
       Swal.fire({

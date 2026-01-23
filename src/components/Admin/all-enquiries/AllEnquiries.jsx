@@ -10,6 +10,7 @@ import { useThemeStore } from "@/lib/store/useThemeStore";
 import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
 import { fileService } from "@/lib/services/CompletedApplicationServices";// file serice i can create in one util file and use everywhere but i realize it late
+import toast from "react-hot-toast";
 
 const AllEnquiries = () => {
   const { theme } = useThemeStore();
@@ -253,92 +254,86 @@ const handleBlacklist = async (enquiry) => {
 
   // Export to Excel
   const handleExport = async (type) => {
-    if (type === 'excel') {
-      const result = await Swal.fire({
-        title: 'Export Enquiries?',
-        text: 'This will export all enquiries with current filters.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, Export!',
-        cancelButtonText: 'Cancel',
+  if (type === 'excel') {
+    const result = await Swal.fire({
+      title: 'Export Enquiries?',
+      text: 'This will export all enquiries with current filters.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Export!',
+      cancelButtonText: 'Cancel',
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#f9fafb' : '#111827',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setExporting(true);
+      
+      // Build export params with same filters but without pagination
+      const exportParams = { ...buildApiParams() };
+      delete exportParams.per_page;
+      delete exportParams.page;
+      
+      const response = await enquiryAPI.exportEnquiries(exportParams);
+      
+      if (response.success) {
+        const headers = [
+          'CRN No', 'Account ID', 'Name', 'Date of Birth', 'Gender', 
+          'Phone', 'Email', 'City', 'State', 'Company Name', 
+          'Net Salary', 'Applied Amount', 'Account No', 'IFSC Code', 
+          'ROI', 'Tenure (Days)', 'Approval Note', 'Remark', 'Created Date', 'Enquiry Type'
+        ];
+
+        const dataRows = response.data.map(enquiry => [
+          enquiry.crnno,
+          enquiry.accountId,
+          enquiry.name,
+          enquiry.dob,
+          enquiry.gender,
+          enquiry.phone,
+          enquiry.email || 'N/A',
+          enquiry.city,
+          enquiry.state,
+          enquiry.company_name,
+          enquiry.net_salary,
+          enquiry.applied_amount,
+          enquiry.account_no || 'N/A',
+          enquiry.ifsc_code || 'N/A',
+          `${(parseFloat(enquiry.roi) * 100).toFixed(2)}%`,
+          enquiry.tenure,
+          enquiry.approval_note,
+          enquiry.remark || 'N/A',
+          new Date(enquiry.created_at).toLocaleDateString('en-GB'),
+          enquiry.enquiry_type || 'N/A'
+        ]);
+
+        const exportData = [headers, ...dataRows];
+        exportToExcel(exportData, 'all-enquiries');
+        
+        toast.success('Enquiries exported successfully!');
+        
+      } else {
+        throw new Error(response.message || "Export failed");
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      await Swal.fire({
+        title: 'Export Failed!',
+        text: 'Failed to export data. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
         background: isDark ? '#1f2937' : '#ffffff',
         color: isDark ? '#f9fafb' : '#111827',
       });
-
-      if (!result.isConfirmed) return;
-
-      try {
-        setExporting(true);
-        
-        // Build export params with same filters but without pagination
-        const exportParams = { ...buildApiParams() };
-        delete exportParams.per_page;
-        delete exportParams.page;
-        
-        const response = await enquiryAPI.exportEnquiries(exportParams);
-        
-        if (response.success) {
-          const headers = [
-            'CRN No', 'Account ID', 'Name', 'Date of Birth', 'Gender', 
-            'Phone', 'Email', 'City', 'State', 'Company Name', 
-            'Net Salary', 'Applied Amount', 'Account No', 'IFSC Code', 
-            'ROI', 'Tenure (Days)', 'Approval Note', 'Remark', 'Created Date', 'Enquiry Type'
-          ];
-
-          const dataRows = response.data.map(enquiry => [
-            enquiry.crnno,
-            enquiry.accountId,
-            enquiry.name,
-            enquiry.dob,
-            enquiry.gender,
-            enquiry.phone,
-            enquiry.email || 'N/A',
-            enquiry.city,
-            enquiry.state,
-            enquiry.company_name,
-            enquiry.net_salary,
-            enquiry.applied_amount,
-            enquiry.account_no || 'N/A',
-            enquiry.ifsc_code || 'N/A',
-            `${(parseFloat(enquiry.roi) * 100).toFixed(2)}%`,
-            enquiry.tenure,
-            enquiry.approval_note,
-            enquiry.remark || 'N/A',
-            new Date(enquiry.created_at).toLocaleDateString('en-GB'),
-            enquiry.enquiry_type || 'N/A'
-          ]);
-
-          const exportData = [headers, ...dataRows];
-          exportToExcel(exportData, 'all-enquiries');
-          
-          await Swal.fire({
-            title: 'Export Successful!',
-            text: 'Enquiries have been exported to Excel successfully.',
-            icon: 'success',
-            confirmButtonColor: '#10b981',
-            background: isDark ? '#1f2937' : '#ffffff',
-            color: isDark ? '#f9fafb' : '#111827',
-          });
-        } else {
-          throw new Error(response.message || "Export failed");
-        }
-      } catch (err) {
-        console.error("Export error:", err);
-        await Swal.fire({
-          title: 'Export Failed!',
-          text: 'Failed to export data. Please try again.',
-          icon: 'error',
-          confirmButtonColor: '#ef4444',
-          background: isDark ? '#1f2937' : '#ffffff',
-          color: isDark ? '#f9fafb' : '#111827',
-        });
-      } finally {
-        setExporting(false);
-      }
+    } finally {
+      setExporting(false);
     }
-  };
+  }
+};
 
   // Navigation handlers
   const handleLoanEligibilityClick = (enquiry) => {
