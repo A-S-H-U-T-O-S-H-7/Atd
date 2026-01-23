@@ -724,8 +724,8 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
                             {option.id === 'qr' && (
                               <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                 <h4 className="text-xs font-semibold text-gray-700 mb-3">Scan QR Code to Pay</h4>
-                                <div className="bg-gray-50 p-4 rounded-lg mb-3 border border-gray-200">
-                                  <div className="w-40 h-40 mx-auto bg-white p-3 rounded-lg shadow-sm">
+                                <div className="bg-gray-50 p-1 rounded-lg mb-3 border border-gray-200">
+                                  <div className="w-40 h-40 mx-auto bg-white p-1 rounded-lg shadow-sm">
                                     {/* Replace with your actual QR code image */}
                                     <img 
                                       src="/atd_payment-qr.jpeg" 
