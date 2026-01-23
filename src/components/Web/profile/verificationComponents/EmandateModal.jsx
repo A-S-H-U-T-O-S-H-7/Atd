@@ -69,7 +69,7 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
       
       const token = getToken();
       const response = await axios.get(
-        `https://api.atdmoney.in/api/user/enach/bank/${selectedMode}`,
+        `https://live.atdmoney.com/api/user/enach/bank/${selectedMode}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
       
       // Get initiation data using dynamic applicationId
       const response = await axios.get(
-        `https://api.atdmoney.in/api/user/enach/initiate/${applicationId}`,
+        `https://live.atdmoney.com/api/user/enach/initiate/${applicationId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -253,10 +253,10 @@ const EMandateModal = ({ isOpen, onClose, onSuccess, user, applicationId }) => {
           consumerData: {
             deviceId: 'WEBSH2',
             token: paymentToken,
-            returnUrl: 'https://api.atdmoney.in/api/user/enach/report',
+            returnUrl: 'https://live.atdmoney.com/api/user/enach/report',
             responseHandler: handleResponse,
             paymentMode: paymentMode,
-            merchantLogoUrl: 'https://atd-two.vercel.app/atdlogo.png',
+            merchantLogoUrl: 'https://web.atdmoney.com/atdlogo.png',
             merchantId: 'L815953',
             currency: 'INR',
             consumerId: loan_no,
