@@ -35,7 +35,7 @@ const DigitalLoanAgreement = ({ enabled, completed, user, VerificationIcon, Veri
       };
 
       const response = await fetch(
-        `https://api.atdmoney.in/api/user/loan-agreement/leegality/${user.application_id}`, 
+        `https://live.atdmoney.com/api/user/loan-agreement/leegality/${user.application_id}`, 
         requestOptions
       );
       
@@ -64,7 +64,7 @@ const DigitalLoanAgreement = ({ enabled, completed, user, VerificationIcon, Veri
       
       const interval = setInterval(async () => {
         const response = await fetch(
-          `https://api.atdmoney.in/api/user/loan-agreement/status/${user.application_id}`,
+          `https://live.atdmoney.com/api/user/loan-agreement/status/${user.application_id}`,
           {
             headers: {
               'Authorization': `Bearer ${userToken}`,

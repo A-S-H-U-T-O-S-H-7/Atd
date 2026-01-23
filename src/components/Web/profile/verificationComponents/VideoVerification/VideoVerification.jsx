@@ -488,7 +488,7 @@ const VideoVerification = ({ enabled, completed, VerificationIcon, VerificationB
       }
 
       const response = await axios.put(
-        `https://api.atdmoney.in/api/user/video/${user.application_id}`,
+        `https://live.atdmoney.com/api/user/video/${user.application_id}`,
         { 
           video: filename,
           video_status: 1
