@@ -26,7 +26,7 @@ const EligibilityButton = ({
     >
       <Link
         href={`/crm/loan-eligibility/${enquiry.id}`}
-        target="_blank"
+        
         rel="noopener noreferrer"
         onClick={(e) => {
           localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));

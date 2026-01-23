@@ -59,7 +59,7 @@ const { theme } = useThemeStore();
   // Show toast function
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-  };
+  }; 
 
   // Close toast function
   const closeToast = () => {
