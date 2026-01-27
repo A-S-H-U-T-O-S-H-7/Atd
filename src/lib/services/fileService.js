@@ -1,6 +1,6 @@
 import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 import { storage } from '@/lib/firebase';
-import { UI_TO_DB_MAPPING } from "../documentMappings";
+import { UI_TO_DB_MAPPING,FIREBASE_FOLDERS  } from "../documentMappings";
 
 export const fileService = {
   // Get Firebase folder for a document
