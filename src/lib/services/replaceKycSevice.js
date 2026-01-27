@@ -1,6 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import fileService from "@/lib/services/fileService";
+import fileService from "./fileService";
 import { UI_TO_DB_MAPPING,FIREBASE_FOLDERS, DOCUMENT_CONFIG  } from "../documentMappings";
 
 // Make sure these are defined as const at the top level

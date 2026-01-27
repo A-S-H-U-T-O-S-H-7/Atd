@@ -51,7 +51,7 @@ export const FIREBASE_FOLDERS = {
   'address_proof': 'address',
   'id_proof': 'idproof',
   'salary_slip': 'first_salaryslip',
-  'second_salary_slip': 'second_salaryslip',
+  'second_salary_slip': 'second_salaryslip', 
   'third_salary_slip': 'third_salaryslip',
   'bank_statement': 'bank-statement',
   'second_bank_statement': 'bank-statement',
