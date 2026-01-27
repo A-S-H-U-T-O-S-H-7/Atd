@@ -47,7 +47,6 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
   }, [user?.user_id]);
 
   const setupFirebaseListener = () => {
-    console.log('🚀 Setting up Firebase listener...');
     const userId = user.user_id;
     
     const userNotificationsRef = ref(db, `users/${userId}/notifications`);
@@ -79,7 +78,6 @@ export default function Header({ user, isRefreshing, onLogout, onClientHistory }
     
     // Store cleanup function
     unsubscribeRef.current = () => {
-      console.log('🔌 Cleaning up Firebase listener');
       off(userNotificationsRef, handleFirebaseData);
     };
     

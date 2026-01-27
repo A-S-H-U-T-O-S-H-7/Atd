@@ -728,7 +728,7 @@ const PaymentModal = ({ isOpen, onClose, applicationId, router }) => {
     <div className="bg-gray-50 p-1 rounded-lg mb-3 border border-gray-200">
       <div className="w-40 h-40 mx-auto bg-white p-1 rounded-lg shadow-sm flex items-center justify-center">
         <img 
-          src="/atd_payment-qr.jpeg" 
+          src="/atd_payment_qr.jpeg" 
           alt="ATD Payment QR Code" 
           className="w-full h-full object-contain"
           width={160}
