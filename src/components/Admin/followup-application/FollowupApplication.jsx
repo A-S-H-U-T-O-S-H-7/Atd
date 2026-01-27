@@ -15,6 +15,8 @@ import {
   fileService 
 } from "@/lib/services/FollowUpApplicationServices";
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
+
 
 const FollowUpApplication = () => {
   const { theme } = useThemeStore();

@@ -4,15 +4,15 @@ import Pagination from "../Pagination";
 import SanctionRow from "./SanctionRow";
 
 const SanctionTable = ({ 
-    paginatedApplications, 
-    filteredApplications,
+  paginatedApplications, 
+  filteredApplications,
   currentPage,
   totalPages,
   itemsPerPage,
   isDark,
   onPageChange,
   onCall,
-  onFileView, 
+  onFileView,
   onVerifyClick,
   onChequeModalOpen,
   onCourierModalOpen,

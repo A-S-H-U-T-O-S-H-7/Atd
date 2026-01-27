@@ -19,10 +19,10 @@ import NormalCollectionForm from "./collectionForms/NormalCollectionForm";
 import RenewalCollectionForm from "./collectionForms/RenewalCollectionForm";
 import CreateEmiForm from "./collectionForms/CreateEmiForm";
 import { useThemeStore } from "@/lib/store/useThemeStore";
-import { 
+import {  
   manageApplicationService,
   formatManageApplicationForUI,
-  manageFileService
+  fileService
 } from "@/lib/services/ManageApplicationServices";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
@@ -807,12 +807,10 @@ const handleNOCGenerate = async (applicationId, nocData) => {
     setLoadingFileName(fileName);
     
     try {
-      const url = await manageFileService.viewFile(fileName, documentCategory);
+      const url = await fileService.viewFile(fileName, documentCategory);
       
       const newWindow = window.open(url, '_blank');
-      if (!newWindow) {
-        alert('Popup blocked! Please allow popups for this site.');
-      }
+      
     } catch (error) {
       alert(`Failed to load file: ${fileName}. Please check if file exists.`);
     } finally {

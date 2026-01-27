@@ -1,8 +1,7 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { ref, getDownloadURL } from "firebase/storage"; 
-import { storage } from '@/lib/firebase';
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
+import fileService from "./fileService";
 
 export const rejectedApplicationAPI = {
   // Get all rejected applications with filters
@@ -26,19 +25,17 @@ export const rejectedApplicationAPI = {
   },
 
   // Restore application (move from rejected to pending/in-progress)
- restoreApplication: async (applicationId) => {
+  restoreApplication: async (applicationId) => {
     try {
       const response = await api.get(`/crm/application/rejected/restore/${applicationId}`);
       return response.data;
     } catch (error) {
-      // Create a proper error object with the response data if available
       const apiError = new Error(error.message || 'API call failed');
       apiError.response = error.response;
       apiError.status = error.response?.status;
       throw apiError;
     }
   }
-
 };
 
 // Format application data for UI
@@ -57,13 +54,14 @@ export const formatRejectedApplicationForUI = (application) => {
     enquirySource: application.enquiry_type || 'N/A',
     crnNo: application.crnno,
     accountId: application.accountId,
+    userId: application.user_id,
 
     // Date and time information
     enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
     enquiryDateTime: application.enquiry_date, 
     completeDate: completeDate ? completeDate.toLocaleDateString('en-GB') : 'N/A',
     completeTime: application.complete_time || 'N/A',
-    rejectedDate: rejectedDate ? rejectedDate.toLocaleDateString('en-GB') : 'N/A', // USING created_at as rejected date
+    rejectedDate: rejectedDate ? rejectedDate.toLocaleDateString('en-GB') : 'N/A',
     rejectedDateTime: application.created_at,
 
     // Personal information
@@ -97,7 +95,7 @@ export const formatRejectedApplicationForUI = (application) => {
     verifierName: application.verifier_name,
     verifierPhoto: application.verifier_photo,
 
-    // Status information - USE IMPORTED FUNCTION
+    // Status information
     status: getStatusName(application.loan_status),
     loanStatus: getStatusName(application.loan_status),
 
@@ -127,6 +125,11 @@ export const formatRejectedApplicationForUI = (application) => {
     hasCibilScoreReport: !!application.cibil_score_report,
     hasSecondBankStatement: !!application.second_bank_statement,
     hasBankFraudReport: !!application.bank_fraud_report,
+    hasCamSheet: !!application.cam_sheet,
+    hasNachForm: !!application.nach_form,
+    hasPdc: !!application.pdc,
+    hasAgreement: !!application.aggrement,
+    hasVideo: !!application.video,
 
     // Document file names
     photoFileName: application.selfie,
@@ -142,6 +145,11 @@ export const formatRejectedApplicationForUI = (application) => {
     cibilScoreFileName: application.cibil_score_report,
     secondBankStatementFileName: application.second_bank_statement,
     bankFraudReportFileName: application.bank_fraud_report,
+    camSheetFileName: application.cam_sheet,
+    nachFormFileName: application.nach_form,
+    pdcFileName: application.pdc,
+    agreementFileName: application.aggrement,
+    videoFileName: application.video,
 
     // Mail information
     mailCounter: application.mail_counter,
@@ -167,40 +175,4 @@ export const rejectedApplicationService = {
   }
 };
 
-
-// File view utility
-export const fileService = {
-  viewFile: async (fileName, documentCategory) => {
-    if (!fileName) {
-      throw new Error('No file available');
-    }
-
-    const folderMappings = {
-      'bank_statement': 'bank-statement',
-      'second_bank_statement': 'bank-statement',
-      'aadhar_proof': 'idproof', 
-      'address_proof': 'address',
-      'pan_proof': 'pan',
-      'selfie': 'photo',
-      'salary_slip': 'first_salaryslip',
-      'second_salary_slip': 'second_salaryslip', 
-      'third_salary_slip': 'third_salaryslip',
-      'bank_verif_report': 'reports',
-      'bank_fraud_report': 'reports',
-      'social_score_report': 'reports',
-      'cibil_score_report': 'reports',
-    };
-
-    const folder = folderMappings[documentCategory];
-    
-    if (!folder) {
-      throw new Error('Document type not configured');
-    }
-    
-    const filePath = `${folder}/${fileName}`;
-    const fileRef = ref(storage, filePath);
-    const url = await getDownloadURL(fileRef);
-    
-    return url;
-  }
-};
+export { fileService };

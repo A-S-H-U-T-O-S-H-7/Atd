@@ -465,7 +465,7 @@ const buildApiParams = () => {
         throw new Error("Failed to export data");
       }
     } catch (err) {
-      await Swal.fire({
+      await Swal.fire({ 
         title: 'Export Failed!',
         text: 'Failed to export data. Please try again.',
         icon: 'error',

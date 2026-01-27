@@ -80,7 +80,7 @@ export default function ReplaceKYCPage() {
   const handleRetry = async () => {
     setLoading(true);
     setError(null);
-    await loadEnquiryData(); // Use the same load function for consistency
+    await loadEnquiryData(); 
   };
 
   // Loading State

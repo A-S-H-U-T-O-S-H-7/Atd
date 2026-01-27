@@ -1,6 +1,7 @@
 "use client";
 import api from "@/utils/axiosInstance";
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
+import fileService from "./fileService";
 
 export const pendingApplicationAPI = {
     // Get all pending applications with filters
@@ -24,43 +25,43 @@ export const pendingApplicationAPI = {
     },
 
     sendPendingEmail: async (applicationId) => {
-    try {
-      const endpoints = [
-        `/crm/email/pending/email/${applicationId}`,
-      ];
-
-      let response;
-      let lastError;
-
-      for (const endpoint of endpoints) {
         try {
-          response = await api.get(endpoint);
-          console.log("✅ Email sent successfully:", response.data);
-          
-          // Ensure we return the response data properly
-          return {
-            success: true,
-            message: response.data.message || "Email sent successfully",
-            data: response.data.data || response.data
-          };
-        } catch (error) {
-          lastError = error;
-          console.log(`❌ Endpoint failed: ${endpoint}`, error.response?.status);
-          continue;
-        }
-      }
+            const endpoints = [
+                `/crm/email/pending/email/${applicationId}`,
+            ];
 
-      throw lastError;
-    } catch (error) {
-      console.error("📧 Email sending error:", error);
-      // Return a structured error response
-      return {
-        success: false,
-        message: error.response?.data?.message || "Failed to send email",
-        error: error
-      };
+            let response;
+            let lastError;
+
+            for (const endpoint of endpoints) {
+                try {
+                    response = await api.get(endpoint);
+                    console.log("✅ Email sent successfully:", response.data);
+                    
+                    // Ensure we return the response data properly
+                    return {
+                        success: true,
+                        message: response.data.message || "Email sent successfully",
+                        data: response.data.data || response.data
+                    };
+                } catch (error) {
+                    lastError = error;
+                    console.log(`❌ Endpoint failed: ${endpoint}`, error.response?.status);
+                    continue;
+                }
+            }
+
+            throw lastError;
+        } catch (error) {
+            console.error("📧 Email sending error:", error);
+            // Return a structured error response
+            return {
+                success: false,
+                message: error.response?.data?.message || "Failed to send email",
+                error: error
+            };
+        }
     }
-  }
 };
 
 export const formatApplicationForUI = (application) => {
@@ -81,10 +82,8 @@ export const formatApplicationForUI = (application) => {
         userId: application.user_id,
         user_id: application.user_id,
 
-
         // Date and time
         enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
-
 
         // Personal information
         name: application.name,
@@ -123,8 +122,10 @@ export const formatApplicationForUI = (application) => {
         hasBankVerificationReport: !!application.bank_verif_report,
         hasSocialScoreReport: !!application.social_score_report,
         hasCibilScoreReport: !!application.cibil_score_report,
+        hasSecondBankStatement: !!application.second_bank_statement,
+        hasBankFraudReport: !!application.bank_fraud_report,
 
-        // Document file names
+        // Document file names - ONLY NECESSARY ONES
         photoFileName: application.selfie,
         panCardFileName: application.pan_proof,
         addressProofFileName: application.address_proof,
@@ -136,8 +137,10 @@ export const formatApplicationForUI = (application) => {
         bankVerificationFileName: application.bank_verif_report,
         socialScoreFileName: application.social_score_report,
         cibilScoreFileName: application.cibil_score_report,
+        secondBankStatementFileName: application.second_bank_statement,
+        bankFraudReportFileName: application.bank_fraud_report,
 
-        // Status and approval information - USE IMPORTED FUNCTION
+        // Status and approval information
         approvalNote: application.approval_note,
         status: loanStatus,
         loanStatus: loanStatus,
@@ -155,7 +158,7 @@ export const formatApplicationForUI = (application) => {
         finalReportStatus: application.totl_final_report,
         isRecommended: application.totl_final_report === "Recommended",
 
-        // Button visibility flags - IMPORTANT: Set these to true for pending applications
+        // Button visibility flags
         showActionButton: true,
         showAppraisalButton: true,
         showEligibilityButton: true,
@@ -170,7 +173,8 @@ export const formatApplicationForUI = (application) => {
     };
 };
 
-// For backward compatibility
 export const getLoanStatusText = (status) => {
-    return getStatusName(status); // USE IMPORTED FUNCTION
+    return getStatusName(status);
 };
+
+export { fileService };

@@ -11,7 +11,7 @@ import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   disburseApprovalService,
   formatDisburseApprovalApplicationForUI,
-  disburseFileService
+  fileService
 } from "@/lib/services/DisburseApprovalServices";
 import Swal from 'sweetalert2';
 import toast from "react-hot-toast";
@@ -364,7 +364,7 @@ const DisburseApplication = () => {
     setLoadingFileName(fileName);
     
     try {
-      const url = await disburseFileService.viewFile(fileName, documentCategory);
+      const url = await fileService.viewFile(fileName, documentCategory);
       
       const newWindow = window.open(url, '_blank');
       if (!newWindow) {

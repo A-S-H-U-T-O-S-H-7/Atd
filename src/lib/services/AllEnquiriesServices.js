@@ -229,7 +229,7 @@ export const statusService = {
             };
             const response = await enquiryAPI.updateApplicationStatus(applicationId, statusData);
             return response;
-        } catch (error) {
+        } catch (error) { 
             throw error;
         }
     },

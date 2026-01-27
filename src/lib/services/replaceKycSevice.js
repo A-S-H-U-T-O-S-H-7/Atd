@@ -1,79 +1,21 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
-import { storage } from '@/lib/firebase';
+import fileService from "@/lib/services/fileService";
+import { UI_TO_DB_MAPPING,FIREBASE_FOLDERS, DOCUMENT_CONFIG  } from "../documentMappings";
 
 // Make sure these are defined as const at the top level
-const DOCUMENT_FIELDS_MAPPING = {
-  photo: 'selfie',
-  panCard: 'pan_proof', 
-  addressProof: 'address_proof',
-  idProof: 'id_proof',
-  salarySlip1: 'salary_slip',
-  salarySlip2: 'second_salary_slip',
-  salarySlip3: 'third_salary_slip',
-  bankStatement: 'bank_statement',
-  bankStatement2: 'second_bank_statement',
-  bankVerificationReport: 'bank_verif_report',
-  bankFraudAnalysisReport: 'bank_fraud_report',
-  camSheet: 'cam_sheet', 
-  socialScoreReport: 'social_score_report',
-  cibilScoreReport: 'cibil_score_report',
-  nachForm: 'nach_form',
-  pdc: 'pdc',
-  agreement: 'aggrement',
-  video: 'video'
-};
+const DOCUMENT_FIELDS_MAPPING = UI_TO_DB_MAPPING;
 
 const REVERSE_DOCUMENT_MAPPING = Object.fromEntries(
   Object.entries(DOCUMENT_FIELDS_MAPPING).map(([key, value]) => [value, key])
 );
 
-const FOLDER_MAPPINGS = {
-  'selfie': 'photo',
-  'pan_proof': 'pan',
-  'address_proof': 'address',
-  'id_proof': 'idproof',
-  'salary_slip': 'first_salaryslip',
-  'second_salary_slip': 'second_salaryslip',
-  'third_salary_slip': 'third_salaryslip',
-  'bank_statement': 'bank-statement',
-  'second_bank_statement': 'bank-statement',
-  'bank_verif_report': 'reports',
-  'bank_fraud_report': 'reports',
-  'cam_sheet': 'reports',
-  'social_score_report': 'reports',
-  'cibil_score_report': 'reports',
-  'nach_form': 'nach-form',
-  'pdc': 'pdc',
-  'aggrement': 'agreement',
-  'video': 'video-kyc'
-};
-
-const DOCUMENT_CONFIG = [
-  { name: 'photo', label: 'Photo', required: true },
-  { name: 'panCard', label: 'PAN Proof', required: true },
-  { name: 'addressProof', label: 'Address Proof', required: true },
-  { name: 'idProof', label: 'ID Proof', required: true },
-  { name: 'salarySlip1', label: '1st Month Salary Slip', required: false },
-  { name: 'salarySlip2', label: '2nd Month Salary Slip', required: false },
-  { name: 'salarySlip3', label: '3rd Month Salary Slip', required: false },
-  { name: 'bankStatement', label: 'Bank Statement', required: false },
-  { name: 'bankStatement2', label: '2nd Bank Statement', required: false },
-  { name: 'bankVerificationReport', label: 'Banking Verification Report', required: false },
-  { name: 'bankFraudAnalysisReport', label: 'Bank Fraud Analysis Report', required: false },
-  { name: 'camSheet', label: 'CAM Sheet', required: false },
-  { name: 'nachForm', label: 'NACH Form', required: false },
-  { name: 'socialScoreReport', label: 'Social Score Report', required: false },
-  { name: 'cibilScoreReport', label: 'CIBIL Score Report', required: false },
-  { name: 'pdc', label: 'PDC', required: false },
-  { name: 'agreement', label: 'Agreement', required: false },
-  { name: 'video', label: 'Video', required: false }
-];
+const FOLDER_MAPPINGS = FIREBASE_FOLDERS;
 
 const kycService = {
-  // Add the mapping as a property of the service object
   DOCUMENT_FIELDS_MAPPING,
+  FOLDER_MAPPINGS,
+  DOCUMENT_CONFIG,
 
   getKYCDetails: async (applicationId) => {
     try {
@@ -152,23 +94,8 @@ const kycService = {
 
   uploadFileToStorage: async (file, documentType) => {
     try {
-      const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
-      if (!apiField) throw new Error(`Invalid document type: ${documentType}`);
-
-      const folder = FOLDER_MAPPINGS[apiField];
-      if (!folder) throw new Error(`Folder mapping not found for: ${apiField}`);
-
-      const timestamp = Date.now();
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `${timestamp}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
-      
-      const filePath = `${folder}/${fileName}`;
-      const storageRef = ref(storage, filePath);
-      
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      return { fileName, downloadURL, filePath };
+      // Use the centralized fileService
+      return await fileService.uploadFileFromUI(file, documentType);
     } catch (error) {
       console.error('Upload error:', error);
       throw error;
@@ -178,18 +105,9 @@ const kycService = {
   viewFile: async (fileName, documentType) => {
     try {
       if (!fileName) throw new Error('No file available');
-
-      const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
-      if (!apiField) throw new Error(`Invalid document type: ${documentType}`);
-
-      const folder = FOLDER_MAPPINGS[apiField];
-      if (!folder) throw new Error(`Folder mapping not found for: ${apiField}`);
       
-      const filePath = `${folder}/${fileName}`;
-      const fileRef = ref(storage, filePath);
-      const url = await getDownloadURL(fileRef);
-      
-      return url;
+      // Use the centralized fileService
+      return await fileService.viewFile(fileName, documentType);
     } catch (error) {
       console.error('View error:', error);
       throw error;
@@ -200,7 +118,8 @@ const kycService = {
     try {
       console.log('uploadAndUpdateDocument starting:', { documentType, documentId, fileName: file.name });
       
-      const uploadResult = await kycService.uploadFileToStorage(file, documentType);
+      // Use centralized fileService for upload
+      const uploadResult = await fileService.uploadFileFromUI(file, documentType);
       console.log('File uploaded to storage:', uploadResult.fileName);
       
       const apiField = DOCUMENT_FIELDS_MAPPING[documentType];
@@ -263,6 +182,33 @@ const kycService = {
     }
 
     return true;
+  },
+
+  // Helper method to get folder for a UI field
+  getFolderForUIField: (uiField) => {
+    const dbField = UI_TO_DB_MAPPING[uiField];
+    if (!dbField) {
+      throw new Error(`No mapping found for UI field: ${uiField}`);
+    }
+    return FIREBASE_FOLDERS[dbField];
+  },
+
+  // Helper method to get DB field for a UI field
+  getDbFieldForUIField: (uiField) => {
+    const dbField = UI_TO_DB_MAPPING[uiField];
+    if (!dbField) {
+      throw new Error(`No mapping found for UI field: ${uiField}`);
+    }
+    return dbField;
+  },
+
+  // Helper method to get UI field for a DB field
+  getUIFieldForDbField: (dbField) => {
+    const uiField = REVERSE_DOCUMENT_MAPPING[dbField];
+    if (!uiField) {
+      throw new Error(`No mapping found for DB field: ${dbField}`);
+    }
+    return uiField;
   }
 };
 
@@ -277,6 +223,8 @@ const formatKYCDataForUI = (apiData) => {
       available: !!fileName,
       fileName: fileName || null,
       apiField: apiField,
+      uiField: uiField,
+      folder: FIREBASE_FOLDERS[apiField] || 'unknown',
       newFile: null
     };
   });

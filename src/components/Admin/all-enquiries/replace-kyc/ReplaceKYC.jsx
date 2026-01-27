@@ -17,7 +17,7 @@ const ReplaceKYC = ({ enquiry, onBack }) => {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark ? "bg-gray-900" : "bg-emerald-50/30"
-    }`}>
+    }`}> 
       <div className="p-4 md:p-8">
         <form onSubmit={handleSubmit}>
           <Header 

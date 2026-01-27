@@ -1,7 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from '@/lib/firebase';
+import fileService from "./fileService";
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 
@@ -400,44 +399,4 @@ submitDisbursement: async (applicationId, formData) => {
   }
 };
 
-// File view utility (same as other pages)
-export const disburseFileService = {
-  viewFile: async (fileName, documentCategory) => {
-    if (!fileName) {
-      throw new Error('No file available');
-    }
-
-    const folderMappings = {
-      'bank_statement': 'bank-statement',
-      'aadhar_proof': 'idproof', 
-      'address_proof': 'address',
-      'pan_proof': 'pan',
-      'selfie': 'photo',
-      'salary_slip': 'first_salaryslip',
-      'second_salary_slip': 'second_salaryslip', 
-      'third_salary_slip': 'third_salaryslip',
-      'bank_verif_report': 'reports',
-      'social_score_report': 'reports',
-      'cibil_score_report': 'reports',
-      'pdc_file': 'agreement',
-      'agreement_file': 'agreement',
-      'video': 'videokyc',
-      'nach_form': 'agreement',
-      'pdc': 'agreement',
-      'aggrement': 'agreement',
-      'sanction_letter': 'sanctionletter'
-    };
-
-    const folder = folderMappings[documentCategory];
-    
-    if (!folder) {
-      throw new Error('Document type not configured');
-    } 
-    
-    const filePath = `${folder}/${fileName}`;
-    const fileRef = ref(storage, filePath);
-    const url = await getDownloadURL(fileRef);
-    
-    return url;
-  }
-};
+export {fileService}

@@ -1,7 +1,6 @@
 "use client";
 import api from "@/utils/axiosInstance";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from '@/lib/firebase';
+import fileService from "./fileService";
 import { getStatusName, getStatusId } from "@/utils/applicationStatus";
 
 export const completedApplicationAPI = {
@@ -27,29 +26,29 @@ export const completedApplicationAPI = {
 
   // Update application status 
   updateApplicationStatus: async (applicationId, statusData) => {
-  try {
-    const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
-    
-    if (response.success === false) {
-      const error = new Error(response.message || 'Status update failed');
-      throw error;
+    try {
+      const response = await api.put(`/crm/application/status/${applicationId}`, statusData);
+      
+      if (response.success === false) {
+        const error = new Error(response.message || 'Status update failed');
+        throw error;
+      }
+      
+      return response;
+      
+    } catch (error) {
+      if (error.message && error.message !== 'No response data received') {
+        throw error;
+      }
+      
+      if (error.response) {
+        const errorData = error.response.data || error.response;
+        throw new Error(errorData.message || 'Status update failed');
+      }
+      
+      throw new Error(error.message || 'Status update failed');
     }
-    
-    return response;
-    
-  } catch (error) {
-    if (error.message && error.message !== 'No response data received') {
-      throw error;
-    }
-    
-    if (error.response) {
-      const errorData = error.response.data || error.response;
-      throw new Error(errorData.message || 'Status update failed');
-    }
-    
-    throw new Error(error.message || 'Status update failed');
-  }
-},
+  },
 
   // Blacklist application
   blacklistApplication: async (userId) => {
@@ -166,6 +165,7 @@ export const formatCompletedApplicationForUI = (application) => {
     isBlacklisted: application.blacklist === 1,
     blacklistDate: application.blacklistdate,
 
+    // Document availability flags
     hasPhoto: !!application.selfie,
     hasPanCard: !!application.pan_proof,
     hasAddressProof: !!application.address_proof,
@@ -179,7 +179,13 @@ export const formatCompletedApplicationForUI = (application) => {
     hasCibilScoreReport: !!application.cibil_score_report,
     hasSecondBankStatement: !!application.second_bank_statement,
     hasBankFraudReport: !!application.bank_fraud_report,
+    hasCamSheet: !!application.cam_sheet,  
+    hasNachForm: !!application.nach_form,  
+    hasPdc: !!application.pdc,             
+    hasAgreement: !!application.aggrement, 
+    hasVideo: !!application.video,         
 
+    // Document file names 
     photoFileName: application.selfie,
     panCardFileName: application.pan_proof,
     addressProofFileName: application.address_proof,
@@ -193,6 +199,11 @@ export const formatCompletedApplicationForUI = (application) => {
     cibilScoreFileName: application.cibil_score_report,
     secondBankStatementFileName: application.second_bank_statement,
     bankFraudReportFileName: application.bank_fraud_report,
+    camSheetFileName: application.cam_sheet,       
+    nachFormFileName: application.nach_form,       
+    pdcFileName: application.pdc,                  
+    agreementFileName: application.aggrement,      
+    videoFileName: application.video,              
 
     approvalNote: application.approval_note,
     status: getStatusName(application.loan_status),
@@ -217,22 +228,20 @@ export const formatCompletedApplicationForUI = (application) => {
 // Status update utility
 export const statusService = {
   updateStatus: async (applicationId, statusName, remark = "") => {
-  try {
-    const statusData = {
-      status: getStatusId(statusName),
-      remark: remark
-    };
-    
-    const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
-    
-    return response;
-     
-  } catch (error) {
-  
-    throw error;
-  }
-},
-
+    try {
+      const statusData = {
+        status: getStatusId(statusName),
+        remark: remark
+      };
+      
+      const response = await completedApplicationAPI.updateApplicationStatus(applicationId, statusData);
+      
+      return response;
+       
+    } catch (error) {
+      throw error;
+    }
+  },
 
   blacklist: async (applicationId) => {
     try {
@@ -250,43 +259,7 @@ export const statusService = {
     } catch (error) {
       throw error;
     }
-  
   }
 };
 
-// File view utility
-export const fileService = {
-  viewFile: async (fileName, documentCategory) => {
-    if (!fileName) {
-      throw new Error('No file available');
-    }
-
-    const folderMappings = {
-      'bank_statement': 'bank-statement',
-      'second_bank_statement': 'bank-statement',
-      'aadhar_proof': 'idproof', 
-      'address_proof': 'address',
-      'pan_proof': 'pan',
-      'selfie': 'photo',
-      'salary_slip': 'first_salaryslip',
-      'second_salary_slip': 'second_salaryslip', 
-      'third_salary_slip': 'third_salaryslip',
-      'bank_verif_report': 'reports',
-      'bank_fraud_report': 'reports',
-      'social_score_report': 'reports',
-      'cibil_score_report': 'reports',
-    };
-
-    const folder = folderMappings[documentCategory];
-    
-    if (!folder) {
-      throw new Error('Document type not configured');
-    }
-    
-    const filePath = `${folder}/${fileName}`;
-    const fileRef = ref(storage, filePath);
-    const url = await getDownloadURL(fileRef);
-    
-    return url;
-  }
-};
+export { fileService };

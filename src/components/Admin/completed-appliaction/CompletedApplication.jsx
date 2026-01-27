@@ -11,7 +11,7 @@ import { useThemeStore } from "@/lib/store/useThemeStore";
 import { 
   completedApplicationAPI, 
   formatCompletedApplicationForUI,
-  statusService,
+  statusService, 
   fileService 
 } from "@/lib/services/CompletedApplicationServices";
 import Swal from 'sweetalert2';

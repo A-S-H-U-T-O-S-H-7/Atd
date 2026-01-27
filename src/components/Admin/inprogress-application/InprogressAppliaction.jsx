@@ -12,9 +12,11 @@ import {
   inProgressApplicationAPI, 
   formatInProgressApplicationForUI,
   fileService,
-  inProgressService 
+  inProgressService  
 } from "@/lib/services/InprocessApplicationServices";
 import Swal from 'sweetalert2';
+import toast from "react-hot-toast";
+
 
 const InProgressApplication = () => {
   const { theme } = useThemeStore();
