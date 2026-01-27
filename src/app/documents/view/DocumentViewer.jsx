@@ -23,42 +23,90 @@ export default function DocumentViewer() {
   const [fullscreen, setFullscreen] = useState(false);
   const [rotation, setRotation] = useState(0);
 
-  // Folder mappings for different document types
+  // Updated folder mappings according to requirements
   const folderMappings = {
     // Photo
-    'selfie': 'photo',
+    'photo': 'photo',
     
     // KYC Documents
-    'aadhar_proof': 'idproof',
+    'id_proof': 'idproof',
     'pan_proof': 'pan',
     'address_proof': 'address',
-    'video_kyc': 'video-kyc', 
+    'video': 'video',
+    
+    // Salary Documents
+    'first_month_salary_slip': 'first_salaryslip',
+    'second_month_salary_slip': 'second_salaryslip',
+    'third_month_salary_slip': 'third_salaryslip',
     
     // Bank Documents
     'bank_statement': 'bank-statement',
-    'second_bank_statement': 'bank-statement-2',
+    'second_bank_statement': 'bank-statement',
     
-    // Salary Documents
+    // Reports
+    'banking_verification_report': 'bank-verification-report',
+    'bank_fraud_analysis_report': 'bank-verification-report',
+    'cam_sheet': 'cam-sheet',
+    'social_score_report': 'social-score-report',
+    'cibil_score_report': 'cibil-score-report',
+    
+    // Loan Documents
+    'nach_form': 'nach',
+    'pdc': 'pdc-report',
+    'agreement': 'aggreement',
+    
+    // Backward compatibility (keep old keys)
+    'selfie': 'photo',
+    'aadhar_proof': 'idproof',
+    'video_kyc': 'video',
     'salary_slip': 'first_salaryslip',
     'second_salary_slip': 'second_salaryslip',
     'third_salary_slip': 'third_salaryslip',
-    
-    // Reports
-    'bank_verif_report': 'reports',
-    'social_score_report': 'reports',
-    'cibil_score_report': 'reports',
-    'bank_fraud_report': 'reports',
-    
-    // Loan Documents
-    'nach_form': 'nach-form',
-    'pdc': 'pdc',
-    'agreement': 'agreement',
-    'sanction_letter': 'sanction-letter',
+    'bank_verif_report': 'bank-verification-report',
+    'bank_fraud_report': 'bank-verification-report',
+    'sanction_letter': 'documents',
   };
 
   // Get folder from document type
   const getFolderFromType = useCallback((type) => {
-    return folderMappings[type] || 'documents'; // Default folder
+    return folderMappings[type] || 'documents'; 
+  }, []);
+
+  // Map document type to display name
+  const getDisplayName = useCallback((type) => {
+    const displayNames = {
+      'photo': 'Photo',
+      'pan_proof': 'PAN Proof',
+      'address_proof': 'Address Proof',
+      'id_proof': 'ID Proof',
+      'first_month_salary_slip': '1st Month Salary Slip',
+      'second_month_salary_slip': '2nd Month Salary Slip',
+      'third_month_salary_slip': '3rd Month Salary Slip',
+      'bank_statement': 'Bank Statement',
+      'second_bank_statement': '2nd Bank Statement',
+      'banking_verification_report': 'Banking Verification Report',
+      'bank_fraud_analysis_report': 'Bank Fraud Analysis Report',
+      'cam_sheet': 'CAM Sheet',
+      'social_score_report': 'Social Score Report',
+      'cibil_score_report': 'CIBIL Score Report',
+      'nach_form': 'NACH Form',
+      'pdc': 'PDC',
+      'agreement': 'Agreement',
+      'video': 'Video',
+      
+      // Backward compatibility
+      'selfie': 'Selfie Photo',
+      'aadhar_proof': 'Aadhar Proof',
+      'video_kyc': 'Video KYC',
+      'salary_slip': '1st Month Salary Slip',
+      'second_salary_slip': '2nd Month Salary Slip',
+      'third_salary_slip': '3rd Month Salary Slip',
+      'bank_verif_report': 'Bank Verification Report',
+      'bank_fraud_report': 'Bank Fraud Report',
+      'sanction_letter': 'Sanction Letter',
+    };
+    
+    return displayNames[type] || type?.replace(/_/g, ' ').toUpperCase() || 'Document';
   }, []);
 
   // Load document
@@ -85,7 +133,13 @@ export default function DocumentViewer() {
           throw new Error(`Invalid document type: ${documentType}`);
         }
 
-        const filePath = `${folder}/${fileName}`;
+        // Clean up folder path to avoid double slashes
+        const cleanFolder = folder.replace(/\/+/g, '/').replace(/\/$/, '');
+        const cleanFileName = fileName.replace(/^\//, '');
+        const filePath = `${cleanFolder}/${cleanFileName}`;
+        
+        console.log(`Loading document from: ${filePath}`);
+        
         const fileRef = ref(storage, filePath);
         const url = await getDownloadURL(fileRef);
         
@@ -95,9 +149,37 @@ export default function DocumentViewer() {
         
       } catch (err) {
         console.error('Error loading document:', err);
-        const errorMsg = err.code === 'storage/object-not-found' 
-          ? 'File not found in storage'
-          : 'Failed to load document';
+        
+        let errorMsg = 'Failed to load document';
+        
+        if (err.code === 'storage/object-not-found') {
+          errorMsg = `File not found: ${fileName}`;
+          
+          // Try alternative paths
+          const folder = getFolderFromType(documentType);
+          const possiblePaths = [
+            `${folder}/${fileName}`,
+            `documents/${fileName}`,
+            fileName
+          ];
+          
+          console.log('Trying alternative paths:', possiblePaths);
+          
+          // Try alternative paths
+          for (const path of possiblePaths) {
+            try {
+              const altRef = ref(storage, path);
+              const altUrl = await getDownloadURL(altRef);
+              urlCache.set(cacheKey, altUrl);
+              setFileUrl(altUrl);
+              toast.success('Document found using alternative path');
+              return;
+            } catch (altErr) {
+              // Continue to next path
+              console.log(`Path not found: ${path}`);
+            }
+          }
+        }
         
         setError(errorMsg);
         toast.error(errorMsg);
@@ -153,6 +235,7 @@ export default function DocumentViewer() {
   };
 
   const fileType = getFileType(fileName);
+  const displayName = getDisplayName(documentType);
 
   if (error || (!fileUrl && !fileName)) {
     return (
@@ -188,7 +271,8 @@ export default function DocumentViewer() {
               <div className="mt-6 p-4 bg-gray-900/50 rounded-lg">
                 <p className="text-gray-400 text-sm mb-1">File details:</p>
                 <p className="text-gray-300 font-mono text-sm break-all">{fileName}</p>
-                <p className="text-gray-400 text-sm mt-2">Type: {documentType}</p>
+                <p className="text-gray-400 text-sm mt-2">Document Type: {displayName}</p>
+                <p className="text-gray-400 text-sm">Storage Path: {getFolderFromType(documentType)}/{fileName}</p>
               </div>
             )}
           </div>
@@ -212,14 +296,15 @@ export default function DocumentViewer() {
             <span className="hidden sm:inline">Back</span>
           </button>
           
-          {/* File name */}
+          {/* File name and document type */}
           <div className="flex-1 px-4 mx-2">
             <h1 className="text-sm sm:text-base font-semibold text-white truncate text-center max-w-2xl mx-auto">
-              {fileName}
+              {displayName}
             </h1>
-            {appId && (
-              <p className="text-xs text-gray-400 text-center">Application ID: {appId}</p>
-            )}
+            <p className="text-xs text-gray-400 text-center truncate">
+              File: {fileName}
+              {appId && ` • Application ID: ${appId}`}
+            </p>
           </div>
           
           {/* Action buttons */}
@@ -353,7 +438,9 @@ export default function DocumentViewer() {
       <div className="flex-shrink-0 bg-gray-800/50 backdrop-blur-sm border-t border-gray-700/50 py-2 px-4">
         <div className="flex items-center justify-between text-xs text-gray-400">
           <div className="flex items-center gap-4">
-            <span>Type: {documentType?.replace('_', ' ').toUpperCase()}</span>
+            <span>Type: {displayName}</span>
+            <span>•</span>
+            <span>Storage: {getFolderFromType(documentType)}</span>
             <span>•</span>
             <span>Format: {fileName?.split('.').pop()?.toUpperCase()}</span>
           </div>
