@@ -6,7 +6,7 @@ import RichTextEditor from '../RichTextEditor';
 import { notificationAPI } from '@/lib/services/NotificationServices';
 import { FirebaseNotificationService } from '@/lib/services/FirebaseNotificationService';
 import toast from 'react-hot-toast';
-
+ 
 const NotificationForm = ({ emailOptions, onSuccess,isDark }) => {
   const [customerType, setCustomerType] = useState('all');
   const [emails, setEmails] = useState('');

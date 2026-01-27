@@ -2,11 +2,10 @@ import { db } from '@/lib/firebase';
 import { ref, set, push, get, remove, onValue, off } from 'firebase/database';
 
 export class FirebaseNotificationService {
-  // Existing method - Send notification
   static async sendNotification({ userIds, subject, message, sender, adminId }) {
     try {
       
-      const chunkSize = 50;
+      const chunkSize = 50; 
       let successCount = 0;
       let errorCount = 0;
       

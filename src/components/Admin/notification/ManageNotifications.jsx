@@ -197,7 +197,7 @@ const ManageNotifications = ({ isDark }) => {
         toast.error('Failed to delete notification');
       }
     }
-  };
+  }; 
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

@@ -13,7 +13,7 @@ const stripHtmlTags = (html) => {
   const text = html.replace(/<[^>]*>/g, '');
   const textArea = document.createElement('textarea');
   textArea.innerHTML = text;
-  return textArea.value.trim();
+  return textArea.value.trim(); 
 };
 
 export const formatNotificationForUI = (apiData, index, currentPage = 1, itemsPerPage = 10) => {
