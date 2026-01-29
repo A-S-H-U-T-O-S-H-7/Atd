@@ -1,4 +1,4 @@
-"use client";
+"use client"; 
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";

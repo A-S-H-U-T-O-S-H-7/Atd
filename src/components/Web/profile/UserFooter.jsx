@@ -50,7 +50,7 @@ function Footer() {
               <ul className="space-y-3">
                 <li>
                   <Link
-                    href="/aboutus"
+                    href="/about-us"
                     className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
                   >
                     <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
@@ -59,7 +59,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/contactus"
+                    href="/contact-us"
                     className="group flex items-center text-gray-400 hover:text-teal-300 transition-colors duration-300"
                   >
                     <span className="inline-block w-1.5 h-1.5 bg-teal-500 rounded-full mr-2 group-hover:scale-125 transition-transform duration-300" />
@@ -234,19 +234,19 @@ function Footer() {
           {/* Policy Links */}
           <div className="flex flex-wrap justify-center md:justify-between gap-4 py-4 px-4 border-b border-slate-800 text-sm">
             <Link
-              href="/privacypolicy"
+              href="/privacy-policy"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/refundpolicy"
+              href="/refund-policy"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Refund Policy
             </Link>
             <Link
-              href="/terms&condition"
+              href="/terms-of-use"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Terms Of Use

@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"; 
 import { Calendar, Mail, Clock, Ban } from "lucide-react";
 import PhotoDocument from "../documents/PhotoDocument";
 import PanCardDocument from "../documents/PanCardDocument";

@@ -17,7 +17,7 @@ export const TermsAndConditions = () => {
             <label className="text-sm text-gray-700 leading-relaxed">
               I agree to ATD Money's{" "}
               <Link 
-                href="/privacypolicy" 
+                href="/privacy-policy" 
                 className="text-blue-600 hover:underline font-medium"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -26,7 +26,7 @@ export const TermsAndConditions = () => {
               </Link>
               {" "}and{" "}
               <Link 
-                href="/terms&condition" 
+                href="/terms-of-use" 
                 className="text-blue-600 hover:underline font-medium"
                 target="_blank"
                 rel="noopener noreferrer"
