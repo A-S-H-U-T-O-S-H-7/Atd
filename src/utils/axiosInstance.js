@@ -6,6 +6,12 @@ const api = axios.create({
     timeout: 10000,
 });
 
+// Helper to check if the request is authentication-related
+const isAuthRequest = (url) => {
+    const authEndpoints = ['/crm/login', '/login', '/auth', '/signin'];
+    return authEndpoints.some(endpoint => url.includes(endpoint));
+};
+
 api.interceptors.request.use(
     (config) => {
         const token = useAdminAuthStore.getState().getToken();
@@ -14,6 +20,10 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
         config.headers["X-App-Version"] = "1.0.0";
+        
+        // Store original URL for response interceptor
+        config._isAuthRequest = isAuthRequest(config.url);
+        
         return config;
     },
     (error) => Promise.reject(error)
@@ -23,7 +33,8 @@ api.interceptors.response.use(
     (response) => response.data,
     (error) => {
         if (error.response) {
-            if (error.response.status === 401) {
+            // Only logout/redirect for 401 if NOT an auth request
+            if (error.response.status === 401 && !error.config?._isAuthRequest) {
                 useAdminAuthStore.getState().logout();
 
                 if (typeof window !== "undefined") {
