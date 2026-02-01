@@ -24,8 +24,8 @@ const EnquiriesRow = ({
   onLoanEligibilityClick,
   onVerifyClick,
   onCheckClick,
-  onBlacklist 
-
+  onBlacklist ,
+  sourcePage="all"
 }) => {
 
     const isBlacklisted = enquiry.isBlacklisted === true || enquiry.blacklist === 1;
@@ -411,6 +411,7 @@ const EnquiriesRow = ({
             enquiry={enquiry}
             isDark={isDark}
             onVerifyClick={onVerifyClick}
+            sourcePage={sourcePage}
           />
         </div>
       </td>
@@ -422,6 +423,7 @@ const EnquiriesRow = ({
     isDark={isDark}
     onFileView={onFileView}
     onCheckClick={onCheckClick}
+    sourcePage={sourcePage}
   />
 </td>
 
@@ -431,6 +433,7 @@ const EnquiriesRow = ({
           enquiry={enquiry}
           isDark={isDark}
           onLoanEligibilityClick={onLoanEligibilityClick}
+          sourcePage={sourcePage}
         />
       </td>
 

@@ -1,8 +1,6 @@
-// lib/services/ComplaintService.js
 import api from '@/utils/axiosInstance';
 
 export const complaintService = {
-  // Search customer by loan number
   async searchCustomer(loanNumber) {
     try {
       const response = await api.get(`/crm/complaint/search/${loanNumber}`);

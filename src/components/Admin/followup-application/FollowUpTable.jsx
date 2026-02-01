@@ -5,7 +5,7 @@ import FollowUpRow from "./FollowUpRow";
 
 const FollowUpTable = ({ 
   paginatedApplications, 
-  filteredApplications, 
+  filteredApplications,  
   currentPage,
   totalPages,
   itemsPerPage,
@@ -20,6 +20,7 @@ const FollowUpTable = ({
   onBlacklist, 
 }) => {
 
+  const sourcePage = "pending"
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
@@ -107,6 +108,7 @@ const FollowUpTable = ({
                   onActivateAccount={onActivateAccount}
                   onOpenStatusModal={onOpenStatusModal} 
                   onBlacklist = {onBlacklist}
+                  sourcePage={sourcePage}
                 />
               ))}
             </tbody>

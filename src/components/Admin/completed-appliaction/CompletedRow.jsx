@@ -30,7 +30,8 @@ const CompletedRow = ({
   onStatusUpdate,
   onBlacklist,
   onActivateAccount,
-  onOpenStatusModal
+  onOpenStatusModal,
+  sourcePage = "completed"
 }) => {
   // Check if user is blacklisted
   const isBlacklisted = application.blacklist === 1 || application.isBlacklisted === true;
@@ -468,6 +469,7 @@ const CompletedRow = ({
           <ActionButton
             enquiry={applicationWithDefaults}
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -481,6 +483,7 @@ const CompletedRow = ({
             enquiry={applicationWithDefaults}
             isDark={isDark}
             onFileView={onFileView}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -493,6 +496,7 @@ const CompletedRow = ({
           <EligibilityButton
             enquiry={applicationWithDefaults}
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -504,6 +508,7 @@ const CompletedRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
+    sourcePage={sourcePage}
   />
 </td>
 

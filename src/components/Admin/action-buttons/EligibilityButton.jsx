@@ -8,7 +8,8 @@ const EligibilityButton = ({
   isDark,
   loading = false,
   disabled = false,
-  className = ""
+  className = "",
+  sourcePage = "all"
 }) => {
 
   if (!enquiry) {
@@ -25,7 +26,7 @@ const EligibilityButton = ({
       tooltipText="No permission for eligibility check"
     >
       <Link
-        href={`/crm/loan-eligibility/${enquiry.id}`}
+        href={`/crm/loan-eligibility/${enquiry.id}?source=${sourcePage}`}
         
         rel="noopener noreferrer"
         onClick={(e) => {

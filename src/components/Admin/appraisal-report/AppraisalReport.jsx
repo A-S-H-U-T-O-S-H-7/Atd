@@ -29,7 +29,9 @@ import { organizationVerificationService } from '@/lib/services/appraisal/organi
 import { socialScoreVerificationService } from '@/lib/services/appraisal/socialScoreVerification';
 import FinalReportSection from './FinalReportSection';
 
-const AppraisalReport = ({ enquiry, onBack }) => {
+import { useNavigation } from '@/hooks/useNavigation';
+
+const AppraisalReport = ({ enquiry }) => {
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,8 @@ const AppraisalReport = ({ enquiry, onBack }) => {
   const [submitting, setSubmitting] = useState(false);
   const [initialFormValues, setInitialFormValues] = useState(null);
   const [error, setError] = useState(null);
+
+    const { navigateBack } = useNavigation();
 
   // Define initialValues
   const initialValues = {
@@ -451,7 +455,7 @@ aadhar_status: appraisal.aadhar_status !== null && appraisal.aadhar_status !== u
         total_final_report: values.finalReport || "Recommended"
       });
       toast.success('Report submitted successfully!');
-      onBack();
+      navigateBack();
     } catch (error) {
       console.error('Error submitting report:', error);
       toast.error('Failed to submit report');
@@ -468,7 +472,7 @@ aadhar_status: appraisal.aadhar_status !== null && appraisal.aadhar_status !== u
         remark: values.remark || "Application rejected"
       });
       toast.success('Case rejected successfully!');
-      onBack();
+      navigateBack();
     } catch (error) {
       console.error('Error rejecting case:', error);
       toast.error('Failed to reject case');
@@ -646,7 +650,7 @@ const saveCibilVerification = async (values) => {
             {error}
           </p>
           <button
-            onClick={onBack}
+            onClick={navigateBack}
             className={`px-4 py-2 rounded-lg font-medium ${
               isDark
                 ? "bg-emerald-600 hover:bg-emerald-500 text-white"
@@ -693,7 +697,7 @@ const saveCibilVerification = async (values) => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-4">
                     <button 
-                      onClick={onBack} 
+                      onClick={navigateBack} 
                       className={`p-2 rounded-xl transition-all duration-200 hover:scale-105 ${
                         isDark ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30" : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
                       }`}

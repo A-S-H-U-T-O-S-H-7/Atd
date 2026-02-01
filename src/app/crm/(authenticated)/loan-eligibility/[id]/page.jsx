@@ -62,7 +62,6 @@ export default function LoanEligibilityPage() {
   return (
     <LoanEligibility 
       enquiry={enquiry}
-      onBack={handleBack}
     />
   );
 }

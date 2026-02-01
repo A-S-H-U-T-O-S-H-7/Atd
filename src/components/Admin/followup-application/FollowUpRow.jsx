@@ -29,7 +29,9 @@ const FollowUpRow = ({
   loadingFileName,
   onStatusUpdate,
   onActivateAccount,
-  onOpenStatusModal 
+  onOpenStatusModal,
+  sourcePage = "followup"
+ 
 }) => {
   // Check if user is blacklisted
   const isBlacklisted = application.blacklist === 1 || application.isBlacklisted === true;
@@ -464,6 +466,7 @@ const FollowUpRow = ({
           <ActionButton
             enquiry={applicationForButtons}
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -477,6 +480,7 @@ const FollowUpRow = ({
             enquiry={applicationForButtons}
             isDark={isDark}
             onFileView={onFileView}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -489,6 +493,7 @@ const FollowUpRow = ({
           <EligibilityButton
             enquiry={applicationForButtons}
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -500,6 +505,7 @@ const FollowUpRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
+    sourcePage={sourcePage}
   />
 </td>
 

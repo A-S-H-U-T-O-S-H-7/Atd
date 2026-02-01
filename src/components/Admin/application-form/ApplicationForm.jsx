@@ -1,4 +1,3 @@
-// ApplicationForm.js - Updated Formik implementation
 "use client"
 import React, { useEffect, useState } from 'react';
 import { Formik } from 'formik';
@@ -12,14 +11,18 @@ import OrganizationDetails from './OrganizationDetails';
 import { useThemeStore } from '@/lib/store/useThemeStore';
 import { applicationAPI, formatApplicationForAPI, formatApplicationForUI } from '@/lib/services/ApplicationFormServices';
 import { applicationValidationSchema } from '@/lib/schema/applicationFormValidation';
+import { useNavigation } from '@/hooks/useNavigation';
 
-const ApplicationForm = ({ enquiry, onBack }) => { 
+const ApplicationForm = ({ enquiry }) => { 
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [loading, setLoading] = useState(false);
   const [apiData, setApiData] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+
+  const { navigateBack } = useNavigation();
+
 
   // Fetch application data when component mounts
   useEffect(() => {
@@ -176,7 +179,7 @@ const ApplicationForm = ({ enquiry, onBack }) => {
       const response = await applicationAPI.updateApplication(enquiry.id, mappedData);
       
       if (response.success) {
-        onBack();
+        navigateBack()
       } else {
         setSubmitError(response.message || 'Failed to update application');
       }
@@ -288,7 +291,7 @@ const ApplicationForm = ({ enquiry, onBack }) => {
                   <div className="flex items-center space-x-4">
                     <button 
                       type="button"
-                      onClick={onBack}
+                      onClick={navigateBack}
                       className={`p-2 rounded-xl transition-all duration-200 hover:scale-105 ${
                         isDark
                           ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"

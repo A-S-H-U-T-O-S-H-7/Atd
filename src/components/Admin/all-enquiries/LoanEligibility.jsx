@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { ArrowLeft, Check, X, CheckCircle, AlertCircle } from 'lucide-react';
 import { eligibilityAPI, formatEligibilityForUI, formatRejectionStatusForUI } from '@/lib/services/EligibilityServices';
 import { useThemeStore } from '@/lib/store/useThemeStore';
+import { useNavigation } from '@/hooks/useNavigation';
 
 // Toast Component
 const Toast = ({ message, type, onClose }) => { 
@@ -45,7 +46,7 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
-const LoanEligibility = ({ enquiry, onBack }) => {
+const LoanEligibility = ({ enquiry }) => {
 const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -55,6 +56,8 @@ const { theme } = useThemeStore();
   const [eligibilityData, setEligibilityData] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+    const { navigateBack } = useNavigation();
+
 
   // Show toast function
   const showToast = (message, type = 'success') => {
@@ -156,7 +159,7 @@ const { theme } = useThemeStore();
       if (response.success) {
     showToast(response.message || 'Loan application approved successfully!', 'success');
         setTimeout(() => {
-          onBack();
+          navigateBack();
         }, 1000);
       } else {
         setSubmitting(false); 
@@ -187,7 +190,7 @@ const { theme } = useThemeStore();
         showToast('Loan application rejected successfully!', 'success');
         setShowRejectModal(false);
         setTimeout(() => {
-          onBack();
+          navigateBack();
         }, 1000);
       } else {
         setSubmitting(false); 
@@ -347,7 +350,7 @@ const { theme } = useThemeStore();
                 <div className="flex items-center space-x-4">
                   <button 
                     type="button"
-                    onClick={onBack}
+                    onClick={navigateBack}
                     className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
                       isDark
                         ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"

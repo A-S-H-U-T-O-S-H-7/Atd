@@ -17,6 +17,8 @@ const RejectedTable = ({
   onRestoreApplication
 }) => {
 
+  const sourcePage = "rejected"
+
   const headerStyle = `px-6 py-5 text-left text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
@@ -95,6 +97,7 @@ const RejectedTable = ({
   fileLoading={fileLoading}
   loadingFileName={loadingFileName}
   onRestoreApplication={onRestoreApplication}
+  sourcePage={sourcePage}
 />
               ))}
             </tbody>

@@ -8,12 +8,13 @@ const ReplaceKYCButton = ({
   isDark, 
   loading = false,
   disabled = false,
-  className = ""
+  className = "",
+  sourcePage = "all"
 }) => {
 
   if (!application) return null;
 
-  const href = `/crm/replace-kyc/${application.id}`;
+  const href = `/crm/replace-kyc/${application.id}?source=${sourcePage}`;
 
   return (
     <PermissionWrapper

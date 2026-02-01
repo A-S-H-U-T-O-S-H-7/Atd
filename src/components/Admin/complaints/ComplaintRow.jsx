@@ -10,7 +10,7 @@ import {
   SquarePen
 } from "lucide-react";
 import ExpandableText from "./ExpandableText";
-import { Files } from "./Files";
+import { Files } from "./Files"; 
 
 const ComplaintRow = ({
   complaint,

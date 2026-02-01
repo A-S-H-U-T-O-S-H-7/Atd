@@ -45,7 +45,8 @@ const SanctionRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  onBlacklist
+  onBlacklist,
+  sourcePage = "sanction"
 }) => {
     const { hasPermission } = useAdminAuthStore();
     const [isSendingMail, setIsSendingMail] = useState(false);
@@ -1083,6 +1084,7 @@ const SanctionRow = ({
         <ActionButton
           enquiry={application}
           isDark={isDark}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -1093,6 +1095,7 @@ const SanctionRow = ({
           enquiry={application}
           isDark={isDark}
           onFileView={onFileView}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -1102,6 +1105,7 @@ const SanctionRow = ({
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -1111,6 +1115,7 @@ const SanctionRow = ({
       <ReplaceKYCButton
        application={application}
       isDark={isDark}
+      sourcePage={sourcePage}
       />
      </td>
 

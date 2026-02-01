@@ -26,7 +26,8 @@ const PendingRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  onSendMail
+  onSendMail,
+  sourcePage = "pending"
 }) => {
 
   // Common cell styles
@@ -366,6 +367,7 @@ const PendingRow = ({
           enquiry={applicationForButtons}      
           isDark={isDark}
           onVerifyClick={onActionClick}
+          sourcePage={sourcePage}
         />
       </td>
 
@@ -376,6 +378,7 @@ const PendingRow = ({
           isDark={isDark}
           onFileView={onFileView}
           onCheckClick={onCheckClick}
+          sourcePage={sourcePage}
         />
       </td>
 
@@ -384,6 +387,7 @@ const PendingRow = ({
         <EligibilityButton
           enquiry={applicationForButtons}      
           isDark={isDark}
+          sourcePage={sourcePage}
         />
       </td>
     </tr>

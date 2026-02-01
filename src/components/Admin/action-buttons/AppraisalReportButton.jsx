@@ -10,7 +10,8 @@ const AppraisalReportButton = ({
   onFileView,
   loading = false,
   disabled = false,
-  className = ""
+  className = "",
+  sourcePage = "all"
 }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   
@@ -18,10 +19,10 @@ const AppraisalReportButton = ({
   const isFinalStage = enquiry?.isFinalStage || false;
   const finalReportFile = enquiry?.finalReportFile || "";
   const applicationId = enquiry?.id;
-  const href = `/crm/appraisal-report/${applicationId}`;
+const href = `/crm/appraisal-report/${applicationId}?source=${sourcePage}`;
 
   const handlePdfView = async (e) => {
-    e.preventDefault(); // Prevent Link navigation
+    e.preventDefault();
     
     if (!applicationId) {
       alert("No application ID found");

@@ -20,6 +20,9 @@ const EnquiriesTable = ({
   onBlacklist,
   
 }) => {
+
+  const sourcePage = 'all';
+
   // Common header style
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
 isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
@@ -105,6 +108,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
                   onVerifyClick={onVerifyClick}
                   onCheckClick={onCheckClick}
                   onBlacklist ={onBlacklist}
+                  sourcePage={sourcePage}
                  
                 />
               ))}

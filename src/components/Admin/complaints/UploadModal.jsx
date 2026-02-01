@@ -65,41 +65,36 @@ const UploadModal = ({ isOpen, onClose, complaint, onUpload, isDark }) => {
   };
 
   // Handle form submission
-  const handleSubmit = async () => {
-    if (!selectedFiles.length || !documentType) {
-      toast.error("Please select both document type and at least one file");
-      return;
-    }
+const handleSubmit = async () => {
+  if (!selectedFiles.length || !documentType) {
+    toast.error("Please select both document type and at least one file");
+    return;
+  }
 
-    setIsUploading(true);
-    try {
-      // Upload each file sequentially
-      const uploadPromises = selectedFiles.map(file => 
-        complaintService.uploadDocument(complaint.id, file, documentType)
-      );
-      
-      // Wait for all uploads to complete
-      await Promise.all(uploadPromises);
-      
-      // Call the callback for each uploaded file
-      selectedFiles.forEach(file => {
-        onUpload(complaint.id, file, documentType);
-      });
-      
-      // Reset form
-      setSelectedFiles([]);
-      setDocumentType("");
-      onClose();
-      
-      toast.success(`Successfully uploaded ${selectedFiles.length} file(s)`);
-      
-    } catch (error) {
-      console.error('Error uploading documents:', error);
-      toast.error('Failed to upload some files. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  setIsUploading(true);
+  try {
+    const uploadPromises = selectedFiles.map(file => 
+      complaintService.uploadDocument(complaint.id, file, documentType)
+    );
+    
+    await Promise.all(uploadPromises);
+    
+    onUpload(complaint.id); 
+    
+    // Reset form
+    setSelectedFiles([]);
+    setDocumentType("");
+    onClose();
+    
+    toast.success(`Successfully uploaded ${selectedFiles.length} file(s)`);
+    
+  } catch (error) {
+    console.error('Error uploading documents:', error);
+    toast.error('Failed to upload some files. Please try again.');
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   // File Icon component
   const FileIcon = ({ file, isDark }) => {

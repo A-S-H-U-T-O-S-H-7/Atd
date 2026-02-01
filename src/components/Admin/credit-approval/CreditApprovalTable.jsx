@@ -26,7 +26,8 @@ const CreditApprovalTable = ({
   onDisburseApproval,
   onStatusClick
 }) => {
-
+   
+  const sourcePage = "credit-aprroval"
   const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
@@ -140,6 +141,7 @@ const CreditApprovalTable = ({
                   onBankVerification={onBankVerification}
                   onDisburseApproval={onDisburseApproval}
                   onStatusClick={onStatusClick}
+                  sourcePage={sourcePage}
                 />
               ))}
             </tbody>

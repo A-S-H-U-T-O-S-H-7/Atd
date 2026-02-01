@@ -17,7 +17,7 @@ const InProgressTable = ({
    loadingFileName,
    onOpenStatusModal 
 }) => {
-
+    const sourcePage = "processing"
     const headerStyle = `px-2 py-3 text-center text-sm font-bold border-r ${
     isDark ? "text-gray-100 border-gray-600/80" : "text-gray-700 border-gray-300/80"
   }`;
@@ -108,7 +108,8 @@ const InProgressTable = ({
                   onCall={onCall}
                   fileLoading={fileLoading}
                   loadingFileName={loadingFileName}
-                  onOpenStatusModal={onOpenStatusModal} 
+                  onOpenStatusModal={onOpenStatusModal}
+                  sourcePage={sourcePage} 
                 />
               ))}
             </tbody>

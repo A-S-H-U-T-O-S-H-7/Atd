@@ -1,7 +1,7 @@
 import React from "react";
 import { Calendar, Mail } from "lucide-react";
 import PhotoDocument from "../documents/PhotoDocument";
-import PanCardDocument from "../documents/PanCardDocument";
+import PanCardDocument from "../documents/PanCardDocument"; 
 import AddressProofDocument from "../documents/AddressProofDocument";
 import IdProofDocument from "../documents/IdProofDocument";
 import SalaryProofDocument from "../documents/SalaryProofDocument";
@@ -25,7 +25,9 @@ const RejectedRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  onRestoreApplication
+  onRestoreApplication,
+  sourcePage = "rejected"
+
 }) => {
   // Common cell styles
   const cellBase = "px-2 py-2 text-center border-r";
@@ -388,6 +390,7 @@ const RejectedRow = ({
             enquiry={applicationForButtons}  
             isDark={isDark}
             onFileView={onFileView}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -400,6 +403,7 @@ const RejectedRow = ({
           <EligibilityButton
             enquiry={applicationForButtons} 
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>
@@ -412,6 +416,7 @@ const RejectedRow = ({
           <ActionButton
             enquiry={applicationForButtons}  
             isDark={isDark}
+            sourcePage={sourcePage}
           />
         ) : (
           <span className="text-sm text-gray-500">N/A</span>

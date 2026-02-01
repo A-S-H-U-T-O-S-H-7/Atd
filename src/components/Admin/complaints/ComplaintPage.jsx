@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import complaintService from "@/lib/services/ComplaintService";
 
-const ComplaintPage = () => {
+const ComplaintPage = () => { 
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,15 +71,9 @@ const ComplaintPage = () => {
   }
 };
 
-  const handleUpload = async (complaintId, file, docType) => {
-    try {
-      await complaintService.uploadDocument(complaintId, file, docType);
-      // Refresh complaints after upload
-      fetchComplaints(currentPage, searchTerm, statusFilter);
-    } catch (error) {
-      console.error('Error in handleUpload:', error);
-    }
-  };
+  const handleUpload = async (complaintId) => {
+  fetchComplaints(currentPage, searchTerm, statusFilter);
+};
 
   const handleComplaintUpdate = async (complaintId, updateData) => {
   // Update complaints list

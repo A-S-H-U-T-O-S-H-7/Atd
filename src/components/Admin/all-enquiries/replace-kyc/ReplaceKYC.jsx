@@ -5,12 +5,14 @@ import Header from './Header';
 import DocumentGrid from './DocumentGrid';
 import { Toaster } from 'react-hot-toast';
 import { useThemeStore } from '@/lib/store/useThemeStore'; 
+import { useNavigation } from '@/hooks/useNavigation';
 
-const ReplaceKYC = ({ enquiry, onBack }) => {
+const ReplaceKYC = ({ enquiry}) => {
+  const { navigateBack } = useNavigation();
   const { theme } = useThemeStore();
   const isDark = theme === "dark";
   const { documents, updateDocument, removeNewFile, resetNewFiles } = useDocuments(enquiry);
-  const { handleSubmit, submitting } = useFileUpload(documents, resetNewFiles, onBack, enquiry);
+  const { handleSubmit, submitting } = useFileUpload(documents, resetNewFiles, navigateBack, enquiry);
 
   const hasFilesToUpload = Object.values(documents).some(doc => doc?.newFile);
 
@@ -22,7 +24,7 @@ const ReplaceKYC = ({ enquiry, onBack }) => {
         <form onSubmit={handleSubmit}>
           <Header 
             enquiry={enquiry}
-            onBack={onBack}
+            onBack={navigateBack}
             hasFilesToUpload={hasFilesToUpload}
             submitting={submitting}
             isDark={isDark}

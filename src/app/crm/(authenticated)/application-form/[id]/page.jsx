@@ -151,7 +151,6 @@ export default function VerifyPage() {
   return (
     <ApplicationForm 
       enquiry={enquiry}
-      onBack={handleBack}
       mode="verify" 
     />
   );

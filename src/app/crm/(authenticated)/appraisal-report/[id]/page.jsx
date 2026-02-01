@@ -49,7 +49,6 @@ const fetchEnquiry = async () => {
       const enquiryData = {
         // Spread application data
         ...response.data.application,
-        // Map id to application_id since AppraisalReport expects application_id
         application_id: response.data.application.id || parseInt(enquiryId),
         id: response.data.application.id || parseInt(enquiryId),
         user_id: response.data.application.user_id,
@@ -58,8 +57,7 @@ const fetchEnquiry = async () => {
         _fullApiResponse: response.data
       };
       
-      console.log('✅ Prepared Enquiry Data:', enquiryData);
-      console.log('🔑 Application ID:', enquiryData.application_id); // Check this exists
+      
       setEnquiry(enquiryData);
     } else {
       console.error('Failed to fetch enquiry:', response.data.message);
@@ -120,7 +118,6 @@ const fetchEnquiry = async () => {
   return (
     <AppraisalReport 
       enquiry={enquiry}
-      onBack={handleBack}
       mode="appraisal" 
     />
   );

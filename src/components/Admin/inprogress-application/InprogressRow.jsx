@@ -30,7 +30,9 @@ const InProgressRow = ({
   onFileView,
   fileLoading,
   loadingFileName,
-  onOpenStatusModal 
+  onOpenStatusModal,
+  sourcePage = "processing"
+ 
 }) => {
   const { hasPermission } = useAdminAuthStore();
   
@@ -428,6 +430,7 @@ const InProgressRow = ({
   <ActionButton
     enquiry={application}
     isDark={isDark}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 </td>
@@ -438,6 +441,7 @@ const InProgressRow = ({
     enquiry={application}
     isDark={isDark}
     onFileView={onFileView}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 </td>
@@ -447,6 +451,7 @@ const InProgressRow = ({
   <EligibilityButton
     enquiry={application}
     isDark={isDark}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 </td>
@@ -456,6 +461,7 @@ const InProgressRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
+    sourcePage={sourcePage}
   />
 </td>
     </tr>

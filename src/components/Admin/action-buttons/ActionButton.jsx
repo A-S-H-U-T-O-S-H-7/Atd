@@ -9,7 +9,8 @@ const ActionButton = ({
   isDark, 
   loading = false,
   disabled = false,
-  className = "" 
+  className = "",
+  sourcePage = "all"
 }) => {
 
   if (!enquiry) {
@@ -21,7 +22,7 @@ const ActionButton = ({
   }
 
   const isVerified = enquiry.verify === 1;
-  const href = `/crm/application-form/${enquiry.id}`;
+  const href = `/crm/application-form/${enquiry.id}?source=${sourcePage}`;
 
   return (
     <PermissionWrapper
@@ -31,7 +32,6 @@ const ActionButton = ({
       <Link
         href={href}
         onClick={(e) => {
-          // ALWAYS save to localStorage for normal clicks
           localStorage.setItem('selectedEnquiry', JSON.stringify(enquiry));
           
           if (disabled || loading) {

@@ -54,6 +54,7 @@ const ApplicationRow = ({
   onCollectionClick,
   onNOCModalOpen,
   onRenewalClick,
+  sourcePage = "manage"
 }) => {
 
   const router = useRouter();
@@ -921,6 +922,7 @@ const ApplicationRow = ({
   <ActionButton
     enquiry={application}
     isDark={isDark}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 ),
@@ -1120,6 +1122,7 @@ const ApplicationRow = ({
     enquiry={application}
     isDark={isDark}
     onFileView={onFileView}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 ),
@@ -1128,6 +1131,7 @@ const ApplicationRow = ({
   <EligibilityButton
     enquiry={application}
     isDark={isDark}
+    sourcePage={sourcePage}
     className="w-full flex justify-center"
   />
 ),
@@ -1136,6 +1140,7 @@ const ApplicationRow = ({
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
+    sourcePage={sourcePage}
   />
 ),
       "Settled": () => {

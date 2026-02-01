@@ -43,7 +43,6 @@ export default function ReplaceKYCPage() {
           }
         } catch (parseError) {
           console.warn('Error parsing stored enquiry:', parseError);
-          // Continue to API call
         }
       }
 
@@ -172,7 +171,6 @@ export default function ReplaceKYCPage() {
   return (
     <ReplaceKYC 
       enquiry={enquiry}
-      onBack={handleBack}
     />
   );
 }

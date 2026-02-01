@@ -42,7 +42,8 @@ const CreditApprovalRow = ({
   loadingFileName,
   onBankVerification,
   onDisburseApproval,
-  onStatusClick
+  onStatusClick,
+  sourcePage = "credit-approval"
 }) => {
 
   const { hasPermission } = useAdminAuthStore();
@@ -917,6 +918,7 @@ const getLoanStatusClassName = (application) => {
         <ActionButton
           enquiry={application}
           isDark={isDark}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -927,6 +929,7 @@ const getLoanStatusClassName = (application) => {
           enquiry={application}
           isDark={isDark}
           onFileView={onFileView}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -936,6 +939,7 @@ const getLoanStatusClassName = (application) => {
         <EligibilityButton
           enquiry={application}
           isDark={isDark}
+          sourcePage={sourcePage}
           className="w-full flex justify-center"
         />
       </td>
@@ -945,6 +949,7 @@ const getLoanStatusClassName = (application) => {
   <ReplaceKYCButton
     application={application}
     isDark={isDark}
+    sourcePage={sourcePage}
   />
 </td>
     </tr>

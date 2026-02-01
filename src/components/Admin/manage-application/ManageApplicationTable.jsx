@@ -43,8 +43,10 @@ const ManageApplicationTable = ({
   onNOCModalOpen,
   onSuccess,
   onRenewalClick,
+
 }) => {
 
+  const sourcePage = "manage"
   // State for collapsed sections
   const [collapsedSections, setCollapsedSections] = useState({
     personalInfo: true,
@@ -486,6 +488,7 @@ const ManageApplicationTable = ({
                   onNOCModalOpen = {onNOCModalOpen}
                   onSuccess={onSuccess}
                   onRenewalClick ={onRenewalClick}
+                  sourcePage={sourcePage}
                   />
               ))}
             </tbody>
