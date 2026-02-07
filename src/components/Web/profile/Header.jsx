@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { ref, onValue, off, set, get } from 'firebase/database';
 import NotificationModal from './NotificationModal';
 
-export default function Header({ user, isRefreshing, onLogout, onClientHistory }) {
+export default function Header({ user, isRefreshing, onLogout }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);

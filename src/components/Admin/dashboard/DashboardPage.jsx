@@ -34,7 +34,7 @@ const DashboardPage = () => {
   });
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [filterParams, setFilterParams] = useState({});
-  const [showAllStates, setShowAllStates] = useState(false); // View more states toggle
+  const [showAllStates, setShowAllStates] = useState(false); 
 
   const fetchDashboardData = async (params = {}) => {
     try {
@@ -352,7 +352,7 @@ const DashboardPage = () => {
               trend="up"
               trendValue="+12%"
               iconColor="text-blue-600"
-              bgColor="bg-gradient-to-br from-blue-50 to-indigo-50"
+              bgColor="bg-gradient-to-br from-blue-50 to-indigo-100"
               isDark={isDark}
               subtitle="Applications"
             />
@@ -363,7 +363,7 @@ const DashboardPage = () => {
     trend="down"
     trendValue="-4%"
     iconColor="text-amber-600"
-    bgColor="bg-gradient-to-br from-amber-50 to-orange-50"
+    bgColor="bg-gradient-to-br from-amber-50 to-orange-100"
     isDark={isDark}
     subtitle="Applications"
   />
@@ -374,7 +374,7 @@ const DashboardPage = () => {
               trend="up"
               trendValue="+8%"
               iconColor="text-green-600"
-              bgColor="bg-gradient-to-br from-green-50 to-emerald-50"
+              bgColor="bg-gradient-to-br from-green-50 to-emerald-100"
               isDark={isDark}
               subtitle="Applications"
             />
@@ -383,7 +383,7 @@ const DashboardPage = () => {
               title="Total Disbursements"
               value={
                 <div>
-                  <div className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                  <div className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                     {formatCurrency(totals?.disbursementAmount || 0)}
                   </div>
                   <div className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
@@ -395,7 +395,7 @@ const DashboardPage = () => {
               trend="up"
               trendValue="+15%"
               iconColor="text-purple-600"
-              bgColor="bg-gradient-to-br from-purple-50 to-violet-50"
+              bgColor="bg-gradient-to-br from-purple-50 to-violet-100"
               isDark={isDark}
             />
             
@@ -403,7 +403,7 @@ const DashboardPage = () => {
               title="Total Collections"
               value={
                 <div>
-                  <div className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                  <div className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                     {formatCurrency(totals?.collectionAmount || 0)}
                   </div>
                   <div className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
@@ -415,7 +415,7 @@ const DashboardPage = () => {
               trend="up"
               trendValue="+22%"
               iconColor="text-emerald-600"
-              bgColor="bg-gradient-to-br from-emerald-50 to-teal-50"
+              bgColor="bg-gradient-to-br from-teal-50 to-teal-100"
               isDark={isDark}
             />
           </div>

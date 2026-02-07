@@ -85,7 +85,7 @@ const ChartCard = ({
                     >
                       <div className={`absolute -top-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${isDark ? "bg-gray-700" : "bg-gray-900"} px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap z-10 min-w-[120px] text-center shadow-lg`}>
                         <div className={`font-semibold ${isDark ? "text-white" : "text-white"}`}>
-                          Amount: {formatValue(item.total || 0)}
+                          Application: {formatValue(item.total || 0)}
                         </div>
                         {item.count !== undefined && item.count > 0 && (
                           <div className={`mt-1 ${isDark ? "text-gray-300" : "text-gray-300"}`}>

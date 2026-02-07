@@ -13,7 +13,7 @@ const DashboardCard = ({
   subtitle = null
 }) => {
   return (
-    <div className={`rounded-2xl p-6 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
+    <div className={`rounded-2xl p-4 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
       isDark 
         ? "bg-gray-800 border border-gray-700" 
         : `${bgColor} border border-gray-200`
@@ -27,7 +27,7 @@ const DashboardCard = ({
           {/* Handle both string/number and React element values */}
           {typeof value === 'string' || typeof value === 'number' ? (
             <div className="flex items-baseline gap-2 mt-2">
-              <h3 className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+              <h3 className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
                 {typeof value === 'string' && value.includes('₹') ? value : value.toLocaleString()}
               </h3>
               {subtitle && (
@@ -44,7 +44,7 @@ const DashboardCard = ({
           )}
         </div>
         
-        <div className={`p-3 rounded-xl ${isDark ? "bg-gray-700" : "bg-white shadow-sm"} ml-4`}>
+        <div className={`p-2 rounded-lg ${isDark ? "bg-gray-700" : "bg-white shadow-sm"} ml-4`}>
           <Icon className={`w-6 h-6 ${isDark ? "text-emerald-400" : iconColor}`} />
         </div>
       </div>
