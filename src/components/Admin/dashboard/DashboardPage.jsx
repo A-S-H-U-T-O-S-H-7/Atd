@@ -436,6 +436,7 @@ const DashboardPage = () => {
               showCount={true}
               count={totals?.totalApplications || 0}
               countLabel="Applications"
+              tooltipLabel="Applications"
             />
           )}
 
@@ -453,6 +454,7 @@ const DashboardPage = () => {
               showCount={true}
               count={totals?.disbursementCount || 0}
               countLabel="Applications"
+              tooltipLabel="Amount"
             />
           )}
 
@@ -470,6 +472,7 @@ const DashboardPage = () => {
               showCount={true}
               count={totals?.collectionCount || 0}
               countLabel="Records"
+              tooltipLabel="Amount"
             />
           )}
         </div>

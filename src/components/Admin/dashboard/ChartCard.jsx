@@ -13,7 +13,8 @@ const ChartCard = ({
   isMonthly = false,
   showCount = false,
   count = 0,
-  countLabel = "Applications"
+  countLabel = "Applications",
+  tooltipLabel = "Value" // New prop for customizing the hover label
 }) => {
   const calculateTrend = () => {
     if (data.length < 2) return { direction: "neutral", value: "0%" };
@@ -59,10 +60,10 @@ const ChartCard = ({
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          
           <div className={`p-2 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}>
             <Icon className="w-5 h-5 text-emerald-600" />
           </div>
-          
         </div>
       </div>
 
@@ -85,7 +86,8 @@ const ChartCard = ({
                     >
                       <div className={`absolute -top-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${isDark ? "bg-gray-700" : "bg-gray-900"} px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap z-10 min-w-[120px] text-center shadow-lg`}>
                         <div className={`font-semibold ${isDark ? "text-white" : "text-white"}`}>
-                          Application: {formatValue(item.total || 0)}
+                          {/* Use tooltipLabel prop here */}
+                          {tooltipLabel}: {formatValue(item.total || 0)}
                         </div>
                         {item.count !== undefined && item.count > 0 && (
                           <div className={`mt-1 ${isDark ? "text-gray-300" : "text-gray-300"}`}>
@@ -151,7 +153,7 @@ const ChartCard = ({
                 </div>
                 <div className="text-right ml-4">
                   <p className={`font-bold text-lg ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>
-                    {item.total}
+                    {formatValue(item.total)}
                   </p>
                   <div 
                     className="mt-1 h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden"
