@@ -505,7 +505,7 @@ const BankVerification = ({ formik, onSectionSave, isDark, saving }) => {
                 </div>
 
                 <div>
-                  <label className={labelClassName}>Is EMI Debited in Bank Statement?</label>
+                  {/* <label className={labelClassName}>Is EMI Debited in Bank Statement?</label> */}
                   <select
                     value={formik.values.bankAnyEmiDebited}
                     onChange={(e) => formik.setFieldValue('bankAnyEmiDebited', e.target.value)}

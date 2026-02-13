@@ -319,7 +319,7 @@ const ApplicationForm = ({ enquiry }) => {
                 {/* Left Column */}
                 <div className="space-y-6">
                   <PersonalDetails 
-                    formik={formik}
+                    formik={formik} 
                     isDark={isDark}
                     errors={formik.errors}
                     touched={formik.touched}
