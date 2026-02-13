@@ -120,7 +120,7 @@ const ApplicationRow = ({
       "SR. No": () => (
         <span className={`font-medium ${isDark ? "text-gray-100" : "text-gray-900"}`}>
           {application.srNo}
-        </span>
+        </span> 
       ),
       "Call": () => (
         <CallButton

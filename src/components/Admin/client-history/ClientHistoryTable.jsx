@@ -11,7 +11,8 @@ const ClientHistoryTable = ({
   itemsPerPage,
   isDark,
   onPageChange,
-  onViewClick
+  onViewClick,
+  totalCount
 }) => {
   return (
     <>
@@ -102,7 +103,7 @@ const ClientHistoryTable = ({
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={onPageChange}
-            totalItems={filteredClientData.length}  
+            totalItems={totalCount}
             itemsPerPage={itemsPerPage}   
           />
         </div>

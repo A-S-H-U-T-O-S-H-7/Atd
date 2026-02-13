@@ -49,22 +49,22 @@ const ClientTables = ({ clientData, isDark }) => {
   };
 
   // Transform loan 
-  const transformLoans = (loans) => {
-    if (!loans || loans.length === 0) return [];
-    
-    return loans.map((loan, index) => ({
-      application_id: loan.application_id, 
-      loanNo: loan.loan_no || `LOAN-${index + 1}`,
-      sanctionAmount: loan.approved_amount || loan.sanction_amount,
-      transactionDate: loan.transaction_date,
-      dueDate: loan.duedate || loan.due_date,
-      collectionDate: loan.collection_date || "-",
-      status: getStatusName(loan.loan_status),
-      statusCode: loan.loan_status,
-      disburseAmount: loan.disburse_amount,
-      collectionAmount: loan.collection_amount
-    }));
-  };
+const transformLoans = (loans) => {
+  if (!loans || loans.length === 0) return [];
+  
+  return loans.map((loan, index) => ({
+    application_id: loan.application_id,
+    loanNo: loan.loan_no || `LOAN-${index + 1}`,
+    sanctionAmount: loan.approved_amount || "0.00",
+    transactionDate: loan.transaction_date,
+    dueDate: loan.duedate,
+    collectionDate: loan.collection_date || "-",
+    status: getStatusName(loan.loan_status),
+    statusCode: loan.loan_status,
+    disburseAmount: loan.disburse_amount,
+    collectionAmount: loan.total_collected || "0.00"
+  }));
+};
 
   // Get status badge color based on status
   const getStatusBadgeColor = (status) => {
@@ -112,65 +112,65 @@ const ClientTables = ({ clientData, isDark }) => {
   };
 
   const handleViewLoan = async (loan) => {
-    try {
-      setLoading(true);
-      setLoadingLoanId(loan.application_id);
+  try {
+    setLoading(true);
+    setLoadingLoanId(loan.application_id);
+    
+    const response = await clientService.getLoanDetails(loan.application_id);
+    
+    
+    let transactions = [];
+    
+    if (response && response.ledger && Array.isArray(response.ledger)) {
+      transactions = response.ledger.map((transaction, index) => ({
+        id: transaction.id || index,
+        date: transaction.create_date,
+        particular: transaction.particular || "Transaction",
+        debit: transaction.trx_type === 'debit' ? parseFloat(transaction.trx_amount) || 0 : 0,
+        credit: transaction.trx_type === 'credit' ? parseFloat(transaction.trx_amount) || 0 : 0,
+        balance: 0
+      }));
       
-      const response = await clientService.getLoanDetails(loan.application_id);
-      
-      let transactions = [];
-      
-      // Directly handle the API response structure
-      if (response && response.ledger && Array.isArray(response.ledger)) {
-        transactions = response.ledger.map((transaction, index) => ({
-          id: transaction.id || index,
-          date: formatDate(transaction.create_date),
-          particular: transaction.particular || "Transaction",
-          debit: transaction.trx_type === 'debit' ? parseFloat(transaction.trx_amount) || 0 : 0,
-          credit: transaction.trx_type === 'credit' ? parseFloat(transaction.trx_amount) || 0 : 0,
-          balance: 0
-        }));
-        
-        // Calculate running balance
-        let runningBalance = 0;
-        transactions.forEach(transaction => {
-          runningBalance = runningBalance + transaction.debit - transaction.credit;
-          transaction.balance = runningBalance;
-        });
-      }
-          
-      const loanWithDetails = {
-        ...loan,
-        transactions: transactions,
-        clientName: clientData.name || clientData.fullname,
-        address: clientData.location || clientData.address,
-        crnno: clientData.crnNo || clientData.crnno,
-        loanNo: loan.loanNo,
-        sanctionAmount: loan.sanctionAmount || loan.approved_amount,
-        dueDate: loan.dueDate || loan.duedate,
-        status: loan.status
-      };
-      
-      setSelectedLoan(loanWithDetails);
-      setIsLoanModalOpen(true);
-      
-    } catch (error) {
-      console.error("Error fetching loan details:", error);
-      // Fallback with basic data
-      const loanWithClientInfo = {
-        ...loan,
-        clientName: clientData.name || clientData.fullname,
-        address: clientData.location || clientData.address, 
-        crnno: clientData.crnNo || clientData.crnno,
-        transactions: []
-      };
-      setSelectedLoan(loanWithClientInfo);
-      setIsLoanModalOpen(true);
-    } finally {
-      setLoading(false);
-      setLoadingLoanId(null);
+      // Calculate running balance
+      let runningBalance = 0;
+      transactions.forEach(transaction => {
+        runningBalance = runningBalance + transaction.debit - transaction.credit;
+        transaction.balance = runningBalance;
+      });
     }
-  };
+    
+    const loanWithDetails = {
+      ...loan,
+      transactions: transactions,
+      clientName: clientData.name || clientData.fullname,
+      address: clientData.location || clientData.address,
+      crnno: clientData.crnNo || clientData.crnno,
+      loanNo: loan.loanNo,
+      sanctionAmount: loan.sanctionAmount,
+      dueDate: loan.dueDate,
+      status: loan.status
+    };
+    
+    setSelectedLoan(loanWithDetails);
+    setIsLoanModalOpen(true);
+    
+  } catch (error) {
+    console.error("Error fetching loan details:", error);
+    // Fallback with basic data
+    const loanWithClientInfo = {
+      ...loan,
+      clientName: clientData.name || clientData.fullname,
+      address: clientData.location || clientData.address, 
+      crnno: clientData.crnNo || clientData.crnno,
+      transactions: []
+    };
+    setSelectedLoan(loanWithClientInfo);
+    setIsLoanModalOpen(true);
+  } finally {
+    setLoading(false);
+    setLoadingLoanId(null);
+  }
+};
 
   return (
     <>

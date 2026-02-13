@@ -166,36 +166,42 @@ const ClientHistoryPage = () => {
     }
   }, [searchField, searchTerm]);
 
-  const handleViewClick = async (client) => {
-    try {
-      setLoading(true);
-      const response = await clientService.getClientDetails(client.id);
+ const handleViewClick = async (client) => {
+  try {
+    setLoading(true);
+    const response = await clientService.getClientDetails(client.id);
+    
+    if (response?.success) {
+      const clientDetails = {
+        ...client,
+        dob: response.details?.dob,  // ✅ FIXED: response.details (not response.data)
+        selfie: response.details?.selfie,
+        gender: response.details?.gender,
+        location: response.details?.address || response.details?.current_address,
+        panNo: response.details?.pan_no,
+        aadharNo: response.details?.aadhar_no,
+        // ✅ FIXED: Add these fields from response.details
+        fullname: response.details?.fullname,
+        fathername: response.details?.fathername,
+        phone: response.details?.phone,
+        email: response.details?.email,
+        // ✅ IMPORTANT: Add loans from response.loans (not response.data.loans)
+        loans: response.loans || [],  // ✅ FIXED: loans is at root level, not in data
+        references: response.references || [],  
+        verified_references: response.verified_references || []  
+      };
       
-      if (response?.success) {
-        const clientDetails = {
-          ...client,
-          dob: response.data?.dob,
-          selfie: response.data?.selfie,
-          gender: response.data?.gender,
-          location: response.data?.address || response.data?.current_address,
-          panNo: response.data?.pan_no,
-          aadharNo: response.data?.aadhar_no,
-          loans: response.data?.loans || [],
-          references: response.data?.references || [],  
-          verified_references: response.data?.verified_references || []  
-        };
-        
-        setSelectedClient(clientDetails);
-        setIsViewModalOpen(true);
-      } else {
-        setError(response?.message || "Failed to fetch client details");
-      }
-    } catch (err) {
-      setError("Failed to fetch client details");
-    } finally {
-      setLoading(false);
+      setSelectedClient(clientDetails);
+      setIsViewModalOpen(true);
+    } else {
+      setError(response?.message || "Failed to fetch client details");
     }
-  };
+  } catch (err) {
+    setError("Failed to fetch client details");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCloseModal = () => {
     setIsViewModalOpen(false);
@@ -229,10 +235,10 @@ const ClientHistoryPage = () => {
   });
 
   // Pagination
-  const paginatedClientData = filteredClientData.map((client, index) => ({
-    ...client,
-    srNo: (currentPage - 1) * itemsPerPage + index + 1
-  }));
+  const paginatedClientData = clientHistoryData.map((client, index) => ({
+  ...client,
+  srNo: (currentPage - 1) * itemsPerPage + index + 1
+}));
 
   if (loading && clientHistoryData.length === 0) {
     return (
@@ -378,6 +384,7 @@ const ClientHistoryPage = () => {
           onPageChange={setCurrentPage}
           onViewClick={handleViewClick}
           loading={loading}
+          totalCount={totalCount} 
         />
       </div>
 

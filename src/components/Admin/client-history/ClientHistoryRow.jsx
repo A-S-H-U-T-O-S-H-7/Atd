@@ -24,7 +24,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
             ? "bg-gray-700/50" 
             : "bg-gray-50"
           : ""
-      }`}
+      }`} 
     >
       {/* SN */}
       <td className={`px-4 py-4 text-center border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
@@ -33,7 +33,7 @@ const ClientHistoryRow = ({ item, index, isDark, onViewClick }) => {
             ? "bg-emerald-600/20 text-emerald-400"
             : "bg-emerald-100 text-emerald-600"
         }`}>
-          {item.sn}
+          {item.srNo}
         </div>
       </td>
 
