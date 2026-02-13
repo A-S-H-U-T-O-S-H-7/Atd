@@ -8,7 +8,12 @@ const TOKEN_KEYS = {
 export const TokenManager = {
   setUserToken: (token, userData) => {
     if (typeof window !== 'undefined') {
+      // Clear session storage when user logs in
       sessionStorage.clear(); 
+      
+      // Clear only user-related tokens from localStorage
+      localStorage.removeItem(TOKEN_KEYS.ADMIN_VIEW);
+      localStorage.removeItem(TOKEN_KEYS.ADMIN_VIEW_DATA);
       
       localStorage.setItem(TOKEN_KEYS.USER, token);
       localStorage.setItem(TOKEN_KEYS.USER_DATA, JSON.stringify(userData));
@@ -18,20 +23,20 @@ export const TokenManager = {
   // Admin viewing user profile
   setAdminViewToken: (token, userData) => {
     if (typeof window !== 'undefined') {
-      localStorage.clear();
+      // Clear only user tokens, NOT all localStorage
+      localStorage.removeItem(TOKEN_KEYS.USER);
+      localStorage.removeItem(TOKEN_KEYS.USER_DATA);
       
       sessionStorage.setItem(TOKEN_KEYS.ADMIN_VIEW, token);
       sessionStorage.setItem(TOKEN_KEYS.ADMIN_VIEW_DATA, JSON.stringify(userData));
     }
   },
   
-  // Get current token
   getToken: () => {
     if (typeof window === 'undefined') {
       return { token: null, type: 'none', data: {} };
     }
     
-    // First check if admin view token exists (sessionStorage)
     const adminViewToken = sessionStorage.getItem(TOKEN_KEYS.ADMIN_VIEW);
     if (adminViewToken) {
       return {
@@ -41,7 +46,6 @@ export const TokenManager = {
       };
     }
     
-    // Otherwise use normal user token (localStorage)
     const userToken = localStorage.getItem(TOKEN_KEYS.USER);
     return {
       token: userToken,
@@ -53,12 +57,13 @@ export const TokenManager = {
   // Clear all tokens
   clearAllTokens: () => {
     if (typeof window !== 'undefined') {
-      localStorage.clear();
-      sessionStorage.clear();
+      Object.values(TOKEN_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
     }
   },
   
-  // Check token type
   isAdminView: () => {
     if (typeof window === 'undefined') return false;
     return !!sessionStorage.getItem(TOKEN_KEYS.ADMIN_VIEW);
