@@ -66,7 +66,7 @@ const PersonalDetails = ({ formik, isDark, errors = {}, touched = {} }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={hasError('formNo') ? errorLabelClassName : labelClassName}>
-              Form No.
+              Loan No.
             </label>
             <input
               type="text"
