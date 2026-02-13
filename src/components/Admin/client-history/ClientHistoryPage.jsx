@@ -7,8 +7,6 @@ import ClientViewModal from "./ClientViewModal";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { clientService } from "@/lib/services/ClientHistoryService";
-import Swal from 'sweetalert2';
-import { useAdminAuthStore } from "@/lib/store/authAdminStore";
 
 const ClientHistoryPage = () => {
   const { theme } = useThemeStore();
@@ -37,7 +35,6 @@ const ClientHistoryPage = () => {
     { value: 'name', label: 'Name' },
     { value: 'phone', label: 'Phone Number' },
     { value: 'email', label: 'Email' },
-   
   ];
 
   // Build API parameters
@@ -47,84 +44,54 @@ const ClientHistoryPage = () => {
       page: currentPage,
     };
 
-    // Add search parameters
     if (searchField && searchTerm.trim()) {
       params.search_by = searchField;
       params.search_value = searchTerm.trim();
     }
 
-    console.log('API Params:', params);
     return params;
   };
 
-  // Fetch client histories
-const fetchClientHistories = async () => {
-  try {
-    console.log("🟡 START: fetchClientHistories called");
-    setLoading(true);
-    setError(null);
-    
-    const params = buildApiParams();
-    console.log("📤 API Params:", params);
-    
-    // DEBUG: Log the API call details
-    console.log("🌐 Making API call to: /crm/clients/histories");
-    console.log("🔐 Token status:", useAdminAuthStore.getState().getToken() ? "Token exists" : "NO TOKEN!");
-    
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("API request timeout after 15s")), 15000)
-    );
-    
+  // Fetch client histories - Production Ready
+  const fetchClientHistories = async () => {
     try {
-      const apiCall = clientService.getClientHistories(params);
-      const response = await Promise.race([apiCall, timeoutPromise]);
+      setLoading(true);
+      setError(null);
       
-      console.log("✅ API Response received:", response);
-      console.log("📊 Response type:", typeof response);
-      console.log("🔍 Response keys:", Object.keys(response || {}));
+      const params = buildApiParams();
       
-      // Handle different response structures
-      if (response && typeof response === 'object') {
-        if (response.success !== undefined) {
-          if (response.success) {
-            if (response.clients && Array.isArray(response.clients)) {
-              console.log(`📋 Found ${response.clients.length} clients`);
-              
-              // Transform API data
-              const transformedData = response.clients.map((client, index) => {
-                return {
-                  id: client.user_id || client.id || `client-${index}`,
-                  sn: index + 1,
-                  name: client.fullname || client.name || "Unknown",
-                  loanNo: client.loan_no || "N/A",
-                  fatherName: client.fathername || client.father_name || "N/A",
-                  crnNo: client.crnno || client.crn || "N/A",
-                  accountId: client.accountId || client.account_id || "N/A",
-                  phone: client.phone || client.phone_number || "N/A",
-                  email: client.email || client.email_address || "N/A",
-                  date: client.created_at || client.date || "2025-07-10"
-                };
-              });
-              
-              
-              setClientHistoryData(transformedData);
-              setTotalCount(response.clients.length);
-              setTotalPages(Math.ceil(response.clients.length / itemsPerPage));
-            } else {
-              console.error("❌ No clients array in response:", response);
-              setError("No client data found in response");
-              setClientHistoryData([]);
-            }
-          } else {
-            console.error("❌ API returned success: false", response);
-            setError(response.message || "Failed to fetch client histories");
-            setClientHistoryData([]);
-          }
-        } 
-        // If response is directly an array
-        else if (Array.isArray(response)) {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Request timeout")), 15000)
+      );
+      
+      try {
+        const apiCall = clientService.getClientHistories(params);
+        const response = await Promise.race([apiCall, timeoutPromise]);
+        
+        if (response?.success && response?.data && Array.isArray(response.data)) {
+          const transformedData = response.data.map((client, index) => ({
+            id: client.user_id || client.id || `client-${index}`,
+            sn: index + 1,
+            name: client.fullname || client.name || "Unknown",
+            loanNo: client.loan_no || "N/A",
+            fatherName: client.fathername || client.father_name || "N/A",
+            crnNo: client.crnno || client.crn || "N/A",
+            accountId: client.accountId || client.account_id || "N/A",
+            phone: client.phone || client.phone_number || "N/A",
+            email: client.email || client.email_address || "N/A",
+            date: client.created_at || client.date || new Date().toISOString().split('T')[0]
+          }));
           
+          setClientHistoryData(transformedData);
+          
+          if (response.pagination) {
+            setTotalCount(response.pagination.total || 0);
+            setTotalPages(response.pagination.total_pages || 0);
+          } else {
+            setTotalCount(response.data.length);
+            setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+          }
+        } else if (Array.isArray(response)) {
           const transformedData = response.map((client, index) => ({
             id: client.user_id || client.id || `client-${index}`,
             sn: index + 1,
@@ -135,73 +102,62 @@ const fetchClientHistories = async () => {
             accountId: client.accountId || client.account_id || "N/A",
             phone: client.phone || client.phone_number || "N/A",
             email: client.email || client.email_address || "N/A",
-            date: client.created_at || client.date || "2025-07-10"
+            date: client.created_at || client.date || new Date().toISOString().split('T')[0]
           }));
           
           setClientHistoryData(transformedData);
           setTotalCount(response.length);
           setTotalPages(Math.ceil(response.length / itemsPerPage));
-        }
-        // Unknown structure
-        else {
-          console.error("❌ Unexpected response structure:", response);
-          setError("Unexpected data format from server");
+        } else {
+          setError("No client data found");
           setClientHistoryData([]);
+          setTotalCount(0);
+          setTotalPages(0);
         }
-      } else {
-        console.error("❌ Invalid response:", response);
-        setError("Invalid response from server");
+        
+      } catch (apiError) {
+        if (apiError.response) {
+          switch (apiError.response.status) {
+            case 401:
+              setError("Session expired. Please login again.");
+              break;
+            case 404:
+              setError("API endpoint not found.");
+              break;
+            case 500:
+              setError("Server error. Please try again later.");
+              break;
+            default:
+              setError(apiError.response.data?.message || "Failed to fetch data");
+          }
+        } else if (apiError.message === "Request timeout") {
+          setError("Request timeout. Please check your connection.");
+        } else if (apiError.message.includes("Network")) {
+          setError("Network error. Please check your internet connection.");
+        } else {
+          setError("Failed to fetch client histories.");
+        }
+        
         setClientHistoryData([]);
+        setTotalCount(0);
+        setTotalPages(0);
       }
       
-    } catch (apiError) {
-      console.error("❌ API Call Error:", apiError);
-      console.error("❌ Error details:", {
-        message: apiError.message,
-        response: apiError.response,
-        status: apiError.response?.status,
-        data: apiError.response?.data
-      });
-      
-      if (apiError.response) {
-        switch (apiError.response.status) {
-          case 401:
-            setError("Authentication failed. Please login again.");
-            // Auto logout handled by interceptor
-            break;
-          case 404:
-            setError("API endpoint not found. Please contact support.");
-            break;
-          case 500:
-            setError("Server error. Please try again later.");
-            break;
-          default:
-            setError(`Server error (${apiError.response.status}): ${apiError.response.data?.message || 'Unknown error'}`);
-        }
-      } else if (apiError.message.includes("timeout")) {
-        setError("Request timeout. Please check your connection.");
-      } else if (apiError.message.includes("Network Error")) {
-        setError("Network error. Please check your internet connection.");
-      } else {
-        setError("Failed to fetch client histories. Please try again.");
-      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+      setClientHistoryData([]);
+      setTotalCount(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
     }
-    
-  } catch (err) {
-    console.error("❌ Unexpected error in fetchClientHistories:", err);
-    console.error("❌ Stack trace:", err.stack);
-    setError("An unexpected error occurred. Please refresh the page.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   // Load data when filters or page changes
   useEffect(() => {
     fetchClientHistories();
   }, [currentPage]);
 
-  // Handle search changes
   useEffect(() => {
     if (currentPage === 1) {
       fetchClientHistories();
@@ -211,40 +167,41 @@ const fetchClientHistories = async () => {
   }, [searchField, searchTerm]);
 
   const handleViewClick = async (client) => {
-  try {
-    setLoading(true);
-    const response = await clientService.getClientDetails(client.id);
-    
-    if (response.success) {
-      const clientDetails = {
-        ...client,
-        dob: response.details.dob,
-        selfie: response.details.selfie,
-        gender: response.details.gender,
-        location: response.details.address || response.details.current_address,
-        panNo: response.details.pan_no,
-        aadharNo: response.details.aadhar_no,
-        loans: response.loans || [],
-        references: response.references || [],  
-        verified_references: response.verified_references || []  
-      };
+    try {
+      setLoading(true);
+      const response = await clientService.getClientDetails(client.id);
       
-      setSelectedClient(clientDetails);
-      setIsViewModalOpen(true);
+      if (response?.success) {
+        const clientDetails = {
+          ...client,
+          dob: response.data?.dob,
+          selfie: response.data?.selfie,
+          gender: response.data?.gender,
+          location: response.data?.address || response.data?.current_address,
+          panNo: response.data?.pan_no,
+          aadharNo: response.data?.aadhar_no,
+          loans: response.data?.loans || [],
+          references: response.data?.references || [],  
+          verified_references: response.data?.verified_references || []  
+        };
+        
+        setSelectedClient(clientDetails);
+        setIsViewModalOpen(true);
+      } else {
+        setError(response?.message || "Failed to fetch client details");
+      }
+    } catch (err) {
+      setError("Failed to fetch client details");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError("Failed to fetch client details");
-    console.error("Error fetching client details:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   const handleCloseModal = () => {
     setIsViewModalOpen(false);
     setSelectedClient(null);
   };
 
-  // Handle Advanced Search
   const handleAdvancedSearch = ({ field, term }) => {
     if (!field || !term.trim()) {
       setSearchField("");
@@ -257,14 +214,11 @@ const fetchClientHistories = async () => {
     setCurrentPage(1);
   };
 
-  // Clear all filters
   const clearAllFilters = () => {
     setSearchField("");
     setSearchTerm("");
     setCurrentPage(1);
   };
-
-  
 
   // Filter data for display
   const filteredClientData = clientHistoryData.filter(item => {
@@ -307,43 +261,41 @@ const fetchClientHistories = async () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-  <div className="flex items-center gap-3 sm:gap-4">
-    <button 
-      onClick={() => router.back()}
-      className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
-        isDark
-          ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
-          : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
-      }`}
-    >
-      <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
-        isDark ? "text-emerald-400" : "text-emerald-600"
-      }`} />
-    </button>
-    <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
-      isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
-    } bg-clip-text text-transparent`}>
-      Client History ({totalCount})
-    </h1>
-  </div>
-  
-  <div className="flex gap-2 w-full sm:w-auto">
-    <button
-      onClick={() => fetchClientHistories()}
-      disabled={loading}
-      className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
-        isDark
-          ? "bg-gray-700 hover:bg-gray-600 text-white"
-          : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-      } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-      <span className="text-xs sm:text-sm">Refresh</span>
-    </button>
-    
-   
-  </div>
-</div>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button 
+                onClick={() => router.back()}
+                className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105 flex-shrink-0 ${
+                  isDark
+                    ? "hover:bg-gray-800 bg-gray-800/50 border border-emerald-600/30"
+                    : "hover:bg-emerald-50 bg-emerald-50/50 border border-emerald-200"
+                }`}
+              >
+                <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                  isDark ? "text-emerald-400" : "text-emerald-600"
+                }`} />
+              </button>
+              <h1 className={`text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r truncate ${
+                isDark ? "from-emerald-400 to-teal-400" : "from-emerald-600 to-teal-600"
+              } bg-clip-text text-transparent`}>
+                Client History ({totalCount})
+              </h1>
+            </div>
+            
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={fetchClientHistories}
+                disabled={loading}
+                className={`px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 flex-1 sm:flex-initial ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span className="text-xs sm:text-sm">Refresh</span>
+              </button>
+            </div>
+          </div>
 
           {/* Error Message */}
           {error && (

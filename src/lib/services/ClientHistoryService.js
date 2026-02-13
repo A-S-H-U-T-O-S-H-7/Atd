@@ -2,10 +2,10 @@ import api from "@/utils/axiosInstance";
 
 export const clientService = {
   // Get all client histories
-  getClientHistories: async () => {
+  getClientHistories: async (params = {}) => {
     try {
-      const response = await api.get('/crm/clients/histories');
-      return response;
+      const response = await api.get('/crm/clients/histories', { params });   
+      return response; 
     } catch (error) {
       console.error('Error fetching client histories:', error);
       throw error;
