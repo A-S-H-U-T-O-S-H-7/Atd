@@ -234,7 +234,7 @@ function Footer() {
           {/* Policy Links */}
           <div className="flex flex-wrap justify-center md:justify-between gap-4 py-4 px-4 border-b border-slate-800 text-sm">
             <Link
-              href="/privacy-policy"
+              href="/privacy-policy.php"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Privacy Policy
@@ -246,7 +246,7 @@ function Footer() {
               Refund Policy
             </Link>
             <Link
-              href="/terms-of-use"
+              href="/terms-of-use.php"
               className="hover:text-teal-300 transition-colors duration-300"
             >
               Terms Of Use
