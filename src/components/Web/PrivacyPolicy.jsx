@@ -237,7 +237,7 @@ export default function PrivacyPolicy() {
             </p>
             <p>
               📧 Email: <a href="mailto:grievances@atdmoney.com" className="text-teal-600 hover:underline">
-                grievances@atdmoney.com
+                grievance@atdmoney.com
               </a>
             </p>
           </div>
