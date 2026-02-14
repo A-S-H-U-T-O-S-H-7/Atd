@@ -215,13 +215,13 @@ function Navbar() {
                           height={380}
                           className="w-32 mb-2"
                         />
-                        <Link
+                        {/* <Link
                           href="/download/app-store"
                           className="flex items-center bg-black gap-2 text-sm text-gray-50 hover:text-teal-600 border hover:border-teal-600 transition-colors duration-300 w-full px-4 py-2 rounded-md hover:bg-teal-50"
                         >
                           <GrAppleAppStore className="text-xl  hover:text-teal-600" />
                           <span className="font-medium">Download from App Store</span>
-                        </Link>
+                        </Link> */}
                         <Link
                           href="/download/play-store"
                           className="flex items-center bg-black gap-2 text-sm text-gray-50 hover:text-teal-600 border hover:border-teal-600 transition-colors duration-300 w-full px-4 py-2 rounded-md hover:bg-teal-50"

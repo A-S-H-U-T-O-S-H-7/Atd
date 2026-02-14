@@ -51,7 +51,7 @@ function AppDownload() {
           />
           
           <div className="flex flex-col items-center w-full md:w-auto gap-4 md:gap-8 justify-center">
-            <div className="flex items-center justify-center w-full md:w-auto border rounded-md text-white hover:text-black font-semibold hover:bg-white cursor-pointer bg-black px-4 py-3 gap-4">
+            {/* <div className="flex items-center justify-center w-full md:w-auto border rounded-md text-white hover:text-black font-semibold hover:bg-white cursor-pointer bg-black px-4 py-3 gap-4">
               <Image
                 src="/apple.png"
                 alt="App Store"
@@ -61,7 +61,7 @@ function AppDownload() {
                 priority
               />
               <span>Download on App Store</span>
-            </div>
+            </div> */}
             
             <div className="flex items-center justify-center w-full md:w-auto border rounded-md text-white hover:text-black font-semibold hover:bg-white cursor-pointer bg-black px-4 py-3 gap-4">
               <Image

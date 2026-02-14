@@ -103,7 +103,7 @@ function Footer() {
               </h4>
 
               <div className="flex flex-col gap-3">
-                <Link
+                {/* <Link
                   href="/download/app-store"
                   className="flex items-center bg-slate-800 gap-3 text-white hover:bg-slate-700 border border-slate-700 hover:border-teal-400 transition-all duration-300 w-full px-4 py-2.5 rounded-lg"
                 >
@@ -112,7 +112,7 @@ function Footer() {
                     <span className="text-xs">Download on the</span>
                     <span className="font-medium">App Store</span>
                   </div>
-                </Link>
+                </Link> */}
                 <Link
                   href="https://atdmoney.com/app-release.apk"
                   className="flex items-center bg-slate-800 gap-3 text-white hover:bg-slate-700 border border-slate-700 hover:border-teal-400 transition-all duration-300 w-full px-4 py-2.5 rounded-lg"
