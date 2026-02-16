@@ -222,30 +222,30 @@ const allMenuItems = [
         name: 'Manage Admin', 
         link: '/crm/manage-admin', 
         icon: <RiAdminFill />,
-        // permissionKey: 'manage_admin'
+        permissionKey: 'manage_admin'
       },
     ]
   },
-  {
-    name: 'Migration Settings',
-    icon: <MdOutlineSettings />,
-    isDropdown: true,
-    subItems: [
-      { 
-        name: 'Users Migration', 
-        link: '/crm/users-migration', 
-        icon: <MdOutlineSwapHorizontalCircle/>,
+  // {
+  //   name: 'Migration Settings',
+  //   icon: <MdOutlineSettings />,
+  //   isDropdown: true,
+  //   subItems: [
+  //     { 
+  //       name: 'Users Migration', 
+  //       link: '/crm/users-migration', 
+  //       icon: <MdOutlineSwapHorizontalCircle/>,
         
-      },
-      { 
-        name: 'Application', 
-        link: '/crm/application', 
-        icon: <MdOutlineDescription />,
+  //     },
+  //     { 
+  //       name: 'Application', 
+  //       link: '/crm/application', 
+  //       icon: <MdOutlineDescription />,
         
-      },
+  //     },
       
-    ]
-  },
+  //   ]
+  // },
   {
     name: 'Cash/Cheque Deposit',
     icon: <FaMoneyCheckAlt />,
@@ -345,12 +345,12 @@ const allMenuItems = [
     icon: <FaSms />,
     permissionKey: 'send_sms'
   },
-  { 
-    name: 'Create MSB Account', 
-    link: '/crm/create-msb', 
-    icon: <RiAccountPinBoxFill />,
-    permissionKey: 'create_myastro_account'
-  },
+  // { 
+  //   name: 'Create MSB Account', 
+  //   link: '/crm/create-msb', 
+  //   icon: <RiAccountPinBoxFill />,
+  //   permissionKey: 'create_myastro_account'
+  // },
   { 
     name: 'Registered From App', 
     link: '/crm/registered-from-app', 
@@ -364,25 +364,25 @@ const allMenuItems = [
     permissionKey: 'download_app'
   },
   
-  {
-    name: 'Business Loan Enquiry',
-    icon: <FaMoneyCheckAlt />,
-    isDropdown: true,
-    subItems: [
-      { 
-        name: 'Upto 5 lacs', 
-        link: '/crm/businessloan-upto-5l', 
-        icon: <FaBriefcase />,
-        permissionKey: 'business_loan_enquiry'
-      },
-      { 
-        name: 'Between 5L-1.5cr', 
-        link: '/crm/businessloan-above-5l', 
-        icon: <MdAttachMoney />,
-        permissionKey: 'business_loan_enquiry'
-      },
-    ]
-  },
+  // {
+  //   name: 'Business Loan Enquiry',
+  //   icon: <FaMoneyCheckAlt />,
+  //   isDropdown: true,
+  //   subItems: [
+  //     { 
+  //       name: 'Upto 5 lacs', 
+  //       link: '/crm/businessloan-upto-5l', 
+  //       icon: <FaBriefcase />,
+  //       permissionKey: 'business_loan_enquiry'
+  //     },
+  //     { 
+  //       name: 'Between 5L-1.5cr', 
+  //       link: '/crm/businessloan-above-5l', 
+  //       icon: <MdAttachMoney />,
+  //       permissionKey: 'business_loan_enquiry'
+  //     },
+  //   ]
+  // },
 ];
 
 export default function Sidebar() {

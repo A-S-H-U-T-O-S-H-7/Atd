@@ -111,14 +111,25 @@ const { theme } = useThemeStore();
     
     finalRecommended: Yup.number()
       .min(0, 'Final recommended amount must be positive')
+      .max(50000, 'Final recommended amount cannot exceed ₹50,000')
       .required('Final recommended amount is required'),
   });
 
-  // Initial form values
+  // Initial form values - Convert "0.00" or 0 to empty string for editable fields
   const initialValues = eligibilityData ? {
-    ...eligibilityData,
-    maximumLimit: eligibilityData.maximumLimit?.toString() || '',
-    finalRecommended: eligibilityData.finalRecommended?.toString() || ''
+    name: eligibilityData.name || '',
+    grossSalary: eligibilityData.grossSalary?.toString() || '',
+    netSalary: eligibilityData.netSalary?.toString() || '',
+    totalExitingEMI: eligibilityData.totalExitingEMI?.toString() || '',
+    balance: eligibilityData.balance?.toString() || '',
+    min20PercentOfBalance: eligibilityData.min20PercentOfBalance?.toString() || '',
+    max30PercentOfBalance: eligibilityData.max30PercentOfBalance?.toString() || '',
+    maximumLimit: (eligibilityData.maximumLimit && parseFloat(eligibilityData.maximumLimit) > 0) 
+      ? Math.round(parseFloat(eligibilityData.maximumLimit)).toString() 
+      : '',
+    finalRecommended: (eligibilityData.finalRecommended && parseFloat(eligibilityData.finalRecommended) > 0) 
+      ? Math.round(parseFloat(eligibilityData.finalRecommended)).toString() 
+      : ''
   } : {
     name: '',
     grossSalary: '',
@@ -225,6 +236,7 @@ const { theme } = useThemeStore();
               type={type}
               placeholder={placeholder}
               readOnly={readOnly}
+              step={type === "number" ? "1" : undefined}
               className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ${
                 readOnly
                   ? isDark
@@ -417,13 +429,13 @@ const { theme } = useThemeStore();
                       <CustomField
                         name="maximumLimit"
                         label="Maximum Limit (₹)"
-                        placeholder="Enter maximum limit"
+                        placeholder="0"
                       />
 
                       <CustomField
                         name="finalRecommended"
                         label="Final Recommended (₹)"
-                        placeholder="Enter final recommended amount"
+                        placeholder="0"
                       />
                     </div>
 
