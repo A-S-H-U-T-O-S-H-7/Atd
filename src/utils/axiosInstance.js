@@ -3,7 +3,7 @@ import { useAdminAuthStore } from "@/lib/store/authAdminStore";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "https://live.atdmoney.com/api/",
-    timeout: 10000,
+    timeout: 1000000,
 });
 
 // Helper to check if the request is authentication-related
