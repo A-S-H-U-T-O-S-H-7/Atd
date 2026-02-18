@@ -114,7 +114,7 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Collection :</span>
-              <span className="text-sm font-semibold text-green-600">{formatCurrency(overdueDetails?.collection)}</span>
+              <span className="text-sm font-semibold text-green-600">{formatCurrency(overdueDetails?.total_collection)}</span>
             </div>
             
             <hr className={`my-2 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
