@@ -114,20 +114,22 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
             
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Collection :</span>
-              <span className="text-sm font-semibold text-green-600">{formatCurrency(overdueDetails?.total_collection)}</span>
+              <span className="text-sm font-semibold text-green-600">{formatCurrency(applicant?.total_collection)}</span>
             </div>
             
             <hr className={`my-2 ${isDark ? "border-gray-600" : "border-gray-300"}`} />
             
             {/* Total Due Highlight */}
             <div className={`flex justify-between items-center font-bold p-2 rounded ${
-              isDark ? "bg-red-900/30 border border-red-700" : "bg-red-50 border border-red-200"
-            }`}>
-              <span className="text-sm">Total Due Amount :</span>
-              <span className={`text-sm ${isDark ? "text-red-300" : "text-red-600"}`}>
-                {formatCurrency(overdueDetails?.total_due)}
-              </span>
-            </div>
+  isDark ? "bg-red-900/30 border border-red-700" : "bg-red-50 border border-red-200"
+}`}>
+  <span className="text-sm">Total Due Amount :</span>
+  <span className={`text-sm ${isDark ? "text-red-300" : "text-red-600"}`}>
+    {formatCurrency(
+      (overdueDetails?.total_due || 0) - (applicant?.total_collection || 0)
+    )}
+  </span>
+</div>
           </div>
 
           {/* Renewal Case Section */}

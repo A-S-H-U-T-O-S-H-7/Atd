@@ -21,6 +21,16 @@ export const overdueApplicantAPI = {
     }
   },
 
+  assignToAgency: async (applicationId) => {
+    try {
+      const response = await api.get(`/crm/overdue/assign/ajency/${applicationId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+
   getChargeAmount: async (data) => {
     try {
       const response = await api.post("/crm/overdue/enach", data);
@@ -69,13 +79,16 @@ export const formatOverdueApplicantForUI = (applicant) => {
     balance: parseFloat(applicant.ledger_balance || 0),
     overdueAmt: parseFloat(applicant.overdue_details?.overdue?.total_due || applicant.ledger_balance || 0),
     upiPayments: parseFloat(applicant.total_collection || 0),
+    total_collection: parseFloat(applicant.total_collection || 0), 
     approved_amount: parseFloat(applicant.approved_amount || 0),
     roi: parseFloat(applicant.roi || 0),
     tenure: applicant.tenure || "N/A",
     ovedays: applicant.ovedays || 0,
     last_collection_date: applicant.last_collection_date,
     overdue_details: applicant.overdue_details,
-    status: applicant.ovedays > 0 ? "Overdue" : "Adjustment"
+    status: applicant.ovedays > 0 ? "Overdue" : "Adjustment",
+    assign_status: applicant.assign_status ?? 0,   
+     assign_date: applicant.assign_date || null, 
   };
 };
 
@@ -105,6 +118,15 @@ export const overdueApplicantService = {
         };
       }
       throw new Error('Failed to fetch overdue applicants');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  assignToAgency: async (applicationId) => {
+    try {
+      const response = await overdueApplicantAPI.assignToAgency(applicationId);
+      return response;
     } catch (error) {
       throw error;
     }

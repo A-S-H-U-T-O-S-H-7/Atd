@@ -13,6 +13,7 @@ import { overdueApplicantService } from "@/lib/services/OverdueApplicantServices
 import Swal from "sweetalert2";
 import ChargeICICIModal from "../application-modals/ChargeICICIModal";
 import Pagination from "./OverduePagiantion";
+import toast from "react-hot-toast";
 
 // ---------------------------------------------------------------------------
 // Read initial page / limit from URL query string.
@@ -318,9 +319,70 @@ const OverdueApplicantList = () => {
     }
   };
 
-  const handleSREAssign = (applicant) => {
-    console.log("Assigning SRE for:", applicant.name);
-  };
+ const handleSREAssign = async (applicant) => {
+  const result = await Swal.fire({
+    title: "Assign to Agency?",
+    text: `Assign ${applicant.name} to collection agency?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#10b981",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, Assign",
+    cancelButtonText: "Cancel",
+    background: isDark ? "#1f2937" : "#ffffff",
+    color: isDark ? "#f9fafb" : "#111827",
+  });
+
+  if (!result.isConfirmed) return;
+
+  // Show loading toast
+  const loadingToast = toast.loading('Assigning to agency...', {
+    style: {
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#f9fafb' : '#111827',
+    },
+  });
+
+  try {
+    const response = await overdueApplicantService.assignToAgency(applicant.application_id);
+
+    if (response?.success) {
+      // Dismiss loading toast and show success toast
+      toast.dismiss(loadingToast);
+      toast.success(response.message || "Assigned to agency successfully", {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: isDark ? '#1f2937' : '#ffffff',
+          color: isDark ? '#f9fafb' : '#111827',
+          border: isDark ? '1px solid #10b981' : '1px solid #10b981',
+        },
+        iconTheme: {
+          primary: '#10b981',
+          secondary: isDark ? '#1f2937' : '#ffffff',
+        },
+      });
+      
+      fetchOverdueApplicants(currentPage, itemsPerPage, searchField, searchTerm, dateRange);
+    }
+  } catch (error) {
+    // Dismiss loading toast and show error toast
+    toast.dismiss(loadingToast);
+    toast.error(error.message || "Failed to assign to agency", {
+      duration: 4000,
+      position: 'top-right',
+      style: {
+        background: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f9fafb' : '#111827',
+        border: isDark ? '1px solid #ef4444' : '1px solid #ef4444',
+      },
+      iconTheme: {
+        primary: '#ef4444',
+        secondary: isDark ? '#1f2937' : '#ffffff',
+      },
+    });
+  }
+};
 
   const handleBalanceUpdate = () => {
     setShowLedgerModal(false);

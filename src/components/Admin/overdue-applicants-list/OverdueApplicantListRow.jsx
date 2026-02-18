@@ -248,31 +248,45 @@ const OverdueApplicantListRow = ({
       </td>
 
       {/* SRE Assign */}
-      <td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
-        <button
-          onClick={() => onSREAssign(applicant)}
-          className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
-            isDark
-              ? "bg-teal-900/50 hover:bg-teal-800 text-teal-300 border border-teal-700"
-              : "bg-teal-100 hover:bg-teal-200 text-teal-700 border border-teal-200"
-          }`}
-        >
-          SRE Assign
-        </button>
-      </td>
+<td className={`px-2 py-4 border-r ${isDark ? "border-gray-600/80" : "border-gray-300/90"}`}>
+  <button
+    onClick={() => applicant.assign_status !== 1 && onSREAssign(applicant)}
+    disabled={applicant.assign_status === 1}
+    className={`px-3 py-1 rounded-lg font-medium transition-all duration-200 text-sm ${
+      applicant.assign_status === 1
+        ? isDark
+          ? "bg-gray-300 text-gray-700 border border-gray-600 cursor-not-allowed opacity-60"
+          : "bg-gray-700 text-gray-100 border border-gray-200 cursor-not-allowed opacity-60"
+        : isDark
+          ? "bg-teal-900/50 hover:bg-teal-800 text-teal-300 border border-teal-700 cursor-pointer"
+          : "bg-teal-100 hover:bg-teal-200 text-teal-700 border border-teal-200 cursor-pointer"
+    }`}
+  >
+    {applicant.assign_status === 1 ? "Assigned" : "SRE Assign"}
+  </button>
+</td>
+
 
       {/* SRE Assign Date */}
-      <td className="px-2 py-4">
-        <div className="flex items-center space-x-2">
-          <span
-            className={`text-sm font-medium ${isDark
-              ? "text-gray-200"
-              : "text-gray-700"}`}
-          >
-            {applicant.sreAssignDate || 'N/A'}
-          </span>
-        </div>
-      </td>
+     <td className="px-2 py-4">
+  <div className="flex items-center space-x-2">
+    <span className={`text-sm font-medium ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+      {(() => {
+        if (!applicant.assign_date) return "N/A";
+        try {
+          // assign_date format: "02/18/2026 06:11:45 PM"
+          const [datePart, timePart, meridiem] = applicant.assign_date.split(" ");
+          const [month, day, year] = datePart.split("/");
+          const [hours, minutes] = timePart.split(":");
+          return `${day}/${month}/${year} ${hours}:${minutes} ${meridiem}`;
+        } catch {
+          return applicant.assign_date || "N/A";
+        }
+      })()}
+    </span>
+  </div>
+</td>
+
     </tr>
   );
 };
