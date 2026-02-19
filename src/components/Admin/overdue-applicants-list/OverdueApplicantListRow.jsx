@@ -230,7 +230,7 @@ const OverdueApplicantListRow = ({
           }`}
         >
           View
-        </button>
+        </button> 
       </td>
 
       {/* Charge Amount */}

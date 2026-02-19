@@ -78,17 +78,31 @@ const OverdueAmountModal = ({ isOpen, onClose, applicant, isDark }) => {
         {/* Content */}
         <div className="p-4 space-y-4">
           {/* Days Badge */}
-          <div className="flex justify-center">
-            <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
-              applicant.ovedays > 30 
-                ? "bg-red-100 text-red-700 border border-red-300"
-                : applicant.ovedays > 15 
-                ? "bg-orange-100 text-orange-700 border border-orange-300"
-                : "bg-green-100 text-green-700 border border-green-300"
-            }`}>
-              {applicant.ovedays} Days Passed
-            </div>
-          </div>
+<div className="flex justify-center">
+  <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+    (() => {
+      const daysString = applicant.ovedays;
+      let numericDays = 0;
+      
+      if (typeof daysString === 'string') {
+        const match = daysString.match(/(\d+)\s*=\s*(\d+)/);
+        if (match && match[2]) {
+          numericDays = parseInt(match[2]);
+        }
+      } else {
+        numericDays = parseInt(applicant.overdue_display) || 0;
+      }
+      
+      return numericDays > 30 
+        ? "bg-red-100 text-red-700 border border-red-300"
+        : numericDays > 15 
+        ? "bg-orange-100 text-orange-700 border border-orange-300"
+        : "bg-green-100 text-green-700 border border-green-300";
+    })()
+  }`}>
+    {applicant.overdue_display} 
+  </div>
+</div>
 
           {/* Overdue Details */}
           <div className="space-y-2">

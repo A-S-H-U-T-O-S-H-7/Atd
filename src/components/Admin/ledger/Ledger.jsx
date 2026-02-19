@@ -12,7 +12,7 @@ import AdjustmentModal from "../application-modals/AdjustmentModal";
 import { useThemeStore } from "@/lib/store/useThemeStore";
 import { ledgerAPI, formatLedgerDataForUI, adjustmentService,pdfService,settleService,renewalService} from "@/lib/services/LedgerServices";
 import Swal from 'sweetalert2';
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";  
 
 const LedgerPage = () => {
   const { theme } = useThemeStore();

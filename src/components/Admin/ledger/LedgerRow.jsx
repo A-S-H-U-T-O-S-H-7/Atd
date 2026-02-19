@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 const LedgerRow = ({ item, index, isDark, onViewTransaction, onAdjustment, onDownloadPDF, onSettle,onRenewal}) => {
   const { hasPermission } = useAdminAuthStore();
-  const router = useRouter();  
+  const router = useRouter();   
   
   const cellBase = "px-2 py-4 text-center border-r";
   const cellBorder = isDark ? "border-gray-600/80" : "border-gray-300/90";

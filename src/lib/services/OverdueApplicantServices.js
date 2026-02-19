@@ -67,6 +67,8 @@ export const formatOverdueApplicantForUI = (applicant) => {
       return dateString;
     }
   };
+  
+  const noDaysPassed = applicant.overdue_details?.overdue?.no_days_passed || null;
 
   return {
     id: applicant.application_id,
@@ -83,7 +85,8 @@ export const formatOverdueApplicantForUI = (applicant) => {
     approved_amount: parseFloat(applicant.approved_amount || 0),
     roi: parseFloat(applicant.roi || 0),
     tenure: applicant.tenure || "N/A",
-    ovedays: applicant.ovedays || 0,
+    overduedays: applicant.ovedays || 0,
+    overdue_display: noDaysPassed || applicant.ovedays || 0,
     last_collection_date: applicant.last_collection_date,
     overdue_details: applicant.overdue_details,
     status: applicant.ovedays > 0 ? "Overdue" : "Adjustment",

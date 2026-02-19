@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import ChargeICICIModal from "../application-modals/ChargeICICIModal";
 import Pagination from "./OverduePagiantion";
 import toast from "react-hot-toast";
+import { ledgerAPI } from "@/lib/services/LedgerServices";
 
 // ---------------------------------------------------------------------------
 // Read initial page / limit from URL query string.
@@ -293,11 +294,36 @@ const OverdueApplicantList = () => {
     console.log("Sending notice to:", applicant.name);
   };
 
-  const handleView = (applicant) => {
-    setSelectedApplicantForLedger(applicant);
-    setShowLedgerModal(true);
-  };
+  // In OverdueApplicantList.js, update the handleView function:
 
+const handleView = async (applicant) => {
+  try {
+    setLoading(true);
+    const response = await ledgerAPI.getLedgerDetails(applicant.application_id);
+    
+    if (response && response.status) {
+      setSelectedApplicantForLedger({
+        ...applicant,
+        ledgerDetails: response  
+      });
+      setShowLedgerModal(true);
+    } else {
+      throw new Error("Failed to fetch transaction details");
+    }
+  } catch (err) {
+    console.error("Error fetching transaction details:", err);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to load transaction details.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444',
+      background: isDark ? "#1f2937" : "#ffffff",
+      color: isDark ? "#f9fafb" : "#111827",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   const handleChargeICICI = (applicant) => {
     setSelectedApplicantForCharge(applicant);
     setShowChargeICICIModal(true);
@@ -578,7 +604,8 @@ const OverdueApplicantList = () => {
       />
       <CustomerTransactionDetails
         isOpen={showLedgerModal}
-        onClose={() => { setShowLedgerModal(false); setSelectedApplicantForLedger(null); }}
+        onClose={() => { setShowLedgerModal(false);
+         setSelectedApplicantForLedger(null); }}
         data={selectedApplicantForLedger}
         isDark={isDark}
         onUpdateBalance={handleBalanceUpdate}
