@@ -15,6 +15,7 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import CallButton from "../call/CallButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 
 const PendingRow = ({
   application,
@@ -371,7 +372,7 @@ const PendingRow = ({
         />
       </td>
 
-      {/* Appraisal Report - FIXED PROP NAMES */}
+      {/* Appraisal Report -  */}
       <td className={cellStyle}>
         <AppraisalReportButton
           enquiry={applicationForButtons}
@@ -380,12 +381,21 @@ const PendingRow = ({
           onCheckClick={onCheckClick}
           sourcePage={sourcePage}
         />
-      </td>
+      </td> 
 
       {/* Eligibility  */}
       <td className={cellStyle}>
         <EligibilityButton
           enquiry={applicationForButtons}      
+          isDark={isDark}
+          sourcePage={sourcePage}
+        />
+      </td>
+
+      {/* Replace KYC */}
+            <td className={cellStyle}>
+        <ReplaceKYCButton
+          application={applicationForButtons}
           isDark={isDark}
           sourcePage={sourcePage}
         />

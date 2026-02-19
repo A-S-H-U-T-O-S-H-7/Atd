@@ -15,6 +15,7 @@ import EligibilityButton from "../action-buttons/EligibilityButton";
 import CRNLink from "../CRNLink";
 import toast from "react-hot-toast";
 import BlacklistButton from "../action-buttons/BlacklistButton";
+import ReplaceKYCButton from "../action-buttons/ReplaceKYCButton";
 
 const EnquiriesRow = ({
   enquiry,
@@ -433,6 +434,15 @@ const EnquiriesRow = ({
           enquiry={enquiry}
           isDark={isDark}
           onLoanEligibilityClick={onLoanEligibilityClick}
+          sourcePage={sourcePage}
+        />
+      </td>
+
+      {/* Replace KYC */}
+            <td className={cellStyle}>
+        <ReplaceKYCButton
+          application={enquiry}
+          isDark={isDark}
           sourcePage={sourcePage}
         />
       </td>

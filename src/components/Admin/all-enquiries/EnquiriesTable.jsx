@@ -65,6 +65,7 @@ isDark ? "text-gray-100 border-gray-600/40" : "text-gray-700 border-gray-300/40"
     { label: "Action", width: "80px" },
     { label: "Appraisal Report", width: "140px" },
     { label: "Eligibility", width: "100px" },
+    { label: "Replace Kyc", width: "120px" },
     { label: "BlackList", width: "120px" }
   ];
 
