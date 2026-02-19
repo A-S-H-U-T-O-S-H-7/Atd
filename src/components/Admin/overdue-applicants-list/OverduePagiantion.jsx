@@ -8,7 +8,7 @@ const Pagination = ({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
-  itemsPerPageOptions = [10, 20, 50, 100, 200, 500, 1000, 2000],
+  itemsPerPageOptions = [10, 20, 50, 100, 200, 500, 1000, 1200, 1300, 1500, 2000],
   className = ""
 }) => {
   const { theme } = useThemeStore();
