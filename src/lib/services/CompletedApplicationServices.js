@@ -138,7 +138,7 @@ export const formatCompletedApplicationForUI = (application) => {
     completeTime: formatTimeString(application.complete_time),
     completeDateTime: `${application.complete_date} ${application.complete_time}`,
 
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name|| '' ,
     firstName: application.fname || '',
     lastName: application.lname || '',
     dob: application.dob,

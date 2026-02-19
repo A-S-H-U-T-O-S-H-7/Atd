@@ -59,7 +59,7 @@ export const formatSanctionApplicationForUI = (application) => {
     approvedDate: approvedDate ? approvedDate.toLocaleDateString('en-GB') : 'N/A',
     approvedDateTime: application.approved_date,
 
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name || '',
     
     permanentAddress: permanentAddress,
     state: application.state,

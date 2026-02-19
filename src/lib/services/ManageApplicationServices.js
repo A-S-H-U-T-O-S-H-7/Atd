@@ -145,7 +145,7 @@ export const formatManageApplicationForUI = (application) => {
     closedDateTime: application.closed_date,
 
     // Personal information
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name || '' ,
     
     // Address information
     permanentAddress: permanentAddress,

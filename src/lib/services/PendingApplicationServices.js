@@ -86,7 +86,7 @@ export const formatApplicationForUI = (application) => {
         enquiryDate: enquiryDate ? enquiryDate.toLocaleDateString('en-GB') : 'N/A',
 
         // Personal information
-        name: application.name,
+        name: application.name|| '',
         firstName: application.fname || application.name?.split(' ')[0] || '',
         lastName: application.lname || application.name?.split(' ').slice(1).join(' ') || '',
         dob: application.dob,

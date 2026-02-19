@@ -74,7 +74,7 @@ export const formatFollowUpApplicationForUI = (application) => {
     updatedAt: application.updated_at,
 
     // Personal information
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name || '',
     firstName: application.fname || '',
     lastName: application.lname || '',
     dob: application.dob,

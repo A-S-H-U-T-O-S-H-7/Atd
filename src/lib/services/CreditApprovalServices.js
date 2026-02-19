@@ -76,7 +76,7 @@ export const formatCreditApprovalApplicationForUI = (application) => {
     approvedDate: application.approved_date ? new Date(application.approved_date).toLocaleDateString('en-GB') : 'N/A',    disburseDate: application.disburse_date || 'N/A',
 
     // Personal information
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name || '',
     
     // Address information
     permanentAddress: permanentAddress,

@@ -66,7 +66,7 @@ export const formatInProgressApplicationForUI = (application) => {
     updatedTime: updatedDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
 
     // Personal information
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name || '',
     
     // Address information
     permanentAddress: permanentAddress,

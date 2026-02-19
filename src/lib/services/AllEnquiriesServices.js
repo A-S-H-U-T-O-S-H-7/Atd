@@ -125,7 +125,7 @@ export const formatEnquiryForUI = (enquiry) => {
     enquiryTime: getTimeFromDateTime(enquiry.enquiry_date),
 
     // Personal information
-    name: `${enquiry.fname} ${enquiry.lname}`,
+    name: enquiry.name|| '',
     firstName: enquiry.fname,
     lastName: enquiry.lname,
     dob: enquiry.dob,

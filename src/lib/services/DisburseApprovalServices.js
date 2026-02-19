@@ -90,7 +90,7 @@ export const formatDisburseApprovalApplicationForUI = (application) => {
     dueDate: application.due_date || 'N/A',
 
     // Personal information
-    name: `${application.fname || ''} ${application.lname || ''}`.trim() || 'N/A',
+    name: application.name|| '',
     
     // Address information
     permanentAddress: permanentAddress,
