@@ -69,4 +69,4 @@ export const pageTitles = {
 };
 
 // Optional: Add a default title for undefined routes
-export const defaultTitle = 'CRM';
+export const defaultTitle = 'ATD Money';
