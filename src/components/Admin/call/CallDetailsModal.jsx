@@ -281,7 +281,7 @@ const CallDetailsModal = ({
                     { label: "Due Date", value: formatDate(getCustomerData('duedate')) },
                     { label: "Overdue Amount", value: getCustomerData('overdueamount'), amount: true },
                     { label: "Due Amount", value: getCustomerData('dueamount'), amount: true },
-                    { label: "No of Days", value: getCustomerData('no_of_days') || "0 Days" },
+                    { label: "No of Days Delay", value: getCustomerData('no_of_days') || "0 Days" },
                     { label: "Salary Date", value: formatDate(getCustomerData('salary_date')) },
                     { label: "Customer A/c No", value: getCustomerData('customer_ac_no'), important: true },
                   ].map((item, index) => {

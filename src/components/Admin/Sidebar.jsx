@@ -383,7 +383,7 @@ const allMenuItems = [
   //     },
   //   ]
   // },
-];
+]; 
 
 export default function Sidebar() {
   const pathname = usePathname();

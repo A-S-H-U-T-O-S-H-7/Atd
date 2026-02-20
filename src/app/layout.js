@@ -3,6 +3,7 @@ import { Inter, Sora } from 'next/font/google';
 import "./globals.css";
 import ScriptLoader from './ScriptLoader';
 import { Toaster } from 'react-hot-toast';
+import TitleManager from '@/components/Admin/TitleManager';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -17,7 +18,7 @@ const sora = Sora({
 });
 
 export const metadata = {
-  title: "ATD Money",
+  title: "ATD Money", 
   description: "Get instant payday loans & salary advance for salaried employees. Quick approval, minimal documentation, flexible repayment. Perfect for unexpected expenses before payday.",
   keywords: "payday loans, salary advance, instant loans, salaried persons loans, emergency cash, short term loans, quick loans, online loan app"
 };
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ScriptLoader />
+        <TitleManager /> 
         {children}
         <Toaster 
           position="top-right"

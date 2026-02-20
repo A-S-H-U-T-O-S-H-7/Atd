@@ -353,7 +353,7 @@ const handleActivateAccount = async (applicationId) => {
     // Call the email sending API
     const response = await statusService.sendActivationEmail(applicationId);    
     
-    if (response && response.success) {
+    if (response && response.success) { 
       toast.success(response.message || 'Office activation email sent successfully!', {
         duration: 3000,
         position: 'top-right',

@@ -6,6 +6,7 @@ import Footer from './Footer'
 import { useAdminAuthStore } from '@/lib/store/authAdminStore'
 import { useThemeStore } from '@/lib/store/useThemeStore'
 import { useRouter } from 'next/navigation'
+import TitleManager from './TitleManager'
 
 const AdminLayout = ({ children }) => {
   const { theme } = useThemeStore();
@@ -36,6 +37,7 @@ const AdminLayout = ({ children }) => {
       <Sidebar />
       <main className="ml:0 md:ml-20 pt-20 min-h-screen">
         <div className="p-4">
+          <TitleManager />
           {children}
         </div>
       </main>

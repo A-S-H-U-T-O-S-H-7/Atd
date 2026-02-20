@@ -21,7 +21,7 @@ const AdminLogin = () => {
   }, [isAuthenticated, permissions, router]);
 
   const handleInputChange = (e) => {
-    setFormData(prev => ({
+    setFormData(prev => ({ 
       ...prev,
       [e.target.name]: e.target.value
     }))
