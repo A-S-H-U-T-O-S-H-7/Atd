@@ -5,7 +5,7 @@ import RefMobileModal from "./Ref-MobileModal";
 import AccountDetailsModal from "./AccountDetailsModal";
 import toast from "react-hot-toast";
 
-const CallDetailsModal = ({ 
+const CallDetailsModal = ({  
   isOpen, 
   onClose, 
   data, 
@@ -501,13 +501,7 @@ const CallDetailsModal = ({
                         isDark ? "bg-gray-700" : "bg-blue-50"
                       } ${isDark ? "border-gray-700" : "border-blue-100"}`}>
                         <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                          {new Date(call.created_at).toLocaleString('en-GB', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                        {call.created_at || "--"}
                         </td>
                         <td className={`px-4 text-center py-2 ${isDark ? "text-gray-200" : "text-gray-900"}`}>
                           {call.remark}
