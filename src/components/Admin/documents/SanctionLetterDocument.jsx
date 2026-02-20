@@ -1,6 +1,5 @@
 import React from "react";
 import { FaRegFilePdf, FaExternalLinkAlt } from "react-icons/fa";
-import Link from "next/link";
 
 const SanctionLetterDocument = ({
   fileName,
@@ -22,6 +21,19 @@ const SanctionLetterDocument = ({
     );
   }
 
+  // If fileName is a full URL, use it directly
+  // Otherwise, construct the URL
+  const getFileUrl = () => {
+    if (fileName.startsWith('http://') || fileName.startsWith('https://')) {
+      return fileName;
+    }
+    // Handle the escaped slashes in your example
+    const cleanFileName = fileName.replace(/\\\//g, '/');
+    return `https://live.atdmoney.com/storage/sanction_letters/${cleanFileName}`;
+  };
+
+  const fileUrl = getFileUrl();
+
   const sizeClasses = {
     small: "p-1.5",
     default: "p-2",
@@ -34,10 +46,14 @@ const SanctionLetterDocument = ({
     large: 20
   };
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    window.open(fileUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <Link
-      href={`/documents/view?file=${encodeURIComponent(fileName)}&type=sanction_letter${applicationId ? `&appId=${applicationId}` : ''}`}
-      target="_blank"
+    <button
+      onClick={handleClick}
       className={`${sizeClasses[size]} rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center group relative bg-green-100 hover:bg-green-200 border-2 border-green-300 hover:border-green-400 text-green-800 hover:text-green-900 shadow-sm hover:shadow-md ${className}`}
       title={`View Sanction Letter`}
     >
@@ -50,7 +66,7 @@ const SanctionLetterDocument = ({
         size={size === "small" ? 8 : 10} 
         className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity text-green-600" 
       />
-    </Link>
+    </button>
   );
 };
 
