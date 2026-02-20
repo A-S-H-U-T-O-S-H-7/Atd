@@ -3,9 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import AppraisalReport from "@/components/Admin/appraisal-report/AppraisalReport";
 
-export const metadata = {
-  title: 'Appraisal Report - ATD Money',
-};
+
 
 export default function AppraisalReportPage() {
   const params = useParams();

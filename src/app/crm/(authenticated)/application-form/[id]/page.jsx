@@ -3,9 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import ApplicationForm from "@/components/Admin/application-form/ApplicationForm";
 
-export const metadata = {
-  title: 'Application Form - ATD Money',
-};
+
 
 export default function VerifyPage() {
   const params = useParams();

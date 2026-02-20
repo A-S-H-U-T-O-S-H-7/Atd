@@ -4,9 +4,7 @@ import { useState, useEffect } from "react";
 import ReplaceKYC from "@/components/Admin/all-enquiries/replace-kyc/ReplaceKYC";
 import kycService from "@/lib/services/replaceKycSevice";
 
-export const metadata = {
-  title: 'Replace KYC - ATD Money',
-};
+
 
 export default function ReplaceKYCPage() {
   const params = useParams();

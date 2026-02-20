@@ -3,9 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import LoanEligibility from "@/components/Admin/all-enquiries/LoanEligibility";
 
-export const metadata = {
-  title: 'Loan Eligibility - ATD Money',
-};
+
 
 export default function LoanEligibilityPage() {
   const params = useParams();
