@@ -2,6 +2,10 @@ import CollectionPage from '@/components/Admin/collection-reporting/CollectionPa
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Collection Reporting - ATD Money',
+};
+
 function page() {
   return (
     <div>

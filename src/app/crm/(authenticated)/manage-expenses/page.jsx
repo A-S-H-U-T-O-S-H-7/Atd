@@ -2,6 +2,10 @@ import ManageExpensesPage from '@/components/Admin/expenses/ManageExpenses'
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Manage-Expense - ATD Money',
+};
+
 function page() {
   return (
     <div>

@@ -2,6 +2,10 @@ import ECollectionPage from '@/components/Admin/e-collection/ECollectionPage'
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'E-Collection - ATD Money',
+};
+
 function page() {
   return (
     <div>

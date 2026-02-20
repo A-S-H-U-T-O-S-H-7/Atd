@@ -2,6 +2,10 @@ import CashManagementPage from '@/components/Admin/cash-cheque-management/cash-m
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Cash Management - ATD Money',
+};
+
 function page() {
   return (
     <div>

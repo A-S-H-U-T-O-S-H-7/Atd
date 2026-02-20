@@ -2,6 +2,10 @@ import EamandateDepositPage from '@/components/Admin/cash-cheque-management/e-ma
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Add E-mandate  - ATD Money',
+};
+
 function page() {
   return (
     <div>

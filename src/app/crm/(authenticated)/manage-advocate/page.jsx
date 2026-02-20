@@ -2,6 +2,10 @@ import ManageAdvocatePage from '@/components/Admin/advocate-management/Manage-Ad
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Manage Advocate - ATD Money',
+};
+
 function page() {
   return (
     <div>

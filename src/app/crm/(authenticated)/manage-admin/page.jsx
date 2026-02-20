@@ -2,6 +2,10 @@ import ManageAdminPage from '@/components/Admin/manage-admin/Manage-Admin'
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Manage Admin - ATD Money',
+};
+
 function page() {
   return (
     <div>

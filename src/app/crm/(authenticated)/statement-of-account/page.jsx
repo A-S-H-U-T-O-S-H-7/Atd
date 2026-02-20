@@ -2,6 +2,10 @@ import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import SoaPage from '@/components/Admin/soa/SoaPage'
 import React from 'react'
 
+export const metadata = {
+  title: 'SOA - ATD Money',
+};
+
 function page() {
   return (
     <div>

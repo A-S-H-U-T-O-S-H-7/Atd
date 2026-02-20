@@ -2,6 +2,10 @@ import OverdueApplicantList from '@/components/Admin/overdue-applicants-list/Ove
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Overdue Applications - ATD Money',
+};
+
 function page() {
   return (
     <div>

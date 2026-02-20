@@ -2,6 +2,10 @@ import PaymentReceiptPage from '@/components/Admin/payment-recepit/PaymentReceip
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Payment Receipt - ATD Money',
+};
+
 function page() {
   return (
     <div>

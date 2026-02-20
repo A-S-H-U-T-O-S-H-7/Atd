@@ -2,6 +2,10 @@ import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import ProfitLossPage from '@/components/Admin/profit-loss/ProfitLoss'
 import React from 'react'
 
+export const metadata = {
+  title: 'Profit Loss - ATD Money',
+};
+
 function page() {
   return (
     <div>

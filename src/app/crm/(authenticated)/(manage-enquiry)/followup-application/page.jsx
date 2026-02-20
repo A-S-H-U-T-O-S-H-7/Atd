@@ -2,6 +2,10 @@ import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import FollowUpApplication from '@/components/Admin/followup-application/FollowupApplication'
 import React from 'react'
 
+export const metadata = {
+  title: 'Followup Applications - ATD Money',
+};
+
 function page() {
   return (
     <div>

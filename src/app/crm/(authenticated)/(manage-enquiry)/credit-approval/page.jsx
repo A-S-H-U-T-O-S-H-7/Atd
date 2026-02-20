@@ -2,6 +2,10 @@ import CreditApprovalPage from '@/components/Admin/credit-approval/CreditApprova
 import ProtectedRoute from '@/components/Admin/ProtectedRoute'
 import React from 'react'
 
+export const metadata = {
+  title: 'Credit Approval - ATD Money',
+};
+
 function page() {
   return (
     <div>

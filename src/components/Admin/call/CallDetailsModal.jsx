@@ -67,7 +67,7 @@ const CallDetailsModal = ({
       setNextCallDate("");
       setSubmitError("");
     }
-  }, [isOpen]);
+  }, [isOpen]); 
 
   const handleSubmit = async () => {
     setSubmitError("");
